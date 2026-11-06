@@ -5,9 +5,9 @@
 ## 当前汇总
 
 - 正式实验：0
-- 探索实验：3（Smoke已完成；完整开发与密封阶段已预注册）
-- 训练运行：6（均为本地代理Smoke）
-- 已报告模型指标：仅代理Smoke，见`results/LOCAL-SMOKE-001.md`
+- 探索实验：3（Smoke、完整DEV、完整密封均已完成）
+- 训练运行：18（全部为本地代理；Smoke 6、完整DEV 6、唯一密封运行6）
+- 已报告模型指标：仅代理实验，见`results/LOCAL-SMOKE-001.md`与`results/LOCAL-EXP-001.md`
 
 现有Gas和C-MAPSS文件只完成本地存在性、哈希、批次数和压缩包内容审计，没有训练或模型结果 `[L-DATA-001]` `[L-DATA-002]`。
 
@@ -25,8 +25,8 @@
 | 实验ID | 状态 | 研究问题 | 数据/切分 | 代码与配置 | 资源预算 | 结果 | 产物 |
 |---|---|---|---|---|---|---|---|
 | LOCAL-SMOKE-001 | SUCCEEDED | 两类代理任务能否在低成本下完成三策略端到端闭环，并真实执行增量与重拟合候选？ | Gas每批最多96条、FD001前20台发动机；只用初训和开发流，未打开完整密封段 | `configs/local_smoke.json`；执行提交`64ccce2` | 每个任务×策略最多4候选、20,000训练样本、60秒墙钟/CPU；种子20261106 | 6/6运行完成；增量10、重拟合3；指标见结果文档，不能外推 | `results/LOCAL-SMOKE-001.md`；本地`artifacts/experiments/LOCAL-SMOKE-001/run-64ccce2/` |
-| LOCAL-EXP-001-DEV | PLANNED | 全量开发流上三策略能否公平完成并覆盖真实动作，足以冻结密封运行？ | Gas批次1–7；FD001发动机1–80；不打开密封段 | `configs/local_full_dev.json`；执行提交运行前记录 | 每个任务×策略最多4候选、80,000训练样本、180秒墙钟/CPU；种子20261106 | 未运行 | 计划输出`artifacts/experiments/LOCAL-EXP-001-DEV/` |
-| LOCAL-EXP-001 | PLANNED | 冻结策略在完整密封段的性能、最差阶段与资源相对静态/简单触发如何？ | Gas冻结1–3/4–7/8–10；FD001发动机60%/20%/20%；密封只运行一次 | `configs/local_full.json`；必须与DEV阈值一致 | 同DEV；密封阶段禁止训练；种子20261106 | 未运行 | 计划输出`artifacts/experiments/LOCAL-EXP-001/` |
+| LOCAL-EXP-001-DEV | SUCCEEDED | 全量开发流上三策略能否公平完成并覆盖真实动作，足以冻结密封运行？ | Gas批次1–7；FD001发动机1–80；未打开密封段 | `configs/local_full_dev.json`；执行提交`f9647dd` | 每个任务×策略最多4候选、80,000训练样本、180秒墙钟/CPU；种子20261106 | 6/6完成；增量9、重拟合5；机器验收通过 | 本地`artifacts/experiments/LOCAL-EXP-001-DEV/run-f9647dd/` |
+| LOCAL-EXP-001 | SUCCEEDED | 冻结策略在完整密封段的性能、最差阶段与资源相对静态/简单触发如何？ | Gas冻结1–3/4–7/8–10；FD001发动机60%/20%/20%；密封仅运行一次 | `configs/local_full.json`；执行提交`f9647dd`，与DEV阈值一致 | 同DEV；密封阶段禁止训练；种子20261106 | 6/6完成；开发指标与DEV完全一致；密封指标见结果文档 | `results/LOCAL-EXP-001.md`；本地`artifacts/experiments/LOCAL-EXP-001/run-f9647dd-sealed-once/` |
 
 ## LOCAL-SMOKE-001预注册
 

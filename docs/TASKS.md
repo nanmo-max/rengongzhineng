@@ -90,12 +90,13 @@ CORE-001
 
 ### LOCAL-EXP-001 完整代理基线与迭代比较
 
-- 状态：`IN_PROGRESS`
+- 状态：`DONE`
 - 依赖：LOCAL-SMOKE-001
 - 优先级：P0，本地独立路径
 - 完成标准：两任务完成静态、性能触发和BRACE配对比较；全局至少三次真实候选训练/评估；分类与回归阶段指标及CPU资源有可复核产物
 - 停止条件：Smoke未通过、密封段已被用于调参或策略被简单基线全面支配后仍试图增加模块
 - 实施计划：`docs/plans/LOCAL-PROXY-PIPELINE.md` Task 5
+- 证据：执行提交`f9647dd`；DEV与唯一密封运行均6/6完成并机器验收通过；`docs/results/LOCAL-EXP-001.md`；全局增量9/重拟合5
 
 ### CORE-002 TaskBootstrap
 

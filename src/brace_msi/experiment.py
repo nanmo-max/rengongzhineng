@@ -114,8 +114,6 @@ def validate_experiment_output(
     )
     if len(jsonl_files) != expected_runs or len(run_json_files) != expected_runs:
         raise ExperimentValidationError("incomplete per-run evidence files")
-    if len(jsonl_files) != expected_runs or len(run_json_files) != expected_runs:
-        raise ExperimentValidationError("incomplete per-run evidence files")
     standard_fields = {"schema_version", "proxy_only", "event"}
     for path in jsonl_files:
         lines = path.read_text(encoding="utf-8").splitlines()
