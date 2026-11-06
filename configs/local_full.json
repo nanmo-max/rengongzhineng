@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "experiment_id": "LOCAL-EXP-001",
+  "proxy_only": true,
+  "seed": 20261106,
+  "smoke": false,
+  "include_sealed": true,
+  "data_hashes": {
+    "gas": "91E8F466F202E7A093D657673CE47311C3E90416F7DF3057966058961C351FE4",
+    "cmapss": "C9C5DEC12A945A82E8BB4446589D7FB3CC057B5E5D81FA1A12E25EE9912AD3B2"
+  },
+  "budget": {
+    "max_candidates": 4,
+    "max_training_samples": 80000,
+    "max_wall_seconds": 180.0,
+    "max_cpu_seconds": 180.0
+  },
+  "gate": {
+    "classification": {
+      "min_validation_samples": 32,
+      "min_primary_improvement": 0.0,
+      "max_anchor_degradation": 0.10
+    },
+    "regression": {
+      "min_validation_samples": 32,
+      "min_primary_improvement": 0.0,
+      "max_anchor_degradation": 5.0
+    }
+  },
+  "policies": {
+    "performance_triggered": {
+      "classification_drop_threshold": 0.05,
+      "regression_drop_threshold": 3.0
+    },
+    "brace": {
+      "classification": {
+        "update_drop_threshold": 0.02,
+        "refit_drop_threshold": 0.20,
+        "drift_threshold": 0.25,
+        "high_drift_threshold": 0.75
+      },
+      "regression": {
+        "update_drop_threshold": 1.0,
+        "refit_drop_threshold": 8.0,
+        "drift_threshold": 0.20,
+        "high_drift_threshold": 0.70
+      }
+    }
+  }
+}

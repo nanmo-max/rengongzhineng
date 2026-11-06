@@ -39,6 +39,18 @@ def test_local_smoke_config_is_valid_and_reproducible() -> None:
     assert config["data_hashes"]["gas"].startswith("91E8F4")
 
 
+def test_full_configs_share_frozen_strategy_and_differ_only_in_evaluation_phase() -> None:
+    from brace_msi.experiment import load_experiment_config
+
+    development = load_experiment_config(Path("configs/local_full_dev.json"))
+    sealed = load_experiment_config(Path("configs/local_full.json"))
+
+    assert development["include_sealed"] is False
+    assert sealed["include_sealed"] is True
+    for field in ("seed", "data_hashes", "budget", "gate", "policies"):
+        assert development[field] == sealed[field]
+
+
 @pytest.mark.parametrize(
     ("policy_name", "expected_type"),
     [
