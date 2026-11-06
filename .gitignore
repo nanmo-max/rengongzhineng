@@ -1,0 +1,27 @@
+# Local data and generated artifacts are never committed by default.
+dataji/
+tmp/
+artifacts/
+outputs/
+
+# Python environments and caches.
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local worktrees and secrets.
+.worktrees/
+.env
+.env.*
+*.key
+*.pem
+
+# OS/editor files.
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
