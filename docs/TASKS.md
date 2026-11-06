@@ -80,20 +80,22 @@ CORE-001
 
 ### LOCAL-SMOKE-001 代理数据低成本Smoke Test
 
-- 状态：`IN_PROGRESS`
+- 状态：`DONE`
 - 依赖：LOCAL-LOOP-001
 - 优先级：P0，本地独立路径
 - 完成标准：Gas与FD001均完成三策略小样本运行；至少出现一次增量和一次重拟合候选；资源、门控、失败和脱敏日志齐全
 - 停止条件：任一数据防泄漏检查失败或运行超过预注册Smoke预算
 - 实施计划：`docs/plans/LOCAL-PROXY-PIPELINE.md` Task 4
+- 证据：执行提交`64ccce2`；`configs/local_smoke.json`、`docs/results/LOCAL-SMOKE-001.md`及本地忽略产物；六个运行完成，动作计数增量10/重拟合3，机器验收通过
 
 ### LOCAL-EXP-001 完整代理基线与迭代比较
 
-- 状态：`BLOCKED`
+- 状态：`IN_PROGRESS`
 - 依赖：LOCAL-SMOKE-001
 - 优先级：P0，本地独立路径
 - 完成标准：两任务完成静态、性能触发和BRACE配对比较；全局至少三次真实候选训练/评估；分类与回归阶段指标及CPU资源有可复核产物
 - 停止条件：Smoke未通过、密封段已被用于调参或策略被简单基线全面支配后仍试图增加模块
+- 实施计划：`docs/plans/LOCAL-PROXY-PIPELINE.md` Task 5
 
 ### CORE-002 TaskBootstrap
 

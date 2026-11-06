@@ -63,3 +63,43 @@ def test_build_policy_rejects_unknown_name() -> None:
 
     with pytest.raises(ExperimentConfigError, match="unknown policy"):
         build_policy("mystery", task_kind="classification", config={})
+
+
+def test_validate_smoke_output_requires_both_training_actions(tmp_path: Path) -> None:
+    from brace_msi.experiment import ExperimentValidationError, validate_experiment_output
+
+    summary = {
+        "schema_version": 1,
+        "experiment_id": "LOCAL-SMOKE-001",
+        "proxy_only": True,
+        "smoke": True,
+        "include_sealed": False,
+        "run_count": 6,
+        "action_counts": {"incremental_update": 2},
+        "runs": [],
+    }
+    (tmp_path / "summary.json").write_text(json.dumps(summary), encoding="utf-8")
+    for index in range(6):
+        (tmp_path / f"run-{index}.json").write_text("{}", encoding="utf-8")
+        (tmp_path / f"run-{index}.jsonl").write_text(
+            json.dumps(
+                {
+                    "schema_version": 1,
+                    "proxy_only": True,
+                    "event": "batch_scored",
+                    "batch_id": f"b-{index}",
+                }
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+
+    with pytest.raises(ExperimentValidationError, match="replay_refit"):
+        validate_experiment_output(tmp_path, expected_runs=6, smoke=True)
+
+    summary["action_counts"]["replay_refit"] = 1
+    (tmp_path / "summary.json").write_text(json.dumps(summary), encoding="utf-8")
+    result = validate_experiment_output(tmp_path, expected_runs=6, smoke=True)
+
+    assert result["valid"] is True
+    assert result["jsonl_files"] == 6

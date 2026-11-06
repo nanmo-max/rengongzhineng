@@ -9,6 +9,7 @@ from collections import Counter
 from pathlib import Path
 from typing import Any, Literal
 
+from .audit import ALLOWED_FIELDS
 from .budget import BudgetLimits
 from .data.audit import file_sha256
 from .data.cmapss import load_cmapss_fd001_stream
@@ -20,6 +21,10 @@ from .safety import GateConfig
 
 class ExperimentConfigError(ValueError):
     """Raised when an experiment configuration violates evidence boundaries."""
+
+
+class ExperimentValidationError(ValueError):
+    """Raised when saved experiment evidence is incomplete or unsafe."""
 
 
 def load_experiment_config(path: Path) -> dict[str, Any]:
@@ -77,6 +82,68 @@ def _assert_finite(value: Any, *, path: str = "result") -> None:
     elif isinstance(value, (list, tuple)):
         for index, child in enumerate(value):
             _assert_finite(child, path=f"{path}[{index}]")
+
+
+def validate_experiment_output(
+    output_dir: Path, *, expected_runs: int, smoke: bool
+) -> dict[str, Any]:
+    output_dir = Path(output_dir)
+    try:
+        summary = json.loads(
+            (output_dir / "summary.json").read_text(encoding="utf-8")
+        )
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ExperimentValidationError("missing or invalid summary.json") from exc
+    if summary.get("proxy_only") is not True:
+        raise ExperimentValidationError("proxy_only must be true")
+    if summary.get("run_count") != expected_runs:
+        raise ExperimentValidationError("unexpected run count")
+    if smoke and summary.get("include_sealed") is not False:
+        raise ExperimentValidationError("smoke output opened the sealed stream")
+    _assert_finite(summary)
+    action_counts = summary.get("action_counts", {})
+    for required_action in ("incremental_update", "replay_refit"):
+        if int(action_counts.get(required_action, 0)) < 1:
+            raise ExperimentValidationError(
+                f"missing required action: {required_action}"
+            )
+
+    jsonl_files = sorted(output_dir.glob("*.jsonl"))
+    run_json_files = sorted(
+        path for path in output_dir.glob("*.json") if path.name != "summary.json"
+    )
+    if len(jsonl_files) != expected_runs or len(run_json_files) != expected_runs:
+        raise ExperimentValidationError("incomplete per-run evidence files")
+    if len(jsonl_files) != expected_runs or len(run_json_files) != expected_runs:
+        raise ExperimentValidationError("incomplete per-run evidence files")
+    standard_fields = {"schema_version", "proxy_only", "event"}
+    for path in jsonl_files:
+        lines = path.read_text(encoding="utf-8").splitlines()
+        if not lines:
+            raise ExperimentValidationError(f"empty audit log: {path.name}")
+        for line in lines:
+            try:
+                record = json.loads(line)
+            except json.JSONDecodeError as exc:
+                raise ExperimentValidationError(
+                    f"invalid JSONL record: {path.name}"
+                ) from exc
+            if record.get("proxy_only") is not True:
+                raise ExperimentValidationError(
+                    f"unsafe proxy marker in {path.name}"
+                )
+            unexpected = set(record).difference(standard_fields | ALLOWED_FIELDS)
+            if unexpected:
+                raise ExperimentValidationError(
+                    f"non-allowlisted audit fields in {path.name}: {sorted(unexpected)}"
+                )
+    return {
+        "valid": True,
+        "run_count": expected_runs,
+        "jsonl_files": len(jsonl_files),
+        "run_json_files": len(run_json_files),
+        "action_counts": action_counts,
+    }
 
 
 def _resource_summary(summary: RunSummary) -> dict[str, float | int]:
