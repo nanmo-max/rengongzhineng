@@ -82,10 +82,10 @@
 - Consumes: Task 1流、Task 2模型/证据/预算/门控。
 - Produces: `StaticPolicy`、`PerformanceTriggeredPolicy`、`BracePolicy`、`run_stream(...) -> RunSummary`及脱敏JSONL审计。
 
-- [ ] 编写失败测试：三策略动作、严格prequential顺序、至少两种真实训练动作、拒绝/部署、未来批次不可见、脱敏日志。
-- [ ] 运行定向测试确认预期红灯。
-- [ ] 实现静态、简单触发和BRACE白名单策略及统一运行器；BRACE按证据选择动作而非固定菜单。
-- [ ] 运行定向及全套测试，更新任务证据并提交。
+- [x] 编写失败测试：三策略动作、严格prequential顺序、至少两种真实训练动作、拒绝/部署、未来批次不可见、脱敏日志。
+- [x] 运行定向测试确认预期红灯。
+- [x] 实现静态、简单触发和BRACE白名单策略及统一运行器；BRACE按证据选择动作而非固定菜单。
+- [x] 运行定向及全套测试，更新任务证据并提交。
 
 ### Task 4: LOCAL-SMOKE-001 低成本预注册与Smoke Test
 

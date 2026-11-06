@@ -70,20 +70,22 @@ CORE-001
 
 ### LOCAL-LOOP-001 本地策略与无人值守闭环
 
-- 状态：`IN_PROGRESS`
+- 状态：`DONE`
 - 依赖：LOCAL-CORE-001
 - 优先级：P0，本地独立路径
 - 完成标准：静态、性能触发和BRACE策略使用同一数据可见性运行；动作由证据选择；日志可审计且不含原始特征
 - 停止条件：无法公平共享初始模型、切分或预算
 - 实施计划：`docs/plans/LOCAL-PROXY-PIPELINE.md` Task 3
+- 证据：`src/brace_msi/policies.py`、`runner.py`、`audit.py`及`tests/loop/`；完整测试`42 passed`
 
 ### LOCAL-SMOKE-001 代理数据低成本Smoke Test
 
-- 状态：`BLOCKED`
+- 状态：`IN_PROGRESS`
 - 依赖：LOCAL-LOOP-001
 - 优先级：P0，本地独立路径
 - 完成标准：Gas与FD001均完成三策略小样本运行；至少出现一次增量和一次重拟合候选；资源、门控、失败和脱敏日志齐全
 - 停止条件：任一数据防泄漏检查失败或运行超过预注册Smoke预算
+- 实施计划：`docs/plans/LOCAL-PROXY-PIPELINE.md` Task 4
 
 ### LOCAL-EXP-001 完整代理基线与迭代比较
 
