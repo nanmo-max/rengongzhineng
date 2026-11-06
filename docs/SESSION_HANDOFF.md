@@ -29,3 +29,10 @@
 ## 当前恢复结果
 
 实时内容不在此复制，必须从 [STATUS.md](STATUS.md) 和 [TASKS.md](TASKS.md) 读取，避免交接文档与执行状态分叉。
+
+## 已建立的稳定恢复边界
+
+- 内部模拟协议入口：`src/brace_msi/protocol/__init__.py`。
+- 协议回归测试：`tests/protocol/test_state_machine.py`。
+- 正式SDK到达后只增加适配映射；不得绕过现有状态守卫，也不得把宣讲中的字段名写成正式接口事实。
+- 恢复后先运行`D:\anaconda3\python.exe -m pytest -q --tb=short`验证稳定边界，再依据`TASKS.md`选择任务。

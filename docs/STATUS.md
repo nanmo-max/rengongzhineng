@@ -1,7 +1,7 @@
 # 当前状态
 
 - 最近同步：2026-11-06（Asia/Shanghai）
-- 项目阶段：文档与工程治理基线已完成，等待首个工程任务
+- 项目阶段：Gate 1最小闭环开发；等待正式平台解除SDK阻塞
 - 方案版本：BRACE-MSI V4.1，已锁定研究方向 `[D-001]`
 - 正式训练：未开始
 - 正式实验：0 次，见 [EXPERIMENTS.md](EXPERIMENTS.md)
@@ -11,13 +11,16 @@
 
 ## 当前执行入口
 
-当前没有正在执行的工程任务。首个待执行任务为 [TASKS.md](TASKS.md) 中的 `CORE-001：模拟SDK事件协议与防泄漏状态机`。
+当前没有可继续执行的 `READY` P0任务。`CORE-001` 已完成；下一依赖项
+`SDK-001` 等待官方平台、正式文档或可运行SDK开放，详见
+[TASKS.md](TASKS.md)。在阻塞解除前不得猜测SDK字段或越过依赖启动
+`CORE-002`。
 
 执行前必须先完成：
 
-1. 确认当前任务状态为 `READY`；
-2. 阅读 [ARCHITECTURE.md](ARCHITECTURE.md) 的事件协议部分；
-3. 阅读 [EXPERIMENT_PROTOCOL.md](EXPERIMENT_PROTOCOL.md) 的数据可见性规则；
+1. 核验官方平台来源并完成 `SDK-001` 的解除阻塞条件；
+2. 读取 [SOURCE_REGISTRY.md](SOURCE_REGISTRY.md) 中待核实项；
+3. 将真实事件映射到内部协议，不改变已验证的防泄漏不变量；
 4. 不启动模型训练。
 
 ## 当前阻塞

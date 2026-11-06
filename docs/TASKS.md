@@ -26,12 +26,14 @@ DOC-001
 
 ### CORE-001 模拟SDK事件协议与防泄漏状态机
 
-- 状态：`READY`
+- 状态：`DONE`
 - 依赖：DOC-001
 - 优先级：P0
 - 完成标准：支持两种候选协议；同一评分样本不能先用标签训练；批次只能按适配器允许的事件推进；单元测试覆盖非法顺序
 - 停止条件：需要猜测正式SDK字段或调用真实服务
 - 备注：只构建模拟接口，不训练模型
+- 实施计划：`docs/plans/CORE-001.md`
+- 证据：`src/brace_msi/protocol/__init__.py`、`tests/protocol/test_state_machine.py`；`D:\anaconda3\python.exe -m pytest -q --tb=short`于2026-11-06通过，结果为`13 passed`
 
 ### SDK-001 正式平台与SDK核验
 
@@ -40,6 +42,7 @@ DOC-001
 - 优先级：P0
 - 完成标准：登记SDK版本、事件顺序、数据模式、输出格式、标签规则、模型白名单、计费、迭代定义和SwanLab机制；更新全部H项
 - 停止条件：只有转写或二手消息，没有正式文档/可运行SDK
+- 当前阻塞：截至2026-11-06，仓库内没有正式SDK、平台文档或可运行平台入口；不能仅依据宣讲转写解除
 
 ### CORE-002 TaskBootstrap
 
