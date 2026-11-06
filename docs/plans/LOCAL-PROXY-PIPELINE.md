@@ -62,12 +62,12 @@
 
 **Interfaces:**
 - Consumes: `BatchData.task_kind`, training features/targets and stable anchor split。
-- Produces: `ModelAdapter.fit/partial_fit/predict/clone_unfitted`、`Evidence`、`BudgetDecision`、`CandidateEvaluation`、`GateDecision`、`ResourceUsage`。
+- Produces: `SklearnModelAdapter.fit/partial_fit/predict/clone/refit`、`Evidence`、`BudgetDecision`、`GateDecision`、`ResourceUsage`。
 
-- [ ] 编写失败测试：分类/回归能力声明、增量与重拟合、性能/漂移证据、训练前预算拒绝、候选失败不替换稳定模型。
-- [ ] 运行定向测试确认预期红灯。
-- [ ] 最小实现SGD增量模型、同族重拟合、KS/性能证据、预算账本、三层门控和资源计量。
-- [ ] 运行定向及全套测试，更新任务证据并提交。
+- [x] 编写失败测试：分类/回归能力声明、增量与重拟合、性能/漂移证据、训练前预算拒绝、候选失败不替换稳定模型。
+- [x] 运行定向测试确认预期红灯。
+- [x] 最小实现SGD增量模型、同族重拟合、KS/性能证据、预算账本、三层门控和资源计量。
+- [x] 运行定向及全套测试，更新任务证据并提交。
 
 ### Task 3: LOCAL-LOOP-001 策略与无人值守本地流运行器
 

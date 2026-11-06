@@ -60,20 +60,22 @@ CORE-001
 
 ### LOCAL-CORE-001 本地模型、预算、监测与SafetyGate
 
-- 状态：`IN_PROGRESS`
+- 状态：`DONE`
 - 依赖：LOCAL-DATA-001
 - 优先级：P0，本地独立路径
 - 完成标准：通用分类/回归模型能力、增量/重拟合、漂移与性能证据、训练前预算、候选评估、部署/拒绝均有自动测试
 - 停止条件：需要未来批次信息或重依赖不符合CPU路线
 - 实施计划：`docs/plans/LOCAL-PROXY-PIPELINE.md` Task 2
+- 证据：`src/brace_msi/modeling.py`、`evidence.py`、`budget.py`、`safety.py`、`resources.py`及`tests/core/`；完整测试`34 passed`
 
 ### LOCAL-LOOP-001 本地策略与无人值守闭环
 
-- 状态：`BLOCKED`
+- 状态：`IN_PROGRESS`
 - 依赖：LOCAL-CORE-001
 - 优先级：P0，本地独立路径
 - 完成标准：静态、性能触发和BRACE策略使用同一数据可见性运行；动作由证据选择；日志可审计且不含原始特征
 - 停止条件：无法公平共享初始模型、切分或预算
+- 实施计划：`docs/plans/LOCAL-PROXY-PIPELINE.md` Task 3
 
 ### LOCAL-SMOKE-001 代理数据低成本Smoke Test
 

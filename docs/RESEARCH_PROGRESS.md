@@ -38,3 +38,11 @@
 - 机器可读聚合证据写入本地忽略路径`artifacts/data_audit/proxy_data_audit.json`；正式说明见`source_notes/PROXY_DATA_AUDIT.md`。
 - 验证：`D:\anaconda3\python.exe -m pytest -q --tb=short`，结果`23 passed in 0.20s`。
 - 尚未运行任何模型训练或报告性能指标。
+
+## 2026-11-06：LOCAL-CORE-001本地闭环核心
+
+- 新增分类/回归SGD模型适配器，显式声明增量、概率输出和序列化能力；稳定模型与候选通过深拷贝隔离。
+- 新增性能退化与逐特征KS漂移证据、训练前预算账本、边界资源计量及三层SafetyGate。
+- 自动测试覆盖增量更新、同族重拟合、候选隔离、预算拒绝、分类/回归门控接受与拒绝。
+- 验证：`D:\anaconda3\python.exe -m pytest -q --tb=short`，结果`34 passed in 0.78s`。
+- 仅使用合成测试数据，尚未运行真实代理数据训练。
