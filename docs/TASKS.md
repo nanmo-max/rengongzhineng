@@ -50,20 +50,22 @@ CORE-001
 
 ### LOCAL-DATA-001 代理数据审计与冻结切分
 
-- 状态：`IN_PROGRESS`
+- 状态：`DONE`
 - 依赖：CORE-001、L-AUTH-001
 - 优先级：P0，本地独立路径
 - 完成标准：Gas与C-MAPSS结构、哈希、任务类型、标签构造、组/时间字段和冻结切分有代码与审计证据；训练/开发/密封样本互斥；原始数据只读
 - 停止条件：压缩包哈希变化、数据损坏、标签含义无法从本地资料确认
 - 实施计划：`docs/plans/LOCAL-PROXY-PIPELINE.md` Task 1
+- 证据：`src/brace_msi/data/`、`scripts/audit_proxy_data.py`、`tests/data/`、`docs/source_notes/PROXY_DATA_AUDIT.md`；完整测试`23 passed`
 
 ### LOCAL-CORE-001 本地模型、预算、监测与SafetyGate
 
-- 状态：`BLOCKED`
+- 状态：`IN_PROGRESS`
 - 依赖：LOCAL-DATA-001
 - 优先级：P0，本地独立路径
 - 完成标准：通用分类/回归模型能力、增量/重拟合、漂移与性能证据、训练前预算、候选评估、部署/拒绝均有自动测试
 - 停止条件：需要未来批次信息或重依赖不符合CPU路线
+- 实施计划：`docs/plans/LOCAL-PROXY-PIPELINE.md` Task 2
 
 ### LOCAL-LOOP-001 本地策略与无人值守闭环
 

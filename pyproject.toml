@@ -7,7 +7,7 @@ name = "brace-msi"
 version = "0.1.0"
 description = "Budget- and risk-aware industrial model adaptation harness"
 requires-python = ">=3.10"
-dependencies = []
+dependencies = ["numpy>=1.26,<3"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

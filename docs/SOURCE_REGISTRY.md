@@ -121,13 +121,13 @@
 
 - 文件：`dataji/gas+sensor+array+drift+dataset.zip`
 - SHA256：`91E8F466F202E7A093D657673CE47311C3E90416F7DF3057966058961C351FE4`
-- 本地状态：已解压10个`.dat`批次，共13,910行；未运行训练。
+- 本地状态：已解压10个`.dat`批次，共13,910行、128维、6类；只读审计与1–3/4–7/8–10冻结切分通过；未运行训练。证据见`source_notes/PROXY_DATA_AUDIT.md`。
 
 ### L-DATA-002 NASA C-MAPSS代理数据
 
 - 文件：`dataji/6.+Turbofan+Engine+Degradation+Simulation+Data+Set.zip`
 - SHA256：`C9C5DEC12A945A82E8BB4446589D7FB3CC057B5E5D81FA1A12E25EE9912AD3B2`
-- 本地状态：外层压缩包和内层`CMAPSSData.zip`存在；包含FD001-FD004训练、测试及RUL文件；未运行训练。
+- 本地状态：外层压缩包和内层`CMAPSSData.zip`存在；包含FD001-FD004训练、测试及RUL文件。FD001只读审计确认20,631行、100台发动机、24维输入；按发动机60%/20%/20%冻结分组；未运行训练。证据见`source_notes/PROXY_DATA_AUDIT.md`。
 
 ### L-DATA-003 轴承代理数据
 

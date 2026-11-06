@@ -29,3 +29,12 @@
 - TDD红灯证据：实现前测试因`ModuleNotFoundError: No module named 'brace_msi'`失败；新增重复请求用例在修复前显示`DID NOT RAISE`。
 - 完成验证：`D:\anaconda3\python.exe -m pytest -q --tb=short`，结果`13 passed in 0.03s`。
 - 未启动训练，未调用真实平台或网络服务，未改动原始数据。
+
+## 2026-11-06：LOCAL-DATA-001代理数据审计
+
+- 新增Gas严格稀疏格式解析器与C-MAPSS FD001分组轨迹解析器。
+- 冻结Gas批次1–3/4–7/8–10和FD001发动机ID 60%/20%/20%切分；样本与发动机组互斥检查通过。
+- 原始归档SHA256与`SOURCE_REGISTRY.md`一致，审计过程只读。
+- 机器可读聚合证据写入本地忽略路径`artifacts/data_audit/proxy_data_audit.json`；正式说明见`source_notes/PROXY_DATA_AUDIT.md`。
+- 验证：`D:\anaconda3\python.exe -m pytest -q --tb=short`，结果`23 passed in 0.20s`。
+- 尚未运行任何模型训练或报告性能指标。
