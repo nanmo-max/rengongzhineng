@@ -11,6 +11,8 @@ import psutil
 
 @dataclass(frozen=True)
 class ResourceUsage:
+    """Boundary resource sample; ``peak_rss_bytes`` is not a polling peak."""
+
     wall_seconds: float
     cpu_seconds: float
     rss_before_bytes: int

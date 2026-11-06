@@ -107,11 +107,58 @@ def test_validate_smoke_output_requires_both_training_actions(tmp_path: Path) ->
         )
 
     with pytest.raises(ExperimentValidationError, match="replay_refit"):
-        validate_experiment_output(tmp_path, expected_runs=6, smoke=True)
+        validate_experiment_output(
+            tmp_path, expected_runs=6, expected_include_sealed=False
+        )
 
     summary["action_counts"]["replay_refit"] = 1
     (tmp_path / "summary.json").write_text(json.dumps(summary), encoding="utf-8")
-    result = validate_experiment_output(tmp_path, expected_runs=6, smoke=True)
+    result = validate_experiment_output(
+        tmp_path, expected_runs=6, expected_include_sealed=False
+    )
 
     assert result["valid"] is True
     assert result["jsonl_files"] == 6
+
+
+def test_validate_output_rejects_missing_expected_sealed_phase(tmp_path: Path) -> None:
+    from brace_msi.experiment import ExperimentValidationError, validate_experiment_output
+
+    (tmp_path / "summary.json").write_text(
+        json.dumps(
+            {
+                "proxy_only": True,
+                "include_sealed": False,
+                "run_count": 0,
+                "action_counts": {
+                    "incremental_update": 1,
+                    "replay_refit": 1,
+                },
+                "runs": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ExperimentValidationError, match="sealed phase"):
+        validate_experiment_output(
+            tmp_path, expected_runs=0, expected_include_sealed=True
+        )
+
+
+def test_sealed_run_guard_allows_only_one_output_under_experiment_root(
+    tmp_path: Path,
+) -> None:
+    from brace_msi.experiment import ExperimentConfigError, prepare_experiment_output
+
+    first = tmp_path / "experiment" / "run-one"
+    second = tmp_path / "experiment" / "run-two"
+
+    prepare_experiment_output(
+        first, experiment_id="LOCAL-EXP-001", include_sealed=True
+    )
+
+    with pytest.raises(ExperimentConfigError, match="sealed run lock"):
+        prepare_experiment_output(
+            second, experiment_id="LOCAL-EXP-001", include_sealed=True
+        )

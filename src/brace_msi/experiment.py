@@ -85,7 +85,7 @@ def _assert_finite(value: Any, *, path: str = "result") -> None:
 
 
 def validate_experiment_output(
-    output_dir: Path, *, expected_runs: int, smoke: bool
+    output_dir: Path, *, expected_runs: int, expected_include_sealed: bool
 ) -> dict[str, Any]:
     output_dir = Path(output_dir)
     try:
@@ -98,8 +98,14 @@ def validate_experiment_output(
         raise ExperimentValidationError("proxy_only must be true")
     if summary.get("run_count") != expected_runs:
         raise ExperimentValidationError("unexpected run count")
-    if smoke and summary.get("include_sealed") is not False:
-        raise ExperimentValidationError("smoke output opened the sealed stream")
+    if summary.get("include_sealed") is not expected_include_sealed:
+        raise ExperimentValidationError("sealed phase does not match expectation")
+    for run in summary.get("runs", []):
+        sealed_metrics = run.get("metrics", {}).get("sealed", {})
+        if expected_include_sealed and not sealed_metrics:
+            raise ExperimentValidationError("expected sealed metrics are missing")
+        if not expected_include_sealed and sealed_metrics:
+            raise ExperimentValidationError("unexpected sealed metrics are present")
     _assert_finite(summary)
     action_counts = summary.get("action_counts", {})
     for required_action in ("incremental_update", "replay_refit"):
@@ -144,6 +150,39 @@ def validate_experiment_output(
     }
 
 
+def prepare_experiment_output(
+    output_dir: Path, *, experiment_id: str, include_sealed: bool
+) -> None:
+    """Create a fresh output directory and acquire a one-shot sealed lock."""
+
+    output_dir = Path(output_dir)
+    if output_dir.exists() and any(output_dir.iterdir()):
+        raise ExperimentConfigError("output directory already contains evidence")
+    output_dir.parent.mkdir(parents=True, exist_ok=True)
+    if include_sealed:
+        lock_path = output_dir.parent / ".sealed-once.lock"
+        try:
+            with lock_path.open("x", encoding="utf-8") as handle:
+                handle.write(
+                    json.dumps(
+                        {
+                            "schema_version": 1,
+                            "experiment_id": experiment_id,
+                            "sealed_once": True,
+                            "output_directory": output_dir.name,
+                        },
+                        ensure_ascii=False,
+                        sort_keys=True,
+                    )
+                    + "\n"
+                )
+        except FileExistsError as exc:
+            raise ExperimentConfigError(
+                f"sealed run lock already exists: {lock_path}"
+            ) from exc
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+
 def _resource_summary(summary: RunSummary) -> dict[str, float | int]:
     usages = [event.usage for event in summary.candidate_events if event.usage]
     return {
@@ -169,6 +208,11 @@ def run_local_experiment(
     output_dir: Path,
 ) -> dict[str, Any]:
     config = load_experiment_config(config_path)
+    prepare_experiment_output(
+        output_dir,
+        experiment_id=str(config["experiment_id"]),
+        include_sealed=bool(config["include_sealed"]),
+    )
     observed_hashes = {
         "gas": file_sha256(gas_archive),
         "cmapss": file_sha256(cmapss_archive),
@@ -181,7 +225,6 @@ def run_local_experiment(
         load_cmapss_fd001_stream(cmapss_zip, smoke=bool(config["smoke"])),
     )
     output_dir = Path(output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
     run_records: list[dict[str, Any]] = []
     actions: Counter[str] = Counter()
     for stream in streams:

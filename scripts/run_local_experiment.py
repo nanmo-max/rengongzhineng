@@ -32,7 +32,6 @@ def main() -> int:
             output_dir=args.output,
         )
     except Exception as exc:
-        args.output.mkdir(parents=True, exist_ok=True)
         failure = {
             "schema_version": 1,
             "proxy_only": True,
@@ -40,7 +39,12 @@ def main() -> int:
             "error_type": type(exc).__name__,
             "message": str(exc),
         }
-        (args.output / "failure.json").write_text(
+        if args.output.exists() and any(args.output.iterdir()):
+            failure_path = args.output.parent / f"{args.output.name}-failed-attempt.json"
+        else:
+            args.output.mkdir(parents=True, exist_ok=True)
+            failure_path = args.output / "failure.json"
+        failure_path.write_text(
             json.dumps(failure, ensure_ascii=False, indent=2) + "\n",
             encoding="utf-8",
         )
