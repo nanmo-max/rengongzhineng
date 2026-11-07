@@ -17,5 +17,6 @@
 | R-013 | P2 | 模型服务名称/模型ID写死 | 正式白名单不同 | 只使用SDK配置和模型ID | 技术负责人 | OPEN |
 | R-014 | P1 | 代理比较缺少预注册强静态CPU基线 | SGD静态对照弱于树模型/提升模型 | 在新的未见官方数据或新密封代理上预注册ExtraTrees/HistGradientBoosting；不得复用已查看密封段形成确认性结论 | 技术负责人 | OPEN |
 | R-015 | P1 | 有限HPO耗尽CPU或候选预算 | 搜索未在训练前停止 | 有限候选空间、逐候选预算检查、耐心停止；集成评测继续验证 | 技术负责人 | MITIGATED：单元测试及`LOCAL-FORMAL-SIM-001`两次HPO候选均在预算内停止 |
+| R-016 | P1 | 开发机全局Anaconda环境存在无关依赖冲突 | `pip check`报告anaconda-cli-base/streamlit/tensorflow与全局包版本冲突 | 候选镜像只安装`requirements.lock`四个直接依赖；在可用Docker/干净venv中复验 | 技术负责人 | OPEN：80项项目测试通过，但本机无容器运行时，不能把全局`pip check`失败写成候选依赖通过 |
 
 风险关闭必须在本表填写证据路径，不得仅写“已解决”。
