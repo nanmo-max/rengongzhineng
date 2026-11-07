@@ -10,7 +10,7 @@
 | 任务、依赖与完成标准 | [TASKS.md](TASKS.md) | 只在这里维护任务状态 |
 | 外部事实与证据 | [SOURCE_REGISTRY.md](SOURCE_REGISTRY.md) | 区分官方、宣讲、本地事实、假设 |
 | 研究决策 | [DECISION_LOG.md](DECISION_LOG.md) | 追加式记录，保留被替代决策 |
-| 实验运行与结果 | [EXPERIMENTS.md](EXPERIMENTS.md) | 包含失败实验；当前为空 |
+| 实验运行与结果 | [EXPERIMENTS.md](EXPERIMENTS.md) | 包含成功、失败与INVALID历史；代理结果不冒充官方成绩 |
 | 风险状态 | [RISK_REGISTER.md](RISK_REGISTER.md) | 风险、触发器、缓解与负责人 |
 
 ## 正式文档
@@ -22,6 +22,9 @@
 - [REFERENCES.md](REFERENCES.md)：资料索引和文献研究队列。
 - [RESEARCH_PROGRESS.md](RESEARCH_PROGRESS.md)：按时间追加的研究与工程进度。
 - [SESSION_HANDOFF.md](SESSION_HANDOFF.md)：新会话恢复流程。
+- [RELEASE_CANDIDATE.md](RELEASE_CANDIDATE.md)：RC交付物、审计结果和外部阻塞。
+- [SWANLAB_INTEGRATION.md](SWANLAB_INTEGRATION.md)：SwanLab离线记录及显式同步边界。
+- [SDK_INTEGRATION.md](SDK_INTEGRATION.md)：正式SDK插件契约与到货接入流程。
 - [audits/INITIAL_FILE_AUDIT.md](audits/INITIAL_FILE_AUDIT.md)：建立文档前的文件审计。
 - [source_notes/OFFICIAL_RULES_EXTRACT.md](source_notes/OFFICIAL_RULES_EXTRACT.md)：官方PDF逐页核验摘要。
 - [source_notes/BRIEFING_NOTES_2026-11-06.md](source_notes/BRIEFING_NOTES_2026-11-06.md)：宣讲记录的证据化摘要。
