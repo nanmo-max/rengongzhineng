@@ -54,6 +54,25 @@ def test_budget_recording_reduces_remaining_capacity() -> None:
     assert ledger.candidates_started == 1
 
 
+def test_budget_remaining_fraction_uses_most_constrained_resource() -> None:
+    from brace_msi.budget import BudgetLedger, BudgetLimits
+    from brace_msi.resources import ResourceUsage
+
+    ledger = BudgetLedger(
+        BudgetLimits(
+            max_candidates=4,
+            max_training_samples=100,
+            max_wall_seconds=10.0,
+            max_cpu_seconds=10.0,
+        )
+    )
+    ledger.record_candidate(
+        ResourceUsage(1.0, 2.0, 0, 0, 0), training_samples=75
+    )
+
+    assert ledger.remaining_fraction == 0.25
+
+
 def test_safety_gate_accepts_gain_with_anchor_retention() -> None:
     from brace_msi.safety import GateConfig, evaluate_candidate
 

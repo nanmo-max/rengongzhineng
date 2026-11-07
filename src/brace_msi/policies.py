@@ -12,6 +12,9 @@ class Action(str, Enum):
     NOOP = "noop"
     INCREMENTAL_UPDATE = "incremental_update"
     REPLAY_REFIT = "replay_refit"
+    FAMILY_SWITCH = "family_switch"
+    BOUNDED_HPO = "bounded_hpo"
+    ROLLBACK = "rollback"
 
 
 @dataclass(frozen=True)

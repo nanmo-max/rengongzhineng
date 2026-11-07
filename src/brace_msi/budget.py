@@ -29,6 +29,16 @@ class BudgetLedger:
         self.wall_seconds = 0.0
         self.cpu_seconds = 0.0
 
+    @property
+    def remaining_fraction(self) -> float:
+        fractions = (
+            1.0 - self.candidates_started / self.limits.max_candidates,
+            1.0 - self.training_samples / self.limits.max_training_samples,
+            1.0 - self.wall_seconds / self.limits.max_wall_seconds,
+            1.0 - self.cpu_seconds / self.limits.max_cpu_seconds,
+        )
+        return max(0.0, min(1.0, min(fractions)))
+
     def check_before_training(self, *, estimated_samples: int) -> BudgetDecision:
         if self.candidates_started >= self.limits.max_candidates:
             return BudgetDecision(False, "candidate limit exhausted")

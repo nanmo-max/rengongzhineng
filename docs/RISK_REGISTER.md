@@ -16,5 +16,6 @@
 | R-012 | P1 | 长对话造成方向漂移或重复实验 | 新会话从聊天恢复 | 强制读取SSOT、实验注册和交接流程 | Codex | MITIGATED |
 | R-013 | P2 | 模型服务名称/模型ID写死 | 正式白名单不同 | 只使用SDK配置和模型ID | 技术负责人 | OPEN |
 | R-014 | P1 | 代理比较缺少预注册强静态CPU基线 | SGD静态对照弱于树模型/提升模型 | 在新的未见官方数据或新密封代理上预注册ExtraTrees/HistGradientBoosting；不得复用已查看密封段形成确认性结论 | 技术负责人 | OPEN |
+| R-015 | P1 | 有限HPO耗尽CPU或候选预算 | 搜索未在训练前停止 | 有限候选空间、逐候选预算检查、耐心停止；集成评测继续验证 | 技术负责人 | MITIGATED：`src/brace_msi/search.py`与`tests/system/test_decision_search.py` |
 
 风险关闭必须在本表填写证据路径，不得仅写“已解决”。

@@ -121,16 +121,17 @@ LOCAL-EXP-001
 
 ### SYS-002 证据路由、预算动作选择与有限HPO
 
-- 状态：`IN_PROGRESS`
+- 状态：`DONE`
 - 依赖：SYS-001
 - 优先级：P0，本地正式候选路径
 - 完成标准：数据质量/性能/漂移/历史/预算证据统一路由；回放、族切换、有限HPO和自动停止均受训练前预算约束；失败候选不污染稳定模型
 - 停止条件：简单确定性策略被替换为无法审计或运行时动态代码
 - 实施计划：`docs/plans/FORMAL-CANDIDATE-SYSTEM.md` Task 2
+- 证据：`src/brace_msi/decision.py`、`search.py`、扩展的`budget.py`/`policies.py`及`tests/system/test_decision_search.py`；数据质量阻断、证据升级、预算余量、有限搜索、耐心停止、回放上限和稳定模型隔离均通过测试；完整测试`64 passed`
 
 ### SYS-003 无人值守Harness、恢复与记录接口
 
-- 状态：`BLOCKED`
+- 状态：`IN_PROGRESS`
 - 依赖：SYS-002
 - 优先级：P0，本地正式候选路径
 - 完成标准：两种模拟协议、检查点恢复、CLI、公开记录队列和私有审计组成可无人值守运行的统一Harness；恢复不重复已提交训练
