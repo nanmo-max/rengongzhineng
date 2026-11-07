@@ -49,6 +49,15 @@ def test_repository_docker_context_excludes_data_weights_secrets_and_is_under_li
     assert not any("artifacts" in path.parts for path in audit.included_files)
 
 
+def test_python312_linux_release_uses_binary_compatible_psutil_and_no_source_builds() -> None:
+    root = Path(__file__).resolve().parents[2]
+    requirements = (root / "requirements.lock").read_text(encoding="utf-8")
+    dockerfile = (root / "Dockerfile").read_text(encoding="utf-8")
+
+    assert "psutil==5.9.8" in requirements
+    assert "--only-binary=:all:" in dockerfile
+
+
 def test_cli_renders_report_without_network_or_interaction(tmp_path: Path) -> None:
     source = tmp_path / "report.json"
     output = tmp_path / "report.html"

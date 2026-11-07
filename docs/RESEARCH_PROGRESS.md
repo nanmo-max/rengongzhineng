@@ -8,6 +8,13 @@
 - Windows功能查询确认`Microsoft-Windows-Subsystem-Linux`、`VirtualMachinePlatform`、`Microsoft-Hyper-V-All`和`Containers`均为`Disabled`。
 - 结论：实际镜像构建、镜像大小与`--cpus=4 --memory=8g --network=none`运行保持`BLOCKED`；没有以静态上下文审计冒充通过，也未修改或重启宿主机。
 
+## 2026-11-07：Release Readiness RR-002
+
+- 首次干净安装暴露全局pip镜像证书错误；通过显式使用官方PyPI解决，未绕过TLS校验。
+- CPython 3.12 manylinux二进制审计发现`psutil==5.9.0`无可用轮子，`python:3.12-slim`会因无编译工具而失败；测试先失败后将锁版本修正为`5.9.8`，Docker安装增加`--only-binary=:all:`。
+- 新建完整运行与测试锁文件；全新隔离环境`pip check`为`No broken requirements found`，完整回归`81 passed`，非密封CLI Smoke完成3次候选。
+- Linux轮子审计成功下载全部运行依赖的cp312 manylinux或纯Python轮子；这证明依赖可安装性，不替代真实Docker构建。
+
 ## 2026-11-07：SYS-001统一任务引导、CPU模型池与注册表
 
 - 新增平台无关`TaskDefinition`/`TaskSignature`和TaskBootstrap兼容性守卫；未知同领域任务可从合法初训数据初始化，不兼容特征、任务类型或标签空间会被拒绝。

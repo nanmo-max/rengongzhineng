@@ -183,16 +183,17 @@ SYS-005
 
 ### RR-002 干净环境依赖与完整回归
 
-- 状态：`IN_PROGRESS`
+- 状态：`DONE`
 - 依赖：RR-001完成或有可核验的BLOCKED结论
 - 优先级：P0，Release Readiness
 - 完成标准：隔离环境只按锁文件安装；`pip check`、完整测试、CLI Smoke、编译及包审计均有日志
 - 停止条件：锁文件无法在支持的Python/Linux范围解析，或需要修改算法才能安装
 - 执行清单：`docs/plans/RELEASE-READINESS.md`任务2
+- 证据：全新`tmp/release-venv-final`仅安装`requirements.lock`、`requirements-dev.lock`及本项目；`pip check`无冲突，`81 passed`，两协议CLI Smoke分别完成3/4候选；CPython 3.12 manylinux二进制轮子解析成功。发布审计发现并修复`psutil==5.9.0`无cp312 Linux轮子问题。
 
 ### RR-003 SwanLab离线适配与同步准备
 
-- 状态：`PENDING`
+- 状态：`IN_PROGRESS`
 - 依赖：RR-002
 - 优先级：P0，Release Readiness
 - 完成标准：可选依赖、离线记录、公开字段白名单、显式同步命令和失败降级均有自动测试与文档

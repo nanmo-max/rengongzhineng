@@ -39,3 +39,17 @@ $env:PYTHONPATH='src'; python scripts/audit_package.py
 ```
 
 该静态检查不能替代实际镜像构建、离线安装和大小检查。
+
+## 干净环境回归
+
+运行依赖锁定在`requirements.lock`，测试工具锁定在`requirements-dev.lock`。在全新环境中：
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install --only-binary=:all: -r requirements.lock -r requirements-dev.lock
+.\.venv\Scripts\python.exe -m pip install --no-deps .
+.\.venv\Scripts\python.exe -m pip check
+.\.venv\Scripts\python.exe -m pytest -q --tb=short
+```
+
+若机器级pip配置指向失效镜像，应显式传入组织批准的索引；不得用`trusted-host`关闭TLS验证。

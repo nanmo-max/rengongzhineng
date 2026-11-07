@@ -8,7 +8,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 COPY requirements.lock pyproject.toml README.md ./
-RUN python -m pip install --no-cache-dir -r requirements.lock
+RUN python -m pip install --no-cache-dir --only-binary=:all: -r requirements.lock
 COPY src ./src
 RUN python -m pip install --no-cache-dir --no-deps .
 
