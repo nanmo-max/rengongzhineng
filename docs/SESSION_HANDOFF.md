@@ -49,4 +49,6 @@
 - 实施计划：`plans/FORMAL-CANDIDATE-SYSTEM.md`；任务状态仍只看`TASKS.md`。
 - 平台无关TaskBootstrap：`src/brace_msi/bootstrap.py`；CPU模型池：`modeling.py`；原子注册与回滚：`registry.py`。
 - 统一Harness：`src/brace_msi/harness.py`；原子检查点：`checkpoint.py`；公开待同步队列：`recording.py`；非交互入口：`python -m brace_msi synthetic-smoke`。
+- 交付入口：根目录`run.ps1`/`run.sh`、`Dockerfile`和`docs/RUNBOOK.md`；静态报告由`python -m brace_msi render-report`生成。
+- 本机无Docker/Podman，`PKG-RUNTIME-001`保持阻塞；不得把`audit_package.py`的上下文大小写成镜像大小。
 - 旧密封段锁继续生效；完整系统开发与模拟评测不得打开或据其结果选型。

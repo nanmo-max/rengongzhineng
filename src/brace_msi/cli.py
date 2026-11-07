@@ -11,6 +11,7 @@ from typing import Sequence
 from .budget import BudgetLimits
 from .harness import HarnessConfig, UnifiedHarness
 from .protocol import ProtocolMode
+from .reporting import render_html_report
 from .safety import GateConfig
 from .simulation import synthetic_bearing_stream
 
@@ -28,11 +29,20 @@ def _parser() -> argparse.ArgumentParser:
         default=ProtocolMode.PREDICT_THEN_FEEDBACK.value,
     )
     smoke.add_argument("--max-batches", type=int)
+    report = subparsers.add_parser("render-report", help="render an offline HTML report")
+    report.add_argument("--input", type=Path, required=True)
+    report.add_argument("--output", type=Path, required=True)
     return parser
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parser().parse_args(argv)
+    if args.command == "render-report":
+        payload = json.loads(args.input.read_text(encoding="utf-8"))
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(render_html_report(payload), encoding="utf-8")
+        print(json.dumps({"status": "completed", "output": str(args.output)}))
+        return 0
     if args.command != "synthetic-smoke":
         raise RuntimeError(f"unsupported command: {args.command}")
     config = HarnessConfig(

@@ -141,21 +141,31 @@ LOCAL-EXP-001
 
 ### SYS-004 Docker、入口与静态HTML报告
 
-- 状态：`IN_PROGRESS`
+- 状态：`DONE`
 - 依赖：SYS-003
 - 优先级：P0，本地正式候选路径
 - 完成标准：Dockerfile、一键入口、锁定依赖、合规清单、接入说明和离线HTML报告齐全；构建上下文小于2GB且不含数据/权重/密钥
 - 停止条件：本机没有Docker时仅阻塞实际镜像构建，不阻塞文件与静态验收
 - 实施计划：`docs/plans/FORMAL-CANDIDATE-SYSTEM.md` Task 4
+- 证据：`Dockerfile`、`.dockerignore`、`requirements.lock`、`run.ps1`/`run.sh`、`src/brace_msi/reporting.py`、`packaging.py`、`docs/RUNBOOK.md`、`SDK_INTEGRATION.md`和`OPEN_SOURCE_COMPLIANCE.md`；静态上下文审计73文件/251,854字节、无禁入文件；PowerShell一键Smoke完成3次候选；完整测试`74 passed`。本机无Docker/Podman，实际镜像构建另列阻塞任务
 
 ### SYS-005 三任务模拟正式评测与资源验收
 
-- 状态：`BLOCKED`
+- 状态：`IN_PROGRESS`
 - 依赖：SYS-004
 - 优先级：P0，本地正式候选路径
 - 完成标准：Gas开发流、FD001开发流、明确标注的合成轴承流完成初始化、至少三次候选、部署/拒绝、故障回滚、恢复、4核8GB监测、日志和HTML证据包；不打开旧密封段
 - 停止条件：任何泄漏检查失败、资源超限或需要重用已消费密封段选型
 - 实施计划：`docs/plans/FORMAL-CANDIDATE-SYSTEM.md` Task 5
+
+### PKG-RUNTIME-001 实际Docker镜像构建与4核8GB容器验收
+
+- 状态：`BLOCKED`
+- 依赖：SYS-004、本机或可用环境提供Docker/Podman运行时
+- 优先级：P0，外部环境阻塞
+- 完成标准：实际构建镜像并测量小于2GB；`--network=none --cpus=4 --memory=8g`完整运行；镜像内无数据、权重和密钥
+- 停止条件：没有容器运行时，不得用静态上下文大小冒充镜像大小
+- 当前阻塞：2026-11-07检查PATH及常见Docker/Podman安装位置均未找到运行时
 
 ### CORE-003 模型能力声明与CPU模型适配
 

@@ -25,6 +25,15 @@
 - 新增`python -m brace_msi synthetic-smoke`非交互CLI，合成轴承流明确标注为`protocol_only`。
 - 验证：`D:\anaconda3\python.exe -m pytest -q --tb=short`，结果`71 passed`。
 
+## 2026-11-07：SYS-004交付包装与静态报告
+
+- 新增Python 3.12 slim Dockerfile、锁定依赖、严格Docker忽略表和PowerShell/Unix一键入口；镜像上下文不包含数据、实验产物、权重、密钥或测试缓存。
+- 新增离线、自包含、HTML转义的静态报告生成器及CLI；不加载任何公网脚本或样式。
+- 新增运行手册、正式SDK适配步骤和直接依赖开源合规清单。
+- 静态上下文审计：73个文件、251,854字节、禁入文件0；PowerShell一键合成Smoke实际完成，3个真实候选。
+- 本机PATH与常见安装位置均未找到Docker/Podman，因此没有声称镜像已构建或镜像实际小于2GB；该项转入`PKG-RUNTIME-001`阻塞。
+- 验证：`D:\anaconda3\python.exe -m pytest -q --tb=short`，结果`74 passed`。
+
 ## 2026-11-06：需求收敛与资料审计
 
 - 完成官方规则PDF五页视觉核验。
