@@ -15,6 +15,7 @@ __pycache__/
 
 # Local worktrees and secrets.
 .worktrees/
+.superpowers/
 .env
 .env.*
 *.key

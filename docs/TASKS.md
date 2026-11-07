@@ -15,6 +15,9 @@ DOC-001
 CORE-001
   -> LOCAL-DATA-001 -> LOCAL-CORE-001 -> LOCAL-LOOP-001
   -> LOCAL-SMOKE-001 -> LOCAL-EXP-001
+
+LOCAL-EXP-001
+  -> SYS-001 -> SYS-002 -> SYS-003 -> SYS-004 -> SYS-005
 ```
 
 ## P0：11月13日前最低版本
@@ -105,6 +108,51 @@ CORE-001
 - 优先级：P0
 - 完成标准：官方初始模型、合法初训数据、官方弃权/默认路径均有明确处理；不兼容任务拒绝跨任务复用
 - 停止条件：SDK未定义新任务首批初始化方式
+
+### SYS-001 平台无关TaskBootstrap、CPU模型池与注册表
+
+- 状态：`IN_PROGRESS`
+- 依赖：LOCAL-EXP-001、L-AUTH-002
+- 优先级：P0，本地正式候选路径
+- 完成标准：任务描述与兼容性检查、未知同领域任务合法初始化、四类CPU模型能力适配、候选配置、原子注册与回滚均有自动测试；持久化预测一致
+- 停止条件：实现需要猜测官方SDK字段或打开已消费密封段
+- 实施计划：`docs/plans/FORMAL-CANDIDATE-SYSTEM.md` Task 1
+
+### SYS-002 证据路由、预算动作选择与有限HPO
+
+- 状态：`BLOCKED`
+- 依赖：SYS-001
+- 优先级：P0，本地正式候选路径
+- 完成标准：数据质量/性能/漂移/历史/预算证据统一路由；回放、族切换、有限HPO和自动停止均受训练前预算约束；失败候选不污染稳定模型
+- 停止条件：简单确定性策略被替换为无法审计或运行时动态代码
+- 实施计划：`docs/plans/FORMAL-CANDIDATE-SYSTEM.md` Task 2
+
+### SYS-003 无人值守Harness、恢复与记录接口
+
+- 状态：`BLOCKED`
+- 依赖：SYS-002
+- 优先级：P0，本地正式候选路径
+- 完成标准：两种模拟协议、检查点恢复、CLI、公开记录队列和私有审计组成可无人值守运行的统一Harness；恢复不重复已提交训练
+- 停止条件：需要把未确认的SwanLab同步方式写成正式事实
+- 实施计划：`docs/plans/FORMAL-CANDIDATE-SYSTEM.md` Task 3
+
+### SYS-004 Docker、入口与静态HTML报告
+
+- 状态：`BLOCKED`
+- 依赖：SYS-003
+- 优先级：P0，本地正式候选路径
+- 完成标准：Dockerfile、一键入口、锁定依赖、合规清单、接入说明和离线HTML报告齐全；构建上下文小于2GB且不含数据/权重/密钥
+- 停止条件：本机没有Docker时仅阻塞实际镜像构建，不阻塞文件与静态验收
+- 实施计划：`docs/plans/FORMAL-CANDIDATE-SYSTEM.md` Task 4
+
+### SYS-005 三任务模拟正式评测与资源验收
+
+- 状态：`BLOCKED`
+- 依赖：SYS-004
+- 优先级：P0，本地正式候选路径
+- 完成标准：Gas开发流、FD001开发流、明确标注的合成轴承流完成初始化、至少三次候选、部署/拒绝、故障回滚、恢复、4核8GB监测、日志和HTML证据包；不打开旧密封段
+- 停止条件：任何泄漏检查失败、资源超限或需要重用已消费密封段选型
+- 实施计划：`docs/plans/FORMAL-CANDIDATE-SYSTEM.md` Task 5
 
 ### CORE-003 模型能力声明与CPU模型适配
 
