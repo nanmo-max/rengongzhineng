@@ -111,16 +111,17 @@ LOCAL-EXP-001
 
 ### SYS-001 平台无关TaskBootstrap、CPU模型池与注册表
 
-- 状态：`IN_PROGRESS`
+- 状态：`DONE`
 - 依赖：LOCAL-EXP-001、L-AUTH-002
 - 优先级：P0，本地正式候选路径
 - 完成标准：任务描述与兼容性检查、未知同领域任务合法初始化、四类CPU模型能力适配、候选配置、原子注册与回滚均有自动测试；持久化预测一致
 - 停止条件：实现需要猜测官方SDK字段或打开已消费密封段
 - 实施计划：`docs/plans/FORMAL-CANDIDATE-SYSTEM.md` Task 1
+- 证据：`src/brace_msi/bootstrap.py`、`modeling.py`、`registry.py`和`tests/system/test_bootstrap_models_registry.py`；四类模型在分类/回归上完成构造与预测，非法增量调用、任务不兼容、持久化与回滚均有测试；完整测试`58 passed`
 
 ### SYS-002 证据路由、预算动作选择与有限HPO
 
-- 状态：`BLOCKED`
+- 状态：`IN_PROGRESS`
 - 依赖：SYS-001
 - 优先级：P0，本地正式候选路径
 - 完成标准：数据质量/性能/漂移/历史/预算证据统一路由；回放、族切换、有限HPO和自动停止均受训练前预算约束；失败候选不污染稳定模型

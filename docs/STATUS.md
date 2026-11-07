@@ -11,9 +11,10 @@
 
 ## 当前执行入口
 
-当前唯一任务为`SYS-001`：实现平台无关TaskBootstrap、CPU强模型池与模型注册表。
-执行计划见`docs/plans/FORMAL-CANDIDATE-SYSTEM.md`。正式`SDK-001`继续等待官方
-平台，但不再阻塞无需官方字段的本地完整系统开发。
+`SYS-001`已完成，当前唯一任务为`SYS-002`：实现证据路由、训练前预算动作选择、
+有限HPO、历史回放和自动停止。执行计划见
+`docs/plans/FORMAL-CANDIDATE-SYSTEM.md`。正式`SDK-001`继续等待官方平台，但不再
+阻塞无需官方字段的本地完整系统开发。
 
 执行前必须先完成：
 

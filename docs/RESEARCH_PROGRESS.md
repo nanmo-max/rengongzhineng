@@ -2,6 +2,13 @@
 
 本文件按时间追加，不回写历史记录。当前状态仍以 [STATUS.md](STATUS.md) 为准。
 
+## 2026-11-07：SYS-001统一任务引导、CPU模型池与注册表
+
+- 新增平台无关`TaskDefinition`/`TaskSignature`和TaskBootstrap兼容性守卫；未知同领域任务可从合法初训数据初始化，不兼容特征、任务类型或标签空间会被拒绝。
+- CPU模型池覆盖SGD、Logistic/Ridge、HistGradientBoosting和ExtraTrees；能力声明阻止批量模型误用`partial_fit`。
+- 新增只追加版本的本地模型注册表，模型和清单采用临时文件加原子替换，支持稳定加载和显式回滚。
+- 验证：`D:\anaconda3\python.exe -m pytest -q --tb=short`，结果`58 passed`。
+
 ## 2026-11-06：需求收敛与资料审计
 
 - 完成官方规则PDF五页视觉核验。
