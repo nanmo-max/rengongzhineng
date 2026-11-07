@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "experiment_id": "LOCAL-FORMAL-SIM-001",
+  "proxy_only": true,
+  "seed": 20261107,
+  "include_consumed_sealed": false,
+  "tasks": [
+    "gas_development_only",
+    "fd001_engines_1_80_only",
+    "synthetic_bearing_protocol_only"
+  ],
+  "protocol_mode": "predict_then_feedback",
+  "minimum_candidate_events_per_task": 3,
+  "synthetic_failure_candidates": [1, 2],
+  "budget_per_task": {
+    "max_candidates": 8,
+    "max_training_samples": 80000,
+    "max_wall_seconds": 120.0,
+    "max_cpu_seconds": 120.0
+  },
+  "resource_acceptance": {
+    "max_logical_cpus": 4,
+    "max_rss_bytes": 8589934592,
+    "max_docker_context_bytes": 2000000000
+  },
+  "data_hashes": {
+    "gas": "91E8F466F202E7A093D657673CE47311C3E90416F7DF3057966058961C351FE4",
+    "cmapss": "C9C5DEC12A945A82E8BB4446589D7FB3CC057B5E5D81FA1A12E25EE9912AD3B2"
+  }
+}
