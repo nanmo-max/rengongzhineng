@@ -53,3 +53,9 @@ python -m venv .venv
 ```
 
 若机器级pip配置指向失效镜像，应显式传入组织批准的索引；不得用`trusted-host`关闭TLS验证。
+
+## SwanLab
+
+SwanLab是可选发布依赖，不影响无模型服务的核心Harness。安装、离线导出、安全边界和显式同步
+流程见 [SWANLAB_INTEGRATION.md](SWANLAB_INTEGRATION.md)。任何同步都必须由操作者在核实官方
+项目、公开范围和认证方式后单独执行。

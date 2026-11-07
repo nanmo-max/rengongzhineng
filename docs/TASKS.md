@@ -193,16 +193,17 @@ SYS-005
 
 ### RR-003 SwanLab离线适配与同步准备
 
-- 状态：`IN_PROGRESS`
+- 状态：`DONE`
 - 依赖：RR-002
 - 优先级：P0，Release Readiness
 - 完成标准：可选依赖、离线记录、公开字段白名单、显式同步命令和失败降级均有自动测试与文档
 - 停止条件：需要猜测比赛专用字段、自动上传私有数据或使用未知凭据
 - 执行清单：`docs/plans/RELEASE-READINESS.md`任务3
+- 证据：`swanlab_adapter.py`、CLI离线导出/同步命令、4项自动测试及`SWANLAB_INTEGRATION.md`；真实SwanLab 0.10.4离线生成`run-*`目录并记录8条聚合事件，`pip check`无冲突。未执行云端同步。
 
 ### RR-004 正式SDK接入适配器准备
 
-- 状态：`PENDING`
+- 状态：`IN_PROGRESS`
 - 依赖：RR-002
 - 优先级：P0，Release Readiness
 - 完成标准：可配置字段映射、动态官方模块边界、协议契约测试和接入检查表齐全；核心Harness不依赖官方包

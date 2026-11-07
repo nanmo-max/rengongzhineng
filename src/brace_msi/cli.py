@@ -14,6 +14,11 @@ from .protocol import ProtocolMode
 from .reporting import render_html_report
 from .safety import GateConfig
 from .simulation import synthetic_bearing_stream
+from .swanlab_adapter import (
+    SwanLabOfflineConfig,
+    build_sync_command,
+    export_public_spool,
+)
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -32,6 +37,22 @@ def _parser() -> argparse.ArgumentParser:
     report = subparsers.add_parser("render-report", help="render an offline HTML report")
     report.add_argument("--input", type=Path, required=True)
     report.add_argument("--output", type=Path, required=True)
+    swanlab_export = subparsers.add_parser(
+        "swanlab-offline-export",
+        help="convert the aggregate public spool into SwanLab offline logs",
+    )
+    swanlab_export.add_argument("--spool", type=Path, required=True)
+    swanlab_export.add_argument("--logdir", type=Path, required=True)
+    swanlab_export.add_argument("--project", required=True)
+    swanlab_export.add_argument("--experiment-name", required=True)
+    swanlab_export.add_argument("--public", action="store_true")
+    sync_command = subparsers.add_parser(
+        "swanlab-sync-command",
+        help="print an explicit SwanLab sync command without executing it",
+    )
+    sync_command.add_argument("--run-dir", type=Path, required=True)
+    sync_command.add_argument("--workspace")
+    sync_command.add_argument("--project")
     return parser
 
 
@@ -42,6 +63,32 @@ def main(argv: Sequence[str] | None = None) -> int:
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(render_html_report(payload), encoding="utf-8")
         print(json.dumps({"status": "completed", "output": str(args.output)}))
+        return 0
+    if args.command == "swanlab-offline-export":
+        result = export_public_spool(
+            args.spool,
+            SwanLabOfflineConfig(
+                project=args.project,
+                experiment_name=args.experiment_name,
+                logdir=args.logdir,
+                public=args.public,
+            ),
+        )
+        print(
+            json.dumps(
+                {
+                    "status": "offline_export_completed",
+                    "logdir": str(result.logdir),
+                    "record_count": result.record_count,
+                }
+            )
+        )
+        return 0
+    if args.command == "swanlab-sync-command":
+        command = build_sync_command(
+            args.run_dir, workspace=args.workspace, project=args.project
+        )
+        print(json.dumps({"status": "manual_sync_required", "command": command}))
         return 0
     if args.command != "synthetic-smoke":
         raise RuntimeError(f"unsupported command: {args.command}")

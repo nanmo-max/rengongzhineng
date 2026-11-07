@@ -15,6 +15,14 @@
 - 新建完整运行与测试锁文件；全新隔离环境`pip check`为`No broken requirements found`，完整回归`81 passed`，非密封CLI Smoke完成3次候选。
 - Linux轮子审计成功下载全部运行依赖的cp312 manylinux或纯Python轮子；这证明依赖可安装性，不替代真实Docker构建。
 
+## 2026-11-07：Release Readiness RR-003
+
+- 依据SwanLab官方通用文档新增可选离线导出器：只读取`public-spool.jsonl`并二次白名单过滤，默认私有且不自动同步。
+- 提供CLI离线导出和只打印不执行的`swanlab sync`命令；命令接口不接受API Key，避免密钥进入日志。
+- 真实安装SwanLab 0.10.4后发现Windows GBK终端无法输出SDK Emoji；按TDD在适配器调用前将可重配置流切换UTF-8。
+- 真实SDK离线导出成功生成`run-*`目录并写入8条聚合记录，`pip check`无冲突；没有执行云端同步。
+- 比赛专用字段、项目可见性与离线评测后的同步流程仍等待官方规范，`LOG-001`不解除阻塞。
+
 ## 2026-11-07：SYS-001统一任务引导、CPU模型池与注册表
 
 - 新增平台无关`TaskDefinition`/`TaskSignature`和TaskBootstrap兼容性守卫；未知同领域任务可从合法初训数据初始化，不兼容特征、任务类型或标签空间会被拒绝。
