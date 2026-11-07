@@ -18,6 +18,18 @@
     "max_wall_seconds": 120.0,
     "max_cpu_seconds": 120.0
   },
+  "gate": {
+    "classification": {
+      "min_validation_samples": 16,
+      "min_primary_improvement": 0.0,
+      "max_anchor_degradation": 0.10
+    },
+    "regression": {
+      "min_validation_samples": 16,
+      "min_primary_improvement": 0.0,
+      "max_anchor_degradation": 5.0
+    }
+  },
   "resource_acceptance": {
     "max_logical_cpus": 4,
     "max_rss_bytes": 8589934592,
