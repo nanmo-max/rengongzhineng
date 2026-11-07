@@ -163,6 +163,14 @@
 - 事实：运行完成且4核/RSS/协议证据有效，但合成任务的4个记录中含2次未实际拟合的注入失败，只有2次真实HPO拟合，不满足每任务至少3次真实候选。
 - 边界：`proxy_only`；没有使用已消费密封段；内存仅观测未容器强制；Docker镜像未构建；SwanLab仅本地待同步队列；不是官方成绩。
 
+### L-EVIDENCE-002 修复后完整系统本地模拟证据
+
+- 来源：`LOCAL-FORMAL-SIM-001-A2`，执行提交`7ef3829781a96b9ebef01154063680c8bc65782a`
+- 本地路径：`artifacts/formal_simulation/LOCAL-FORMAL-SIM-001/run-7ef3829/`
+- 事实：Gas、FD001与合成轴承流均完成4批次；真实训练候选分别4、4、3；独立验收动作计数增量7、回放1、有限HPO3；4核亲和性生效，操作边界RSS 148,017,152字节。
+- 验收：`validate_simulation_output(..., minimum_candidates=3)`返回`valid=true`；公开日志白名单、唯一批次提交和稳定模型加载通过。
+- 边界：同L-EVIDENCE-001；不使用INVALID A1作成功证据；不是官方成绩或真实轴承性能证据。
+
 ## 待核实假设与冲突
 
 ### H-001 正式批次协议

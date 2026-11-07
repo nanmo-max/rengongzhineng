@@ -51,6 +51,6 @@
 - 统一Harness：`src/brace_msi/harness.py`；原子检查点：`checkpoint.py`；公开待同步队列：`recording.py`；非交互入口：`python -m brace_msi synthetic-smoke`。
 - 交付入口：根目录`run.ps1`/`run.sh`、`Dockerfile`和`docs/RUNBOOK.md`；静态报告由`python -m brace_msi render-report`生成。
 - 本机无Docker/Podman，`PKG-RUNTIME-001`保持阻塞；不得把`audit_package.py`的上下文大小写成镜像大小。
-- 完整系统模拟：`results/LOCAL-FORMAL-SIM-001.md`；机器产物位于`artifacts/formal_simulation/LOCAL-FORMAL-SIM-001/run-ce3e907/`。
+- 完整系统模拟：`results/LOCAL-FORMAL-SIM-001.md`；有效A2机器产物位于`artifacts/formal_simulation/LOCAL-FORMAL-SIM-001/run-7ef3829/`；A1`run-ce3e907`为INVALID负证据。
 - 模拟输出已通过`validate_simulation_output`：三任务、每任务至少3候选、动作覆盖、唯一批次提交、公开日志白名单和注册表加载均有效。
 - 旧密封段锁继续生效；完整系统开发与模拟评测不得打开或据其结果选型。
