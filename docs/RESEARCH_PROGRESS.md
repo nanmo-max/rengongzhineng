@@ -2,6 +2,12 @@
 
 本文件按时间追加，不回写历史记录。当前状态仍以 [STATUS.md](STATUS.md) 为准。
 
+## 2026-11-07：Release Readiness RR-001
+
+- 只读检查Docker、Podman、WSL及常见安装路径，未找到可用Linux容器运行时。
+- Windows功能查询确认`Microsoft-Windows-Subsystem-Linux`、`VirtualMachinePlatform`、`Microsoft-Hyper-V-All`和`Containers`均为`Disabled`。
+- 结论：实际镜像构建、镜像大小与`--cpus=4 --memory=8g --network=none`运行保持`BLOCKED`；没有以静态上下文审计冒充通过，也未修改或重启宿主机。
+
 ## 2026-11-07：SYS-001统一任务引导、CPU模型池与注册表
 
 - 新增平台无关`TaskDefinition`/`TaskSignature`和TaskBootstrap兼容性守卫；未知同领域任务可从合法初训数据初始化，不兼容特征、任务类型或标签空间会被拒绝。

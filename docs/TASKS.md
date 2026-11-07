@@ -18,6 +18,9 @@ CORE-001
 
 LOCAL-EXP-001
   -> SYS-001 -> SYS-002 -> SYS-003 -> SYS-004 -> SYS-005
+
+SYS-005
+  -> RR-001 -> RR-002 -> RR-003 -> RR-004 -> RR-005
 ```
 
 ## P0：11月13日前最低版本
@@ -167,6 +170,52 @@ LOCAL-EXP-001
 - 完成标准：实际构建镜像并测量小于2GB；`--network=none --cpus=4 --memory=8g`完整运行；镜像内无数据、权重和密钥
 - 停止条件：没有容器运行时，不得用静态上下文大小冒充镜像大小
 - 当前阻塞：2026-11-07检查PATH及常见Docker/Podman安装位置均未找到运行时
+
+### RR-001 实际容器运行时验收
+
+- 状态：`BLOCKED`
+- 依赖：SYS-005、L-AUTH-003
+- 优先级：P0，Release Readiness
+- 完成标准：实际Linux镜像小于2GB；4核8GB、断网容器完成非密封Smoke；镜像内无数据、权重和密钥
+- 停止条件：本机无Docker/Podman/可用Linux容器运行时，或安装需要重启/管理员交互
+- 执行清单：`docs/plans/RELEASE-READINESS.md`任务1
+- 阻塞证据：2026-11-07检查确认Docker/Podman不存在；WSL、VirtualMachinePlatform、Hyper-V和Containers Windows功能均为`Disabled`，启用需系统级变更与重启。本轮未修改宿主机。
+
+### RR-002 干净环境依赖与完整回归
+
+- 状态：`IN_PROGRESS`
+- 依赖：RR-001完成或有可核验的BLOCKED结论
+- 优先级：P0，Release Readiness
+- 完成标准：隔离环境只按锁文件安装；`pip check`、完整测试、CLI Smoke、编译及包审计均有日志
+- 停止条件：锁文件无法在支持的Python/Linux范围解析，或需要修改算法才能安装
+- 执行清单：`docs/plans/RELEASE-READINESS.md`任务2
+
+### RR-003 SwanLab离线适配与同步准备
+
+- 状态：`PENDING`
+- 依赖：RR-002
+- 优先级：P0，Release Readiness
+- 完成标准：可选依赖、离线记录、公开字段白名单、显式同步命令和失败降级均有自动测试与文档
+- 停止条件：需要猜测比赛专用字段、自动上传私有数据或使用未知凭据
+- 执行清单：`docs/plans/RELEASE-READINESS.md`任务3
+
+### RR-004 正式SDK接入适配器准备
+
+- 状态：`PENDING`
+- 依赖：RR-002
+- 优先级：P0，Release Readiness
+- 完成标准：可配置字段映射、动态官方模块边界、协议契约测试和接入检查表齐全；核心Harness不依赖官方包
+- 停止条件：任何实现需要编造官方字段、标签权限、模型服务或错误语义
+- 执行清单：`docs/plans/RELEASE-READINESS.md`任务4
+
+### RR-005 Release Candidate最终审计
+
+- 状态：`PENDING`
+- 依赖：RR-003、RR-004及RR-001可核验结论
+- 优先级：P0，Release Readiness
+- 完成标准：生成版本清单、哈希、交付审计、完整测试证据和阻塞表；Git提交且不合并main
+- 停止条件：存在未登记的P0失败、证据与文档冲突或工作树不干净
+- 执行清单：`docs/plans/RELEASE-READINESS.md`任务5
 
 ### CORE-003 模型能力声明与CPU模型适配
 

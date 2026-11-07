@@ -155,6 +155,18 @@
 - 事实：允许连续完成无需官方SDK的统一Harness、CPU模型池、有限HPO、恢复、Docker、CLI、静态报告和模拟正式评测，并可在合法开发段开展必要训练。
 - 边界：原密封段锁保持有效；未知官方字段、评分和标签权限不得编造；合成第三任务只能作为工程验收，不能冒充官方或真实轴承数据成绩。
 
+### L-AUTH-003 Release Readiness授权
+
+- 来源：用户2026-11-07当前指令
+- 事实：`LOCAL-FORMAL-SIM-001-A2`已通过独立机器验收；允许在`task/core-001`继续完成真实容器、干净依赖、SwanLab与正式SDK接口准备及最终交付审计。
+- 边界：不重复代理密封实验，不扩充算法，不重新设计架构，不修改A1 INVALID与A2有效历史，不合并`main`；无法完成的外部依赖必须标记`BLOCKED`。
+
+### O-SWANLAB-001 SwanLab官方离线与同步接口
+
+- 来源：SwanLab官方文档`https://docs.swanlab.cn/api/py-init.html`、`https://docs.swanlab.cn/api/cli-swanlab-offline.html`及API索引；检查日期2026-11-07
+- 事实：Python SDK支持`mode="offline"`本地记录、`on_online_error="offline"`降级、`public`可见性参数；官方CLI提供`swanlab sync`将本地日志同步到云端或私有部署。
+- 边界：比赛要求的字段、公开项目命名、认证注入和无公网评测后的正式同步流程仍属H-004，不由通用SwanLab文档解除。
+
 ### L-EVIDENCE-001 完整系统本地模拟证据
 
 - 来源：`LOCAL-FORMAL-SIM-001`，执行提交`ce3e907840ae4652be568d1b1eedc4e547702cec`
