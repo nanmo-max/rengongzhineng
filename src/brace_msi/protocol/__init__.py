@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Iterable
+from typing import Iterable, Protocol
 
 
 class ProtocolMode(str, Enum):
@@ -32,6 +32,21 @@ class ProtocolPhase(str, Enum):
 
 class ProtocolViolation(ValueError):
     """Raised when an event would violate the selected protocol."""
+
+
+class EventProtocolAdapter(Protocol):
+    """Internal boundary an official SDK mapping must implement."""
+
+    @property
+    def history(self) -> tuple[str, ...]: ...
+
+    def open_task(self, task_id: str) -> None: ...
+    def provide_training_batch(self, batch_id: str, sample_ids: Iterable[str]) -> None: ...
+    def request_predictions(self, batch_id: str, sample_ids: Iterable[str]) -> None: ...
+    def submit_predictions(self, batch_id: str, sample_ids: Iterable[str]) -> None: ...
+    def provide_feedback(self, batch_id: str, sample_ids: Iterable[str]) -> None: ...
+    def request_batch_commit(self, batch_id: str) -> None: ...
+    def finish_task(self) -> None: ...
 
 
 @dataclass(frozen=True)
@@ -236,6 +251,7 @@ class SimulatedSdkAdapter:
 
 
 __all__ = [
+    "EventProtocolAdapter",
     "ProtocolMode",
     "ProtocolPhase",
     "ProtocolSnapshot",

@@ -78,6 +78,31 @@ class ModelRegistry:
             (json.dumps(updated, sort_keys=True) + "\n").encode("utf-8"),
         )
 
+    def ensure_deployed(
+        self,
+        *,
+        task_id: str,
+        version: str,
+        model: CpuModelAdapter,
+        signature: TaskSignature,
+    ) -> None:
+        """Synchronize a checkpointed deployment after an interrupted commit."""
+
+        try:
+            if self.current_version(task_id) == version:
+                return
+        except KeyError:
+            pass
+        manifest = self._manifest(task_id)
+        if version in manifest["history"]:
+            raise RuntimeError("registry history diverged from checkpoint")
+        self.deploy(
+            task_id=task_id,
+            version=version,
+            model=model,
+            signature=signature,
+        )
+
     def current_version(self, task_id: str) -> str:
         current = self._manifest(task_id).get("current")
         if not isinstance(current, str):

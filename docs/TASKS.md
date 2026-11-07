@@ -131,16 +131,17 @@ LOCAL-EXP-001
 
 ### SYS-003 无人值守Harness、恢复与记录接口
 
-- 状态：`IN_PROGRESS`
+- 状态：`DONE`
 - 依赖：SYS-002
 - 优先级：P0，本地正式候选路径
 - 完成标准：两种模拟协议、检查点恢复、CLI、公开记录队列和私有审计组成可无人值守运行的统一Harness；恢复不重复已提交训练
 - 停止条件：需要把未确认的SwanLab同步方式写成正式事实
 - 实施计划：`docs/plans/FORMAL-CANDIDATE-SYSTEM.md` Task 3
+- 证据：`src/brace_msi/harness.py`、`checkpoint.py`、`recording.py`、`cli.py`、`simulation.py`和`tests/system/test_unified_harness.py`；两种协议、可替换适配器、三次真实候选、故障拒绝、批次级恢复、私有审计、公开聚合队列和非交互CLI均通过测试；完整测试`71 passed`
 
 ### SYS-004 Docker、入口与静态HTML报告
 
-- 状态：`BLOCKED`
+- 状态：`IN_PROGRESS`
 - 依赖：SYS-003
 - 优先级：P0，本地正式候选路径
 - 完成标准：Dockerfile、一键入口、锁定依赖、合规清单、接入说明和离线HTML报告齐全；构建上下文小于2GB且不含数据/权重/密钥

@@ -16,6 +16,15 @@
 - 新增有上限的经验回放、有限候选搜索、耐心停止和逐候选预算记账；候选从新模型构造，不污染稳定模型。
 - 验证：`D:\anaconda3\python.exe -m pytest -q --tb=short`，结果`64 passed`。
 
+## 2026-11-07：SYS-003无人值守Harness、恢复与记录
+
+- 统一Harness已连接两种内部协议、任务初始化、证据路由、动作规划、候选训练、有限搜索、三层门控、模型注册与批次检查点。
+- 协议通过`EventProtocolAdapter`注入，正式SDK到达后只需实现映射，不需要改训练决策核心。
+- 批次提交后原子保存私有检查点；重新启动会重建协议历史并从下一个批次继续，不重复已经提交的候选训练。
+- 公开记录仅进入本地聚合待同步队列，未声称SwanLab云端成功；私有审计和公开记录均过滤原始特征、逐样本标签和密钥。
+- 新增`python -m brace_msi synthetic-smoke`非交互CLI，合成轴承流明确标注为`protocol_only`。
+- 验证：`D:\anaconda3\python.exe -m pytest -q --tb=short`，结果`71 passed`。
+
 ## 2026-11-06：需求收敛与资料审计
 
 - 完成官方规则PDF五页视觉核验。
