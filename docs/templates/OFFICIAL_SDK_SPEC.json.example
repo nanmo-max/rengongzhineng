@@ -1,0 +1,6 @@
+{
+  "module": "REPLACE_WITH_OFFICIAL_ADAPTER_MODULE",
+  "factory": "create_adapter",
+  "sdk_version": "REPLACE_WITH_OFFICIAL_VERSION",
+  "sdk_sha256": "REPLACE_WITH_64_HEX_SHA256"
+}

@@ -203,16 +203,17 @@ SYS-005
 
 ### RR-004 正式SDK接入适配器准备
 
-- 状态：`IN_PROGRESS`
+- 状态：`DONE`
 - 依赖：RR-002
 - 优先级：P0，Release Readiness
 - 完成标准：可配置字段映射、动态官方模块边界、协议契约测试和接入检查表齐全；核心Harness不依赖官方包
 - 停止条件：任何实现需要编造官方字段、标签权限、模型服务或错误语义
 - 执行清单：`docs/plans/RELEASE-READINESS.md`任务4
+- 证据：`official_sdk.py`、`sdk-contract-check`、5项契约测试、清单模板及扩展后的`SDK_INTEGRATION.md`；缺模块、非法清单、接口不完整均fail-closed。实际字段和数据出入站仍归`SDK-001`阻塞。
 
 ### RR-005 Release Candidate最终审计
 
-- 状态：`PENDING`
+- 状态：`IN_PROGRESS`
 - 依赖：RR-003、RR-004及RR-001可核验结论
 - 优先级：P0，Release Readiness
 - 完成标准：生成版本清单、哈希、交付审计、完整测试证据和阻塞表；Git提交且不合并main

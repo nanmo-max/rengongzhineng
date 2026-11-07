@@ -10,6 +10,7 @@ from typing import Sequence
 
 from .budget import BudgetLimits
 from .harness import HarnessConfig, UnifiedHarness
+from .official_sdk import OfficialSdkSpec, load_official_adapter_factory
 from .protocol import ProtocolMode
 from .reporting import render_html_report
 from .safety import GateConfig
@@ -53,6 +54,11 @@ def _parser() -> argparse.ArgumentParser:
     sync_command.add_argument("--run-dir", type=Path, required=True)
     sync_command.add_argument("--workspace")
     sync_command.add_argument("--project")
+    sdk_check = subparsers.add_parser(
+        "sdk-contract-check",
+        help="validate an installed official SDK adapter plugin contract",
+    )
+    sdk_check.add_argument("--spec", type=Path, required=True)
     return parser
 
 
@@ -89,6 +95,22 @@ def main(argv: Sequence[str] | None = None) -> int:
             args.run_dir, workspace=args.workspace, project=args.project
         )
         print(json.dumps({"status": "manual_sync_required", "command": command}))
+        return 0
+    if args.command == "sdk-contract-check":
+        spec = OfficialSdkSpec.from_json(args.spec)
+        factory = load_official_adapter_factory(spec)
+        modes = [mode.value for mode in ProtocolMode]
+        for mode in ProtocolMode:
+            factory(mode)
+        print(
+            json.dumps(
+                {
+                    "status": "contract_ready",
+                    "sdk_version": spec.sdk_version,
+                    "protocol_modes": modes,
+                }
+            )
+        )
         return 0
     if args.command != "synthetic-smoke":
         raise RuntimeError(f"unsupported command: {args.command}")
