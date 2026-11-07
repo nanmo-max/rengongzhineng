@@ -30,6 +30,15 @@
 - 新增`sdk-contract-check`验证两种内部协议的适配器契约，并提供不含真实字段的清单模板和到货核验步骤。
 - 真实事件字段、数据流构造、预测提交、标签权限和错误语义仍未实现且明确属于`SDK-001`外部阻塞。
 
+## 2026-11-07：Release Readiness RR-005
+
+- 发布版本冻结为`BRACE-MSI-0.1.0rc1`；新增确定性源码归档、跟踪文件白名单、A1/A2证据边界审计和机器可读发布门清单。
+- 发布包只纳入源码、配置、测试、正式文档以及A1/A2的公开聚合证据；排除原始数据、模型权重、私有审计和密钥。
+- 全新隔离环境从锁文件安装运行/测试/SwanLab依赖，构建并安装wheel后确认版本`0.1.0rc1`，`pip check`通过。
+- 安装包CLI分别完成`predict_then_feedback`三候选和`labeled_train_then_predict`四候选Smoke；真实SwanLab 0.10.4离线导出8条聚合事件。
+- 完整自动测试`93 passed`；编译检查通过；Docker上下文124文件、484,111字节、无禁入文件。
+- 实际Docker镜像、4核8GB Linux容器、正式SDK/数据/评分及比赛SwanLab同步仍明确`BLOCKED`，未制造通过证据。
+
 ## 2026-11-07：SYS-001统一任务引导、CPU模型池与注册表
 
 - 新增平台无关`TaskDefinition`/`TaskSignature`和TaskBootstrap兼容性守卫；未知同领域任务可从合法初训数据初始化，不兼容特征、任务类型或标签空间会被拒绝。

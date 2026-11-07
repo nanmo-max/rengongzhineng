@@ -54,3 +54,13 @@
 - 完整系统模拟：`results/LOCAL-FORMAL-SIM-001.md`；有效A2机器产物位于`artifacts/formal_simulation/LOCAL-FORMAL-SIM-001/run-7ef3829/`；A1`run-ce3e907`为INVALID负证据。
 - 模拟输出已通过`validate_simulation_output`：三任务、每任务至少3候选、动作覆盖、唯一批次提交、公开日志白名单和注册表加载均有效。
 - 旧密封段锁继续生效；完整系统开发与模拟评测不得打开或据其结果选型。
+
+## Release Candidate恢复边界
+
+- 当前版本：`BRACE-MSI-0.1.0rc1`；入口见`docs/RELEASE_CANDIDATE.md`。
+- RR-002至RR-005完成；全新安装包通过93项测试、两协议Smoke、SwanLab 0.10.4离线导出和静态交付审计。
+- RR-001保持`BLOCKED`：本机无Docker/Podman且所需Windows虚拟化功能未启用，实际镜像和4核8GB容器没有通过证据。
+- 正式SDK插件入口：`src/brace_msi/official_sdk.py`和`python -m brace_msi sdk-contract-check`；未知字段不得写入核心。
+- SwanLab入口：`src/brace_msi/swanlab_adapter.py`与`docs/SWANLAB_INTEGRATION.md`；同步必须由人工显式执行。
+- 发布包生成：在干净工作树设置`PYTHONPATH=src`后运行`scripts/build_release_candidate.py`；机器清单必须保留BLOCKED门。
+- 本地代理算法探索已经停止；下一会话只处理Docker运行时或新到官方SDK/数据/评分/SwanLab规范。

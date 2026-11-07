@@ -1,7 +1,7 @@
 # 当前状态
 
 - 最近同步：2026-11-07（Asia/Shanghai）
-- 项目阶段：Release Readiness；正式候选算法与代理密封实验已冻结 `[D-021]`
+- 项目阶段：`BRACE-MSI-0.1.0rc1`本地Release Candidate完成；等待外部平台材料 `[D-021]`
 - 方案版本：BRACE-MSI V4.1，已锁定研究方向 `[D-001]`
 - 正式训练：未开始；本地代理Smoke与完整比较已运行
 - 正式实验：0 次；本地代理/工程验收4项、21运行已完成，见 [EXPERIMENTS.md](EXPERIMENTS.md)
@@ -11,19 +11,17 @@
 
 ## 当前执行入口
 
-当前任务为`RR-005` Release Candidate最终审计。`RR-004`已提供无字段假设的SDK插件清单、
-动态加载和fail-closed契约检查；真实数据出入站仍等待`SDK-001`。`RR-003`已用真实SwanLab 0.10.4生成离线
-`run-*`日志并提供不自动执行的显式同步命令；比赛专用规范仍属`H-004`。`RR-002`已在全新隔离环境通过依赖、
-81项测试、CLI Smoke和CPython 3.12 Linux轮子审计。`RR-001`因本机无容器运行时且相关Windows
-功能均未启用而`BLOCKED`；不得用静态审计替代真实镜像证据。A1`ce3e907`保留为INVALID负证据，修复后的
-A2`7ef3829`已通过独立机器验收。Release Readiness只完成工程发布项，不重跑代理密封实验。
+RR-002至RR-005全部完成，当前没有无需外部材料可继续的Release Readiness开发任务。
+全新环境安装的wheel通过`pip check`、93项测试、两协议CLI Smoke及真实SwanLab 0.10.4离线导出。
+`RR-001`因本机无容器运行时且相关Windows功能均未启用而`BLOCKED`；不得用静态审计替代真实镜像证据。
+A1`ce3e907`保留为INVALID负证据，A2`7ef3829`保留为本地代理工程验收成功证据，合成轴承只标记`protocol_only`。
 
 执行前必须先完成：
 
-1. 按`docs/plans/RELEASE-READINESS.md`依次完成RR任务；
-2. 生成版本/哈希清单、交付审计和阻塞表，重建安装包后执行最终完整回归；
-3. 不基于已查看的完整密封结果或本次开发段结果反复调参后冒充确认性实验；
-4. 正式SDK到达后只替换协议适配层和配置。
+1. 等待Docker/Podman运行时或官方提供的构建环境解除`RR-001`；
+2. 等待正式SDK、数据、评分和比赛SwanLab规范解除对应`SDK-001`/`DATA-001`/`LOG-001`；
+3. 新证据到达后先登记`SOURCE_REGISTRY.md`，再开始唯一最高优先级任务；
+4. 不重跑代理密封实验，不开展新算法探索，不合并`main`。
 
 ## 当前阻塞
 
