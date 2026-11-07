@@ -105,7 +105,10 @@ def _aggregate_metrics(stream: TaskStream, result: HarnessResult) -> dict[str, f
 
 
 def _task_record(stream: TaskStream, result: HarnessResult) -> dict[str, Any]:
-    usages = [candidate.usage for candidate in result.candidates]
+    trained_candidates = [
+        candidate for candidate in result.candidates if candidate.training_started
+    ]
+    usages = [candidate.usage for candidate in trained_candidates]
     return {
         "task_id": stream.task_id,
         "task_kind": stream.task_kind,
@@ -114,8 +117,9 @@ def _task_record(stream: TaskStream, result: HarnessResult) -> dict[str, Any]:
         "status": result.status,
         "completed_batches": result.completed_batches,
         "candidate_count": result.candidate_count,
-        "accepted_count": sum(candidate.accepted for candidate in result.candidates),
-        "rejected_count": sum(not candidate.accepted for candidate in result.candidates),
+        "attempt_count": len(result.candidates),
+        "accepted_count": sum(candidate.accepted for candidate in trained_candidates),
+        "rejected_count": sum(not candidate.accepted for candidate in trained_candidates),
         "rollback_count": result.rollback_count,
         "deployed_version": result.deployed_version,
         "metrics": _aggregate_metrics(stream, result),
@@ -123,7 +127,7 @@ def _task_record(stream: TaskStream, result: HarnessResult) -> dict[str, Any]:
             "candidate_wall_seconds": float(sum(item.wall_seconds for item in usages)),
             "candidate_cpu_seconds": float(sum(item.cpu_seconds for item in usages)),
             "candidate_training_samples": int(
-                sum(candidate.training_samples for candidate in result.candidates)
+                sum(candidate.training_samples for candidate in trained_candidates)
             ),
             "operation_boundary_peak_rss_bytes": int(
                 max((item.peak_rss_bytes for item in usages), default=0)
@@ -137,6 +141,7 @@ def _task_record(stream: TaskStream, result: HarnessResult) -> dict[str, Any]:
                 "reason": candidate.reason,
                 "validation_improvement": candidate.validation_improvement,
                 "training_samples": candidate.training_samples,
+                "training_started": candidate.training_started,
             }
             for candidate in result.candidates
         ],
@@ -292,6 +297,7 @@ def validate_simulation_output(
         "proxy_only",
         "event",
         "sync_status",
+        "record_id",
     }
     for task in summary["tasks"]:
         if int(task.get("candidate_count", 0)) < minimum_candidates:
@@ -300,7 +306,8 @@ def validate_simulation_output(
         task_root = output_dir / "tasks" / task_id
         ModelRegistry(task_root / "registry").load_stable(task_id)
         for candidate in task.get("candidates", []):
-            action_counts[str(candidate["action"])] += 1
+            if candidate.get("training_started") is True:
+                action_counts[str(candidate["action"])] += 1
             if any("sealed" in str(value).lower() for value in candidate.values()):
                 raise ValueError("candidate evidence references sealed data")
 

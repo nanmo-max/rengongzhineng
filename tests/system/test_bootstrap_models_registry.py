@@ -74,6 +74,18 @@ def test_task_bootstrap_initializes_unknown_task_and_blocks_incompatible_reuse()
         )
 
 
+def test_task_bootstrap_accepts_non_numeric_class_labels() -> None:
+    X, _ = _classification_data()
+    y = np.asarray(["healthy", "healthy", "healthy", "fault", "fault", "fault"])
+
+    result = TaskBootstrap(seed=20261107).initialize(
+        TaskDefinition("string-label-task", "classification", 2), X, y
+    )
+
+    assert set(result.signature.label_space or ()) == {"healthy", "fault"}
+    assert set(result.model.predict(X)) == {"healthy", "fault"}
+
+
 def test_model_registry_loads_exact_prediction_and_rolls_back(tmp_path: Path) -> None:
     X, y = _classification_data()
     bootstrap = TaskBootstrap(seed=20261107)

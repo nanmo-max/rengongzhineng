@@ -97,6 +97,43 @@ def test_harness_resumes_from_committed_checkpoint_without_repeating_training(
     assert committed == ["dev-0", "dev-1", "dev-2", "dev-3"]
 
 
+def test_resume_reconciles_checkpointed_batch_when_audit_append_was_interrupted(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "audit-reconcile"
+    harness = UnifiedHarness(root, _config(ProtocolMode.PREDICT_THEN_FEEDBACK))
+    harness.run(_stream(), max_batches=1)
+    for filename in ("private-audit.jsonl", "public-spool.jsonl"):
+        path = root / filename
+        records = [json.loads(line) for line in path.read_text().splitlines()]
+        records = [record for record in records if record["event"] != "batch_committed"]
+        path.write_text("".join(json.dumps(record) + "\n" for record in records))
+
+    UnifiedHarness(root, _config(ProtocolMode.PREDICT_THEN_FEEDBACK)).run(_stream())
+
+    private_records = [
+        json.loads(line) for line in (root / "private-audit.jsonl").read_text().splitlines()
+    ]
+    committed = [record["batch_id"] for record in private_records if record["event"] == "batch_committed"]
+    assert committed == ["dev-0", "dev-1", "dev-2", "dev-3"]
+
+
+def test_budget_rejected_attempts_do_not_count_as_real_candidates(tmp_path: Path) -> None:
+    config = _config(ProtocolMode.PREDICT_THEN_FEEDBACK)
+    config = HarnessConfig(
+        **{
+            **config.__dict__,
+            "budget": BudgetLimits(8, 1, 30.0, 30.0),
+        }
+    )
+
+    result = UnifiedHarness(tmp_path / "budget-rejected", config).run(_stream())
+
+    assert result.candidate_count == 0
+    assert result.candidates
+    assert all(event.training_started is False for event in result.candidates)
+
+
 def test_failed_candidate_is_rejected_and_stable_registry_remains_loadable(
     tmp_path: Path,
 ) -> None:

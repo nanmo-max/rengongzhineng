@@ -53,14 +53,27 @@ class TaskBootstrap:
             raise ValueError("training feature count does not match task definition")
         if y_array.ndim != 1 or len(y_array) != len(X_array) or len(y_array) == 0:
             raise ValueError("training targets must be a nonempty aligned vector")
-        if not np.all(np.isfinite(X_array)) or not np.all(np.isfinite(y_array)):
+        if not np.all(np.isfinite(X_array)):
             raise ValueError("training data contains non-finite values")
         label_space: tuple[object, ...] | None = None
         if definition.task_kind == "classification":
+            if any(
+                value is None
+                or (isinstance(value, (float, np.floating)) and not np.isfinite(value))
+                for value in y_array
+            ):
+                raise ValueError("training data contains non-finite values")
             labels = np.unique(y_array)
             if len(labels) < 2:
                 raise ValueError("classification bootstrap requires at least two classes")
             label_space = tuple(_python_scalar(value) for value in labels)
+        else:
+            try:
+                numeric_targets = np.asarray(y_array, dtype=np.float64)
+            except (TypeError, ValueError) as exc:
+                raise ValueError("regression targets must be numeric") from exc
+            if not np.all(np.isfinite(numeric_targets)):
+                raise ValueError("training data contains non-finite values")
         model = CpuModelAdapter(
             task_kind=definition.task_kind,
             family=self.initial_family,

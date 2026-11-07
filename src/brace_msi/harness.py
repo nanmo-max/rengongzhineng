@@ -49,6 +49,7 @@ class HarnessCandidate:
     validation_improvement: float
     training_samples: int
     usage: ResourceUsage
+    training_started: bool
 
 
 @dataclass(frozen=True)
@@ -64,7 +65,7 @@ class HarnessResult:
 
     @property
     def candidate_count(self) -> int:
-        return len(self.candidates)
+        return sum(event.training_started for event in self.candidates)
 
 
 def _metrics(task_kind: str, y: NDArray, predictions: NDArray) -> dict[str, float]:
@@ -215,10 +216,11 @@ class UnifiedHarness:
     def _qualification_action(
         self, action: Action, state: dict[str, Any], remaining_batches: int
     ) -> Action:
-        needed = self.config.minimum_candidate_events - len(state["candidates"])
+        actual_candidates = sum(event.training_started for event in state["candidates"])
+        needed = self.config.minimum_candidate_events - actual_candidates
         if action is not Action.NOOP or needed < remaining_batches:
             return action
-        if state["stable"].capabilities.supports_partial_fit and not state["candidates"]:
+        if state["stable"].capabilities.supports_partial_fit and actual_candidates == 0:
             return Action.INCREMENTAL_UPDATE
         return Action.REPLAY_REFIT
 
@@ -245,11 +247,11 @@ class UnifiedHarness:
         budget = ledger.check_before_training(estimated_samples=len(candidate_y))
         zero = ResourceUsage(0.0, 0.0, 0, 0, 0)
         if not budget.allowed:
-            return state["stable"], [HarnessCandidate(batch_id, action.value, False, budget.reason, 0.0, len(candidate_y), zero)], False
+            return state["stable"], [HarnessCandidate(batch_id, action.value, False, budget.reason, 0.0, len(candidate_y), zero, False)], False
         candidate_number = len(state["candidates"]) + 1
         if candidate_number in self.config.fail_candidate_numbers:
             ledger.record_candidate(zero, training_samples=len(candidate_y))
-            return state["stable"], [HarnessCandidate(batch_id, action.value, False, "injected_candidate_failure", 0.0, len(candidate_y), zero)], True
+            return state["stable"], [HarnessCandidate(batch_id, action.value, False, "injected_candidate_failure", 0.0, len(candidate_y), zero, False)], True
         tracker: ResourceTracker | None = None
         try:
             with ResourceTracker() as tracker:
@@ -279,6 +281,7 @@ class UnifiedHarness:
                 decision.validation_improvement,
                 len(candidate_y),
                 usage,
+                True,
             )
             return (candidate if decision.accepted else state["stable"]), [event], not decision.accepted
         except Exception as exc:
@@ -292,6 +295,7 @@ class UnifiedHarness:
                 0.0,
                 len(candidate_y),
                 usage,
+                True,
             )
             return state["stable"], [event], True
 
@@ -309,7 +313,7 @@ class UnifiedHarness:
             task_kind=state["signature"].task_kind,
             seed=self.config.seed,
             config=SearchConfig(
-                max_trials=self.config.hpo_max_trials, patience=1, min_improvement=0.0
+                max_trials=self.config.hpo_max_trials, patience=2, min_improvement=0.0
             ),
         )
         configs = (
@@ -334,6 +338,7 @@ class UnifiedHarness:
                 0.0,
                 len(train_y),
                 trial.usage,
+                True,
             )
             for trial in result.trials
         ]
@@ -359,12 +364,71 @@ class UnifiedHarness:
                 decision.validation_improvement,
                 len(train_y),
                 events[-1].usage,
+                True,
             )
         return (
             result.best_model if decision.accepted else state["stable"],
             events,
             not decision.accepted,
         )
+
+    @staticmethod
+    def _candidate_payload(task_id: str, event: HarnessCandidate) -> dict[str, Any]:
+        return {
+            "task_id": task_id,
+            "batch_id": event.batch_id,
+            "action": event.action,
+            "accepted": event.accepted,
+            "reason": event.reason,
+            "validation_improvement": event.validation_improvement,
+            "training_samples": event.training_samples,
+            "training_started": event.training_started,
+            "wall_seconds": event.usage.wall_seconds,
+            "cpu_seconds": event.usage.cpu_seconds,
+            "peak_rss_bytes": event.usage.peak_rss_bytes,
+        }
+
+    @staticmethod
+    def _batch_payload(
+        task_id: str, task_kind: str, metric: dict[str, Any]
+    ) -> dict[str, Any]:
+        return {
+            "task_id": task_id,
+            "batch_id": metric["batch_id"],
+            "batch_index": metric["batch_index"],
+            "sample_count": metric["sample_count"],
+            "primary_metric": _primary(task_kind, metric),
+        }
+
+    def _reconcile_logs(
+        self,
+        stream: TaskStream,
+        state: dict[str, Any],
+        private: JsonlAuditLog,
+        public: LocalPublicSpool,
+    ) -> None:
+        for index, event in enumerate(state["candidates"], start=1):
+            record_id = f"candidate:{event.batch_id}:{index}"
+            payload = self._candidate_payload(stream.task_id, event)
+            private.write_once(record_id, "candidate_evaluated", payload)
+            public.record_once(record_id, "candidate_evaluated", payload)
+        for metric in state["batch_metrics"]:
+            record_id = f"batch:{metric['batch_id']}:committed"
+            payload = self._batch_payload(stream.task_id, stream.task_kind, metric)
+            private.write_once(record_id, "batch_committed", payload)
+            public.record_once(record_id, "batch_committed", payload)
+        if state["finished"]:
+            finish_payload = {
+                "task_id": stream.task_id,
+                "status": "completed",
+                "candidate_count": sum(
+                    event.training_started for event in state["candidates"]
+                ),
+                "rollback_count": state["rollback_count"],
+                "deployed_version": state["stable_version"],
+            }
+            private.write_once("run:finished", "run_finished", finish_payload)
+            public.record_once("run:finished", "run_finished", finish_payload)
 
     def run(self, stream: TaskStream, *, max_batches: int | None = None) -> HarnessResult:
         self.root.mkdir(parents=True, exist_ok=True)
@@ -373,11 +437,12 @@ class UnifiedHarness:
         if state["task_id"] != stream.task_id:
             raise ValueError("checkpoint belongs to a different task")
         self._sync_registry(state)
+        private = JsonlAuditLog(self.root / "private-audit.jsonl", truncate=not resumed)
+        public = LocalPublicSpool(self.root / "public-spool.jsonl", truncate=not resumed)
+        self._reconcile_logs(stream, state, private, public)
         if state["finished"]:
             return self._result(state, "completed", tuple(state["protocol_history"]))
         protocol = self._protocol_for_resume(stream, state["next_batch"])
-        private = JsonlAuditLog(self.root / "private-audit.jsonl", truncate=not resumed)
-        public = LocalPublicSpool(self.root / "public-spool.jsonl", truncate=not resumed)
         processed = 0
 
         for batch_index in range(state["next_batch"], len(stream.development)):
@@ -470,21 +535,7 @@ class UnifiedHarness:
                     )
                 if failed:
                     state["rollback_count"] += 1
-                for event in events:
-                    payload = {
-                        "task_id": stream.task_id,
-                        "batch_id": batch.batch_id,
-                        "action": event.action,
-                        "accepted": event.accepted,
-                        "reason": event.reason,
-                        "validation_improvement": event.validation_improvement,
-                        "training_samples": event.training_samples,
-                        "wall_seconds": event.usage.wall_seconds,
-                        "cpu_seconds": event.usage.cpu_seconds,
-                        "peak_rss_bytes": event.usage.peak_rss_bytes,
-                    }
-                    private.write("candidate_evaluated", payload)
-                    public.record("candidate_evaluated", payload)
+                self._reconcile_logs(stream, state, private, public)
 
             state["replay"].append(visible_X[train_indices], visible_y[train_indices])
             if self.config.protocol_mode is ProtocolMode.LABELED_TRAIN_THEN_PREDICT:
@@ -505,29 +556,12 @@ class UnifiedHarness:
             state["next_batch"] = batch_index + 1
             self.checkpoint.save(state)
             self._sync_registry(state)
-            log_payload = {
-                "task_id": stream.task_id,
-                "batch_id": batch.batch_id,
-                "batch_index": batch_index + 1,
-                "sample_count": len(score_y),
-                "primary_metric": current_primary,
-            }
-            private.write("batch_committed", log_payload)
-            public.record("batch_committed", log_payload)
+            self._reconcile_logs(stream, state, private, public)
             processed += 1
 
         protocol.finish_task()
         state["finished"] = True
         state["protocol_history"] = protocol.history
         self.checkpoint.save(state)
-        public.record(
-            "run_finished",
-            {
-                "task_id": stream.task_id,
-                "status": "completed",
-                "candidate_count": len(state["candidates"]),
-                "rollback_count": state["rollback_count"],
-                "deployed_version": state["stable_version"],
-            },
-        )
+        self._reconcile_logs(stream, state, private, public)
         return self._result(state, "completed", protocol.history)
