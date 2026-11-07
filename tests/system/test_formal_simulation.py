@@ -5,7 +5,11 @@ from pathlib import Path
 import numpy as np
 
 from brace_msi.data.types import BatchData, TaskStream
-from brace_msi.formal_simulation import load_simulation_config, run_simulation_suite
+from brace_msi.formal_simulation import (
+    load_simulation_config,
+    run_simulation_suite,
+    validate_simulation_output,
+)
 from brace_msi.simulation import synthetic_bearing_stream
 
 
@@ -56,3 +60,10 @@ def test_three_task_formal_simulation_produces_complete_audited_evidence(tmp_pat
     assert synthetic["rollback_count"] >= 2
     saved = json.loads((tmp_path / "formal" / "summary.json").read_text())
     assert saved["experiment_id"] == "LOCAL-FORMAL-SIM-001"
+    validation = validate_simulation_output(
+        tmp_path / "formal", minimum_candidates=3
+    )
+    assert validation["valid"] is True
+    assert validation["action_counts"]["incremental_update"] >= 1
+    assert validation["action_counts"]["replay_refit"] >= 1
+    assert validation["action_counts"]["bounded_hpo"] >= 1

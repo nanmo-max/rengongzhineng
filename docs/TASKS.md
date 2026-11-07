@@ -151,12 +151,13 @@ LOCAL-EXP-001
 
 ### SYS-005 三任务模拟正式评测与资源验收
 
-- 状态：`IN_PROGRESS`
+- 状态：`DONE`
 - 依赖：SYS-004
 - 优先级：P0，本地正式候选路径
 - 完成标准：Gas开发流、FD001开发流、明确标注的合成轴承流完成初始化、至少三次候选、部署/拒绝、故障回滚、恢复、4核8GB监测、日志和HTML证据包；不打开旧密封段
 - 停止条件：任何泄漏检查失败、资源超限或需要重用已消费密封段选型
 - 实施计划：`docs/plans/FORMAL-CANDIDATE-SYSTEM.md` Task 5
+- 证据：预注册`ee2c3a6`/`a99656c`，执行`ce3e907`；`docs/results/LOCAL-FORMAL-SIM-001.md`及本地证据包；三任务均4批次/4候选，动作覆盖增量8、回放2、有限HPO2；4核亲和性、RSS、日志、注册表和HTML经独立验收；完整测试`77 passed`
 
 ### PKG-RUNTIME-001 实际Docker镜像构建与4核8GB容器验收
 

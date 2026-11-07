@@ -6,11 +6,12 @@
 
 - 正式实验：0
 - 探索实验：3（Smoke、完整DEV、完整密封均已完成）
-- 训练运行：18（全部为本地代理；Smoke 6、完整DEV 6、唯一密封运行6）
+- 工程验收实验：1（完整系统三任务模拟已完成）
+- 训练运行：21（全部为本地代理或合成协议任务；既有18运行，加完整系统三任务）
 - 已报告模型指标：仅代理实验，见`results/LOCAL-SMOKE-001.md`与`results/LOCAL-EXP-001.md`
-- 待运行完整系统模拟：`LOCAL-FORMAL-SIM-001`（只用合法开发段与合成协议任务）
+- 完整系统模拟：`LOCAL-FORMAL-SIM-001`已完成（只用合法开发段与合成协议任务）
 
-现有Gas和C-MAPSS文件只完成本地存在性、哈希、批次数和压缩包内容审计，没有训练或模型结果 `[L-DATA-001]` `[L-DATA-002]`。
+Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所有结果仍是`proxy_only`，不得表述为官方成绩 `[L-DATA-001]` `[L-DATA-002]`。
 
 ## 状态定义
 
@@ -28,7 +29,7 @@
 | LOCAL-SMOKE-001 | SUCCEEDED | 两类代理任务能否在低成本下完成三策略端到端闭环，并真实执行增量与重拟合候选？ | Gas每批最多96条、FD001前20台发动机；只用初训和开发流，未打开完整密封段 | `configs/local_smoke.json`；执行提交`64ccce2` | 每个任务×策略最多4候选、20,000训练样本、60秒墙钟/CPU；种子20261106 | 6/6运行完成；增量10、重拟合3；指标见结果文档，不能外推 | `results/LOCAL-SMOKE-001.md`；本地`artifacts/experiments/LOCAL-SMOKE-001/run-64ccce2/` |
 | LOCAL-EXP-001-DEV | SUCCEEDED | 全量开发流上三策略能否公平完成并覆盖真实动作，足以冻结密封运行？ | Gas批次1–7；FD001发动机1–80；未打开密封段 | `configs/local_full_dev.json`；执行提交`f9647dd` | 每个任务×策略最多4候选、80,000训练样本、180秒墙钟/CPU；种子20261106 | 6/6完成；增量9、重拟合5；机器验收通过 | 本地`artifacts/experiments/LOCAL-EXP-001-DEV/run-f9647dd/` |
 | LOCAL-EXP-001 | SUCCEEDED | 冻结策略在完整密封段的性能、最差阶段与资源相对静态/简单触发如何？ | Gas冻结1–3/4–7/8–10；FD001发动机60%/20%/20%；密封仅运行一次 | `configs/local_full.json`；执行提交`f9647dd`，与DEV阈值一致 | 同DEV；密封阶段禁止训练；种子20261106 | 6/6完成；开发指标与DEV完全一致；密封指标见结果文档 | `results/LOCAL-EXP-001.md`；本地`artifacts/experiments/LOCAL-EXP-001/run-f9647dd-sealed-once/` |
-| LOCAL-FORMAL-SIM-001 | PLANNED | 完整候选Harness能否在三任务上无人干预完成初始化、至少三次候选、部署/拒绝、恢复、记录、资源审计和报告？ | Gas仅1–7；FD001仅发动机1–80；合成轴承漂移流仅作协议验收；不加载/评估已消费密封段 | `configs/formal_simulation.json`；预注册提交待记录 | 每任务最多8候选、80,000训练样本、120秒候选墙钟/CPU；进程最多4逻辑CPU；RSS验收8GB | 尚未运行 | 计划写入本地`artifacts/formal_simulation/LOCAL-FORMAL-SIM-001/` |
+| LOCAL-FORMAL-SIM-001 | SUCCEEDED | 完整候选Harness能否在三任务上无人干预完成初始化、至少三次候选、部署/拒绝、恢复、记录、资源审计和报告？ | Gas仅1–7；FD001仅发动机1–80；合成轴承漂移流仅作协议验收；不加载/评估已消费密封段 | `configs/formal_simulation.json`；预注册`ee2c3a6`/`a99656c`；执行`ce3e907` | 每任务最多8候选、80,000训练样本、120秒候选墙钟/CPU；进程最多4逻辑CPU；RSS验收8GB | 三任务完成；候选4/4/4；动作增量8、回放2、HPO2；机器验收通过 | `results/LOCAL-FORMAL-SIM-001.md`；本地`artifacts/formal_simulation/LOCAL-FORMAL-SIM-001/run-ce3e907/` |
 
 ## LOCAL-SMOKE-001预注册
 

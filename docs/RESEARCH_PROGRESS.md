@@ -34,6 +34,14 @@
 - 本机PATH与常见安装位置均未找到Docker/Podman，因此没有声称镜像已构建或镜像实际小于2GB；该项转入`PKG-RUNTIME-001`阻塞。
 - 验证：`D:\anaconda3\python.exe -m pytest -q --tb=short`，结果`74 passed`。
 
+## 2026-11-07：SYS-005三任务完整系统模拟
+
+- 预注册`LOCAL-FORMAL-SIM-001`后，用提交`ce3e907`执行Gas 1–7、FD001发动机1–80和合成轴承协议流；旧密封段未暴露给Harness。
+- 三任务均无人干预完成4批次和4次真实候选；动作合计增量8、回放2、有限HPO2。Gas接受4/4，FD001接受3/4，合成故障/HPO安全拒绝4/4并保持初始稳定模型。
+- 4逻辑CPU亲和性实际生效；操作边界最大RSS 146,702,336字节；公开日志脱敏、批次提交唯一性、模型注册表可加载和离线HTML均通过独立机器验收。
+- 未强制8GB容器内存上限，也未构建Docker镜像；本机无容器运行时，保持`PKG-RUNTIME-001`阻塞。
+- 验证：独立输出验收`valid=true`；`D:\anaconda3\python.exe -m pytest -q --tb=short`结果`77 passed`。
+
 ## 2026-11-06：需求收敛与资料审计
 
 - 完成官方规则PDF五页视觉核验。

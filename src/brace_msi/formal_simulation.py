@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import math
 import subprocess
+from collections import Counter
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
@@ -18,6 +19,8 @@ from .data.types import TaskStream
 from .harness import HarnessConfig, HarnessResult, UnifiedHarness
 from .packaging import audit_docker_context
 from .protocol import ProtocolMode
+from .recording import PUBLIC_FIELDS
+from .registry import ModelRegistry
 from .reporting import render_html_report
 from .safety import GateConfig
 
@@ -253,3 +256,86 @@ def run_simulation_suite(
         render_html_report(report_payload), encoding="utf-8"
     )
     return summary
+
+
+def validate_simulation_output(
+    output_dir: Path, *, minimum_candidates: int
+) -> dict[str, Any]:
+    """Validate saved evidence independently of the in-memory run result."""
+
+    output_dir = Path(output_dir)
+    summary = json.loads((output_dir / "summary.json").read_text(encoding="utf-8"))
+    if summary.get("proxy_only") is not True or summary.get("official_score") is not False:
+        raise ValueError("simulation evidence scope is invalid")
+    if summary.get("status") != "completed" or summary.get("task_count") != 3:
+        raise ValueError("simulation did not complete exactly three tasks")
+    if summary.get("consumed_sealed_used") is not False:
+        raise ValueError("consumed sealed data was exposed")
+    resources = summary.get("resource_acceptance", {})
+    if not all(
+        resources.get(key) is True
+        for key in (
+            "cpu_affinity_under_limit",
+            "rss_under_limit",
+            "docker_context_under_limit",
+        )
+    ):
+        raise ValueError("resource acceptance failed")
+    if resources.get("docker_context_forbidden_files"):
+        raise ValueError("Docker context contains forbidden files")
+    if not (output_dir / "report.html").is_file():
+        raise ValueError("static HTML report is missing")
+
+    action_counts: Counter[str] = Counter()
+    standard_public = {
+        "schema_version",
+        "proxy_only",
+        "event",
+        "sync_status",
+    }
+    for task in summary["tasks"]:
+        if int(task.get("candidate_count", 0)) < minimum_candidates:
+            raise ValueError(f"task lacks required candidates: {task.get('task_id')}")
+        task_id = str(task["task_id"])
+        task_root = output_dir / "tasks" / task_id
+        ModelRegistry(task_root / "registry").load_stable(task_id)
+        for candidate in task.get("candidates", []):
+            action_counts[str(candidate["action"])] += 1
+            if any("sealed" in str(value).lower() for value in candidate.values()):
+                raise ValueError("candidate evidence references sealed data")
+
+        private_records = [
+            json.loads(line)
+            for line in (task_root / "private-audit.jsonl").read_text(encoding="utf-8").splitlines()
+        ]
+        committed = [
+            record["batch_id"]
+            for record in private_records
+            if record.get("event") == "batch_committed"
+        ]
+        if len(committed) != int(task["completed_batches"]) or len(set(committed)) != len(committed):
+            raise ValueError(f"batch commit audit is incomplete or duplicated: {task_id}")
+
+        public_records = [
+            json.loads(line)
+            for line in (task_root / "public-spool.jsonl").read_text(encoding="utf-8").splitlines()
+        ]
+        for record in public_records:
+            if record.get("proxy_only") is not True or record.get("sync_status") != "pending":
+                raise ValueError("public spool has an invalid evidence marker")
+            unexpected = set(record).difference(standard_public | PUBLIC_FIELDS)
+            if unexpected:
+                raise ValueError(f"public spool contains unsafe fields: {sorted(unexpected)}")
+
+    for required in (
+        "incremental_update",
+        "replay_refit",
+        "bounded_hpo",
+    ):
+        if action_counts[required] < 1:
+            raise ValueError(f"simulation did not exercise required action: {required}")
+    return {
+        "valid": True,
+        "task_count": 3,
+        "action_counts": dict(sorted(action_counts.items())),
+    }
