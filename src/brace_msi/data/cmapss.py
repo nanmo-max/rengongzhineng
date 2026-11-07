@@ -23,10 +23,25 @@ def _opaque_id(engine_id: int, cycle: int) -> str:
     return sha256(f"cmapss-fd001|{engine_id}|{cycle}".encode()).hexdigest()[:24]
 
 
-def _read_training_matrix(zip_path: Path) -> np.ndarray:
+def _read_training_matrix(
+    zip_path: Path, *, max_engine_id: int | None = None
+) -> np.ndarray:
     try:
         with ZipFile(zip_path) as archive:
-            payload = archive.read("train_FD001.txt")
+            if max_engine_id is None:
+                payload = archive.read("train_FD001.txt")
+            else:
+                rows: list[bytes] = []
+                with archive.open("train_FD001.txt") as handle:
+                    for raw_line in handle:
+                        try:
+                            engine_id = int(raw_line.split(maxsplit=1)[0])
+                        except (ValueError, IndexError) as exc:
+                            raise CmapssFormatError("FD001 contains an invalid row") from exc
+                        if engine_id > max_engine_id:
+                            break
+                        rows.append(raw_line)
+                payload = b"".join(rows)
     except (KeyError, OSError) as exc:
         raise CmapssFormatError("archive must contain train_FD001.txt") from exc
     try:
@@ -81,11 +96,18 @@ def _make_batch(
 
 
 def load_cmapss_fd001_stream(
-    zip_path: Path, *, smoke: bool = False, rul_cap: float = 125.0
+    zip_path: Path,
+    *,
+    smoke: bool = False,
+    rul_cap: float = 125.0,
+    include_sealed: bool = True,
 ) -> TaskStream:
     """Load FD001 using engine-group 60% / 20% / 20% proxy splits."""
 
-    matrix = _read_training_matrix(Path(zip_path))
+    max_engine_id = None
+    if not include_sealed:
+        max_engine_id = 20 if smoke else 80
+    matrix = _read_training_matrix(Path(zip_path), max_engine_id=max_engine_id)
     engine_ids = sorted({int(engine_id) for engine_id in matrix[:, 0]})
     if smoke:
         engine_ids = engine_ids[:20]
@@ -93,12 +115,16 @@ def load_cmapss_fd001_stream(
     if len(engine_ids) < 5:
         raise CmapssFormatError("FD001 needs at least five engines for grouped splits")
 
-    initial_end = int(len(engine_ids) * 0.60)
-    development_end = initial_end + int(len(engine_ids) * 0.20)
+    if include_sealed:
+        initial_end = int(len(engine_ids) * 0.60)
+        development_end = initial_end + int(len(engine_ids) * 0.20)
+    else:
+        initial_end = int(len(engine_ids) * 0.75)
+        development_end = len(engine_ids)
     initial_ids = engine_ids[:initial_end]
     development_ids = engine_ids[initial_end:development_end]
     sealed_ids = engine_ids[development_end:]
-    if not initial_ids or not development_ids or not sealed_ids:
+    if not initial_ids or not development_ids or (include_sealed and not sealed_ids):
         raise CmapssFormatError("grouped 60/20/20 split produced an empty partition")
 
     stream = TaskStream(
@@ -124,7 +150,7 @@ def load_cmapss_fd001_stream(
                 rul_cap=rul_cap,
             )
             for index, chunk in enumerate(_engine_chunks(sealed_ids), start=1)
-        ),
+        ) if include_sealed else (),
         metadata={
             "proxy_only": True,
             "split_rule": "engine IDs 60% / 20% / 20%",
@@ -132,6 +158,7 @@ def load_cmapss_fd001_stream(
             "rul_cap": rul_cap,
             "smoke": smoke,
             "external_test_reserved": True,
+            "sealed_loaded": include_sealed,
         },
     )
     if not stream.all_sample_ids_are_disjoint():

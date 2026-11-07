@@ -21,6 +21,23 @@ def _write_gas_dataset(root: Path) -> Path:
     return root
 
 
+def test_development_only_gas_loader_never_requires_sealed_batch_files(tmp_path: Path) -> None:
+    from brace_msi.data.gas import load_gas_stream
+
+    root = tmp_path / "gas"
+    dataset = root / "Dataset"
+    dataset.mkdir(parents=True)
+    for batch in range(1, 8):
+        content = _gas_line(1, offset=batch / 10) + _gas_line(2, offset=batch / 10)
+        (dataset / f"batch{batch}.dat").write_text(content, encoding="utf-8")
+
+    stream = load_gas_stream(root, include_sealed=False)
+
+    assert len(stream.development) == 4
+    assert stream.sealed == ()
+    assert stream.metadata["sealed_loaded"] is False
+
+
 def test_load_gas_stream_preserves_frozen_batch_split(tmp_path: Path) -> None:
     from brace_msi.data.gas import load_gas_stream
 

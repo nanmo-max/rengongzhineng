@@ -85,31 +85,35 @@ def _combine_initial(batches: list[BatchData]) -> BatchData:
     )
 
 
-def load_gas_stream(root: Path, *, smoke: bool = False) -> TaskStream:
+def load_gas_stream(
+    root: Path, *, smoke: bool = False, include_sealed: bool = True
+) -> TaskStream:
     """Load the frozen 1-3 / 4-7 / 8-10 chronological proxy split."""
 
     root = Path(root)
     dataset = root / "Dataset" if (root / "Dataset").is_dir() else root
     max_rows = 96 if smoke else None
+    final_batch = 10 if include_sealed else 7
     batches = [
         parse_gas_file(
             dataset / f"batch{batch_number}.dat",
             batch_number=batch_number,
             max_rows=max_rows,
         )
-        for batch_number in range(1, 11)
+        for batch_number in range(1, final_batch + 1)
     ]
     stream = TaskStream(
         task_id="gas-drift-proxy",
         task_kind="classification",
         initial=_combine_initial(batches[:3]),
         development=tuple(batches[3:7]),
-        sealed=tuple(batches[7:]),
+        sealed=tuple(batches[7:]) if include_sealed else (),
         metadata={
             "proxy_only": True,
             "split_rule": "batches 1-3 / 4-7 / 8-10",
             "feature_count": FEATURE_COUNT,
             "smoke": smoke,
+            "sealed_loaded": include_sealed,
         },
     )
     if not stream.all_sample_ids_are_disjoint():

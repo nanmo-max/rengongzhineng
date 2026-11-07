@@ -63,6 +63,19 @@ def test_cmapss_cycles_remain_ordered_inside_each_engine(tmp_path: Path) -> None
             assert rul_values == sorted(rul_values, reverse=True)
 
 
+def test_development_only_cmapss_loader_stops_before_reserved_engines(tmp_path: Path) -> None:
+    from brace_msi.data.cmapss import load_cmapss_fd001_stream
+
+    stream = load_cmapss_fd001_stream(
+        _write_cmapss_zip(tmp_path / "cmapss.zip", engines=100, cycles=2),
+        include_sealed=False,
+    )
+
+    assert stream.sealed == ()
+    assert max(int(group) for batch in stream.development for group in batch.group_ids) == 80
+    assert stream.metadata["sealed_loaded"] is False
+
+
 def test_cmapss_rejects_wrong_column_count(tmp_path: Path) -> None:
     from brace_msi.data.cmapss import CmapssFormatError, load_cmapss_fd001_stream
 
