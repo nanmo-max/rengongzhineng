@@ -36,7 +36,7 @@
 - 发布包只纳入源码、配置、测试、正式文档以及A1/A2的公开聚合证据；排除原始数据、模型权重、私有审计和密钥。
 - 全新隔离环境从锁文件安装运行/测试/SwanLab依赖，构建并安装wheel后确认版本`0.1.0rc1`，`pip check`通过。
 - 安装包CLI分别完成`predict_then_feedback`三候选和`labeled_train_then_predict`四候选Smoke；真实SwanLab 0.10.4离线导出8条聚合事件。
-- 完整自动测试`93 passed`；编译检查通过；Docker上下文124文件、484,111字节、无禁入文件。
+- 完整自动测试`93 passed`；编译检查通过；Docker上下文124文件、486,353字节、无禁入文件。
 - 实际Docker镜像、4核8GB Linux容器、正式SDK/数据/评分及比赛SwanLab同步仍明确`BLOCKED`，未制造通过证据。
 
 ## 2026-11-07：SYS-001统一任务引导、CPU模型池与注册表
