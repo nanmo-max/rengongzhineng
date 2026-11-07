@@ -219,7 +219,7 @@ SYS-005
 - 完成标准：生成版本清单、哈希、交付审计、完整测试证据和阻塞表；Git提交且不合并main
 - 停止条件：存在未登记的P0失败、证据与文档冲突或工作树不干净
 - 执行清单：`docs/plans/RELEASE-READINESS.md`任务5
-- 证据：`BRACE-MSI-0.1.0rc1`、确定性源码打包器及发布树测试；全新环境安装的wheel实际CLI完成两协议Smoke和SwanLab 0.10.4离线导出，完整回归`93 passed`、`pip check`通过、上下文124文件/486,353字节且无禁入文件。实际镜像与容器任务保持RR-001 BLOCKED。
+- 证据：`BRACE-MSI-0.1.0rc1`、确定性源码打包器及发布树测试；全新环境安装的wheel实际CLI完成两协议Smoke和SwanLab 0.10.4离线导出，完整回归`95 passed`、`pip check`通过、上下文124文件/487,662字节且无禁入文件。实际镜像与容器任务保持RR-001 BLOCKED。
 
 ### CORE-003 模型能力声明与CPU模型适配
 

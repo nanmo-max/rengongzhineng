@@ -56,6 +56,8 @@ def test_python312_linux_release_uses_binary_compatible_psutil_and_no_source_bui
 
     assert "psutil==5.9.8" in requirements
     assert "--only-binary=:all:" in dockerfile
+    assert "requirements-swanlab.lock" in dockerfile
+    assert "pip install --no-cache-dir -r requirements-swanlab.lock" in dockerfile
 
 
 def test_cli_renders_report_without_network_or_interaction(tmp_path: Path) -> None:

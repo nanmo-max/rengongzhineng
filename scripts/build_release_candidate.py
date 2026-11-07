@@ -8,6 +8,7 @@ import json
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 
 from brace_msi.release_candidate import (
     RELEASE_ID,
@@ -88,6 +89,41 @@ def _copy_public_evidence(root: Path, output: Path) -> list[dict[str, object]]:
     return copied
 
 
+def run_release_checks(
+    root: Path,
+    *,
+    python: str = sys.executable,
+    runner=subprocess.run,
+) -> dict[str, dict[str, object]]:
+    commands = {
+        "pytest": (python, "-m", "pytest", "-q", "--tb=short"),
+        "pip_check": (python, "-m", "pip", "check"),
+        "compileall": (python, "-m", "compileall", "-q", "src", "tests", "scripts"),
+    }
+    results: dict[str, dict[str, object]] = {}
+    for name, command in commands.items():
+        completed = runner(
+            command,
+            cwd=root,
+            check=False,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+        )
+        if completed.returncode != 0:
+            raise RuntimeError(
+                f"release check failed: {name}\n{completed.stdout}\n{completed.stderr}"
+            )
+        lines = [line for line in completed.stdout.splitlines() if line.strip()]
+        results[name] = {
+            "status": "PASS",
+            "command": list(command),
+            "summary": lines[-1] if lines else "exit 0",
+        }
+    return results
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", type=Path, required=True)
@@ -100,6 +136,7 @@ def main() -> int:
     if status:
         raise RuntimeError("release source tree must be clean before packaging")
 
+    verification = run_release_checks(root)
     tracked = _tracked_files(root)
     audit = audit_release_tree(root, tracked)
     if audit.blocking_findings:
@@ -125,6 +162,7 @@ def main() -> int:
             "official_score": False,
         },
         "public_evidence": evidence,
+        "verification": verification,
         "release_gates": {
             "source_tree_audit": "PASS",
             "clean_environment_regression": "PASS",

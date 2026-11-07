@@ -58,7 +58,7 @@
 ## Release Candidate恢复边界
 
 - 当前版本：`BRACE-MSI-0.1.0rc1`；入口见`docs/RELEASE_CANDIDATE.md`。
-- RR-002至RR-005完成；全新安装包通过93项测试、两协议Smoke、SwanLab 0.10.4离线导出和静态交付审计。
+- RR-002至RR-005完成；全新安装包通过95项测试、两协议Smoke、SwanLab 0.10.4离线导出和静态交付审计。
 - RR-001保持`BLOCKED`：本机无Docker/Podman且所需Windows虚拟化功能未启用，实际镜像和4核8GB容器没有通过证据。
 - 正式SDK插件入口：`src/brace_msi/official_sdk.py`和`python -m brace_msi sdk-contract-check`；未知字段不得写入核心。
 - SwanLab入口：`src/brace_msi/swanlab_adapter.py`与`docs/SWANLAB_INTEGRATION.md`；同步必须由人工显式执行。

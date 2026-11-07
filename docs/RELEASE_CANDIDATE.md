@@ -10,9 +10,10 @@ RC不包含原始数据、模型权重、私有审计日志、API密钥或正式
 `scripts/build_release_candidate.py`从Git跟踪文件的白名单确定性生成；公开证据包只复制A1/A2
 的`summary.json`、离线HTML和脱敏`public-spool.jsonl`。
 
-最终干净环境证据：安装wheel版本`0.1.0rc1`，`pip check`无冲突，完整测试`93 passed`；
+最终干净环境证据：安装wheel版本`0.1.0rc1`，`pip check`无冲突，完整测试`95 passed`；
 两种协议的安装包CLI Smoke分别完成3和4个真实候选事件；真实SwanLab 0.10.4离线导出8条
-聚合事件。Docker上下文静态审计为124文件、486,353字节且无禁入文件。
+聚合事件。Docker上下文静态审计为124文件、487,662字节且无禁入文件。RC打包器在生成
+PASS清单前会自行重跑pytest、`pip check`与编译检查；默认Docker构建包含锁定SwanLab依赖。
 
 ## 交付矩阵
 

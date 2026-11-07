@@ -7,8 +7,9 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     MKL_NUM_THREADS=4
 
 WORKDIR /app
-COPY requirements.lock pyproject.toml README.md ./
-RUN python -m pip install --no-cache-dir --only-binary=:all: -r requirements.lock
+COPY requirements.lock requirements-swanlab.lock pyproject.toml README.md ./
+RUN python -m pip install --no-cache-dir --only-binary=:all: -r requirements.lock \
+    && python -m pip install --no-cache-dir -r requirements-swanlab.lock
 COPY src ./src
 RUN python -m pip install --no-cache-dir --no-deps .
 
