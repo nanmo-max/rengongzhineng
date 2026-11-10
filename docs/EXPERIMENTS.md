@@ -5,10 +5,10 @@
 ## 当前汇总
 
 - 正式实验：0
-- 探索实验：3（Smoke、完整DEV、完整密封均已完成）
+- 探索实验：5（既有3项，加XJTU A1 INVALID与A2 SUCCEEDED）
 - 工程验收实验：2次运行尝试（A1 INVALID、A2 SUCCEEDED）
-- 训练运行：24（全部为本地代理或合成协议任务；既有18运行，加两次完整系统三任务）
-- 已报告模型指标：仅代理实验，见`results/LOCAL-SMOKE-001.md`与`results/LOCAL-EXP-001.md`
+- 训练运行：34（全部为本地代理、合成协议或XJTU本地开发任务；无官方评分实验）
+- 已报告模型指标：仅本地代理/开发实验，见`results/LOCAL-SMOKE-001.md`、`results/LOCAL-EXP-001.md`与`results/XJTU-LOCAL-DEV-001.md`
 - 完整系统模拟：`LOCAL-FORMAL-SIM-001`已完成（只用合法开发段与合成协议任务）
 
 Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所有结果仍是`proxy_only`，不得表述为官方成绩 `[L-DATA-001]` `[L-DATA-002]`。
@@ -31,7 +31,8 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 | LOCAL-EXP-001 | SUCCEEDED | 冻结策略在完整密封段的性能、最差阶段与资源相对静态/简单触发如何？ | Gas冻结1–3/4–7/8–10；FD001发动机60%/20%/20%；密封仅运行一次 | `configs/local_full.json`；执行提交`f9647dd`，与DEV阈值一致 | 同DEV；密封阶段禁止训练；种子20261106 | 6/6完成；开发指标与DEV完全一致；密封指标见结果文档 | `results/LOCAL-EXP-001.md`；本地`artifacts/experiments/LOCAL-EXP-001/run-f9647dd-sealed-once/` |
 | LOCAL-FORMAL-SIM-001-A1 | INVALID | 完整候选Harness能否在三任务上无人干预完成初始化、至少三次候选、部署/拒绝、恢复、记录、资源审计和报告？ | Gas仅1–7；FD001仅发动机1–80；合成轴承漂移流仅作协议验收；未加载/评估已消费密封段 | `configs/formal_simulation.json`；预注册`ee2c3a6`/`a99656c`；执行`ce3e907` | 每任务最多8候选、80,000训练样本、120秒候选墙钟/CPU；进程最多4逻辑CPU；RSS验收8GB | 运行完成，但验收器把2次注入失败误算为真实训练，合成任务实际只完成2次模型拟合；最终自审判定INVALID | 本地保留`artifacts/formal_simulation/LOCAL-FORMAL-SIM-001/run-ce3e907/`，不得作成功证据 |
 | LOCAL-FORMAL-SIM-001-A2 | SUCCEEDED | 修正真实候选计数和审计恢复后，是否满足原预注册工程验收标准？ | 与A1完全相同，仅开发段与合成协议流；不用于性能调参 | 原配置不变；执行`7ef3829` | 与A1相同 | 三任务真实候选4/4/3；动作增量7、回放1、HPO3；机器验收通过 | `results/LOCAL-FORMAL-SIM-001.md`；本地`artifacts/formal_simulation/LOCAL-FORMAL-SIM-001/run-7ef3829/` |
-| XJTU-LOCAL-DEV-001 | RUNNING | 新增XJTU-SY数据能否在严格按轴承分组下完成可恢复特征缓存、强静态基线和两种自主更新策略？ | 15个轴承按身份冻结为9初训/3开发/3密封；自定RUL目标，只用于本地开发 | `configs/xjtu_local_serial.json`；实现提交`2460577` | 4逻辑CPU；每策略最多8候选、50,000训练样本、600秒候选墙钟/CPU；特征缓存逐轴承断点保存 | 已完成100项回归测试；待后台完成原始校验、缓存与五轮队列 | 派生运行根`D:/brace-msi-xjtu/XJTU-LOCAL-DEV-001/`；仓库内只提交聚合结果与协议 |
+| XJTU-LOCAL-DEV-001-A1 | INVALID | 新增XJTU-SY数据能否在严格按轴承分组下完成可恢复特征缓存、强静态基线和两种自主更新策略？ | 9初训/3开发；密封未加载；自定RUL，仅本地开发 | `configs/xjtu_local_serial.json`；实现提交`2460577` | 4逻辑CPU；策略最多8候选、50,000训练样本、600秒候选墙钟/CPU | 5轮运行成功，但事后审查发现静态模型用了全部9个初训轴承，策略留出2个锚点，配对比较不公平，判定INVALID | `D:/brace-msi-xjtu/XJTU-LOCAL-DEV-001/experiments/`与`A1-INVALID.json`完整保留 |
+| XJTU-LOCAL-DEV-001-A2 | SUCCEEDED | 修复初训可见性后，五轮队列能否完成且形成至少3次真实候选？ | 静态与策略均用相同7个初训轴承训练、2个初训轴承作锚点；3开发；密封未加载 | 同一配置；修正代码提交`2e29ae7` | 同A1 | 5/5轮完成，指标有限；BRACE完成3次真实候选并全部被门控拒绝；简单触发0次动作；机器验收`valid=true` | `results/XJTU-LOCAL-DEV-001.md`；本地`D:/brace-msi-xjtu/XJTU-LOCAL-DEV-001/experiments-a2/`与`validation-experiments-a2.json` |
 
 ## XJTU-LOCAL-DEV-001预注册
 

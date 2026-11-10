@@ -77,5 +77,5 @@
 
 - 当前任务以`STATUS.md`和`TASKS.md`中的`XJTU-LOCAL-001`为准；实施计划为`docs/plans/XJTU-LOCAL-SERIAL.md`。
 - 配置与入口：`configs/xjtu_local_serial.json`、`scripts/run_xjtu_local.py`；机器派生根为`D:/brace-msi-xjtu/XJTU-LOCAL-DEV-001/`。
-- 查看`pipeline-status.json`、`experiments/status.json`和`runner.stdout.log`/`runner.stderr.log`恢复后台状态；逐轴承缓存与逐轮JSON存在即断点跳过，不删除或覆盖成功证据。
-- 当前队列只读取9个初训和3个开发轴承；3个密封轴承不进入特征缓存或训练。全部结果必须保留`local_development_only`边界，不解除H-006。
+- 运行已结束，无后台进程。A1在`experiments/`因公平可见性缺陷标记INVALID；有效A2在`experiments-a2/`，以`validation-experiments-a2.json`和`docs/results/XJTU-LOCAL-DEV-001.md`为准。
+- 当前队列只读取9个初训和3个开发轴承；3个密封轴承不进入特征缓存或训练。逐轴承缓存和运行证据可恢复但不得无理由重跑。全部结果必须保留`local_development_only`边界，不解除H-006。

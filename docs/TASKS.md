@@ -241,13 +241,14 @@ SYS-005
 
 ### XJTU-LOCAL-001 新增轴承数据本地串行训练
 
-- 状态：`IN_PROGRESS`
+- 状态：`DONE`
 - 依赖：DATA-001已完成的XJTU-SY只读结构审计、L-AUTH-006
 - 优先级：P0，本地独立路径
 - 完成标准：冻结按轴承分组且互斥的初训/开发/密封切分；完成可恢复的独立CSV特征缓存；静态强CPU基线、性能触发和BRACE串行运行；前三个实验轮次经日志/有限指标/资源检查；后台进程可脱离会话继续并保存状态；最终保留本地审计与失败证据。
 - 停止条件：原始分卷哈希变化、分组交叉、特征使用未来寿命/未来批次、非有限数据无法清理、派生空间不足，或运行目录包含已有证据且可能被覆盖。
 - 边界：`local_development_only=true`；不运行SwanLab，不改变RC标签，不复训Gas/FD001，不把自定RUL协议称为官方任务或成绩。
 - 实施计划：`docs/plans/XJTU-LOCAL-SERIAL.md`
+- 证据：实现提交`2460577`、公平切分与验收修正`2e29ae7`；`D:/brace-msi-xjtu/XJTU-LOCAL-DEV-001/`；A1因静态/策略初训可见性不一致标记INVALID并保留，A2`experiments-a2/`完成5/5轮、3次真实候选且`validation-experiments-a2.json`为`valid=true`；聚合结果见`docs/results/XJTU-LOCAL-DEV-001.md`；完整回归101项通过。
 
 ### BASE-001/002/003 三任务静态基线
 
