@@ -31,7 +31,7 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 | LOCAL-EXP-001 | SUCCEEDED | 冻结策略在完整密封段的性能、最差阶段与资源相对静态/简单触发如何？ | Gas冻结1–3/4–7/8–10；FD001发动机60%/20%/20%；密封仅运行一次 | `configs/local_full.json`；执行提交`f9647dd`，与DEV阈值一致 | 同DEV；密封阶段禁止训练；种子20261106 | 6/6完成；开发指标与DEV完全一致；密封指标见结果文档 | `results/LOCAL-EXP-001.md`；本地`artifacts/experiments/LOCAL-EXP-001/run-f9647dd-sealed-once/` |
 | LOCAL-FORMAL-SIM-001-A1 | INVALID | 完整候选Harness能否在三任务上无人干预完成初始化、至少三次候选、部署/拒绝、恢复、记录、资源审计和报告？ | Gas仅1–7；FD001仅发动机1–80；合成轴承漂移流仅作协议验收；未加载/评估已消费密封段 | `configs/formal_simulation.json`；预注册`ee2c3a6`/`a99656c`；执行`ce3e907` | 每任务最多8候选、80,000训练样本、120秒候选墙钟/CPU；进程最多4逻辑CPU；RSS验收8GB | 运行完成，但验收器把2次注入失败误算为真实训练，合成任务实际只完成2次模型拟合；最终自审判定INVALID | 本地保留`artifacts/formal_simulation/LOCAL-FORMAL-SIM-001/run-ce3e907/`，不得作成功证据 |
 | LOCAL-FORMAL-SIM-001-A2 | SUCCEEDED | 修正真实候选计数和审计恢复后，是否满足原预注册工程验收标准？ | 与A1完全相同，仅开发段与合成协议流；不用于性能调参 | 原配置不变；执行`7ef3829` | 与A1相同 | 三任务真实候选4/4/3；动作增量7、回放1、HPO3；机器验收通过 | `results/LOCAL-FORMAL-SIM-001.md`；本地`artifacts/formal_simulation/LOCAL-FORMAL-SIM-001/run-7ef3829/` |
-| XJTU-LOCAL-DEV-001 | PLANNED | 新增XJTU-SY数据能否在严格按轴承分组下完成可恢复特征缓存、强静态基线和两种自主更新策略？ | 15个轴承按身份冻结为9初训/3开发/3密封；自定RUL目标，只用于本地开发 | `configs/xjtu_local_serial.json`；执行提交待运行 | 4逻辑CPU；每策略最多8候选、20,000训练样本、600秒候选墙钟/CPU；特征缓存逐轴承断点保存 | 待运行；前三轮为Ridge、HistGradientBoosting、ExtraTrees静态基线，随后串行性能触发与BRACE | 派生运行根`D:/brace-msi-xjtu/XJTU-LOCAL-DEV-001/`；仓库内只提交聚合结果与协议 |
+| XJTU-LOCAL-DEV-001 | RUNNING | 新增XJTU-SY数据能否在严格按轴承分组下完成可恢复特征缓存、强静态基线和两种自主更新策略？ | 15个轴承按身份冻结为9初训/3开发/3密封；自定RUL目标，只用于本地开发 | `configs/xjtu_local_serial.json`；实现提交`2460577` | 4逻辑CPU；每策略最多8候选、50,000训练样本、600秒候选墙钟/CPU；特征缓存逐轴承断点保存 | 已完成100项回归测试；待后台完成原始校验、缓存与五轮队列 | 派生运行根`D:/brace-msi-xjtu/XJTU-LOCAL-DEV-001/`；仓库内只提交聚合结果与协议 |
 
 ## XJTU-LOCAL-DEV-001预注册
 

@@ -72,3 +72,10 @@
 - XJTU-SY六个分卷完整，包含15个轴承和9,216个唯一CSV；RAR跨卷列表的5个重复记录必须去重。尚未确定比赛目标、切分和指标，不得自行选择分类或RUL任务后声称正式实验。
 - 当前唯一任务为`DATA-001`。先取得并登记比赛manifest、任务定义、切分、指标、评分脚本和许可证，再决定是否需要重跑Gas/C-MAPSS并开始轴承训练。
 - SwanLab不是当前任务。依据`D-023`，只在平台规范与最终工程模型冻结后，通过正式重新训练生成最终记录；此前不运行、修改或同步SwanLab。
+
+## XJTU-SY本地串行训练恢复边界
+
+- 当前任务以`STATUS.md`和`TASKS.md`中的`XJTU-LOCAL-001`为准；实施计划为`docs/plans/XJTU-LOCAL-SERIAL.md`。
+- 配置与入口：`configs/xjtu_local_serial.json`、`scripts/run_xjtu_local.py`；机器派生根为`D:/brace-msi-xjtu/XJTU-LOCAL-DEV-001/`。
+- 查看`pipeline-status.json`、`experiments/status.json`和`runner.stdout.log`/`runner.stderr.log`恢复后台状态；逐轴承缓存与逐轮JSON存在即断点跳过，不删除或覆盖成功证据。
+- 当前队列只读取9个初训和3个开发轴承；3个密封轴承不进入特征缓存或训练。全部结果必须保留`local_development_only`边界，不解除H-006。
