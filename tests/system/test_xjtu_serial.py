@@ -6,7 +6,7 @@ from pathlib import Path
 import numpy as np
 
 from brace_msi.data.types import BatchData, TaskStream
-from brace_msi.xjtu_serial import run_serial_experiments
+from brace_msi.xjtu_serial import run_serial_experiments, validate_serial_output
 
 
 def _stream() -> TaskStream:
@@ -85,6 +85,9 @@ def test_serial_runner_checkpoints_each_round_and_resumes(tmp_path: Path) -> Non
     assert first["status"] == "paused"
     assert first["completed_rounds"] == 3
     assert len(list((output / "rounds").glob("*.json"))) == 3
+    for path in (output / "rounds").glob("*.json"):
+        result = json.loads(path.read_text(encoding="utf-8"))
+        assert result["training_samples"] == 54
     status = json.loads((output / "status.json").read_text(encoding="utf-8"))
     assert status["completed_rounds"] == 3
     assert status["health"]["finite_metrics"] is True
@@ -94,4 +97,12 @@ def test_serial_runner_checkpoints_each_round_and_resumes(tmp_path: Path) -> Non
     assert complete["status"] == "completed"
     assert complete["completed_rounds"] == 5
     assert len(list((output / "rounds").glob("*.json"))) == 5
+    validation = validate_serial_output(
+        output,
+        expected_round_ids=tuple(spec["id"] for spec in _config()["rounds"]),
+        minimum_real_candidates=2,
+    )
+    assert validation["valid"] is True
+    assert validation["finite_metrics"] is True
+    assert validation["real_candidates"] >= 2
 

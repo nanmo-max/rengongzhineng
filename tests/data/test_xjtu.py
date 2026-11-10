@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import numpy as np
+import pytest
 
 from brace_msi.data.xjtu import (
     FROZEN_BEARING_SPLIT,
@@ -10,6 +11,7 @@ from brace_msi.data.xjtu import (
     extract_signal_features,
     load_xjtu_stream,
     numeric_csv_files,
+    XjtuFormatError,
 )
 
 
@@ -28,14 +30,22 @@ def _write_signal(path: Path, offset: float) -> None:
 
 
 def test_numeric_csv_files_uses_numeric_order(tmp_path: Path) -> None:
-    for name in ("10.csv", "2.csv", "1.csv"):
+    for name in ("3.csv", "2.csv", "1.csv"):
         _write_signal(tmp_path / name, 0.0)
 
     assert [path.name for path in numeric_csv_files(tmp_path)] == [
         "1.csv",
         "2.csv",
-        "10.csv",
+        "3.csv",
     ]
+
+
+def test_numeric_csv_files_rejects_missing_minutes(tmp_path: Path) -> None:
+    for name in ("1.csv", "3.csv"):
+        _write_signal(tmp_path / name, 0.0)
+
+    with pytest.raises(XjtuFormatError, match="contiguous"):
+        numeric_csv_files(tmp_path)
 
 
 def test_signal_features_are_finite_and_fixed_width() -> None:

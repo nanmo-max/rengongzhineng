@@ -19,7 +19,7 @@ from brace_msi.data.xjtu import (
     extract_bearing_cache,
     load_xjtu_stream,
 )
-from brace_msi.xjtu_serial import run_serial_experiments
+from brace_msi.xjtu_serial import run_serial_experiments, validate_serial_output
 
 
 CONDITIONS = {
@@ -34,6 +34,7 @@ def _arguments() -> argparse.Namespace:
     parser.add_argument("--config", type=Path, required=True)
     parser.add_argument("--archive", type=Path, required=True)
     parser.add_argument("--runtime-root", type=Path, required=True)
+    parser.add_argument("--experiment-directory", default="experiments")
     parser.add_argument(
         "--rar-executable",
         type=Path,
@@ -85,6 +86,22 @@ def _validate_archives(config: dict[str, Any], first_part: Path) -> dict[str, st
             raise RuntimeError(f"archive hash mismatch: {name}")
         observed[name] = digest.upper()
     return observed
+
+
+def _source_state() -> dict[str, Any]:
+    commit = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    worktree = subprocess.run(
+        ["git", "status", "--porcelain"],
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout
+    return {"source_commit": commit, "source_tree_dirty": bool(worktree.strip())}
 
 
 def _extract_archive(first_part: Path, raw_root: Path, rar_executable: Path) -> None:
@@ -164,12 +181,24 @@ def main() -> int:
     args = _arguments()
     config = json.loads(args.config.read_text(encoding="utf-8"))
     runtime_root = args.runtime_root
+    if Path(args.experiment_directory).name != args.experiment_directory:
+        raise ValueError("experiment directory must be a single relative name")
+    experiment_root = runtime_root / args.experiment_directory
     runtime_root.mkdir(parents=True, exist_ok=True)
     selected_cpus = _limit_cpu()
     try:
         _status(runtime_root, "validating_archives", cpu_affinity=selected_cpus)
         hashes = _validate_archives(config, args.archive)
         _atomic_json(runtime_root / "archive-hashes.json", hashes)
+        _atomic_json(
+            runtime_root / f"run-metadata-{args.experiment_directory}.json",
+            {
+                "experiment_id": config["experiment_id"],
+                "experiment_directory": args.experiment_directory,
+                "local_development_only": True,
+                **_source_state(),
+            },
+        )
         _status(runtime_root, "extracting", cpu_affinity=selected_cpus)
         _extract_archive(args.archive, runtime_root / "raw", args.rar_executable)
         _status(runtime_root, "feature_cache", completed_bearings=0, total_bearings=12)
@@ -182,8 +211,20 @@ def main() -> int:
             initial_samples=len(stream.initial.y),
             development_samples=sum(len(batch.y) for batch in stream.development),
         )
-        result = run_serial_experiments(stream, config, runtime_root / "experiments")
-        _status(runtime_root, "completed", serial_result=result)
+        result = run_serial_experiments(stream, config, experiment_root)
+        validation = validate_serial_output(
+            experiment_root,
+            expected_round_ids=tuple(item["id"] for item in config["rounds"]),
+            minimum_real_candidates=3,
+        )
+        _atomic_json(runtime_root / f"validation-{args.experiment_directory}.json", validation)
+        _status(
+            runtime_root,
+            "completed",
+            experiment_directory=args.experiment_directory,
+            serial_result=result,
+            validation=validation,
+        )
         return 0
     except Exception as exc:
         _status(

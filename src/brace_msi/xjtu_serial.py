@@ -41,17 +41,38 @@ def _finite(value: Any) -> bool:
 
 
 def _static_round(
-    stream: TaskStream, *, family: str, seed: int, round_id: str
+    stream: TaskStream,
+    *,
+    family: str,
+    seed: int,
+    round_id: str,
+    validation_fraction: float,
 ) -> dict[str, Any]:
     params: dict[str, Any] = {}
     if family == "extra_trees":
         params = {"n_estimators": 160, "max_depth": 24}
     elif family == "hist_gradient_boosting":
         params = {"max_iter": 128, "max_leaf_nodes": 31}
+    indices = np.arange(len(stream.initial.y))
+    if stream.initial.group_ids and len(set(stream.initial.group_ids)) > 1:
+        groups = sorted(set(stream.initial.group_ids), key=int)
+        anchor_count = max(1, int(round(len(groups) * validation_fraction)))
+        anchor_groups = set(groups[-anchor_count:])
+        train_mask = np.asarray(
+            [group not in anchor_groups for group in stream.initial.group_ids]
+        )
+        train_indices = indices[train_mask]
+    else:
+        cut = max(1, int(len(indices) * (1.0 - validation_fraction)))
+        train_indices = indices[:cut]
+    if len(train_indices) == 0:
+        raise RuntimeError("static baseline split produced no training samples")
+    train_X = stream.initial.X[train_indices]
+    train_y = stream.initial.y[train_indices]
     with ResourceTracker() as tracker:
         model = CpuModelAdapter(
             task_kind="regression", family=family, seed=seed, params=params
-        ).fit(stream.initial.X, stream.initial.y)
+        ).fit(train_X, train_y)
     predictions = [model.predict(batch.X) for batch in stream.development]
     targets = [batch.y for batch in stream.development]
     y = np.concatenate(targets)
@@ -79,7 +100,7 @@ def _static_round(
         },
         "batch_metrics": batch_metrics,
         "resources": asdict(usage),
-        "training_samples": len(stream.initial.y),
+        "training_samples": len(train_y),
     }
 
 
@@ -143,6 +164,7 @@ def run_serial_experiments(
                     family=str(round_spec["family"]),
                     seed=int(config["seed"]),
                     round_id=str(round_spec["id"]),
+                    validation_fraction=float(config.get("validation_fraction", 0.25)),
                 )
             elif round_spec["kind"] == "policy":
                 result = _policy_round(
@@ -187,4 +209,52 @@ def run_serial_experiments(
     }
     _atomic_json(output_dir / "status.json", state)
     return state
+
+
+def validate_serial_output(
+    output_dir: Path,
+    *,
+    expected_round_ids: tuple[str, ...],
+    minimum_real_candidates: int,
+) -> dict[str, Any]:
+    """Fail closed when a completed serial queue lacks auditable evidence."""
+
+    output_dir = Path(output_dir)
+    try:
+        status = json.loads((output_dir / "status.json").read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise RuntimeError("missing or invalid XJTU serial status") from exc
+    if status.get("status") != "completed":
+        raise RuntimeError("XJTU serial queue is not completed")
+    if status.get("completed_rounds") != len(expected_round_ids):
+        raise RuntimeError("XJTU serial completed-round count is inconsistent")
+
+    real_candidates = 0
+    results: list[dict[str, Any]] = []
+    for round_id in expected_round_ids:
+        path = output_dir / "rounds" / f"{round_id}.json"
+        try:
+            result = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            raise RuntimeError(f"missing or invalid round evidence: {round_id}") from exc
+        if result.get("round_id") != round_id:
+            raise RuntimeError(f"round identity mismatch: {round_id}")
+        if result.get("local_development_only") is not True:
+            raise RuntimeError(f"unsafe experiment boundary in round: {round_id}")
+        metrics = result.get("metrics", {})
+        if set(metrics) != {"rmse", "mae"} or not _finite(metrics):
+            raise RuntimeError(f"missing or non-finite metrics in round: {round_id}")
+        if "sealed_metrics" in result:
+            raise RuntimeError(f"sealed output is forbidden in local queue: {round_id}")
+        real_candidates += int(result.get("candidate_count", 0))
+        results.append(result)
+    if real_candidates < minimum_real_candidates:
+        raise RuntimeError("insufficient real candidate iterations")
+    return {
+        "valid": True,
+        "finite_metrics": True,
+        "round_count": len(results),
+        "real_candidates": real_candidates,
+        "round_ids": list(expected_round_ids),
+    }
 

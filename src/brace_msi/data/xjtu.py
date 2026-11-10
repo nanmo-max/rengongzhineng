@@ -56,7 +56,11 @@ def numeric_csv_files(directory: Path) -> tuple[Path, ...]:
     numbers = [number for number, _ in indexed]
     if len(numbers) != len(set(numbers)):
         raise XjtuFormatError(f"duplicate CSV sequence in {directory}")
-    return tuple(path for _, path in sorted(indexed, key=lambda item: item[0]))
+    ordered = sorted(indexed, key=lambda item: item[0])
+    ordered_numbers = [number for number, _ in ordered]
+    if ordered_numbers != list(range(1, len(ordered_numbers) + 1)):
+        raise XjtuFormatError(f"CSV sequence must be contiguous from 1 in {directory}")
+    return tuple(path for _, path in ordered)
 
 
 def _channel_features(
