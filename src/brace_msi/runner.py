@@ -109,7 +109,7 @@ def _split_initial(batch: BatchData, task_kind: str, config: RunConfig):
             random_state=config.seed,
             stratify=batch.y,
         )
-    elif batch.group_ids:
+    elif batch.group_ids and len(set(batch.group_ids)) > 1:
         groups = sorted(set(batch.group_ids), key=int)
         anchor_count = max(1, int(round(len(groups) * config.validation_fraction)))
         anchor_groups = set(groups[-anchor_count:])

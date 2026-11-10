@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "experiment_id": "XJTU-LOCAL-DEV-001",
+  "local_development_only": true,
+  "seed": 20261111,
+  "archive_sha256": {
+    "XJTU-SY_Bearing_Datasets.part01.rar": "C500657353F089A4AB50212FF4DDFC7B982729E92E2B127440C8AD881D80B968",
+    "XJTU-SY_Bearing_Datasets.part02.rar": "4DFA6286A8E9C7CEC1E925B347642349F36E27AB3F703C90D1D08977B7B4F61F",
+    "XJTU-SY_Bearing_Datasets.part03.rar": "6929F531284F79E0209246B4EE23B23DD8D4FAAC1C0C3FF8FB131CDA4A18BD3A",
+    "XJTU-SY_Bearing_Datasets.part04.rar": "2245825ACD29BED3B95E7A77879A3FBADF20F4AD4F99486384C714174621597D",
+    "XJTU-SY_Bearing_Datasets.part05.rar": "E1B0A41A32B865E48EA7981C56F952A960D94335F3496B72EB4A65932F1671BD",
+    "XJTU-SY_Bearing_Datasets.part06.rar": "DF1854821A9D481104476379F7BC045EA1E101427C6E36145CD7677DC7C4A684"
+  },
+  "rounds": [
+    {"id": "01-ridge-static", "kind": "static", "family": "linear"},
+    {"id": "02-hist-static", "kind": "static", "family": "hist_gradient_boosting"},
+    {"id": "03-extra-trees-static", "kind": "static", "family": "extra_trees"},
+    {"id": "04-performance-triggered", "kind": "policy", "policy": "performance_triggered"},
+    {"id": "05-brace", "kind": "policy", "policy": "brace"}
+  ],
+  "budget": {
+    "max_candidates": 8,
+    "max_training_samples": 50000,
+    "max_wall_seconds": 600.0,
+    "max_cpu_seconds": 600.0
+  },
+  "gate": {
+    "min_validation_samples": 32,
+    "min_primary_improvement": 0.0,
+    "max_anchor_degradation": 50.0
+  },
+  "policies": {
+    "performance_triggered": {"regression_drop_threshold": 10.0},
+    "brace": {
+      "regression": {
+        "update_drop_threshold": 5.0,
+        "refit_drop_threshold": 50.0,
+        "drift_threshold": 0.2,
+        "high_drift_threshold": 0.7
+      }
+    }
+  }
+}
