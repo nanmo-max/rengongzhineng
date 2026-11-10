@@ -171,7 +171,7 @@
 
 - 本地路径：`C:\Users\Administrator\Desktop\官方`
 - 核验日期：2026-11-10
-- 事实：Gas 10批与既有`L-DATA-001`逐文件SHA-256相同；C-MAPSS的FD001-FD004训练、测试、RUL和readme与`L-DATA-002`内层压缩包逐文件SHA-256相同；XJTU-SY六个RAR5分卷完整性测试通过，包含15个轴承、3种工况和9,221个双通道振动CSV。
+- 事实：Gas 10批与既有`L-DATA-001`逐文件SHA-256相同；C-MAPSS的FD001-FD004训练、测试、RUL和readme与`L-DATA-002`内层压缩包逐文件SHA-256相同；XJTU-SY六个RAR5分卷完整性测试通过，包含15个轴承、3种工况和9,216个唯一双通道振动CSV。多卷列表的5个跨卷重复项已按路径去重。
 - 证据：[source_notes/OFFICIAL_DATA_INTAKE_2026-11-10.md](source_notes/OFFICIAL_DATA_INTAKE_2026-11-10.md)
 - 边界：目录没有组委会manifest、比赛任务定义、指标、官方切分或许可证文件；“官方数据”身份目前同时依赖用户确认与原始数据指纹，正式实验协议仍待H-006解决。
 
