@@ -175,6 +175,12 @@
 - 证据：[source_notes/OFFICIAL_DATA_INTAKE_2026-11-10.md](source_notes/OFFICIAL_DATA_INTAKE_2026-11-10.md)
 - 边界：目录没有组委会manifest、比赛任务定义、指标、官方切分或许可证文件；“官方数据”身份目前同时依赖用户确认与原始数据指纹，正式实验协议仍待H-006解决。
 
+### L-AUTH-005 正式实验记录阶段边界
+
+- 来源：用户2026-11-11当前指令
+- 事实：比赛实验记录指最终完成品中的工程模型正式重新训练记录；当前数据审计和接入准备阶段不需要修改或运行SwanLab。其余平台、任务和记录规范将由比赛平台提供。
+- 边界：当前仍保留本地私有审计和已有SwanLab适配代码，但不生成、同步或公开新的SwanLab运行；只有最终工程模型、官方协议和平台规范冻结后才执行正式记录重训。
+
 ### O-SWANLAB-001 SwanLab官方离线与同步接口
 
 - 来源：SwanLab官方文档`https://docs.swanlab.cn/api/py-init.html`、`https://docs.swanlab.cn/api/cli-swanlab-offline.html`及API索引；检查日期2026-11-07
