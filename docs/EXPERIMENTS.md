@@ -31,6 +31,18 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 | LOCAL-EXP-001 | SUCCEEDED | 冻结策略在完整密封段的性能、最差阶段与资源相对静态/简单触发如何？ | Gas冻结1–3/4–7/8–10；FD001发动机60%/20%/20%；密封仅运行一次 | `configs/local_full.json`；执行提交`f9647dd`，与DEV阈值一致 | 同DEV；密封阶段禁止训练；种子20261106 | 6/6完成；开发指标与DEV完全一致；密封指标见结果文档 | `results/LOCAL-EXP-001.md`；本地`artifacts/experiments/LOCAL-EXP-001/run-f9647dd-sealed-once/` |
 | LOCAL-FORMAL-SIM-001-A1 | INVALID | 完整候选Harness能否在三任务上无人干预完成初始化、至少三次候选、部署/拒绝、恢复、记录、资源审计和报告？ | Gas仅1–7；FD001仅发动机1–80；合成轴承漂移流仅作协议验收；未加载/评估已消费密封段 | `configs/formal_simulation.json`；预注册`ee2c3a6`/`a99656c`；执行`ce3e907` | 每任务最多8候选、80,000训练样本、120秒候选墙钟/CPU；进程最多4逻辑CPU；RSS验收8GB | 运行完成，但验收器把2次注入失败误算为真实训练，合成任务实际只完成2次模型拟合；最终自审判定INVALID | 本地保留`artifacts/formal_simulation/LOCAL-FORMAL-SIM-001/run-ce3e907/`，不得作成功证据 |
 | LOCAL-FORMAL-SIM-001-A2 | SUCCEEDED | 修正真实候选计数和审计恢复后，是否满足原预注册工程验收标准？ | 与A1完全相同，仅开发段与合成协议流；不用于性能调参 | 原配置不变；执行`7ef3829` | 与A1相同 | 三任务真实候选4/4/3；动作增量7、回放1、HPO3；机器验收通过 | `results/LOCAL-FORMAL-SIM-001.md`；本地`artifacts/formal_simulation/LOCAL-FORMAL-SIM-001/run-7ef3829/` |
+| XJTU-LOCAL-DEV-001 | PLANNED | 新增XJTU-SY数据能否在严格按轴承分组下完成可恢复特征缓存、强静态基线和两种自主更新策略？ | 15个轴承按身份冻结为9初训/3开发/3密封；自定RUL目标，只用于本地开发 | `configs/xjtu_local_serial.json`；执行提交待运行 | 4逻辑CPU；每策略最多8候选、20,000训练样本、600秒候选墙钟/CPU；特征缓存逐轴承断点保存 | 待运行；前三轮为Ridge、HistGradientBoosting、ExtraTrees静态基线，随后串行性能触发与BRACE | 派生运行根`D:/brace-msi-xjtu/XJTU-LOCAL-DEV-001/`；仓库内只提交聚合结果与协议 |
+
+## XJTU-LOCAL-DEV-001预注册
+
+- 类型：平台接入前本地开发训练，不是官方评分实验；`local_development_only=true`。
+- 任务：根据XJTU-SY说明书的run-to-failure结构，自定剩余采样分钟数为回归目标；平台若给出不同目标，本实验不迁移结论。
+- 防泄漏切分：初训`Bearing1_1..1_3`、`Bearing2_1..2_3`、`Bearing3_1..3_3`；开发`Bearing1_4/Bearing2_4/Bearing3_4`；密封`Bearing1_5/Bearing2_5/Bearing3_5`。轴承身份不跨分区。前三轮和策略开发均不使用密封结果选型。
+- 特征：每个CSV独立提取双通道时域/频域统计量，只使用当前文件、已知工况和当前已观测分钟序号；不得使用轨迹总长度、未来文件或剩余寿命派生量作为输入。
+- 串行轮次：Ridge静态、HistGradientBoosting静态、ExtraTrees静态、性能触发、BRACE；相同初训/开发可见性与种子20261111。前三轮完成后只确认运行健康，不根据结果更改后续队列。
+- 指标：开发流prequential RMSE/MAE、逐轴承/阶段指标、候选动作与门控、训练样本、墙钟/CPU/RSS；密封评估仅在队列预注册逻辑中运行一次。
+- 运行方式：独立后台进程、原子状态文件、逐轴承特征缓存和逐轮结果；已完成阶段重启时跳过，失败保留并停止后续轮次。
+- 停止条件：见`TASKS.md`的XJTU-LOCAL-001。SwanLab在本实验中禁用。
 
 ## LOCAL-SMOKE-001预注册
 
