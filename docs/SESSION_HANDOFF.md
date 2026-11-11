@@ -1,5 +1,13 @@
 # 新会话恢复与交接
 
+## 2026-11-12统一策略搜索恢复入口
+
+1. 检查后台命令是否仍含`run_unified_policy_optimization.py ... UNIFIED-POLICY-OPT-001-DEV-A1`；交接时Python PID为7416，但PID可能自然退出。
+2. 读取`D:/brace-msi-unified/UNIFIED-POLICY-OPT-001-DEV-A1/state.json`并统计`jobs/**/receipt.json`。预期总作业81；交接快照为74。
+3. 若进程已退出且81/81完成，执行：`D:/anaconda3/python.exe scripts/run_unified_policy_optimization.py --runtime-root D:/brace-msi-unified/UNIFIED-POLICY-OPT-001-DEV-A1 --validate-only`。
+4. 若进程已退出但未完成，使用`EXPERIMENTS.md`登记的同一提交、配置和原命令恢复；执行manifest会拒绝源码、配置或评估协议漂移。
+5. 严格验收通过前不得读取末期数据、冻结最终配置或更新为成功结论；不得使用官方十次测试机会。
+
 ## 恢复指令
 
 在新的Codex会话中，将工作目录设为本项目根目录，然后发送：

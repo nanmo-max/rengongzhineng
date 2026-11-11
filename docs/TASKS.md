@@ -348,7 +348,7 @@ SYS-005
 
 ### UNIFIED-POLICY-001 三任务统一策略优化
 
-- 状态：`READY`
+- 状态：`IN_PROGRESS`
 - 依赖：OFFICIAL-PKG-001、FORMAL-DEV-001、XJTU-LOCAL-001、L-AUTH-008
 - 优先级：P0，当前唯一执行任务
 - 完成标准：实现身份盲、无量纲的共享策略核心；冻结三阶段manifest；完成三个任务级leave-one-task-out fold；公平比较静态、固定低成本、性能触发和BRACE；冻结一组共享配置；末期只测且明确历史暴露等级；生成资源、失败、停止条件和机器验收证据。
@@ -356,6 +356,7 @@ SYS-005
 - 设计：`docs/superpowers/specs/2026-11-11-unified-policy-optimization-design.md`
 - 实施计划：`docs/superpowers/plans/2026-11-11-unified-policy-optimization.md`
 - 边界：不修改D-031冻结实验、RC标签、main或原始数据；Gas/FD001末期为历史暴露，XJTU末期首次打开前必须预注册；不运行SwanLab和平台SDK。
+- 当前运行：`UNIFIED-POLICY-OPT-001-DEV-A1`，提交`e057589`；24组共享配置、81个串行作业，运行根`D:/brace-msi-unified/UNIFIED-POLICY-OPT-001-DEV-A1/`。2026-11-12交接快照74/81收据，后台Python PID 7416。
 
 ### LOCAL-BASE-STRONG 强静态CPU基线补充
 

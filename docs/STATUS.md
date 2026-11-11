@@ -11,7 +11,7 @@
 
 ## 当前执行入口
 
-当前唯一`READY`任务为`UNIFIED-POLICY-001`。先实现身份盲无量纲策略、三阶段manifest和任务级leave-one-task-out；开发搜索不得读取末期数据或消耗官方十次测试机会。旧`OFFICIAL-PKG-001`保持`DONE`和只读。
+当前唯一任务为`UNIFIED-POLICY-001`（`IN_PROGRESS`）。完整开发搜索`UNIFIED-POLICY-OPT-001-DEV-A1`已从干净提交`e057589`启动：24组共享配置、81个串行作业，运行根`D:/brace-msi-unified/UNIFIED-POLICY-OPT-001-DEV-A1/`；2026-11-12交接快照74/81收据，后台Python PID 7416。无需高频监控；恢复时先检查进程、`state.json`和收据数，完成后运行严格验收。开发搜索未读取末期数据，官方测试次数为0。旧`OFFICIAL-PKG-001`保持`DONE`和只读。
 全新环境安装的wheel通过`pip check`、95项测试、两协议CLI Smoke及真实SwanLab 0.10.4离线导出。
 `RR-001`因本机无容器运行时且相关Windows功能均未启用而`BLOCKED`；不得用静态审计替代真实镜像证据。
 A1`ce3e907`保留为INVALID负证据，A2`7ef3829`保留为本地代理工程验收成功证据，合成轴承只标记`protocol_only`。
