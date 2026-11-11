@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import asdict
 from hashlib import sha256
+from html import escape
 import json
 from pathlib import Path
 from typing import Any
@@ -42,6 +43,13 @@ def _atomic_json(path: Path, payload: dict[str, Any]) -> None:
         json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
+    temporary.replace(path)
+
+
+def _atomic_text(path: Path, payload: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    temporary.write_text(payload, encoding="utf-8")
     temporary.replace(path)
 
 
@@ -171,7 +179,77 @@ def _write_summary(root: Path) -> dict[str, Any]:
         "tasks": by_task,
     }
     _atomic_json(root / "summary.json", summary)
+    _write_reports(root, summary)
     return summary
+
+
+def _write_reports(root: Path, summary: dict[str, Any]) -> None:
+    rows: list[tuple[str, str, dict[str, Any]]] = []
+    for task_name, task in summary["tasks"].items():
+        for policy in ("static", "performance_triggered", "brace"):
+            rows.append((task_name, policy, task[policy]))
+
+    markdown = [
+        "# OFFICIAL-RULES-ALIGNED-DEV-001",
+        "",
+        "> Local public-data development evidence; this is not an official score. "
+        "The initial checkpoints are locally reconstructed (`official_checkpoint=false`).",
+        "",
+        "| Task | Policy | Primary | Improvement vs static | Candidates | Accepted | CPU seconds | Training samples |",
+        "|---|---|---:|---:|---:|---:|---:|---:|",
+    ]
+    for task_name, policy, item in rows:
+        markdown.append(
+            "| {task} | {policy} | {primary:.6f} | {delta:.6f} | {candidates} | "
+            "{accepted} | {cpu:.6f} | {samples} |".format(
+                task=task_name,
+                policy=policy,
+                primary=item["aggregate_primary"],
+                delta=item["improvement_over_static"],
+                candidates=item["real_candidate_count"],
+                accepted=item["accepted_candidate_count"],
+                cpu=item["resources"]["candidate_cpu_seconds"],
+                samples=item["resources"]["candidate_training_samples"],
+            )
+        )
+    markdown.extend(
+        [
+            "",
+            "The table reports performance, stability proxies and resources separately. "
+            "No unpublished competition weighting or composite score is inferred.",
+            "",
+        ]
+    )
+    _atomic_text(root / "report.md", "\n".join(markdown))
+
+    html_rows = "".join(
+        "<tr><td>{}</td><td>{}</td><td>{:.6f}</td><td>{:.6f}</td>"
+        "<td>{}</td><td>{}</td><td>{:.6f}</td><td>{}</td></tr>".format(
+            escape(task_name),
+            escape(policy),
+            item["aggregate_primary"],
+            item["improvement_over_static"],
+            item["real_candidate_count"],
+            item["accepted_candidate_count"],
+            item["resources"]["candidate_cpu_seconds"],
+            item["resources"]["candidate_training_samples"],
+        )
+        for task_name, policy, item in rows
+    )
+    html = f"""<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>BRACE-MSI development report</title>
+<style>body{{font:15px system-ui;margin:2rem;color:#17202a}}table{{border-collapse:collapse}}
+th,td{{border:1px solid #ccd1d1;padding:.45rem;text-align:right}}th:first-child,td:first-child,
+th:nth-child(2),td:nth-child(2){{text-align:left}}.notice{{padding:1rem;background:#fff3cd}}</style></head>
+<body><h1>OFFICIAL-RULES-ALIGNED-DEV-001</h1>
+<p class="notice">Local public-data development evidence; this is not an official score.
+Initial checkpoints are locally reconstructed (official_checkpoint=false).</p>
+<table><thead><tr><th>Task</th><th>Policy</th><th>Primary</th><th>Improvement vs static</th>
+<th>Candidates</th><th>Accepted</th><th>CPU seconds</th><th>Training samples</th></tr></thead>
+<tbody>{html_rows}</tbody></table>
+<p>Performance and resources are reported separately; no unpublished scoring formula is inferred.</p>
+</body></html>"""
+    _atomic_text(root / "report.html", html)
 
 
 def run_official_development_suite(

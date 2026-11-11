@@ -110,4 +110,7 @@ def test_suite_pauses_after_first_three_and_resumes_without_repeating(tmp_path: 
     summary = json.loads((root / "summary.json").read_text(encoding="utf-8"))
     assert summary["official_score_computed"] is False
     assert set(summary["tasks"]) == {"gas", "bearing", "engine"}
+    assert (root / "report.html").exists()
+    assert (root / "report.md").exists()
+    assert "not an official score" in (root / "report.html").read_text(encoding="utf-8")
 
