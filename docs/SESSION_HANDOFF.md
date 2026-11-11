@@ -88,3 +88,12 @@
 - 运行根`D:/brace-msi-official-dev/OFFICIAL-RULES-ALIGNED-DEV-001/`已完成9/9，`validation.json`为`valid=true`；后台PID 6084已正常退出，不得重复已完成实验。
 - 结果见`docs/results/OFFICIAL-RULES-ALIGNED-DEV-001.md`。D-027已停止在同一开发流继续调参：Gas/Engine等待平台检查点复验，Bearing使用静态安全默认。
 - 当前禁止平台提交、SwanLab、密封段和RC修改。浏览器自动化本轮因URL不可验证停止，不再重试。
+
+## 官方训练包接入恢复边界
+
+- 官方包路径：`C:/Users/Administrator/Desktop/人工智能创新大赛/训练包`；必须保持只读，不生成`__pycache__`，不复制数据/检查点到Git或镜像。
+- 只读审计：`docs/source_notes/OFFICIAL_TRAINING_PACKAGE_AUDIT_2026-11-11.md`；证据ID为O-PLATFORM-005。
+- 已批准的聊天设计已写入`docs/superpowers/specs/2026-11-11-official-package-integration-design.md`并提交为`51765d7`；当前等待用户确认书面规格，确认后才能调用`writing-plans`并实施。
+- D-028规定正式包必须使用随包NumPy训练器和真实检查点；B为34输入、24隐藏单元。D-026仅是历史本地推断。
+- 预定运行根：`D:/brace-msi-official-package/OFFICIAL-PACKAGE-DEV-001/`。当前尚未启动Smoke或续训，不得虚构产物。
+- 当前仍禁止SwanLab、平台提交、隐藏测试和RC修改。

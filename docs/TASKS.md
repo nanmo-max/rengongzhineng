@@ -239,6 +239,7 @@ SYS-005
 - 已完成：2026-11-10完成三套本地原件只读清点、重复数据逐文件哈希比对和XJTU-SY分卷完整性/结构审计；证据见`docs/source_notes/OFFICIAL_DATA_INTAKE_2026-11-10.md`。
 - 已更新：O-PLATFORM-001已确认三任务目标、单位和主指标，轴承目标不再未知。
 - 新证据：O-PLATFORM-005已提供三任务训练器、真实初始权重、公开train/validation、任务说明与指标；本任务开始验证清单、schema、父检查点和续训行为。
+- 已完成子项：训练包原目录只读复核、关键SHA-256、数据schema/分组/ID隔离、NPZ结构、公开基线复算及随包测试已审计；证据见`docs/source_notes/OFFICIAL_TRAINING_PACKAGE_AUDIT_2026-11-11.md`。
 - 剩余阻塞：正式SDK/批次协议、隐藏测试、完整评分公式、平台资源计量和许可证仍缺失 `[H-006]`；不阻塞官方训练包本地续训，但阻塞正式平台成绩。
 
 ### OFFICIAL-PKG-001 官方训练包适配与十轮续训
