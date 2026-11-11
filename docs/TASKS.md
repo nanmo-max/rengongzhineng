@@ -346,6 +346,17 @@ SYS-005
 
 ## P1：企业赛竞争力
 
+### UNIFIED-POLICY-001 三任务统一策略优化
+
+- 状态：`READY`
+- 依赖：OFFICIAL-PKG-001、FORMAL-DEV-001、XJTU-LOCAL-001、L-AUTH-008
+- 优先级：P0，当前唯一执行任务
+- 完成标准：实现身份盲、无量纲的共享策略核心；冻结三阶段manifest；完成三个任务级leave-one-task-out fold；公平比较静态、固定低成本、性能触发和BRACE；冻结一组共享配置；末期只测且明确历史暴露等级；生成资源、失败、停止条件和机器验收证据。
+- 停止条件：样本/设备组泄漏、策略读取任务身份、末期数据提前访问、BRACE被简单策略在至少两个任务级留出fold上全面支配、资源超限，或需要使用官方测试反馈继续调参。
+- 设计：`docs/superpowers/specs/2026-11-11-unified-policy-optimization-design.md`
+- 实施计划：`docs/superpowers/plans/2026-11-11-unified-policy-optimization.md`
+- 边界：不修改D-031冻结实验、RC标签、main或原始数据；Gas/FD001末期为历史暴露，XJTU末期首次打开前必须预注册；不运行SwanLab和平台SDK。
+
 ### LOCAL-BASE-STRONG 强静态CPU基线补充
 
 - 状态：`BLOCKED`

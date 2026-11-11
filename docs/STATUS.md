@@ -1,7 +1,7 @@
 # 当前状态
 
 - 最近同步：2026-11-11（Asia/Shanghai）
-- 项目阶段：冻结`BRACE-MSI-0.1.0rc1`不变；`OFFICIAL-PKG-001`本地官方训练包适配、续训与机器验收已完成，按D-031停止同一公开验证集探索，等待外部平台材料
+- 项目阶段：冻结`BRACE-MSI-0.1.0rc1`及D-031历史实验不变；按D-032/D-033进入独立的`UNIFIED-POLICY-001`三任务统一策略优化阶段
 - 方案版本：BRACE-MSI V4.1，已锁定研究方向 `[D-001]`
 - 正式训练：`OFFICIAL-PACKAGE-DEV-001`已完成；A1导入失败0训练负证据和修复后的9/9作业均保留
 - 正式实验：0 次；本地代理/开发/工程验收9项、58个训练运行已登记，见 [EXPERIMENTS.md](EXPERIMENTS.md)
@@ -11,7 +11,7 @@
 
 ## 当前执行入口
 
-当前没有不依赖外部材料的`READY`任务。`OFFICIAL-PKG-001`已`DONE`；运行根`D:/brace-msi-official-package/OFFICIAL-PACKAGE-DEV-001/`的`validation.json`为`valid=true`。下一步只在正式SDK/评分/许可证或容器运行条件到达后启动对应接入任务。
+当前唯一`READY`任务为`UNIFIED-POLICY-001`。先实现身份盲无量纲策略、三阶段manifest和任务级leave-one-task-out；开发搜索不得读取末期数据或消耗官方十次测试机会。旧`OFFICIAL-PKG-001`保持`DONE`和只读。
 全新环境安装的wheel通过`pip check`、95项测试、两协议CLI Smoke及真实SwanLab 0.10.4离线导出。
 `RR-001`因本机无容器运行时且相关Windows功能均未启用而`BLOCKED`；不得用静态审计替代真实镜像证据。
 A1`ce3e907`保留为INVALID负证据，A2`7ef3829`保留为本地代理工程验收成功证据，合成轴承只标记`protocol_only`。
