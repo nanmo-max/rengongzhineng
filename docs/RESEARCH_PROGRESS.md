@@ -232,3 +232,12 @@
 - 篡改副本测试证明检查点哈希不符会在训练启动前失败；原训练包未产生缓存或新文件。
 - TDD红灯：实现前`ModuleNotFoundError: No module named 'brace_msi.official_package'`；绿灯：`3 passed`。
 - 边界保持`official_package=true`、`official_scoring_ready=false`；尚未运行候选训练。
+
+## 2026-11-11：OFFICIAL-PKG-001 Task 2真实续训适配器
+
+- 通过独立子进程调用原版`baselines.train`，限制单线程、白名单epoch/学习率/批大小，候选目录不可覆盖。
+- 对原版A训练器完成全状态继承证明：同一父检查点连续2 epoch与1 epoch后续1 epoch的所有NPZ数组、累计epoch/step及预测完全相同。
+- 每个候选核验真实父/子SHA、输入数据SHA、权重与Adam变化、预处理状态不变、报告schema和逐epoch历史；不以自报父哈希代替继承证据。
+- 超时测试保留独立失败收据且不生成候选目录；训练包源码在审计后变化会在启动子进程前失败。
+- TDD红灯包括缺少模块及源码变化未被拒绝；绿灯：定向`5 passed`，全量`124 passed`。
+- 调试记录：一次手工上游测试收集在原包生成`__pycache__`，已定位并删除该次自生成缓存；随后全量测试确认原包不再含`.pyc`或`__pycache__`。

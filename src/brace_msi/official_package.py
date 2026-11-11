@@ -59,6 +59,7 @@ class PackageAudit:
     training_seconds: float
     initial_epochs: int
     initial_steps: int
+    source_sha256: Mapping[str, str]
     official_package: bool = True
     official_scoring_ready: bool = False
 
@@ -243,6 +244,16 @@ def _audit_one(root: Path, spec: PackageSpec) -> PackageAudit:
         raise PackageAuditError(f"dataset row count mismatch for {spec.profile}")
 
     baseline_metrics = {key: float(value) for key, value in report["validation_after"].items()}
+    reported_source = report.get("source_sha256")
+    if not isinstance(reported_source, dict):
+        raise PackageAuditError(f"missing source hashes for {spec.profile}")
+    source_sha256: dict[str, str] = {}
+    for name in ("model.py", "data.py", "train.py", "predict.py"):
+        path = package_dir / "baselines" / name
+        actual = _sha256(path)
+        if _without_prefix(str(reported_source.get(name, ""))) != actual:
+            raise PackageAuditError(f"source code SHA-256 mismatch: {name}")
+        source_sha256[name] = actual
     return PackageAudit(
         profile=spec.profile,
         package_id=str(info["id"]),
@@ -274,6 +285,7 @@ def _audit_one(root: Path, spec: PackageSpec) -> PackageAudit:
         training_seconds=float(report["training_seconds"]),
         initial_epochs=int(metadata["epochs"]),
         initial_steps=int(metadata["steps"]),
+        source_sha256=source_sha256,
     )
 
 
