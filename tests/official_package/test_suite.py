@@ -1,7 +1,11 @@
 from __future__ import annotations
 
 import hashlib
+import importlib.util
 import json
+import os
+import subprocess
+import sys
 from dataclasses import asdict
 from pathlib import Path
 
@@ -150,4 +154,35 @@ def test_pre_smoke_resource_limit_stops_before_any_training(tmp_path: Path) -> N
     assert trainer.calls == []
     estimate = json.loads((tmp_path / "limited" / "resource-estimate.json").read_text(encoding="utf-8"))
     assert estimate["pre_smoke"]["within_limits"] is False
+
+
+def test_cli_runs_from_clean_checkout_without_editable_install() -> None:
+    environment = os.environ.copy()
+    environment.pop("PYTHONPATH", None)
+    completed = subprocess.run(
+        [sys.executable, "scripts/run_official_package_dev.py", "--help"],
+        cwd=REPO_ROOT,
+        env=environment,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    assert "--package-root" in completed.stdout
+
+
+def test_cli_archives_failed_status_before_restart(tmp_path: Path) -> None:
+    script = REPO_ROOT / "scripts" / "run_official_package_dev.py"
+    spec = importlib.util.spec_from_file_location("official_package_dev_cli", script)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    module._status(tmp_path, "failed", error="first failure")
+
+    module._status(tmp_path, "running")
+
+    history = sorted((tmp_path / "pipeline-status-history").glob("attempt-*.json"))
+    assert len(history) == 1
+    assert json.loads(history[0].read_text(encoding="utf-8"))["stage"] == "failed"
+    assert json.loads((tmp_path / "pipeline-status.json").read_text(encoding="utf-8"))["stage"] == "running"
 

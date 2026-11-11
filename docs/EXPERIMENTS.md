@@ -36,7 +36,7 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 | XJTU-LOCAL-DEV-001-A1 | INVALID | 新增XJTU-SY数据能否在严格按轴承分组下完成可恢复特征缓存、强静态基线和两种自主更新策略？ | 9初训/3开发；密封未加载；自定RUL，仅本地开发 | `configs/xjtu_local_serial.json`；实现提交`2460577` | 4逻辑CPU；策略最多8候选、50,000训练样本、600秒候选墙钟/CPU | 5轮运行成功，但事后审查发现静态模型用了全部9个初训轴承，策略留出2个锚点，配对比较不公平，判定INVALID | `D:/brace-msi-xjtu/XJTU-LOCAL-DEV-001/experiments/`与`A1-INVALID.json`完整保留 |
 | XJTU-LOCAL-DEV-001-A2 | SUCCEEDED | 修复初训可见性后，五轮队列能否完成且形成至少3次真实候选？ | 静态与策略均用相同7个初训轴承训练、2个初训轴承作锚点；3开发；密封未加载 | 同一配置；修正代码提交`2e29ae7` | 同A1 | 5/5轮完成，指标有限；BRACE完成3次真实候选并全部被门控拒绝；简单触发0次动作；机器验收`valid=true` | `results/XJTU-LOCAL-DEV-001.md`；本地`D:/brace-msi-xjtu/XJTU-LOCAL-DEV-001/experiments-a2/`与`validation-experiments-a2.json` |
 | OFFICIAL-RULES-ALIGNED-DEV-001 | SUCCEEDED | 参数量匹配的可替换MLP检查点与BRACE能否在三官方任务口径下完成每任务10轮、三策略公平比较，并形成35分维度的本地证据？ | Gas 1–3初训/4–7开发重分10轮；FD001发动机1–60初训/61–80每2台一轮；XJTU 9初训/3开发按轨迹进度合成10轮；所有既有密封段关闭 | `configs/official_rules_aligned_dev.json`；执行提交`512d477`；报告提交`9c7bdba` | 最多4逻辑CPU、RSS<8GB；每策略10决策轮，候选预算按配置；种子20261111 | 9/9完成、机器验收有效；Gas BRACE +0.229939 Macro-F1，Engine BRACE改善0.248934 RMSE，Bearing BRACE退化35.086308 RMSE；D-027停止同流继续调参 | `results/OFFICIAL-RULES-ALIGNED-DEV-001.md`；本地`D:/brace-msi-official-dev/OFFICIAL-RULES-ALIGNED-DEV-001/` |
-| OFFICIAL-PACKAGE-DEV-001 | PLANNED | 原版训练器真实续训下，简单性能触发与BRACE在A/B/C公开开发包上的候选适应结果、父链安全与资源成本如何？ | 三包只读`public/train.jsonl`续训；同包`public/validation.jsonl`仅作候选门控；无隐藏测试、无真实时间批次 | `configs/official_package_dev.json`；实现基线`2004f87`，执行时由`source-manifest.json`记录干净HEAD | 总估算CPU≤3600秒、墙钟≤1800秒、磁盘≤200MiB；每策略≤3候选、≤600秒CPU/墙钟 | 尚未运行 | 计划产物`D:/brace-msi-official-package/OFFICIAL-PACKAGE-DEV-001/` |
+| OFFICIAL-PACKAGE-DEV-001 | PLANNED | 原版训练器真实续训下，简单性能触发与BRACE在A/B/C公开开发包上的候选适应结果、父链安全与资源成本如何？ | 三包只读`public/train.jsonl`续训；同包`public/validation.jsonl`仅作候选门控；无隐藏测试、无真实时间批次 | `configs/official_package_dev.json`；实现基线`2004f87`，执行时由`source-manifest.json`记录干净HEAD | 总估算CPU≤3600秒、墙钟≤1800秒、磁盘≤200MiB；每策略≤3候选、≤600秒CPU/墙钟 | A1在导入阶段因CLI未加入`src/`失败，0次训练；失败状态保留，修复后待恢复 | `D:/brace-msi-official-package/OFFICIAL-PACKAGE-DEV-001/pipeline-status.json` |
 
 ## OFFICIAL-PACKAGE-DEV-001预注册
 
@@ -51,6 +51,7 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 - 成功标准：三个Smoke完成且真实继承证据有效；六个策略作业各10轮；BRACE每任务3个真实候选；父链、验证账本、失败收据、资源、恢复、报告和机器验收完整；原包哈希不变。
 - 停止条件：任何包/代码/数据SHA变化、验证泄漏、非有限指标、父链纳入拒绝候选、资源估算超限、候选目录冲突或原包出现写入。负结果和失败收据必须保留，不用同一公开验证流继续调参重跑。
 - 禁止项：SwanLab、外部API、平台提交、平台额度、隐藏测试、Docker打包权重、修改RC标签。
+- 失败尝试A1：预注册提交`0d3ba5c`启动后，CLI在训练前因`ModuleNotFoundError: brace_msi`退出；未生成清单、资源估算或候选，训练运行数为0。失败状态保留于运行根，修复入口后从同一实验ID恢复，不更改预注册策略或预算。
 
 ## OFFICIAL-RULES-ALIGNED-DEV-001预注册
 

@@ -6,6 +6,12 @@ import argparse
 import json
 import os
 from pathlib import Path
+import sys
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+SRC_ROOT = REPO_ROOT / "src"
+if str(SRC_ROOT) not in sys.path:
+    sys.path.insert(0, str(SRC_ROOT))
 
 from brace_msi.official_package_suite import (
     run_official_package_suite,
@@ -26,6 +32,21 @@ def _arguments() -> argparse.Namespace:
 def _status(root: Path, stage: str, **extra: object) -> None:
     root.mkdir(parents=True, exist_ok=True)
     path = root / "pipeline-status.json"
+    if stage == "running" and path.is_file():
+        previous = json.loads(path.read_text(encoding="utf-8"))
+        if previous.get("stage") == "failed":
+            history = root / "pipeline-status-history"
+            history.mkdir(parents=True, exist_ok=True)
+            attempt = 1
+            while (history / f"attempt-{attempt:03d}.json").exists():
+                attempt += 1
+            archived = history / f"attempt-{attempt:03d}.json"
+            archive_temporary = archived.with_name(archived.name + ".tmp")
+            archive_temporary.write_text(
+                json.dumps(previous, ensure_ascii=False, allow_nan=False, indent=2) + "\n",
+                encoding="utf-8",
+            )
+            os.replace(archive_temporary, archived)
     temporary = path.with_name(path.name + ".tmp")
     temporary.write_text(
         json.dumps(

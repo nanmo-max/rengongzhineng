@@ -3,7 +3,7 @@
 - 最近同步：2026-11-11（Asia/Shanghai）
 - 项目阶段：冻结`BRACE-MSI-0.1.0rc1`不变；官方包设计与计划已批准，当前执行`OFFICIAL-PKG-001`本地适配与候选适应续训 `[D-028]` `[D-029]` `[D-030]`
 - 方案版本：BRACE-MSI V4.1，已锁定研究方向 `[D-001]`
-- 正式训练：`OFFICIAL-PACKAGE-DEV-001`已预注册但尚未启动；下一步从干净提交执行A/B/C Smoke，资源复核通过后恢复同一运行根完成后台队列
+- 正式训练：`OFFICIAL-PACKAGE-DEV-001`已预注册；A1在CLI导入阶段失败且0训练，入口修复和失败归档测试已通过；下一步从干净修复提交恢复A/B/C Smoke
 - 正式实验：0 次；本地代理/开发/工程验收8项、43个训练运行已登记，见 [EXPERIMENTS.md](EXPERIMENTS.md)
 - 当前正式数据候选：Gas Sensor Array Drift、NASA C-MAPSS、XJTU-SY轴承数据 `[L-AUTH-004]` `[L-DATA-004]`
 - 重复结论：Gas与C-MAPSS原件和既有代理数据逐文件一致，可复用加载器与指纹；旧代理结果仍不得改名为官方成绩
