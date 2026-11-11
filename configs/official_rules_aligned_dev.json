@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "experiment_id": "OFFICIAL-RULES-ALIGNED-DEV-001",
+  "official_rules_aligned": true,
+  "official_checkpoint": false,
+  "seed": 20261111,
+  "source_sha256": {
+    "gas_archive": "91E8F466F202E7A093D657673CE47311C3E90416F7DF3057966058961C351FE4",
+    "cmapss_zip": "74BEF434A34DB25C7BF72E668EA4CD52AFE5F2CF8E44367C55A82BFD91A5A34F",
+    "xjtu_manifest": "79721C2F773B0CC14E3A1BA6B432614CB37C803622928F4469F2EC07E2E0C93C"
+  },
+  "xjtu_cache_sha256": {
+    "Bearing1_1.npz": "C6541778EB2C80BFD727CFE0E2C94046C1C48C93B6A34D497E67E19192EAE29F",
+    "Bearing1_2.npz": "6A81497175EB1673866C274423DBBB78D7EB4D51E76BCC140349AC019C2FB61B",
+    "Bearing1_3.npz": "7C0EE210C419299602A9CDED8DC4E8F6AC6D41B90B0331B12D89F77A0B561C47",
+    "Bearing1_4.npz": "96056A87C3F2ACE3D27A5A08644A12776D14572A0A4EC2D04E3DE3CC5B5CB515",
+    "Bearing2_1.npz": "4FCC1BC8F148A14BBF6900D8A1DA4597E1C15B89FB47A58949D60B110C2DDA34",
+    "Bearing2_2.npz": "7786D59A72A0793B5D325E3281726291B88AEC0B86D816FF2E674F51A2956999",
+    "Bearing2_3.npz": "8501A5E909560B4FD151E873B20FFE088FAF7408836A7A98C1411FDCEF14C6C4",
+    "Bearing2_4.npz": "812C777C7D8AD1F1951C217DCE9FF7C54597214C32E1E7D3D43566BAC4F9D5A3",
+    "Bearing3_1.npz": "91FFD8F5471A083DCE2BBDF6083116B156402D3138B694CAF0EB164E9EFF497C",
+    "Bearing3_2.npz": "CBEA9AF924E3C129C0437637E0459C0DC07D2A7158A4B266213EFEDF9A9717E4",
+    "Bearing3_3.npz": "D8D6693FD31D6D43D5DDD156A2149A368DEA85F9E2F2F70524556074C0FFDB1F",
+    "Bearing3_4.npz": "6CD76281C97328CBCD1CA5F998143A96EBCFFF4ED0C5A6C384629FAE05855BA4"
+  },
+  "tasks": {
+    "gas": {
+      "budget": {"max_candidates": 10, "max_training_samples": 100000, "max_wall_seconds": 1200.0, "max_cpu_seconds": 1200.0},
+      "gate": {"min_validation_samples": 32, "min_primary_improvement": 0.0, "max_anchor_degradation": 0.05},
+      "minimum_candidate_events": 3,
+      "replay_max_samples": 12000,
+      "performance_drop_threshold": 0.02,
+      "update_drop_threshold": 0.01,
+      "refit_drop_threshold": 0.10,
+      "drift_threshold": 0.12,
+      "high_drift_threshold": 0.35,
+      "mlp_max_iter": 80,
+      "validation_fraction": 0.25
+    },
+    "bearing": {
+      "budget": {"max_candidates": 10, "max_training_samples": 100000, "max_wall_seconds": 1200.0, "max_cpu_seconds": 1200.0},
+      "gate": {"min_validation_samples": 16, "min_primary_improvement": 0.0, "max_anchor_degradation": 50.0},
+      "minimum_candidate_events": 3,
+      "replay_max_samples": 12000,
+      "performance_drop_threshold": 15.0,
+      "update_drop_threshold": 10.0,
+      "refit_drop_threshold": 30.0,
+      "drift_threshold": 0.12,
+      "high_drift_threshold": 0.35,
+      "mlp_max_iter": 80,
+      "validation_fraction": 0.25
+    },
+    "engine": {
+      "budget": {"max_candidates": 10, "max_training_samples": 200000, "max_wall_seconds": 1200.0, "max_cpu_seconds": 1200.0},
+      "gate": {"min_validation_samples": 32, "min_primary_improvement": 0.0, "max_anchor_degradation": 20.0},
+      "minimum_candidate_events": 3,
+      "replay_max_samples": 20000,
+      "performance_drop_threshold": 5.0,
+      "update_drop_threshold": 3.0,
+      "refit_drop_threshold": 15.0,
+      "drift_threshold": 0.12,
+      "high_drift_threshold": 0.35,
+      "mlp_max_iter": 80,
+      "validation_fraction": 0.25
+    }
+  }
+}

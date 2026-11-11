@@ -20,7 +20,13 @@ def test_cpu_pool_declares_real_capabilities_and_rejects_illegal_incremental_cal
     X, y = _classification_data()
     pool = {spec.family: spec for spec in cpu_model_pool("classification")}
 
-    assert set(pool) == {"sgd", "linear", "hist_gradient_boosting", "extra_trees"}
+    assert set(pool) == {
+        "sgd",
+        "linear",
+        "hist_gradient_boosting",
+        "extra_trees",
+        "mlp",
+    }
     assert pool["sgd"].capabilities.supports_partial_fit is True
     assert pool["linear"].capabilities.supports_partial_fit is False
     assert pool["extra_trees"].capabilities.supports_partial_fit is False

@@ -5,6 +5,7 @@ from __future__ import annotations
 from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Any, Literal, Mapping, Self
+import warnings
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
@@ -15,10 +16,12 @@ from sklearn.ensemble import (
     HistGradientBoostingRegressor,
 )
 from sklearn.linear_model import LogisticRegression, Ridge, SGDClassifier, SGDRegressor
+from sklearn.neural_network import MLPClassifier, MLPRegressor
+from sklearn.exceptions import ConvergenceWarning
 from sklearn.preprocessing import StandardScaler
 
 TaskKind = Literal["classification", "regression"]
-ModelFamily = Literal["sgd", "linear", "hist_gradient_boosting", "extra_trees"]
+ModelFamily = Literal["sgd", "linear", "hist_gradient_boosting", "extra_trees", "mlp"]
 
 
 @dataclass(frozen=True)
@@ -50,7 +53,7 @@ class ModelSpec:
 def _capabilities(task_kind: TaskKind, family: ModelFamily) -> ModelCapabilities:
     return ModelCapabilities(
         task_kind=task_kind,
-        supports_partial_fit=family == "sgd",
+        supports_partial_fit=family in {"sgd", "mlp"},
         supports_predict_proba=task_kind == "classification",
         supports_warm_start=family in {"hist_gradient_boosting", "extra_trees"},
         supports_calibration=False,
@@ -66,6 +69,7 @@ def cpu_model_pool(task_kind: TaskKind) -> tuple[ModelSpec, ...]:
         "linear",
         "hist_gradient_boosting",
         "extra_trees",
+        "mlp",
     )
     return tuple(
         ModelSpec(family, task_kind, _capabilities(task_kind, family))
@@ -90,7 +94,7 @@ class CpuModelAdapter:
         self.family = family
         self.seed = seed
         self.params = dict(params or {})
-        self.scaler = StandardScaler() if family in {"sgd", "linear"} else None
+        self.scaler = StandardScaler() if family in {"sgd", "linear", "mlp"} else None
         self.estimator = self._new_estimator()
         self.is_fitted = False
 
@@ -129,6 +133,20 @@ class CpuModelAdapter:
                     random_state=self.seed, **(defaults | params)
                 )
             return ExtraTreesRegressor(random_state=self.seed, **(defaults | params))
+        if self.family == "mlp":
+            defaults = dict(
+                hidden_layer_sizes=(32,),
+                activation="relu",
+                solver="adam",
+                batch_size="auto",
+                learning_rate_init=0.001,
+                max_iter=120,
+                tol=1e-4,
+                early_stopping=False,
+            )
+            if self.task_kind == "classification":
+                return MLPClassifier(random_state=self.seed, **(defaults | params))
+            return MLPRegressor(random_state=self.seed, **(defaults | params))
         raise ValueError(f"unsupported model family: {self.family}")
 
     def _transform_fit(self, X: NDArray[np.float64]) -> NDArray[np.float64]:
@@ -142,7 +160,12 @@ class CpuModelAdapter:
         y_array = np.asarray(y)
         transformed = self._transform_fit(X_array)
         self.estimator = self._new_estimator()
-        self.estimator.fit(transformed, y_array)
+        if self.family == "mlp":
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", ConvergenceWarning)
+                self.estimator.fit(transformed, y_array)
+        else:
+            self.estimator.fit(transformed, y_array)
         self.is_fitted = True
         return self
 
@@ -168,6 +191,18 @@ class CpuModelAdapter:
 
     def clone(self) -> Self:
         return deepcopy(self)
+
+    @property
+    def parameter_count(self) -> int:
+        self._require_fitted()
+        if not hasattr(self.estimator, "coefs_") or not hasattr(
+            self.estimator, "intercepts_"
+        ):
+            raise TypeError(f"parameter count is unavailable for {self.family}")
+        return int(
+            sum(np.asarray(value).size for value in self.estimator.coefs_)
+            + sum(np.asarray(value).size for value in self.estimator.intercepts_)
+        )
 
     def refit(self, X: ArrayLike, y: ArrayLike) -> Self:
         return type(self)(
