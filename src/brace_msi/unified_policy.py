@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import math
+from typing import Callable
 
+from .evidence import Evidence
 from .modeling import ModelCapabilities
 from .policies import Action
 
@@ -146,3 +148,110 @@ class UnifiedActionPolicy:
         if evidence.failed_actions > 0 or not capabilities.supports_partial_fit:
             return Action.REPLAY_REFIT
         return Action.INCREMENTAL_UPDATE
+
+
+class FixedLowCostPolicy:
+    """Strong control that performs exactly one low-cost update."""
+
+    def __init__(self) -> None:
+        self._used = False
+
+    def choose_raw(self, evidence: Evidence) -> Action:
+        del evidence
+        if self._used:
+            return Action.NOOP
+        self._used = True
+        return Action.INCREMENTAL_UPDATE
+
+    def observe(self, action: Action, *, accepted: bool, improvement: float) -> None:
+        del action, accepted, improvement
+
+
+class NormalizedPerformanceTriggeredPolicy:
+    """Single-action comparator using a dimensionless degradation threshold."""
+
+    def __init__(self, *, threshold: float, descriptor: MetricDescriptor) -> None:
+        if not math.isfinite(threshold) or threshold < 0.0:
+            raise ValueError("threshold must be finite and nonnegative")
+        self.threshold = threshold
+        self.descriptor = descriptor
+
+    def choose_raw(self, evidence: Evidence) -> Action:
+        degradation = normalized_metric_delta(
+            reference=evidence.reference_metric,
+            current=evidence.current_metric,
+            descriptor=self.descriptor,
+        )
+        return (
+            Action.INCREMENTAL_UPDATE
+            if degradation >= self.threshold
+            else Action.NOOP
+        )
+
+    def observe(self, action: Action, *, accepted: bool, improvement: float) -> None:
+        del action, accepted, improvement
+
+
+class UnifiedRuntimePolicy:
+    """Adapt raw per-batch evidence to the identity-blind shared policy contract."""
+
+    def __init__(
+        self,
+        *,
+        config: SharedPolicyConfig,
+        descriptor: MetricDescriptor,
+        capabilities: ModelCapabilities,
+        remaining_budget_fraction: Callable[[], float],
+        minimum_samples: int,
+    ) -> None:
+        if minimum_samples < 1:
+            raise ValueError("minimum_samples must be positive")
+        self.config = config
+        self.descriptor = descriptor
+        self.capabilities = capabilities
+        self.remaining_budget_fraction = remaining_budget_fraction
+        self.minimum_samples = minimum_samples
+        self._core = UnifiedActionPolicy(config)
+        self._drift_history: list[float] = []
+        self._failed_actions = 0
+        self._recent_improvement = 0.0
+
+    def choose_raw(self, evidence: Evidence) -> Action:
+        if self._drift_history:
+            drift_percentile = sum(
+                previous < evidence.drift_score for previous in self._drift_history
+            ) / len(self._drift_history)
+        else:
+            drift_percentile = 0.0
+        self._drift_history.append(evidence.drift_score)
+        sample_support = min(1.0, evidence.sample_count / self.minimum_samples)
+        remaining = self.remaining_budget_fraction()
+        try:
+            degradation = normalized_metric_delta(
+                reference=evidence.reference_metric,
+                current=evidence.current_metric,
+                descriptor=self.descriptor,
+            )
+            normalized = NormalizedEvidence(
+                training_allowed=True,
+                relative_performance_drop=max(0.0, degradation),
+                drift_score=evidence.drift_score,
+                drift_percentile=drift_percentile,
+                uncertainty_ratio=1.0 / math.sqrt(max(1, evidence.sample_count)),
+                sample_support=sample_support,
+                failed_actions=self._failed_actions,
+                remaining_budget_fraction=remaining,
+                recent_relative_improvement=self._recent_improvement,
+            )
+        except ValueError:
+            return Action.NOOP
+        return self._core.select(normalized, self.capabilities)
+
+    def observe(self, action: Action, *, accepted: bool, improvement: float) -> None:
+        if action is Action.NOOP:
+            return
+        self._recent_improvement = improvement
+        if accepted and improvement >= self.config.minimum_relative_improvement:
+            self._failed_actions = 0
+        else:
+            self._failed_actions += 1

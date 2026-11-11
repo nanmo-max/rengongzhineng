@@ -7,6 +7,7 @@ import pytest
 
 from brace_msi.unified_optimization import (
     EvaluationMetrics,
+    candidate_configs_from_config,
     run_development_search,
     validate_development_search,
 )
@@ -224,3 +225,23 @@ def test_search_rejects_unfair_fixed_low_cost_initial_state(tmp_path: Path) -> N
             experiment_config_sha256="a" * 64,
             static_tolerance=0.005,
         )
+
+
+def test_candidate_generation_is_bounded_deterministic_and_shared() -> None:
+    config = {
+        "seed": 7,
+        "shared_policy": SharedPolicyConfig().__dict__,
+        "search_space": {
+            "update_drop_threshold": [0.01, 0.02],
+            "replay_fraction": [0.25, 0.5, 0.75],
+        },
+        "selection": {"maximum_shared_candidates": 4},
+    }
+
+    first = candidate_configs_from_config(config)
+    second = candidate_configs_from_config(config)
+
+    assert first == second
+    assert len(first) == 4
+    assert all(isinstance(value, SharedPolicyConfig) for value in first.values())
+    assert len(set(first)) == 4

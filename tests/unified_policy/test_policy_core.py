@@ -6,12 +6,16 @@ import pytest
 from brace_msi.modeling import ModelCapabilities
 from brace_msi.policies import Action
 from brace_msi.unified_policy import (
+    FixedLowCostPolicy,
     MetricDescriptor,
     NormalizedEvidence,
+    NormalizedPerformanceTriggeredPolicy,
     SharedPolicyConfig,
     UnifiedActionPolicy,
+    UnifiedRuntimePolicy,
     normalized_metric_delta,
 )
+from brace_msi.evidence import Evidence
 
 
 def _capabilities(*, partial_fit: bool = True) -> ModelCapabilities:
@@ -118,3 +122,41 @@ def test_shared_policy_stops_for_weak_evidence_or_budget() -> None:
 def test_normalized_evidence_rejects_invalid_values(field: str, value: object) -> None:
     with pytest.raises(ValueError):
         _evidence(**{field: value})
+
+
+def test_fixed_low_cost_policy_trains_once_then_stops() -> None:
+    policy = FixedLowCostPolicy()
+    evidence = Evidence(0.7, 0.8, 0.1, 0.2, 100)
+
+    assert policy.choose_raw(evidence) is Action.INCREMENTAL_UPDATE
+    assert policy.choose_raw(evidence) is Action.NOOP
+
+
+def test_normalized_performance_trigger_is_metric_scale_invariant() -> None:
+    f1 = NormalizedPerformanceTriggeredPolicy(
+        threshold=0.05, descriptor=MetricDescriptor(higher_is_better=True)
+    )
+    rmse = NormalizedPerformanceTriggeredPolicy(
+        threshold=0.05, descriptor=MetricDescriptor(higher_is_better=False)
+    )
+
+    assert f1.choose_raw(Evidence(0.72, 0.80, 0.08, 0.0, 100)) is Action.INCREMENTAL_UPDATE
+    assert rmse.choose_raw(Evidence(110.0, 100.0, 10.0, 0.0, 100)) is Action.INCREMENTAL_UPDATE
+
+
+def test_runtime_policy_uses_budget_fraction_and_tracks_failed_actions() -> None:
+    remaining = 1.0
+    policy = UnifiedRuntimePolicy(
+        config=SharedPolicyConfig(update_drop_threshold=0.05),
+        descriptor=MetricDescriptor(higher_is_better=True),
+        capabilities=_capabilities(),
+        remaining_budget_fraction=lambda: remaining,
+        minimum_samples=10,
+    )
+    evidence = Evidence(0.70, 0.80, 0.10, 0.2, 100)
+
+    assert policy.choose_raw(evidence) is Action.INCREMENTAL_UPDATE
+    policy.observe(Action.INCREMENTAL_UPDATE, accepted=False, improvement=-0.1)
+    assert policy.choose_raw(evidence) is Action.REPLAY_REFIT
+    remaining = 0.0
+    assert policy.choose_raw(evidence) is Action.NOOP

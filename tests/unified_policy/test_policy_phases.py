@@ -120,5 +120,10 @@ def test_optimization_config_has_one_shared_policy_without_task_overrides() -> N
 
     assert isinstance(config["shared_policy"], dict)
     assert isinstance(config["search_space"], dict)
+    assert set(config["source_sha256"]) == {
+        "gas_archive",
+        "cmapss_zip",
+        "xjtu_manifest",
+    }
     assert "task_overrides" not in config
     assert "datasets" not in config["shared_policy"]

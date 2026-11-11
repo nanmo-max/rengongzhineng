@@ -14,6 +14,7 @@ from brace_msi.formal_development import (
 )
 from brace_msi.budget import BudgetLimits
 from brace_msi.safety import GateConfig
+from brace_msi.unified_policy import SharedPolicyConfig
 
 
 def _classification_stream() -> TaskStream:
@@ -85,4 +86,48 @@ def test_three_policies_share_checkpoint_and_brace_records_real_candidates(
     )
     assert validation["valid"] is True
     assert json.loads((tmp_path / "brace" / "result.json").read_text())["status"] == "completed"
+
+
+def test_unified_policies_use_shared_normalized_config(tmp_path: Path) -> None:
+    stream = _classification_stream()
+    shared = SharedPolicyConfig(
+        update_drop_threshold=0.0,
+        refit_drop_threshold=0.5,
+        drift_percentile_threshold=1.0,
+        high_drift_percentile_threshold=1.0,
+        minimum_relative_improvement=-1.0,
+        maximum_relative_anchor_degradation=1.0,
+    )
+    config = FormalRunConfig(
+        **{**_config().__dict__, "shared_policy_config": shared}
+    )
+    checkpoint = create_local_checkpoint(stream, tmp_path / "checkpoint.pkl", config)
+
+    fixed = run_formal_development_experiment(
+        stream,
+        policy_name="fixed_low_cost",
+        checkpoint_path=checkpoint,
+        output_dir=tmp_path / "fixed",
+        config=config,
+    )
+    triggered = run_formal_development_experiment(
+        stream,
+        policy_name="normalized_performance_triggered",
+        checkpoint_path=checkpoint,
+        output_dir=tmp_path / "triggered",
+        config=config,
+    )
+    unified = run_formal_development_experiment(
+        stream,
+        policy_name="unified_brace",
+        checkpoint_path=checkpoint,
+        output_dir=tmp_path / "unified",
+        config=config,
+    )
+
+    assert fixed["real_candidate_count"] == 1
+    assert triggered["real_candidate_count"] >= 1
+    assert unified["real_candidate_count"] >= 1
+    assert unified["shared_policy_config"] == shared.__dict__
+    assert all("relative_performance_drop" in row for row in unified["batch_records"])
 

@@ -4,10 +4,12 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass
 import hashlib
+import itertools
 import json
 import math
 import os
 from pathlib import Path
+import random
 import re
 from typing import Any, Mapping, Protocol
 
@@ -21,6 +23,54 @@ from .unified_policy import MetricDescriptor, SharedPolicyConfig, normalized_met
 
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
 _BASELINES = ("static", "fixed_low_cost", "performance_triggered")
+
+
+def candidate_configs_from_config(
+    config: Mapping[str, Any], *, maximum_candidates: int | None = None
+) -> dict[str, SharedPolicyConfig]:
+    """Expand one deterministic bounded search space without task-specific overrides."""
+
+    if "task_overrides" in config:
+        raise ValueError("task-specific policy overrides are forbidden")
+    base_payload = dict(config["shared_policy"])
+    base = SharedPolicyConfig(**base_payload)
+    search_space = config.get("search_space", {})
+    if not isinstance(search_space, Mapping):
+        raise ValueError("search_space must be a mapping")
+    keys = tuple(sorted(search_space))
+    values = [tuple(search_space[key]) for key in keys]
+    if any(not options for options in values):
+        raise ValueError("search dimensions cannot be empty")
+    variants: dict[str, SharedPolicyConfig] = {}
+
+    def add(candidate: SharedPolicyConfig) -> None:
+        payload = asdict(candidate)
+        identifier = "shared-" + _payload_sha256(payload)[:12]
+        variants[identifier] = candidate
+
+    add(base)
+    expanded: list[SharedPolicyConfig] = []
+    for combination in itertools.product(*values) if keys else [()]:
+        payload = dict(base_payload)
+        payload.update(dict(zip(keys, combination)))
+        try:
+            candidate = SharedPolicyConfig(**payload)
+        except (TypeError, ValueError):
+            continue
+        if candidate != base:
+            expanded.append(candidate)
+    rng = random.Random(int(config.get("seed", 0)))
+    rng.shuffle(expanded)
+    for candidate in expanded:
+        add(candidate)
+    limit = (
+        int(maximum_candidates)
+        if maximum_candidates is not None
+        else int(config["selection"]["maximum_shared_candidates"])
+    )
+    if limit < 1:
+        raise ValueError("maximum candidate count must be positive")
+    return dict(list(variants.items())[:limit])
 
 
 @dataclass(frozen=True)

@@ -23,8 +23,23 @@ from .official_metrics import MetricName, higher_is_better, metric_bundle, prima
 from .policies import Action, BracePolicy, PerformanceTriggeredPolicy, PolicyContext, StaticPolicy
 from .resources import ResourceTracker, ResourceUsage
 from .safety import GateConfig
+from .unified_policy import (
+    FixedLowCostPolicy,
+    MetricDescriptor,
+    NormalizedPerformanceTriggeredPolicy,
+    SharedPolicyConfig,
+    UnifiedRuntimePolicy,
+    normalized_metric_delta,
+)
 
-PolicyName = Literal["static", "performance_triggered", "brace"]
+PolicyName = Literal[
+    "static",
+    "fixed_low_cost",
+    "performance_triggered",
+    "normalized_performance_triggered",
+    "brace",
+    "unified_brace",
+]
 
 
 @dataclass(frozen=True)
@@ -41,6 +56,7 @@ class FormalRunConfig:
     high_drift_threshold: float
     mlp_max_iter: int = 120
     validation_fraction: float = 0.25
+    shared_policy_config: SharedPolicyConfig | None = None
 
 
 def _atomic_bytes(path: Path, payload: bytes) -> None:
@@ -173,12 +189,28 @@ def _load_checkpoint(path: Path, stream: TaskStream) -> dict[str, Any]:
     return payload
 
 
-def _policy(policy_name: PolicyName, config: FormalRunConfig):
+def _policy(
+    policy_name: PolicyName,
+    config: FormalRunConfig,
+    *,
+    metric_name: MetricName,
+    stable: CpuModelAdapter,
+    ledger: BudgetLedger,
+):
     if policy_name == "static":
         return StaticPolicy()
+    if policy_name == "fixed_low_cost":
+        return FixedLowCostPolicy()
     if policy_name == "performance_triggered":
         return PerformanceTriggeredPolicy(
             performance_drop_threshold=config.performance_drop_threshold
+        )
+    if policy_name == "normalized_performance_triggered":
+        if config.shared_policy_config is None:
+            raise ValueError("shared_policy_config is required")
+        return NormalizedPerformanceTriggeredPolicy(
+            threshold=config.shared_policy_config.update_drop_threshold,
+            descriptor=MetricDescriptor(higher_is_better=higher_is_better(metric_name)),
         )
     if policy_name == "brace":
         return BracePolicy(
@@ -187,7 +219,23 @@ def _policy(policy_name: PolicyName, config: FormalRunConfig):
             drift_threshold=config.drift_threshold,
             high_drift_threshold=config.high_drift_threshold,
         )
+    if policy_name == "unified_brace":
+        if config.shared_policy_config is None:
+            raise ValueError("shared_policy_config is required")
+        return UnifiedRuntimePolicy(
+            config=config.shared_policy_config,
+            descriptor=MetricDescriptor(higher_is_better=higher_is_better(metric_name)),
+            capabilities=stable.capabilities,
+            remaining_budget_fraction=lambda: ledger.remaining_fraction,
+            minimum_samples=config.gate.min_validation_samples,
+        )
     raise ValueError(f"unknown formal-development policy: {policy_name}")
+
+
+def _choose_action(policy: Any, batch_index: int, evidence: Any) -> Action:
+    if hasattr(policy, "choose_raw"):
+        return policy.choose_raw(evidence)
+    return policy.choose(PolicyContext(batch_index, evidence))
 
 
 def _gate(
@@ -230,6 +278,50 @@ def _gate(
     return True, "candidate passed all layers", float(improvement), float(anchor_degradation)
 
 
+def _normalized_gate(
+    *,
+    metric_name: MetricName,
+    stable_validation: NDArray,
+    candidate_validation: NDArray,
+    validation_targets: NDArray,
+    stable_anchor: NDArray,
+    candidate_anchor: NDArray,
+    anchor_targets: NDArray,
+    minimum_samples: int,
+    config: SharedPolicyConfig,
+) -> tuple[bool, str, float, float]:
+    if len(validation_targets) < minimum_samples:
+        return False, "insufficient validation samples", 0.0, 0.0
+    stable_validation_value = primary_value(
+        metric_name, metric_bundle(metric_name, validation_targets, stable_validation)
+    )
+    candidate_validation_value = primary_value(
+        metric_name, metric_bundle(metric_name, validation_targets, candidate_validation)
+    )
+    stable_anchor_value = primary_value(
+        metric_name, metric_bundle(metric_name, anchor_targets, stable_anchor)
+    )
+    candidate_anchor_value = primary_value(
+        metric_name, metric_bundle(metric_name, anchor_targets, candidate_anchor)
+    )
+    descriptor = MetricDescriptor(higher_is_better=higher_is_better(metric_name))
+    improvement = -normalized_metric_delta(
+        reference=stable_validation_value,
+        current=candidate_validation_value,
+        descriptor=descriptor,
+    )
+    anchor_degradation = normalized_metric_delta(
+        reference=stable_anchor_value,
+        current=candidate_anchor_value,
+        descriptor=descriptor,
+    )
+    if anchor_degradation > config.maximum_relative_anchor_degradation:
+        return False, "relative anchor degradation exceeds limit", improvement, anchor_degradation
+    if improvement < config.minimum_relative_improvement:
+        return False, "relative validation gain is below threshold", improvement, anchor_degradation
+    return True, "candidate passed normalized gate", improvement, anchor_degradation
+
+
 def _finite(value: Any) -> bool:
     if isinstance(value, float):
         return bool(np.isfinite(value))
@@ -260,8 +352,14 @@ def run_formal_development_experiment(
     checkpoint = _load_checkpoint(checkpoint_path, stream)
     stable: CpuModelAdapter = checkpoint["model"]
     metric_name: MetricName = checkpoint["metric_name"]
-    policy = _policy(policy_name, config)
     ledger = BudgetLedger(config.budget)
+    policy = _policy(
+        policy_name,
+        config,
+        metric_name=metric_name,
+        stable=stable,
+        ledger=ledger,
+    )
     replay_X = [checkpoint["train_X"]]
     replay_y = [checkpoint["train_y"]]
     batch_records: list[dict[str, Any]] = []
@@ -283,7 +381,7 @@ def run_formal_development_experiment(
             reference_metric=float(checkpoint["reference_primary"]),
             higher_is_better=higher_is_better(metric_name),
         )
-        action = policy.choose(PolicyContext(batch_index, evidence))
+        action = _choose_action(policy, batch_index, evidence)
         remaining = len(stream.development) - batch_index + 1
         candidates_needed = config.minimum_candidate_events - sum(
             bool(item["training_started"]) for item in candidate_records
@@ -313,9 +411,16 @@ def run_formal_development_experiment(
                 batch.X[validation_indices],
                 batch.y[validation_indices],
             )
-            if action is Action.REPLAY_REFIT:
+            if action in {Action.REPLAY_REFIT, Action.BOUNDED_HPO}:
                 candidate_X = np.concatenate([*replay_X, feedback_X])
                 candidate_y = np.concatenate([*replay_y, feedback_y])
+                if policy_name == "unified_brace" and config.shared_policy_config is not None:
+                    keep = max(
+                        len(feedback_y),
+                        int(round(len(candidate_y) * config.shared_policy_config.replay_fraction)),
+                    )
+                    candidate_X = candidate_X[-keep:]
+                    candidate_y = candidate_y[-keep:]
                 candidate_X = candidate_X[-config.replay_max_samples :]
                 candidate_y = candidate_y[-config.replay_max_samples :]
             else:
@@ -346,16 +451,32 @@ def run_formal_development_experiment(
                             )
                     usage = tracker.usage or ResourceUsage(0.0, 0.0, 0, 0, 0)
                     ledger.record_candidate(usage, training_samples=len(candidate_y))
-                    accepted, reason, improvement, degradation = _gate(
-                        metric_name=metric_name,
-                        stable_validation=stable.predict(validation_X),
-                        candidate_validation=candidate.predict(validation_X),
-                        validation_targets=validation_y,
-                        stable_anchor=stable.predict(checkpoint["anchor_X"]),
-                        candidate_anchor=candidate.predict(checkpoint["anchor_X"]),
-                        anchor_targets=checkpoint["anchor_y"],
-                        config=config.gate,
-                    )
+                    gate_inputs = {
+                        "metric_name": metric_name,
+                        "stable_validation": stable.predict(validation_X),
+                        "candidate_validation": candidate.predict(validation_X),
+                        "validation_targets": validation_y,
+                        "stable_anchor": stable.predict(checkpoint["anchor_X"]),
+                        "candidate_anchor": candidate.predict(checkpoint["anchor_X"]),
+                        "anchor_targets": checkpoint["anchor_y"],
+                    }
+                    if policy_name in {
+                        "fixed_low_cost",
+                        "normalized_performance_triggered",
+                        "unified_brace",
+                    }:
+                        if config.shared_policy_config is None:
+                            raise ValueError("shared_policy_config is required")
+                        accepted, reason, improvement, degradation = _normalized_gate(
+                            **gate_inputs,
+                            minimum_samples=config.gate.min_validation_samples,
+                            config=config.shared_policy_config,
+                        )
+                    else:
+                        accepted, reason, improvement, degradation = _gate(
+                            **gate_inputs,
+                            config=config.gate,
+                        )
                     if accepted:
                         stable = candidate
                     event = {
@@ -403,6 +524,13 @@ def run_formal_development_experiment(
             "metrics": metrics,
             "primary_metric": primary,
             "performance_drop": evidence.performance_drop,
+            "relative_performance_drop": normalized_metric_delta(
+                reference=evidence.reference_metric,
+                current=evidence.current_metric,
+                descriptor=MetricDescriptor(
+                    higher_is_better=higher_is_better(metric_name)
+                ),
+            ),
             "drift_score": evidence.drift_score,
             "selected_action": action.value,
         }
@@ -448,6 +576,11 @@ def run_formal_development_experiment(
         "metrics": aggregate,
         "batch_records": batch_records,
         "candidate_events": candidate_records,
+        "shared_policy_config": (
+            asdict(config.shared_policy_config)
+            if config.shared_policy_config is not None
+            else None
+        ),
         "resources": {
             "candidate_wall_seconds": float(sum(item["wall_seconds"] for item in usages)),
             "candidate_cpu_seconds": float(sum(item["cpu_seconds"] for item in usages)),

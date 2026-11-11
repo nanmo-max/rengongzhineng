@@ -37,6 +37,18 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 | XJTU-LOCAL-DEV-001-A2 | SUCCEEDED | 修复初训可见性后，五轮队列能否完成且形成至少3次真实候选？ | 静态与策略均用相同7个初训轴承训练、2个初训轴承作锚点；3开发；密封未加载 | 同一配置；修正代码提交`2e29ae7` | 同A1 | 5/5轮完成，指标有限；BRACE完成3次真实候选并全部被门控拒绝；简单触发0次动作；机器验收`valid=true` | `results/XJTU-LOCAL-DEV-001.md`；本地`D:/brace-msi-xjtu/XJTU-LOCAL-DEV-001/experiments-a2/`与`validation-experiments-a2.json` |
 | OFFICIAL-RULES-ALIGNED-DEV-001 | SUCCEEDED | 参数量匹配的可替换MLP检查点与BRACE能否在三官方任务口径下完成每任务10轮、三策略公平比较，并形成35分维度的本地证据？ | Gas 1–3初训/4–7开发重分10轮；FD001发动机1–60初训/61–80每2台一轮；XJTU 9初训/3开发按轨迹进度合成10轮；所有既有密封段关闭 | `configs/official_rules_aligned_dev.json`；执行提交`512d477`；报告提交`9c7bdba` | 最多4逻辑CPU、RSS<8GB；每策略10决策轮，候选预算按配置；种子20261111 | 9/9完成、机器验收有效；Gas BRACE +0.229939 Macro-F1，Engine BRACE改善0.248934 RMSE，Bearing BRACE退化35.086308 RMSE；D-027停止同流继续调参 | `results/OFFICIAL-RULES-ALIGNED-DEV-001.md`；本地`D:/brace-msi-official-dev/OFFICIAL-RULES-ALIGNED-DEV-001/` |
 | OFFICIAL-PACKAGE-DEV-001 | SUCCEEDED | 原版训练器真实续训下，单次固定低成本续训与BRACE在A/B/C公开开发包上的候选适应结果、父链安全与资源成本如何？ | 三包只读`public/train.jsonl`续训；同包`public/validation.jsonl`仅作候选门控；无隐藏测试、无真实时间批次 | `configs/official_package_dev.json`；执行`34098bf`，干净工作树 | 总估算CPU≤3600秒、墙钟≤1800秒、磁盘≤200MiB；每策略≤3候选、≤600秒CPU/墙钟 | 9/9作业、15候选、机器验收有效；A/B BRACE与低成本对照持平但更贵，C BRACE RMSE 51.889566优于对照52.350178；A1导入失败0训练负证据保留 | `results/OFFICIAL-PACKAGE-DEV-001.md`；`D:/brace-msi-official-package/OFFICIAL-PACKAGE-DEV-001/` |
+| UNIFIED-POLICY-OPT-001-SMOKE | PLANNED | 一套身份盲、无量纲共享策略能否在三个公开任务的中期开发段完成四策略公平比较和任务级留一验证？ | Gas 1–3初训/4–7中期；FD001 1–60初训/61–80中期；XJTU 9初训/3中期；所有末期数据关闭 | `configs/unified_policy_optimization.json`；执行提交待本轮代码冻结 | Smoke最多2个共享候选；四策略同检查点；每任务10轮；最多4逻辑CPU；官方测试次数0 | 尚未运行；失败、淘汰和资源均须保留 | 计划运行根`D:/brace-msi-unified/UNIFIED-POLICY-OPT-001-SMOKE/` |
+
+## UNIFIED-POLICY-OPT-001-SMOKE预注册
+
+- 目标：验证真实三任务适配、无量纲证据、固定低成本/归一化性能触发/统一BRACE公平对照、任务级leave-one-task-out和可恢复收据；不是最终参数搜索。
+- 策略边界：所有任务共享`SharedPolicyConfig`和候选空间；策略输入无任务ID、数据集/Profile或批次名称。TaskAdapter只提供任务类型、指标方向、模型能力和合法分组。
+- 数据边界：只构建既有`build_official_development_streams()`的初训与10个中期开发轮；Gas 8—10、FD001 81—100及XJTU密封轴承不得加载。末期锁不会在Smoke中打开。
+- 对照：静态、恰好一次固定低成本更新、归一化性能触发更新、统一BRACE；同一任务所有策略必须共享初始检查点和阶段manifest。
+- Smoke范围：确定性搜索空间只取2个共享候选，MLP最多8次迭代；完成9个基线作业和6个BRACE作业。成功只证明运行与证据完整，不冻结最终配置。
+- 指标：分别保留Macro-F1或RMSE、相对静态/简单策略的无量纲增益、最差任务、候选CPU/墙钟/RSS和训练样本；不推算官方综合分。
+- 停止条件：原始哈希变化、任何末期数据加载、初始检查点/阶段manifest不公平、非有限指标、资源越界、收据/汇总不能复算，或代码尝试使用官方平台测试机会。
+- 禁止：根据Smoke末期结果调参、SwanLab、平台SDK/API、外部服务、修改RC/main、覆盖既有实验。
 
 ## OFFICIAL-PACKAGE-DEV-001预注册
 
