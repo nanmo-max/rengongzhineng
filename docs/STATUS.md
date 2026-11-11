@@ -1,9 +1,9 @@
 # 当前状态
 
 - 最近同步：2026-11-11（Asia/Shanghai）
-- 项目阶段：冻结`BRACE-MSI-0.1.0rc1`不变；官方A/B/C训练包已到达，当前执行`DATA-001`只读审计与正式包接入设计 `[D-028]` `[D-029]`
+- 项目阶段：冻结`BRACE-MSI-0.1.0rc1`不变；官方包设计与计划已批准，当前执行`OFFICIAL-PKG-001`本地适配与候选适应续训 `[D-028]` `[D-029]` `[D-030]`
 - 方案版本：BRACE-MSI V4.1，已锁定研究方向 `[D-001]`
-- 正式训练：真实官方训练包本地续训尚未启动；检查点和公开验证指标已复算，设计等待书面规格确认后进入TDD实现
+- 正式训练：真实官方训练包本地续训尚未启动；当前先完成TDD适配、继承证明、验证记账和资源估算，再运行Smoke与后台队列
 - 正式实验：0 次；本地代理/开发/工程验收8项、43个训练运行已登记，见 [EXPERIMENTS.md](EXPERIMENTS.md)
 - 当前正式数据候选：Gas Sensor Array Drift、NASA C-MAPSS、XJTU-SY轴承数据 `[L-AUTH-004]` `[L-DATA-004]`
 - 重复结论：Gas与C-MAPSS原件和既有代理数据逐文件一致，可复用加载器与指纹；旧代理结果仍不得改名为官方成绩
@@ -11,7 +11,7 @@
 
 ## 当前执行入口
 
-训练包只读审计已完成。`DATA-001`仅因正式SDK/许可证等外部材料保持`BLOCKED`；`OFFICIAL-PKG-001`等待用户确认书面规格后生成实施计划并进入TDD。规格位于`docs/superpowers/specs/2026-11-11-official-package-integration-design.md`。
+`OFFICIAL-PKG-001`为唯一当前任务。外部SDK/许可证等缺口不阻塞本地路径；实施按`docs/superpowers/plans/2026-11-11-official-package-integration.md`连续执行，不再逐任务等待确认。
 全新环境安装的wheel通过`pip check`、95项测试、两协议CLI Smoke及真实SwanLab 0.10.4离线导出。
 `RR-001`因本机无容器运行时且相关Windows功能均未启用而`BLOCKED`；不得用静态审计替代真实镜像证据。
 A1`ce3e907`保留为INVALID负证据，A2`7ef3829`保留为本地代理工程验收成功证据，合成轴承只标记`protocol_only`。

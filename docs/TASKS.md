@@ -244,10 +244,10 @@ SYS-005
 
 ### OFFICIAL-PKG-001 官方训练包适配与十轮续训
 
-- 状态：`BLOCKED`
-- 依赖：训练包审计证据已完成；当前等待书面规格确认与实施计划审批
+- 状态：`IN_PROGRESS`
+- 依赖：训练包审计、书面规格与实施计划均已批准；忽略不影响本地续训的外部缺口
 - 优先级：P0，官方训练包本地开发路径
-- 完成标准：原包只读哈希清单；A/B/C真实检查点Smoke；简单策略与BRACE各10决策轮；BRACE每任务至少3次真实候选；父检查点链、门控、资源、恢复、静态报告和机器验收齐全。
+- 完成标准：原包只读哈希清单；A/B/C真实检查点Smoke；简单策略与BRACE各10个候选适应决策轮；BRACE每任务至少3次真实候选；1+1/连续2 epoch继承证明、拒绝候选父链隔离、验证使用账本、训练前后资源估算、门控、恢复、静态报告和机器验收齐全。
 - 停止条件：见`docs/superpowers/specs/2026-11-11-official-package-integration-design.md`。
 - 边界：`official_package=true`、`official_scoring_ready=false`；不运行SwanLab、不提交平台、不使用隐藏测试、不消耗平台试跑次数、不修改RC标签。
 
