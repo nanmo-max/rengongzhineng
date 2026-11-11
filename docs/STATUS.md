@@ -7,11 +7,11 @@
 - 正式实验：0 次；本地代理/开发/工程验收8项、43个训练运行已登记，见 [EXPERIMENTS.md](EXPERIMENTS.md)
 - 当前正式数据候选：Gas Sensor Array Drift、NASA C-MAPSS、XJTU-SY轴承数据 `[L-AUTH-004]` `[L-DATA-004]`
 - 重复结论：Gas与C-MAPSS原件和既有代理数据逐文件一致，可复用加载器与指纹；旧代理结果仍不得改名为官方成绩
-- 官方平台/SDK：最新截图确认任务、指标、10轮优化、评分维度和次数限制；训练包/初始权重与SDK文件仍未取得 `[O-PLATFORM-001]` `[H-001]`
+- 官方平台/SDK：A/B/C训练包、公开切分与初始权重已取得并审计 `[O-PLATFORM-005]`；正式SDK/批次协议仍未取得 `[H-001]`
 
 ## 当前执行入口
 
-`DATA-001`为唯一当前任务：只读冻结三个官方训练包、验证数据隔离、检查点、代码与基线指标，并以书面规格锁定官方包适配边界。规格位于`docs/superpowers/specs/2026-11-11-official-package-integration-design.md`。
+训练包只读审计已完成。`DATA-001`仅因正式SDK/许可证等外部材料保持`BLOCKED`；`OFFICIAL-PKG-001`等待用户确认书面规格后生成实施计划并进入TDD。规格位于`docs/superpowers/specs/2026-11-11-official-package-integration-design.md`。
 全新环境安装的wheel通过`pip check`、95项测试、两协议CLI Smoke及真实SwanLab 0.10.4离线导出。
 `RR-001`因本机无容器运行时且相关Windows功能均未启用而`BLOCKED`；不得用静态审计替代真实镜像证据。
 A1`ce3e907`保留为INVALID负证据，A2`7ef3829`保留为本地代理工程验收成功证据，合成轴承只标记`protocol_only`。

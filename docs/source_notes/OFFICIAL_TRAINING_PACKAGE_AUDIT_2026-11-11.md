@@ -56,7 +56,7 @@ B任务正式纠正了训练包前的同参数量推断：865参数来自`34×24
 - A：9/9通过。
 - C：9/9通过。
 - B：训练、预测、全状态续训、父检查点绑定、数据隔离和schema防护等核心10项通过。
-- B另有2项报错：`test_b_package_delivers_numeric_rul_code_and_weights_without_hidden_data`与`test_documented_edition_preserves_trained_code_weights_and_data`均导入未随包提供的` scripts.package_baselines`，得到`ModuleNotFoundError`。这是上游打包工具测试缺失依赖，不是模型续训失败；不得修改原包来制造全绿证据。
+- B另有2项报错：`test_b_package_delivers_numeric_rul_code_and_weights_without_hidden_data`与`test_documented_edition_preserves_trained_code_weights_and_data`均导入未随包提供的`scripts.package_baselines`，得到`ModuleNotFoundError`。这是上游打包工具测试缺失依赖，不是模型续训失败；不得修改原包来制造全绿证据。
 
 ## 剩余外部缺口
 
