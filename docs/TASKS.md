@@ -251,6 +251,7 @@ SYS-005
 - 当前证据：Task 1只读清单审计器已实现；真实A/B/C拓扑、关键哈希、行数及ID/设备组隔离通过，篡改检查点在训练前被拒绝。证据：`tests/official_package/test_manifest.py`、`src/brace_msi/official_package.py`。
 - 当前证据：Task 2隔离训练适配器已实现；原版A训练器的连续2 epoch与1+1恢复训练产生逐数组相同检查点和相同预测，父/子epoch、step、权重、Adam、标准化及输入哈希均核验；超时保留失败收据，包代码审计后变化会在子进程前拒绝。证据：`tests/official_package/test_trainer.py`、`src/brace_msi/official_trainer.py`。
 - 当前证据：Task 3十轮监督器已实现；十轮明确为候选适应决策，BRACE最低候选、严格改善门控、拒绝候选父链隔离、验证使用账本、原子状态和五轮后恢复均通过测试。证据：`tests/official_package/test_rounds.py`、`src/brace_msi/official_rounds.py`。
+- 当前证据：Task 4三任务套件与CLI已实现；训练前/Smoke后资源估算、3个Smoke、6个策略作业、全局验证账本、B包上游测试缺口、静态Markdown/HTML和机器验收通过自动测试。证据：`tests/official_package/test_suite.py`、`src/brace_msi/official_package_suite.py`、`scripts/run_official_package_dev.py`。
 - 停止条件：见`docs/superpowers/specs/2026-11-11-official-package-integration-design.md`。
 - 边界：`official_package=true`、`official_scoring_ready=false`；不运行SwanLab、不提交平台、不使用隐藏测试、不消耗平台试跑次数、不修改RC标签。
 

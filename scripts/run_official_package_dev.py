@@ -1,0 +1,78 @@
+"""Run the resumable official-package local development queue."""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+from pathlib import Path
+
+from brace_msi.official_package_suite import (
+    run_official_package_suite,
+    validate_official_package_suite,
+)
+
+
+def _arguments() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--config", type=Path, required=True)
+    parser.add_argument("--package-root", type=Path, required=True)
+    parser.add_argument("--runtime-root", type=Path, required=True)
+    parser.add_argument("--max-jobs", type=int)
+    parser.add_argument("--validate-only", action="store_true")
+    return parser.parse_args()
+
+
+def _status(root: Path, stage: str, **extra: object) -> None:
+    root.mkdir(parents=True, exist_ok=True)
+    path = root / "pipeline-status.json"
+    temporary = path.with_name(path.name + ".tmp")
+    temporary.write_text(
+        json.dumps(
+            {
+                "format": "brace-msi.official-package-pipeline-status.v1",
+                "pid": os.getpid(),
+                "stage": stage,
+                "official_package": True,
+                "official_scoring_ready": False,
+                **extra,
+            },
+            ensure_ascii=False,
+            allow_nan=False,
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    os.replace(temporary, path)
+
+
+def main() -> int:
+    args = _arguments()
+    try:
+        if args.validate_only:
+            validation = validate_official_package_suite(args.runtime_root)
+            _status(args.runtime_root, "validated", validation=validation)
+            return 0
+        config = json.loads(args.config.read_text(encoding="utf-8"))
+        _status(args.runtime_root, "running")
+        state = run_official_package_suite(
+            args.package_root,
+            args.runtime_root,
+            config,
+            max_jobs=args.max_jobs,
+        )
+        if state.complete:
+            validation = validate_official_package_suite(args.runtime_root)
+            _status(args.runtime_root, "completed", validation=validation)
+        else:
+            _status(args.runtime_root, "paused", completed_jobs=state.completed_jobs)
+        return 0
+    except Exception as exc:
+        _status(args.runtime_root, "failed", error_type=type(exc).__name__, error=str(exc))
+        raise
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+

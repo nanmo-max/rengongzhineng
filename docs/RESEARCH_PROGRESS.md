@@ -249,3 +249,12 @@
 - 父SHA链机器校验只允许已部署检查点成为后续父模型；测试中的第二个退化候选被拒绝，第三个候选正确继承第一个已接受检查点。
 - 每次公开验证读取和指标计算均进入`validation-usage.jsonl`，声明不用于训练或预处理拟合；状态、审计和验证账本均原子重写，恢复不会重复已完成候选。
 - TDD红灯：缺少`brace_msi.official_rounds`；绿灯：定向`5 passed`，全量`129 passed`。
+
+## 2026-11-11：OFFICIAL-PKG-001 Task 4三任务可恢复套件
+
+- 新增固定队列：A/B/C各1次Smoke、A/B/C简单性能触发、A/B/C BRACE，共9个可恢复作业；已完成作业不会重复候选。
+- 在任何训练前按包内历史耗时、候选/epoch上限和检查点体积生成CPU、墙钟、磁盘保守估算；三Smoke完成后按实测资源更新估算并再次门控。
+- 汇总`source-manifest.json`、`resource-estimate.json`、`validation-usage.jsonl`、`summary.json`、Markdown/HTML报告和机器验收；HTML输出转义外部标题。
+- B包上游现状固定为“核心10项通过、缺少打包工具导致2项错误”，不伪造成全绿，也不误报为训练失败。
+- TDD红灯：缺少`brace_msi.official_package_suite`；绿灯：定向`3 passed`、全量`132 passed`，`compileall`和`git diff --check`通过。
+- 本阶段只完成代码和模拟套件测试；真实A/B/C Smoke及十轮候选尚未运行，不能登记结果。
