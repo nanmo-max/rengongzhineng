@@ -23,9 +23,11 @@ def audit_a():
 
 
 class DeterministicTrainer:
-    def __init__(self, metric_values: list[float]) -> None:
+    def __init__(self, metric_values: list[float], *, cpu_seconds: float = 0.05, wall_seconds: float = 0.1) -> None:
         self.metric_values = iter(metric_values)
         self.calls: list[dict] = []
+        self.cpu_seconds = cpu_seconds
+        self.wall_seconds = wall_seconds
 
     def run_candidate(self, package, parent, output_dir, config, stage_id):
         output_dir = Path(output_dir)
@@ -58,8 +60,8 @@ class DeterministicTrainer:
             final_steps=80 + len(self.calls),
             model_state_changed=True,
             optimizer_state_changed=True,
-            wall_seconds=0.1,
-            cpu_seconds=0.05,
+            wall_seconds=self.wall_seconds,
+            cpu_seconds=self.cpu_seconds,
             peak_rss_bytes=1024,
             output_dir=str(output_dir),
             validation_file_reads=1,
@@ -102,7 +104,7 @@ def test_brace_runs_ten_decision_rounds_and_rejected_candidate_never_becomes_par
     assert trainer.calls[2]["parent_sha256"] != trainer.calls[1]["checkpoint_sha256"]
     validation = read_jsonl(runtime / "validation-usage.jsonl")
     assert len(validation) == 3
-    assert [row["cumulative_file_reads"] for row in validation] == [1, 2, 3]
+    assert [row["cumulative_file_reads"] for row in validation] == [2, 4, 6]
     assert all(row["purpose"] == "candidate_gate" for row in validation)
     assert result.round_semantics == "candidate_adaptation_decision"
     assert result.real_drift_stream is False
@@ -160,5 +162,56 @@ def test_policy_validation_rejects_insufficient_brace_candidates(tmp_path: Path,
     assert result.candidate_count == 2
 
     with pytest.raises(ValueError, match="minimum candidates"):
+        validate_policy_result(runtime, expected_rounds=10, minimum_candidates=3)
+
+
+def test_completed_receipt_is_recovered_after_state_write_interruption(tmp_path: Path, audit_a) -> None:
+    trainer = DeterministicTrainer([0.72, 0.70, 0.73])
+    runtime = tmp_path / "receipt-recovery"
+    output = runtime / "candidates" / "round-01-attempt-01"
+    trainer.run_candidate(
+        audit_a,
+        audit_a.checkpoint_path,
+        output,
+        __import__("brace_msi.official_trainer", fromlist=["CandidateConfig"]).CandidateConfig(
+            1, audit_a.base_learning_rate, audit_a.base_batch_size
+        ),
+        "A-brace-round-01-attempt-01",
+    )
+
+    result = run_policy(audit_a, "brace", runtime, policy_config(), trainer)
+
+    assert result.complete is True
+    assert result.candidate_count == 3
+    assert len(trainer.calls) == 3
+    assert result.rounds[0]["checkpoint_sha256"] == trainer.calls[0]["checkpoint_sha256"]
+
+
+def test_actual_resource_overrun_rejects_candidate_before_deployment(tmp_path: Path, audit_a) -> None:
+    trainer = DeterministicTrainer([0.80], cpu_seconds=10.0, wall_seconds=10.0)
+    runtime = tmp_path / "resource-gate"
+
+    result = run_policy(
+        audit_a,
+        "brace",
+        runtime,
+        policy_config(max_cpu_seconds_per_policy=1.0, max_wall_seconds_per_policy=1.0),
+        trainer,
+    )
+
+    assert result.candidate_count == 1
+    assert result.accepted_count == 0
+    assert result.stable_sha256 == audit_a.checkpoint_sha256
+    assert result.rounds[0]["gate_reason"] == "actual_resource_budget_exceeded"
+
+
+def test_validator_reopens_checkpoint_receipt_and_recomputes_gate(tmp_path: Path, audit_a) -> None:
+    trainer = DeterministicTrainer([0.72, 0.70, 0.73])
+    runtime = tmp_path / "artifact-validation"
+    result = run_policy(audit_a, "brace", runtime, policy_config(), trainer)
+    first = Path(result.rounds[0]["output_dir"])
+    (first / "checkpoint.npz").write_bytes(b"tampered")
+
+    with pytest.raises(ValueError, match="checkpoint"):
         validate_policy_result(runtime, expected_rounds=10, minimum_candidates=3)
 

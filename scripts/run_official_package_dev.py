@@ -16,6 +16,7 @@ if str(SRC_ROOT) not in sys.path:
 from brace_msi.official_package_suite import (
     run_official_package_suite,
     validate_official_package_suite,
+    validate_runtime_boundary,
 )
 
 
@@ -71,26 +72,36 @@ def _status(root: Path, stage: str, **extra: object) -> None:
 def main() -> int:
     args = _arguments()
     try:
+        package_root, runtime_root = validate_runtime_boundary(
+            args.package_root, args.runtime_root
+        )
         if args.validate_only:
-            validation = validate_official_package_suite(args.runtime_root)
-            _status(args.runtime_root, "validated", validation=validation)
+            validation = validate_official_package_suite(runtime_root)
+            _status(runtime_root, "validated", validation=validation)
             return 0
         config = json.loads(args.config.read_text(encoding="utf-8"))
-        _status(args.runtime_root, "running")
+        _status(runtime_root, "running")
         state = run_official_package_suite(
-            args.package_root,
-            args.runtime_root,
+            package_root,
+            runtime_root,
             config,
             max_jobs=args.max_jobs,
         )
         if state.complete:
-            validation = validate_official_package_suite(args.runtime_root)
-            _status(args.runtime_root, "completed", validation=validation)
+            validation = validate_official_package_suite(runtime_root)
+            _status(runtime_root, "completed", validation=validation)
         else:
-            _status(args.runtime_root, "paused", completed_jobs=state.completed_jobs)
+            _status(runtime_root, "paused", completed_jobs=state.completed_jobs)
         return 0
     except Exception as exc:
-        _status(args.runtime_root, "failed", error_type=type(exc).__name__, error=str(exc))
+        runtime = Path(args.runtime_root).resolve()
+        package = Path(args.package_root).resolve()
+        if not (
+            runtime == package
+            or runtime.is_relative_to(package)
+            or package.is_relative_to(runtime)
+        ):
+            _status(runtime, "failed", error_type=type(exc).__name__, error=str(exc))
         raise
 
 

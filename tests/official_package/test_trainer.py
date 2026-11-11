@@ -143,8 +143,40 @@ def test_trainer_rejects_package_code_changed_after_audit(tmp_path: Path) -> Non
     trainer = OfficialTrainer(python_executable=PYTHON, timeout_seconds=30)
     output = tmp_path / "candidate"
 
-    with pytest.raises(CandidateValidationError, match="source code changed"):
+    with pytest.raises(CandidateValidationError, match="package tree changed"):
         trainer.run_candidate(audit, audit.checkpoint_path, output, one_epoch(audit), "changed-code")
 
     assert not output.exists()
+
+
+def test_trainer_rejects_profile_changed_after_audit(tmp_path: Path) -> None:
+    config = json.loads((REPO_ROOT / "configs" / "official_package_dev.json").read_text(encoding="utf-8"))
+    config["packages"] = {"A": config["packages"]["A"]}
+    copied_root = tmp_path / "packages"
+    source = PACKAGE_ROOT / config["packages"]["A"]["directory"]
+    destination = copied_root / source.name
+    shutil.copytree(source, destination)
+    audit = audit_package_root(copied_root, config)["A"]
+    profile = destination / "baselines" / "configs" / "A.json"
+    profile.write_text(profile.read_text(encoding="utf-8").replace('"epochs": 20', '"epochs": 21'), encoding="utf-8")
+    trainer = OfficialTrainer(python_executable=PYTHON, timeout_seconds=30)
+
+    with pytest.raises(CandidateValidationError, match="package tree changed"):
+        trainer.run_candidate(audit, audit.checkpoint_path, tmp_path / "candidate", one_epoch(audit), "changed-profile")
+
+
+def test_relative_output_is_resolved_outside_package_and_overlap_is_rejected(
+    tmp_path: Path, audit_a, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    trainer = OfficialTrainer(python_executable=PYTHON, timeout_seconds=30)
+    monkeypatch.chdir(tmp_path)
+
+    receipt = trainer.run_candidate(audit_a, audit_a.checkpoint_path, Path("relative-candidate"), one_epoch(audit_a), "relative")
+
+    assert Path(receipt.output_dir) == (tmp_path / "relative-candidate").resolve()
+    assert (tmp_path / "relative-candidate" / "checkpoint.npz").is_file()
+    overlapping = audit_a.package_dir / "forbidden-candidate-output"
+    with pytest.raises(ValueError, match="overlap"):
+        trainer.run_candidate(audit_a, audit_a.checkpoint_path, overlapping, one_epoch(audit_a), "overlap")
+    assert not overlapping.exists()
 

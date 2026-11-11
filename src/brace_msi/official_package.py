@@ -22,6 +22,7 @@ class PackageSpec:
     task: str
     primary_metric: str
     higher_is_better: bool
+    package_tree_sha256: str
     checkpoint_sha256: str
     train_sha256: str
     validation_sha256: str
@@ -47,6 +48,7 @@ class PackageAudit:
     baseline_metric: float
     baseline_metrics: Mapping[str, float]
     checkpoint_sha256: str
+    package_tree_sha256: str
     train_sha256: str
     validation_sha256: str
     checkpoint_path: Path
@@ -87,6 +89,23 @@ def _sha256(path: Path) -> str:
 
 def _without_prefix(value: str) -> str:
     return value.split(":", 1)[-1].lower()
+
+
+def package_tree_sha256(package_dir: Path) -> str:
+    """Hash every delivered file name and digest against the repository-pinned manifest."""
+
+    digest = hashlib.sha256()
+    files = sorted(
+        (path for path in package_dir.rglob("*") if path.is_file()),
+        key=lambda path: path.relative_to(package_dir).as_posix(),
+    )
+    for path in files:
+        relative = path.relative_to(package_dir).as_posix()
+        digest.update(relative.encode("utf-8"))
+        digest.update(b"\0")
+        digest.update(_sha256(path).encode("ascii"))
+        digest.update(b"\n")
+    return digest.hexdigest()
 
 
 def _load_json(path: Path) -> dict[str, Any]:
@@ -142,6 +161,7 @@ def _specs(config: Mapping[str, Any]) -> dict[str, PackageSpec]:
                 task=str(item["task"]),
                 primary_metric=str(item["primary_metric"]),
                 higher_is_better=bool(item["higher_is_better"]),
+                package_tree_sha256=str(item["package_tree_sha256"]).lower(),
                 checkpoint_sha256=str(item["checkpoint_sha256"]).lower(),
                 train_sha256=str(item["train_sha256"]).lower(),
                 validation_sha256=str(item["validation_sha256"]).lower(),
@@ -175,6 +195,9 @@ def _audit_one(root: Path, spec: PackageSpec) -> PackageAudit:
     for name, expected in expected_hashes.items():
         if actual_hashes[name] != expected:
             raise PackageAuditError(f"{name} SHA-256 mismatch")
+    actual_tree_sha256 = package_tree_sha256(package_dir)
+    if actual_tree_sha256 != spec.package_tree_sha256:
+        raise PackageAuditError(f"package tree SHA-256 mismatch for {spec.profile}")
 
     info = _load_json(package_dir / "baseline-info.json")
     report = _load_json(package_dir / "training.json")
@@ -273,6 +296,7 @@ def _audit_one(root: Path, spec: PackageSpec) -> PackageAudit:
         baseline_metric=baseline_metrics[spec.primary_metric],
         baseline_metrics=baseline_metrics,
         checkpoint_sha256=actual_hashes["checkpoint.npz"],
+        package_tree_sha256=actual_tree_sha256,
         train_sha256=actual_hashes["public/train.jsonl"],
         validation_sha256=actual_hashes["public/validation.jsonl"],
         checkpoint_path=checkpoint_path,

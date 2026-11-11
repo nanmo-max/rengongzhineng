@@ -7,6 +7,7 @@
   "max_candidates_per_policy": 3,
   "max_cpu_seconds_per_policy": 600.0,
   "max_wall_seconds_per_policy": 600.0,
+  "max_peak_rss_bytes_per_policy": 8589934592,
   "report_title": "BRACE-MSI official package development",
   "allowed_epochs": [1, 2, 3, 5],
   "allowed_learning_rate_multipliers": [0.25, 0.5, 1.0],
@@ -21,6 +22,7 @@
       "task": "classification",
       "primary_metric": "macro_f1",
       "higher_is_better": true,
+      "package_tree_sha256": "1ab28a61c14a3141d5c16fdc8c56331ea7236943a490f040c85a96d315a8021b",
       "checkpoint_sha256": "fd1e08b2aad08b2e9754f9b2dfdc029481c0da7ecdedca0abb0ec6fcc818c757",
       "train_sha256": "c724014feb2c968d144e167f4997d2ad2125df3825abf4306c9c87c8f08de6c0",
       "validation_sha256": "6be1370388bf67d017f7426a51e149a65baf9bc1186f5f41f6731ce5006ffbee"
@@ -30,6 +32,7 @@
       "task": "regression",
       "primary_metric": "rmse",
       "higher_is_better": false,
+      "package_tree_sha256": "acf42fa209e2207d63ead93c3f5c0fa310854125890788ccdaeec7d76872fa71",
       "checkpoint_sha256": "c7d819fcee9d25459c583b5ffdb35593d4a47b524ed152d0226bf81a283314b4",
       "train_sha256": "71b2663fffd3d7ef6dca8a7b3feb31c3feb96c57f385335d03041a5fa431054a",
       "validation_sha256": "23673a66bc22a166bf2f47b18f9c9d594f7e66a9aad88ddbccbcaea2310d9eb3"
@@ -39,6 +42,7 @@
       "task": "regression",
       "primary_metric": "rmse",
       "higher_is_better": false,
+      "package_tree_sha256": "c9003c5637503ef58734677e1ac19468a23ad90f4a2a975279742b9127272449",
       "checkpoint_sha256": "98ec6e30e38aee56ca15b7d624a8f412226d46fe97b170667a567601c700bc4e",
       "train_sha256": "fcfaeaf1e50a0cc01766dfba5fd34c7369f1fe14bf583111837e847865fac281",
       "validation_sha256": "0cc747f9998c5d7ee1e4eac6aec0db9f5ed4d2de149a1b1cbe689cce6b6aaca7"

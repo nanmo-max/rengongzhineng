@@ -96,6 +96,6 @@
 - 已批准设计与实施计划分别位于`docs/superpowers/specs/2026-11-11-official-package-integration-design.md`和`docs/superpowers/plans/2026-11-11-official-package-integration.md`。
 - D-028规定正式包必须使用随包NumPy训练器和真实检查点；B为34输入、24隐藏单元。D-026仅是历史本地推断。
 - `OFFICIAL-PKG-001`已完成，执行提交`34098bf`；运行根`D:/brace-msi-official-package/OFFICIAL-PACKAGE-DEV-001/`包含9/9作业、15个真实候选、资源估算、验证暴露账本、静态报告和`valid=true`机器验收。
-- 结果见`docs/results/OFFICIAL-PACKAGE-DEV-001.md`；A/B上BRACE与简单策略持平但成本更高，C上BRACE公开验证RMSE更低。D-031禁止在同一公开验证集继续调参或重跑。
+- 结果见`docs/results/OFFICIAL-PACKAGE-DEV-001.md`；内部`performance_triggered`在本次实验中实际是单次固定低成本续训对照。A/B上BRACE与该对照持平但成本更高，C上BRACE公开验证RMSE更低。D-031禁止在同一公开验证集继续调参或重跑。
 - A1 CLI导入失败发生在训练前，Git和运行根事后索引保留；不得删除或伪装成候选训练失败。
 - 当前无后台进程。继续禁止SwanLab、平台提交、隐藏测试、同流算法探索和RC修改；等待正式SDK、评分/许可证或容器运行条件。

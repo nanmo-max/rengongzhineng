@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any, Literal, Mapping
 
 from .official_package import PackageAudit
-from .official_trainer import CandidateConfig, CandidateReceipt
+from .official_trainer import CandidateConfig, CandidateReceipt, recover_candidate_receipt
 
 
 RoundPolicy = Literal["performance_triggered", "brace"]
@@ -67,7 +67,9 @@ def _atomic_jsonl(path: Path, rows: list[dict[str, Any]]) -> None:
     os.replace(temporary, path)
 
 
-def _initial_state(package: PackageAudit, policy: RoundPolicy, total_rounds: int) -> dict[str, Any]:
+def _initial_state(
+    package: PackageAudit, policy: RoundPolicy, total_rounds: int, config: Mapping[str, Any]
+) -> dict[str, Any]:
     return {
         "format": "brace-msi.official-policy-state.v1",
         "profile": package.profile,
@@ -91,15 +93,26 @@ def _initial_state(package: PackageAudit, policy: RoundPolicy, total_rounds: int
         "peak_rss_bytes": 0,
         "validation_file_reads": 0,
         "validation_metric_evaluations": 0,
+        "budget_limits": {
+            "cpu_seconds": float(config.get("max_cpu_seconds_per_policy", math.inf)),
+            "wall_seconds": float(config.get("max_wall_seconds_per_policy", math.inf)),
+            "peak_rss_bytes": int(config.get("max_peak_rss_bytes_per_policy", 8 * 1024**3)),
+        },
         "rounds": [],
         "validation_usage": [],
     }
 
 
-def _load_state(runtime_dir: Path, package: PackageAudit, policy: RoundPolicy, total_rounds: int) -> dict[str, Any]:
+def _load_state(
+    runtime_dir: Path,
+    package: PackageAudit,
+    policy: RoundPolicy,
+    total_rounds: int,
+    config: Mapping[str, Any],
+) -> dict[str, Any]:
     path = runtime_dir / "state.json"
     if not path.exists():
-        return _initial_state(package, policy, total_rounds)
+        return _initial_state(package, policy, total_rounds, config)
     try:
         state = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
@@ -157,16 +170,18 @@ def _is_improvement(package: PackageAudit, candidate: float, stable: float) -> b
     return candidate > stable if package.higher_is_better else candidate < stable
 
 
-def _next_output(runtime_dir: Path, round_number: int) -> tuple[Path, int]:
+def _next_output(runtime_dir: Path, round_number: int) -> tuple[Path, int, bool]:
     candidates = runtime_dir / "candidates"
     attempt = 1
     while True:
         output = candidates / f"round-{round_number:02d}-attempt-{attempt:02d}"
         failure = output.with_name(output.name + ".failure.json")
         if output.exists() or output.is_symlink():
+            if output.is_dir() and (output / "candidate-receipt.json").is_file():
+                return output, attempt, True
             raise FileExistsError(f"candidate output conflict: {output}")
         if not failure.exists():
-            return output, attempt
+            return output, attempt, False
         attempt += 1
 
 
@@ -227,7 +242,7 @@ def run_policy(
         raise ValueError("official package development requires exactly 10 decision rounds")
     runtime_dir = Path(runtime_dir)
     runtime_dir.mkdir(parents=True, exist_ok=True)
-    state = _load_state(runtime_dir, package, policy, total_rounds)
+    state = _load_state(runtime_dir, package, policy, total_rounds, config)
     call_limit = int(config.get("max_rounds_this_call", total_rounds))
     if call_limit < 1:
         raise ValueError("max_rounds_this_call must be positive")
@@ -249,13 +264,31 @@ def run_policy(
             _persist(runtime_dir, state)
             continue
 
-        output, attempt = _next_output(runtime_dir, round_number)
+        output, attempt, recovered = _next_output(runtime_dir, round_number)
         parent = Path(state["stable_checkpoint"])
         parent_sha = state["stable_sha256"]
         stage_id = f"{package.profile}-{policy}-round-{round_number:02d}-attempt-{attempt:02d}"
-        receipt = trainer.run_candidate(package, parent, output, action, stage_id)
+        receipt = (
+            recover_candidate_receipt(package, parent, output, action, stage_id)
+            if recovered
+            else trainer.run_candidate(package, parent, output, action, stage_id)
+        )
         metric = _validate_receipt(package, receipt, parent_sha, output)
-        deployed = _is_improvement(package, metric, float(state["stable_metric"]))
+        prospective_cpu = float(state["cpu_seconds"]) + receipt.cpu_seconds
+        prospective_wall = float(state["wall_seconds"]) + receipt.wall_seconds
+        prospective_rss = max(int(state["peak_rss_bytes"]), receipt.peak_rss_bytes)
+        limits = state.get(
+            "budget_limits",
+            {"cpu_seconds": 600.0, "wall_seconds": 600.0, "peak_rss_bytes": 8 * 1024**3},
+        )
+        resource_within_budget = (
+            prospective_cpu <= float(limits["cpu_seconds"])
+            and prospective_wall <= float(limits["wall_seconds"])
+            and prospective_rss <= int(limits["peak_rss_bytes"])
+        )
+        deployed = resource_within_budget and _is_improvement(
+            package, metric, float(state["stable_metric"])
+        )
         record = {
             "round": round_number,
             "kind": "candidate",
@@ -268,7 +301,14 @@ def run_policy(
             "metric_after": metric,
             "primary_metric": package.primary_metric,
             "deployed": deployed,
-            "gate_reason": "strict_public_validation_improvement" if deployed else "no_strict_public_validation_improvement",
+            "gate_reason": (
+                "strict_public_validation_improvement"
+                if deployed
+                else "actual_resource_budget_exceeded"
+                if not resource_within_budget
+                else "no_strict_public_validation_improvement"
+            ),
+            "resource_within_budget": resource_within_budget,
             "output_dir": str(output),
             "cpu_seconds": receipt.cpu_seconds,
             "wall_seconds": receipt.wall_seconds,
@@ -276,10 +316,12 @@ def run_policy(
         }
         state["rounds"].append(record)
         state["candidate_count"] += 1
-        state["cpu_seconds"] += receipt.cpu_seconds
-        state["wall_seconds"] += receipt.wall_seconds
-        state["peak_rss_bytes"] = max(int(state["peak_rss_bytes"]), receipt.peak_rss_bytes)
-        state["validation_file_reads"] += receipt.validation_file_reads
+        state["cpu_seconds"] = prospective_cpu
+        state["wall_seconds"] = prospective_wall
+        state["peak_rss_bytes"] = prospective_rss
+        state["validation_file_reads"] += (
+            receipt.validation_preflight_hash_reads + receipt.validation_trainer_dataset_loads
+        )
         state["validation_metric_evaluations"] += receipt.validation_metric_evaluations
         state["validation_usage"].append(
             {
@@ -289,7 +331,9 @@ def run_policy(
                 "round": round_number,
                 "candidate": stage_id,
                 "purpose": "candidate_gate",
-                "file_reads": receipt.validation_file_reads,
+                "file_reads": receipt.validation_preflight_hash_reads + receipt.validation_trainer_dataset_loads,
+                "preflight_hash_reads": receipt.validation_preflight_hash_reads,
+                "trainer_dataset_loads": receipt.validation_trainer_dataset_loads,
                 "metric_evaluations": receipt.validation_metric_evaluations,
                 "cumulative_file_reads": state["validation_file_reads"],
                 "cumulative_metric_evaluations": state["validation_metric_evaluations"],
@@ -321,13 +365,67 @@ def validate_policy_result(runtime_dir: Path, expected_rounds: int = 10, minimum
     if len(candidates) < minimum_candidates:
         raise ValueError(f"minimum candidates not met: {len(candidates)} < {minimum_candidates}")
     stable_sha = state["initial_sha256"]
+    stable_metric = float(state["initial_metric"])
+    stable_checkpoint = Path(state["initial_checkpoint"])
+    cumulative_cpu = 0.0
+    cumulative_wall = 0.0
+    peak_rss = 0
+    limits = state.get(
+        "budget_limits",
+        {"cpu_seconds": 600.0, "wall_seconds": 600.0, "peak_rss_bytes": 8 * 1024**3},
+    )
     for row in candidates:
         if row["parent_sha256"] != stable_sha:
             raise ValueError("candidate parent chain includes an unaccepted or unknown checkpoint")
+        output = Path(row["output_dir"])
+        checkpoint = output / "checkpoint.npz"
+        receipt_path = output / "candidate-receipt.json"
+        if not checkpoint.is_file() or not receipt_path.is_file():
+            raise ValueError("candidate checkpoint or receipt is missing")
+        if _sha256(checkpoint) != row["checkpoint_sha256"]:
+            raise ValueError("candidate checkpoint hash mismatch")
+        try:
+            receipt = CandidateReceipt(**json.loads(receipt_path.read_text(encoding="utf-8")))
+        except (OSError, json.JSONDecodeError, TypeError) as exc:
+            raise ValueError("candidate receipt is invalid") from exc
+        if (
+            receipt.parent_sha256 != row["parent_sha256"]
+            or receipt.checkpoint_sha256 != row["checkpoint_sha256"]
+            or Path(receipt.output_dir).resolve() != output.resolve()
+            or float(receipt.metrics_after[state.get("primary_metric", row["primary_metric"])])
+            != float(row["metric_after"])
+        ):
+            raise ValueError("candidate receipt does not reconcile with policy state")
+        cumulative_cpu += float(receipt.cpu_seconds)
+        cumulative_wall += float(receipt.wall_seconds)
+        peak_rss = max(peak_rss, int(receipt.peak_rss_bytes))
+        resource_within = (
+            cumulative_cpu <= float(limits["cpu_seconds"])
+            and cumulative_wall <= float(limits["wall_seconds"])
+            and peak_rss <= int(limits["peak_rss_bytes"])
+        )
+        improved = (
+            float(row["metric_after"]) > stable_metric
+            if state.get("task") == "classification"
+            else float(row["metric_after"]) < stable_metric
+        )
+        expected_deployment = resource_within and improved
+        if bool(row["deployed"]) != expected_deployment:
+            raise ValueError("candidate deployment gate cannot be recomputed")
+        if "resource_within_budget" in row and bool(row["resource_within_budget"]) != resource_within:
+            raise ValueError("candidate resource gate does not reconcile")
         if row["deployed"]:
             stable_sha = row["checkpoint_sha256"]
+            stable_metric = float(row["metric_after"])
+            stable_checkpoint = checkpoint
     if stable_sha != state["stable_sha256"]:
         raise ValueError("final stable checkpoint does not match accepted parent chain")
+    if stable_metric != float(state["stable_metric"]):
+        raise ValueError("final stable metric does not match recomputed gate chain")
+    if stable_checkpoint.resolve() != Path(state["stable_checkpoint"]).resolve():
+        raise ValueError("final stable checkpoint path does not match gate chain")
+    if not stable_checkpoint.is_file() or _sha256(stable_checkpoint) != stable_sha:
+        raise ValueError("final stable checkpoint artifact is missing or changed")
     validation_rows = [json.loads(line) for line in (runtime_dir / "validation-usage.jsonl").read_text(encoding="utf-8").splitlines() if line]
     if len(validation_rows) != len(candidates):
         raise ValueError("validation usage ledger does not match candidate count")

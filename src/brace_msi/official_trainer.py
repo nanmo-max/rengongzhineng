@@ -16,7 +16,7 @@ from typing import Any
 import numpy as np
 import psutil
 
-from .official_package import PackageAudit
+from .official_package import PackageAudit, package_tree_sha256
 
 
 class CandidateValidationError(ValueError):
@@ -50,6 +50,8 @@ class CandidateReceipt:
     output_dir: str
     validation_file_reads: int
     validation_metric_evaluations: int
+    validation_preflight_hash_reads: int = 1
+    validation_trainer_dataset_loads: int = 1
     official_package: bool = True
     official_scoring_ready: bool = False
 
@@ -207,6 +209,45 @@ def validate_candidate_output(
     }
 
 
+def recover_candidate_receipt(
+    package: PackageAudit,
+    parent: Path,
+    output_dir: Path,
+    config: CandidateConfig,
+    stage_id: str,
+) -> CandidateReceipt:
+    """Recover a fully persisted candidate after interruption before parent state commit."""
+
+    output_dir = Path(output_dir).resolve()
+    receipt_path = output_dir / "candidate-receipt.json"
+    if not receipt_path.is_file():
+        raise FileExistsError(f"candidate output conflict without receipt: {output_dir}")
+    try:
+        payload = json.loads(receipt_path.read_text(encoding="utf-8"))
+        receipt = CandidateReceipt(**payload)
+    except (OSError, json.JSONDecodeError, TypeError) as exc:
+        raise CandidateValidationError(f"candidate receipt is invalid: {receipt_path}") from exc
+    if Path(receipt.output_dir).resolve() != output_dir or receipt.stage_id != stage_id or receipt.profile != package.profile:
+        raise CandidateValidationError("recovered candidate identity mismatch")
+    if (output_dir / "training.json").is_file():
+        proof = validate_candidate_output(package, Path(parent), output_dir, config, stage_id)
+        for field in (
+            "parent_sha256",
+            "checkpoint_sha256",
+            "metrics_before",
+            "metrics_after",
+            "initial_epochs",
+            "final_epochs",
+            "initial_steps",
+            "final_steps",
+            "model_state_changed",
+            "optimizer_state_changed",
+        ):
+            if getattr(receipt, field) != proof[field]:
+                raise CandidateValidationError(f"recovered candidate proof mismatch: {field}")
+    return receipt
+
+
 class OfficialTrainer:
     """Run exactly one official-package trainer in an isolated subprocess."""
 
@@ -243,6 +284,11 @@ class OfficialTrainer:
                 "status": "failed",
                 "error": error,
                 "wall_seconds": wall_seconds,
+                "validation_exposure": {
+                    "preflight_hash_reads": 1,
+                    "trainer_dataset_loads_upper_bound": 1,
+                    "metric_evaluations_unknown": True,
+                },
                 "official_package": True,
                 "official_scoring_ready": False,
             },
@@ -256,8 +302,11 @@ class OfficialTrainer:
         config: CandidateConfig,
         stage_id: str,
     ) -> CandidateReceipt:
-        parent = Path(parent)
-        output_dir = Path(output_dir)
+        parent = Path(parent).resolve()
+        output_dir = Path(output_dir).resolve()
+        package_dir = package.package_dir.resolve()
+        if output_dir == package_dir or output_dir.is_relative_to(package_dir) or package_dir.is_relative_to(output_dir):
+            raise ValueError("candidate output and official package paths overlap")
         if output_dir.exists() or output_dir.is_symlink():
             raise FileExistsError("output must be a new directory")
         if self._failure_path(output_dir).exists():
@@ -271,6 +320,8 @@ class OfficialTrainer:
             raise CandidateValidationError("official package checkpoint changed after audit")
         if _sha256(package.train_path) != package.train_sha256 or _sha256(package.validation_path) != package.validation_sha256:
             raise CandidateValidationError("official package public data changed after audit")
+        if package_tree_sha256(package.package_dir) != package.package_tree_sha256:
+            raise CandidateValidationError("official package tree changed after audit")
         for name, expected in package.source_sha256.items():
             if _sha256(package.package_dir / "baselines" / name) != expected:
                 raise CandidateValidationError(f"official package source code changed after audit: {name}")

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import html
+import hashlib
 import json
 import os
 import subprocess
@@ -13,7 +14,12 @@ from typing import Any, Mapping
 
 from .official_package import PackageAudit, audit_package_root
 from .official_rounds import PolicyResult, run_policy, validate_policy_result
-from .official_trainer import CandidateConfig, CandidateReceipt, OfficialTrainer
+from .official_trainer import (
+    CandidateConfig,
+    CandidateReceipt,
+    OfficialTrainer,
+    recover_candidate_receipt,
+)
 
 
 @dataclass(frozen=True)
@@ -33,6 +39,21 @@ _JOB_ORDER = [
 ]
 
 
+def validate_runtime_boundary(package_root: Path, runtime_root: Path) -> tuple[Path, Path]:
+    """Resolve both roots and reject overlap before the runtime receives any write."""
+
+    package = Path(package_root).resolve()
+    runtime = Path(runtime_root).resolve()
+    if runtime == package or runtime.is_relative_to(package) or package.is_relative_to(runtime):
+        raise ValueError("runtime root and official package root overlap")
+    return package, runtime
+
+
+def _config_sha256(config: Mapping[str, Any]) -> str:
+    canonical = json.dumps(config, ensure_ascii=False, allow_nan=False, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
 def _atomic_json(path: Path, payload: Mapping[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_name(path.name + ".tmp")
@@ -50,7 +71,9 @@ def _atomic_text(path: Path, value: str) -> None:
     os.replace(temporary, path)
 
 
-def _source_manifest(root: Path, audits: Mapping[str, PackageAudit]) -> dict[str, Any]:
+def _source_manifest(
+    root: Path, audits: Mapping[str, PackageAudit], config: Mapping[str, Any]
+) -> dict[str, Any]:
     files = [path for path in root.rglob("*") if path.is_file()]
     source_commit = subprocess.run(
         ["git", "rev-parse", "HEAD"], check=True, capture_output=True, text=True
@@ -64,6 +87,7 @@ def _source_manifest(root: Path, audits: Mapping[str, PackageAudit]) -> dict[str
         "format": "brace-msi.official-source-manifest.v1",
         "source_commit": source_commit,
         "source_tree_dirty": source_tree_dirty,
+        "configuration_sha256": _config_sha256(config),
         "source_root": str(root),
         "source_file_count": len(files),
         "source_total_bytes": sum(path.stat().st_size for path in files),
@@ -79,6 +103,7 @@ def _source_manifest(root: Path, audits: Mapping[str, PackageAudit]) -> dict[str
                 "train_rows": audit.train_rows,
                 "validation_rows": audit.validation_rows,
                 "checkpoint_sha256": audit.checkpoint_sha256,
+                "package_tree_sha256": audit.package_tree_sha256,
                 "train_sha256": audit.train_sha256,
                 "validation_sha256": audit.validation_sha256,
                 "source_sha256": dict(audit.source_sha256),
@@ -165,6 +190,8 @@ def _load_or_initialize_state(runtime_root: Path, manifest: Mapping[str, Any]) -
         expected = {profile: item["checkpoint_sha256"] for profile, item in manifest["packages"].items()}
         if state.get("source_checkpoint_sha256") != expected:
             raise ValueError("suite source manifest changed")
+        if state.get("configuration_sha256") != manifest["configuration_sha256"]:
+            raise ValueError("suite configuration fingerprint changed")
         return state
     return {
         "format": "brace-msi.official-package-suite-state.v1",
@@ -172,9 +199,12 @@ def _load_or_initialize_state(runtime_root: Path, manifest: Mapping[str, Any]) -
         "official_scoring_ready": False,
         "round_semantics": "candidate_adaptation_decision",
         "real_drift_stream": False,
+        "comparator_description": "single unconditional low-cost continuation control (internal identifier: performance_triggered)",
         "source_checkpoint_sha256": {
             profile: item["checkpoint_sha256"] for profile, item in manifest["packages"].items()
         },
+        "configuration_sha256": manifest["configuration_sha256"],
+        "audit_invocations": 0,
         "completed_jobs": [],
         "jobs": {},
     }
@@ -182,6 +212,24 @@ def _load_or_initialize_state(runtime_root: Path, manifest: Mapping[str, Any]) -
 
 def _collect_validation_rows(runtime_root: Path, state: Mapping[str, Any]) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
+    for invocation in range(1, int(state.get("audit_invocations", 0)) + 1):
+        for profile in "ABC":
+            rows.append(
+                {
+                    "profile": profile,
+                    "policy": "suite",
+                    "round": None,
+                    "candidate": None,
+                    "purpose": "source_audit",
+                    "audit_invocation": invocation,
+                    "file_reads": 2,
+                    "hash_reads": 1,
+                    "dataset_parse_reads": 1,
+                    "metric_evaluations": 0,
+                    "used_for_training": False,
+                    "used_for_preprocessing_fit": False,
+                }
+            )
     for profile in "ABC":
         job = state["jobs"].get(f"smoke:{profile}")
         if job:
@@ -194,7 +242,10 @@ def _collect_validation_rows(runtime_root: Path, state: Mapping[str, Any]) -> li
                     "round": 0,
                     "candidate": receipt["stage_id"],
                     "purpose": "smoke_validation",
-                    "file_reads": receipt["validation_file_reads"],
+                    "file_reads": receipt.get("validation_preflight_hash_reads", 1)
+                    + receipt.get("validation_trainer_dataset_loads", 1),
+                    "preflight_hash_reads": receipt.get("validation_preflight_hash_reads", 1),
+                    "trainer_dataset_loads": receipt.get("validation_trainer_dataset_loads", 1),
                     "metric_evaluations": receipt["validation_metric_evaluations"],
                     "validation_sha256": job["validation_sha256"],
                     "used_for_training": False,
@@ -271,7 +322,7 @@ def _write_reports(runtime_root: Path, config: Mapping[str, Any], summary: Mappi
         "- Round semantics: candidate adaptation decision; not a real drift stream",
         "- Public validation is repeatedly exposed to candidate selection and never used for training or preprocessing fit.",
         "",
-        "| Profile | Static | Performance-triggered | BRACE |",
+        "| Profile | Static | Single low-cost continuation | BRACE |",
         "|---|---:|---:|---:|",
     ]
     for profile, task in summary["tasks"].items():
@@ -302,7 +353,8 @@ def _write_reports(runtime_root: Path, config: Mapping[str, Any], summary: Mappi
         + html.escape(title)
         + "</h1><p>Local development-reference only; official_scoring_ready=false.</p>"
         + "<p>Ten rounds mean candidate adaptation decisions, not a real drift stream. Public validation exposure can overfit selection.</p>"
-        + "<table><thead><tr><th>Profile</th><th>Static</th><th>Performance-triggered</th><th>BRACE</th></tr></thead><tbody>"
+        + "<p>The internal performance_triggered identifier denotes one unconditional low-cost continuation in this no-stream package experiment.</p>"
+        + "<table><thead><tr><th>Profile</th><th>Static</th><th>Single low-cost continuation</th><th>BRACE</th></tr></thead><tbody>"
         + rows
         + "</tbody></table><p>B upstream: 10 core passed; 2 packaging-tool errors from missing scripts.package_baselines.</p></body></html>"
     )
@@ -334,17 +386,35 @@ def run_official_package_suite(
 
     if max_jobs is not None and max_jobs < 1:
         raise ValueError("max_jobs must be positive")
-    package_root = Path(package_root)
-    runtime_root = Path(runtime_root)
+    package_root, runtime_root = validate_runtime_boundary(package_root, runtime_root)
     runtime_root.mkdir(parents=True, exist_ok=True)
     audits = audit_package_root(package_root, config)
     if set(audits) != {"A", "B", "C"}:
         raise ValueError("suite requires official packages A, B and C")
-    manifest = _source_manifest(package_root, audits)
-    if manifest["contains_python_cache"]:
+    current_manifest = _source_manifest(package_root, audits, config)
+    if current_manifest["contains_python_cache"]:
         raise ValueError("official package root contains Python cache files")
-    _atomic_json(runtime_root / "source-manifest.json", manifest)
+    manifest_path = runtime_root / "source-manifest.json"
+    if manifest_path.exists():
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        if manifest.get("configuration_sha256") != current_manifest["configuration_sha256"]:
+            raise ValueError("suite configuration fingerprint changed")
+        if manifest.get("source_commit") != current_manifest["source_commit"]:
+            raise ValueError("suite source commit changed")
+        if {
+            profile: item.get("package_tree_sha256") for profile, item in manifest.get("packages", {}).items()
+        } != {
+            profile: item["package_tree_sha256"] for profile, item in current_manifest["packages"].items()
+        }:
+            raise ValueError("suite package manifest changed")
+    else:
+        manifest = current_manifest
+        _atomic_json(manifest_path, manifest)
     state = _load_or_initialize_state(runtime_root, manifest)
+    already_complete = state["completed_jobs"] == _JOB_ORDER
+    if not already_complete:
+        state["audit_invocations"] = int(state.get("audit_invocations", 0)) + 1
+        _atomic_json(runtime_root / "suite-state.json", state)
 
     pre = _pre_smoke_estimate(audits, config)
     estimates: dict[str, Any] = {"format": "brace-msi.official-resource-estimate.v1", "limits": config["resource_limits"], "pre_smoke": pre, "post_smoke": None}
@@ -355,6 +425,14 @@ def run_official_package_suite(
     _atomic_json(existing_estimate, estimates)
     if not pre["within_limits"]:
         raise RuntimeError("resource estimate exceeds limits before smoke")
+
+    restored_post = _post_smoke_estimate(audits, config, state)
+    if restored_post is not None:
+        estimates["post_smoke"] = restored_post
+        _atomic_json(existing_estimate, estimates)
+        if not restored_post["within_limits"]:
+            _write_artifacts(runtime_root, audits, state, config)
+            raise RuntimeError("resource estimate exceeds limits after smoke")
 
     if trainer is None:
         trainer = OfficialTrainer(sys.executable)
@@ -368,12 +446,26 @@ def run_official_package_suite(
         package = audits[profile]
         if kind == "smoke":
             output = runtime_root / "smoke" / profile
-            receipt = trainer.run_candidate(
-                package,
-                package.checkpoint_path,
-                output,
-                CandidateConfig(1, package.base_learning_rate, package.base_batch_size),
-                f"{profile}-smoke",
+            candidate_config = CandidateConfig(
+                1, package.base_learning_rate, package.base_batch_size
+            )
+            stage_id = f"{profile}-smoke"
+            receipt = (
+                recover_candidate_receipt(
+                    package,
+                    package.checkpoint_path,
+                    output,
+                    candidate_config,
+                    stage_id,
+                )
+                if output.exists()
+                else trainer.run_candidate(
+                    package,
+                    package.checkpoint_path,
+                    output,
+                    candidate_config,
+                    stage_id,
+                )
             )
             state["jobs"][job_id] = {
                 "task": package.task,
@@ -442,16 +534,40 @@ def validate_official_package_suite(runtime_root: Path) -> dict[str, Any]:
     profiles = sorted(summary.get("tasks", {}))
     if profiles != ["A", "B", "C"]:
         raise ValueError("suite task profiles are incomplete")
+    for profile in profiles:
+        smoke = state["jobs"].get(f"smoke:{profile}", {}).get("receipt")
+        if not smoke:
+            raise ValueError(f"smoke receipt missing: {profile}")
+        checkpoint = runtime_root / "smoke" / profile / "checkpoint.npz"
+        receipt_path = runtime_root / "smoke" / profile / "candidate-receipt.json"
+        if not checkpoint.is_file() or not receipt_path.is_file():
+            raise ValueError(f"smoke checkpoint or receipt missing: {profile}")
+        if hashlib.sha256(checkpoint.read_bytes()).hexdigest() != smoke["checkpoint_sha256"]:
+            raise ValueError(f"smoke checkpoint hash mismatch: {profile}")
+        persisted = json.loads(receipt_path.read_text(encoding="utf-8"))
+        if persisted.get("checkpoint_sha256") != smoke["checkpoint_sha256"]:
+            raise ValueError(f"smoke receipt does not reconcile: {profile}")
     policy_checks = []
     for profile in profiles:
-        policy_checks.append(validate_policy_result(runtime_root / "policies" / profile / "performance_triggered", 10, 1))
-        policy_checks.append(validate_policy_result(runtime_root / "policies" / profile / "brace", 10, 3))
+        for policy, minimum in (("performance_triggered", 1), ("brace", 3)):
+            check = validate_policy_result(runtime_root / "policies" / profile / policy, 10, minimum)
+            policy_checks.append(check)
+            policy_state = json.loads(
+                (runtime_root / "policies" / profile / policy / "state.json").read_text(encoding="utf-8")
+            )
+            reported = summary["tasks"][profile].get(policy)
+            if not reported:
+                raise ValueError("summary is missing policy result")
+            for key in ("stable_sha256", "stable_metric", "candidate_count", "accepted_count"):
+                if reported.get(key) != policy_state.get(key):
+                    raise ValueError(f"summary does not reconcile with policy state: {profile}/{policy}/{key}")
     estimate = json.loads((runtime_root / "resource-estimate.json").read_text(encoding="utf-8"))
     if not estimate["pre_smoke"]["within_limits"] or not estimate["post_smoke"]["within_limits"]:
         raise ValueError("suite resource estimate is outside limits")
     rows = [json.loads(line) for line in (runtime_root / "validation-usage.jsonl").read_text(encoding="utf-8").splitlines() if line]
+    candidate_rows = [row for row in rows if row.get("purpose") != "source_audit"]
     expected_candidates = 3 + sum(item["candidates"] for item in policy_checks)
-    if len(rows) != expected_candidates:
+    if len(candidate_rows) != expected_candidates:
         raise ValueError("suite validation usage count does not match candidates")
     if any(row.get("used_for_training") or row.get("used_for_preprocessing_fit") for row in rows):
         raise ValueError("suite validation leakage recorded")
