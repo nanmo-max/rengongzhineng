@@ -8,6 +8,7 @@ import numpy as np
 from brace_msi.data.types import BatchData, TaskStream
 from brace_msi.formal_development import (
     FormalRunConfig,
+    bounded_hpo_candidate,
     create_local_checkpoint,
     run_formal_development_experiment,
     validate_formal_development_output,
@@ -15,6 +16,7 @@ from brace_msi.formal_development import (
 from brace_msi.budget import BudgetLimits
 from brace_msi.safety import GateConfig
 from brace_msi.unified_policy import SharedPolicyConfig
+from brace_msi.modeling import CpuModelAdapter
 
 
 def _classification_stream() -> TaskStream:
@@ -130,4 +132,34 @@ def test_unified_policies_use_shared_normalized_config(tmp_path: Path) -> None:
     assert unified["real_candidate_count"] >= 1
     assert unified["shared_policy_config"] == shared.__dict__
     assert all("relative_performance_drop" in row for row in unified["batch_records"])
+
+
+def test_bounded_hpo_runs_finite_trials_and_selects_recorded_best() -> None:
+    rng = np.random.default_rng(29)
+    X = rng.normal(size=(120, 4))
+    y = (X[:, 0] + X[:, 1] > 0).astype(int)
+    stable = CpuModelAdapter(
+        task_kind="classification",
+        family="mlp",
+        seed=29,
+        params={"max_iter": 6},
+    ).fit(X[:60], y[:60])
+
+    candidate, trials = bounded_hpo_candidate(
+        stable=stable,
+        train_X=X[:90],
+        train_y=y[:90],
+        validation_X=X[90:],
+        validation_y=y[90:],
+        metric_name="macro_f1",
+        search_budget_fraction=0.2,
+    )
+
+    assert len(trials) == 2
+    assert sum(bool(trial["selected"]) for trial in trials) == 1
+    selected = next(trial for trial in trials if trial["selected"])
+    assert selected["primary_metric"] == max(
+        trial["primary_metric"] for trial in trials
+    )
+    assert candidate.predict(X[90:]).shape == y[90:].shape
 

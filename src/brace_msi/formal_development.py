@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 from hashlib import sha256
 import json
+import math
 from pathlib import Path
 import pickle
 from typing import Any, Literal
@@ -126,6 +127,60 @@ def _fit_mlp(
             seed=seed,
             params={"max_iter": max_iter},
         ).fit(X, y)
+
+
+def bounded_hpo_candidate(
+    *,
+    stable: CpuModelAdapter,
+    train_X: NDArray,
+    train_y: NDArray,
+    validation_X: NDArray,
+    validation_y: NDArray,
+    metric_name: MetricName,
+    search_budget_fraction: float,
+) -> tuple[CpuModelAdapter, list[dict[str, Any]]]:
+    """Run a deterministic, CPU-bounded learning-rate search for one action."""
+
+    if stable.family != "mlp":
+        raise TypeError("bounded HPO currently requires the shared MLP model family")
+    if not 0.0 < search_budget_fraction <= 1.0:
+        raise ValueError("search_budget_fraction must be in (0, 1]")
+    trial_count = max(1, min(3, int(math.ceil(search_budget_fraction * 10))))
+    multipliers = (1.0, 0.5, 2.0)[:trial_count]
+    base_learning_rate = float(stable.params.get("learning_rate_init", 0.001))
+    trial_models: list[CpuModelAdapter] = []
+    records: list[dict[str, Any]] = []
+    for index, multiplier in enumerate(multipliers, 1):
+        params = {
+            **stable.params,
+            "learning_rate_init": base_learning_rate * multiplier,
+        }
+        candidate = CpuModelAdapter(
+            task_kind=stable.task_kind,
+            family=stable.family,
+            seed=stable.seed,
+            params=params,
+        ).fit(train_X, train_y)
+        metric = primary_value(
+            metric_name,
+            metric_bundle(metric_name, validation_y, candidate.predict(validation_X)),
+        )
+        trial_models.append(candidate)
+        records.append(
+            {
+                "trial": index,
+                "learning_rate_multiplier": multiplier,
+                "primary_metric": metric,
+                "selected": False,
+            }
+        )
+    winner = (
+        max(range(len(records)), key=lambda i: records[i]["primary_metric"])
+        if higher_is_better(metric_name)
+        else min(range(len(records)), key=lambda i: records[i]["primary_metric"])
+    )
+    records[winner]["selected"] = True
+    return trial_models[winner], records
 
 
 def create_local_checkpoint(
@@ -425,7 +480,26 @@ def run_formal_development_experiment(
                 candidate_y = candidate_y[-config.replay_max_samples :]
             else:
                 candidate_X, candidate_y = feedback_X, feedback_y
-            allowed = ledger.check_before_training(estimated_samples=len(candidate_y))
+            hpo_trial_count = (
+                max(
+                    1,
+                    min(
+                        3,
+                        int(
+                            math.ceil(
+                                config.shared_policy_config.search_budget_fraction * 10
+                            )
+                        ),
+                    ),
+                )
+                if action is Action.BOUNDED_HPO
+                and config.shared_policy_config is not None
+                else 1
+            )
+            estimated_training_samples = len(candidate_y) * hpo_trial_count
+            allowed = ledger.check_before_training(
+                estimated_samples=estimated_training_samples
+            )
             if not allowed.allowed:
                 event = {
                     "batch_id": batch.batch_id,
@@ -435,22 +509,38 @@ def run_formal_development_experiment(
                     "reason": allowed.reason,
                     "validation_improvement": 0.0,
                     "anchor_degradation": 0.0,
-                    "training_samples": len(candidate_y),
+                    "training_samples": estimated_training_samples,
                     "usage": asdict(ResourceUsage(0.0, 0.0, 0, 0, 0)),
                 }
             else:
                 tracker: ResourceTracker | None = None
+                hpo_trials: list[dict[str, Any]] = []
                 try:
                     with warnings.catch_warnings():
                         warnings.simplefilter("ignore", ConvergenceWarning)
                         with ResourceTracker() as tracker:
-                            candidate = (
-                                stable.clone().partial_fit(candidate_X, candidate_y)
-                                if action is Action.INCREMENTAL_UPDATE
-                                else stable.refit(candidate_X, candidate_y)
-                            )
+                            if action is Action.INCREMENTAL_UPDATE:
+                                candidate = stable.clone().partial_fit(
+                                    candidate_X, candidate_y
+                                )
+                            elif action is Action.BOUNDED_HPO:
+                                if config.shared_policy_config is None:
+                                    raise ValueError("shared_policy_config is required")
+                                candidate, hpo_trials = bounded_hpo_candidate(
+                                    stable=stable,
+                                    train_X=candidate_X,
+                                    train_y=candidate_y,
+                                    validation_X=validation_X,
+                                    validation_y=validation_y,
+                                    metric_name=metric_name,
+                                    search_budget_fraction=config.shared_policy_config.search_budget_fraction,
+                                )
+                            else:
+                                candidate = stable.refit(candidate_X, candidate_y)
                     usage = tracker.usage or ResourceUsage(0.0, 0.0, 0, 0, 0)
-                    ledger.record_candidate(usage, training_samples=len(candidate_y))
+                    ledger.record_candidate(
+                        usage, training_samples=estimated_training_samples
+                    )
                     gate_inputs = {
                         "metric_name": metric_name,
                         "stable_validation": stable.predict(validation_X),
@@ -487,7 +577,8 @@ def run_formal_development_experiment(
                         "reason": reason,
                         "validation_improvement": improvement,
                         "anchor_degradation": degradation,
-                        "training_samples": len(candidate_y),
+                        "training_samples": estimated_training_samples,
+                        "hpo_trials": hpo_trials,
                         "usage": asdict(usage),
                     }
                 except Exception as exc:
@@ -496,7 +587,9 @@ def run_formal_development_experiment(
                         if tracker is not None and tracker.usage is not None
                         else ResourceUsage(0.0, 0.0, 0, 0, 0)
                     )
-                    ledger.record_candidate(usage, training_samples=len(candidate_y))
+                    ledger.record_candidate(
+                        usage, training_samples=estimated_training_samples
+                    )
                     event = {
                         "batch_id": batch.batch_id,
                         "action": action.value,
@@ -505,7 +598,8 @@ def run_formal_development_experiment(
                         "reason": f"candidate_failure:{type(exc).__name__}",
                         "validation_improvement": 0.0,
                         "anchor_degradation": 0.0,
-                        "training_samples": len(candidate_y),
+                        "training_samples": estimated_training_samples,
+                        "hpo_trials": hpo_trials,
                         "usage": asdict(usage),
                     }
             candidate_records.append(event)
