@@ -33,6 +33,18 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 | LOCAL-FORMAL-SIM-001-A2 | SUCCEEDED | 修正真实候选计数和审计恢复后，是否满足原预注册工程验收标准？ | 与A1完全相同，仅开发段与合成协议流；不用于性能调参 | 原配置不变；执行`7ef3829` | 与A1相同 | 三任务真实候选4/4/3；动作增量7、回放1、HPO3；机器验收通过 | `results/LOCAL-FORMAL-SIM-001.md`；本地`artifacts/formal_simulation/LOCAL-FORMAL-SIM-001/run-7ef3829/` |
 | XJTU-LOCAL-DEV-001-A1 | INVALID | 新增XJTU-SY数据能否在严格按轴承分组下完成可恢复特征缓存、强静态基线和两种自主更新策略？ | 9初训/3开发；密封未加载；自定RUL，仅本地开发 | `configs/xjtu_local_serial.json`；实现提交`2460577` | 4逻辑CPU；策略最多8候选、50,000训练样本、600秒候选墙钟/CPU | 5轮运行成功，但事后审查发现静态模型用了全部9个初训轴承，策略留出2个锚点，配对比较不公平，判定INVALID | `D:/brace-msi-xjtu/XJTU-LOCAL-DEV-001/experiments/`与`A1-INVALID.json`完整保留 |
 | XJTU-LOCAL-DEV-001-A2 | SUCCEEDED | 修复初训可见性后，五轮队列能否完成且形成至少3次真实候选？ | 静态与策略均用相同7个初训轴承训练、2个初训轴承作锚点；3开发；密封未加载 | 同一配置；修正代码提交`2e29ae7` | 同A1 | 5/5轮完成，指标有限；BRACE完成3次真实候选并全部被门控拒绝；简单触发0次动作；机器验收`valid=true` | `results/XJTU-LOCAL-DEV-001.md`；本地`D:/brace-msi-xjtu/XJTU-LOCAL-DEV-001/experiments-a2/`与`validation-experiments-a2.json` |
+| OFFICIAL-RULES-ALIGNED-DEV-001 | PLANNED | 参数量匹配的可替换MLP检查点与BRACE能否在三官方任务口径下完成每任务10轮、三策略公平比较，并形成35分维度的本地证据？ | Gas 1–3初训/4–7开发重分10轮；FD001发动机1–60初训/61–80每2台一轮；XJTU 9初训/3开发按轨迹进度合成10轮；所有既有密封段关闭 | `configs/official_rules_aligned_dev.json`；执行提交待定 | 最多4逻辑CPU、RSS<8GB；每策略10决策轮，候选预算按配置；种子20261111 | 待运行；前3个串行实验完成后健康检查，后续后台继续并自动汇总 | `D:/brace-msi-official-dev/OFFICIAL-RULES-ALIGNED-DEV-001/`；仓库提交聚合结果 |
+
+## OFFICIAL-RULES-ALIGNED-DEV-001预注册
+
+- 类型：最新官方规则对齐的本地开发实验；不是平台试运行、正式评测或官方成绩。
+- 初始检查点：从合法初训段本地拟合单隐藏层32单元MLP并原子保存；三策略按任务共享完全相同的本地检查点。参数量应分别严格为4326/865/833。`official_checkpoint=false`。
+- 数据可见性：Gas只用批次1–7；FD001只用训练文件发动机1–80；XJTU只用此前缓存的9初训和3开发轴承。Gas 8–10、FD001 81–100及XJTU三个密封轴承不得加载。
+- 10轮协议：Gas开发样本按原始批次顺序分为10个连续块；FD001开发发动机每2台一轮；XJTU三个开发轴承按各自归一化已观测进度分为10个阶段并在同阶段合并。预测后才能使用本轮标签。
+- 串行顺序：Gas静态、轴承静态、发动机静态为前三个健康检查实验；随后依次运行三任务性能触发与三任务BRACE，共9个实验。每个实验使用同一任务检查点、10个批次和固定种子。
+- 指标：Gas Macro-F1主指标/Accuracy参考；轴承RMSE/MAE；发动机RMSE/MAE/NASA非对称分。另报告相对初始/静态增益、最差阶段、达到最佳值轮次、阶段标准差、候选CPU/墙钟/RSS和训练样本。
+- 成功标准：9/9实验完成、每个10批次、所有指标有限、BRACE每任务至少3次真实候选、无密封样本、参数量匹配、错误日志为空、自动汇总存在。
+- 停止条件：见`FORMAL-DEV-001`。A1或失败结果必须保留，不得覆盖。
 
 ## XJTU-LOCAL-DEV-001预注册
 

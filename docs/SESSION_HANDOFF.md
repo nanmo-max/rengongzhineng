@@ -79,3 +79,11 @@
 - 配置与入口：`configs/xjtu_local_serial.json`、`scripts/run_xjtu_local.py`；机器派生根为`D:/brace-msi-xjtu/XJTU-LOCAL-DEV-001/`。
 - 运行已结束，无后台进程。A1在`experiments/`因公平可见性缺陷标记INVALID；有效A2在`experiments-a2/`，以`validation-experiments-a2.json`和`docs/results/XJTU-LOCAL-DEV-001.md`为准。
 - 当前队列只读取9个初训和3个开发轴承；3个密封轴承不进入特征缓存或训练。逐轴承缓存和运行证据可恢复但不得无理由重跑。全部结果必须保留`local_development_only`边界，不解除H-006。
+
+## 最新官方规则对齐训练恢复边界
+
+- 当前任务为`FORMAL-DEV-001`，计划`docs/plans/OFFICIAL-RULES-ALIGNED-TRAINING.md`，实验`OFFICIAL-RULES-ALIGNED-DEV-001`。
+- 最新平台事实来自`SOURCE_REGISTRY.md`的O-PLATFORM-001至004；四张截图只确认任务、指标、参数量、10轮、评分维度与次数规则，不提供训练包或权重。
+- 本地MLP检查点拓扑匹配平台参数量但`official_checkpoint=false`；平台包到达后另建正式实验ID，不重命名本地结果。
+- 运行根预定`D:/brace-msi-official-dev/OFFICIAL-RULES-ALIGNED-DEV-001/`；前三个实验健康检查后让后台独立继续，恢复只读状态文件并禁止重复已完成实验。
+- 当前禁止平台提交、SwanLab、密封段和RC修改。浏览器自动化本轮因URL不可验证停止，不再重试。
