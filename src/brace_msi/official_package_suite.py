@@ -5,6 +5,7 @@ from __future__ import annotations
 import html
 import json
 import os
+import subprocess
 import sys
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -51,8 +52,18 @@ def _atomic_text(path: Path, value: str) -> None:
 
 def _source_manifest(root: Path, audits: Mapping[str, PackageAudit]) -> dict[str, Any]:
     files = [path for path in root.rglob("*") if path.is_file()]
+    source_commit = subprocess.run(
+        ["git", "rev-parse", "HEAD"], check=True, capture_output=True, text=True
+    ).stdout.strip()
+    source_tree_dirty = bool(
+        subprocess.run(
+            ["git", "status", "--porcelain"], check=True, capture_output=True, text=True
+        ).stdout.strip()
+    )
     return {
         "format": "brace-msi.official-source-manifest.v1",
+        "source_commit": source_commit,
+        "source_tree_dirty": source_tree_dirty,
         "source_root": str(root),
         "source_file_count": len(files),
         "source_total_bytes": sum(path.stat().st_size for path in files),

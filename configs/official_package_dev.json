@@ -4,6 +4,10 @@
   "official_scoring_ready": false,
   "rounds": 10,
   "minimum_brace_candidates": 3,
+  "max_candidates_per_policy": 3,
+  "max_cpu_seconds_per_policy": 600.0,
+  "max_wall_seconds_per_policy": 600.0,
+  "report_title": "BRACE-MSI official package development",
   "allowed_epochs": [1, 2, 3, 5],
   "allowed_learning_rate_multipliers": [0.25, 0.5, 1.0],
   "resource_limits": {

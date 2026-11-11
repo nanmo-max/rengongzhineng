@@ -88,6 +88,9 @@ def test_suite_estimates_resources_before_smoke_then_resumes_six_policy_jobs(tmp
     assert estimate["post_smoke"]["estimated_wall_seconds"] > 0
     assert estimate["post_smoke"]["within_limits"] is True
     assert all((runtime / "smoke" / profile / "checkpoint.npz").is_file() for profile in audits)
+    manifest = json.loads((runtime / "source-manifest.json").read_text(encoding="utf-8"))
+    assert len(manifest["source_commit"]) == 40
+    assert isinstance(manifest["source_tree_dirty"], bool)
 
     complete_state = run_official_package_suite(PACKAGE_ROOT, runtime, config, trainer=trainer)
 

@@ -36,6 +36,21 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 | XJTU-LOCAL-DEV-001-A1 | INVALID | 新增XJTU-SY数据能否在严格按轴承分组下完成可恢复特征缓存、强静态基线和两种自主更新策略？ | 9初训/3开发；密封未加载；自定RUL，仅本地开发 | `configs/xjtu_local_serial.json`；实现提交`2460577` | 4逻辑CPU；策略最多8候选、50,000训练样本、600秒候选墙钟/CPU | 5轮运行成功，但事后审查发现静态模型用了全部9个初训轴承，策略留出2个锚点，配对比较不公平，判定INVALID | `D:/brace-msi-xjtu/XJTU-LOCAL-DEV-001/experiments/`与`A1-INVALID.json`完整保留 |
 | XJTU-LOCAL-DEV-001-A2 | SUCCEEDED | 修复初训可见性后，五轮队列能否完成且形成至少3次真实候选？ | 静态与策略均用相同7个初训轴承训练、2个初训轴承作锚点；3开发；密封未加载 | 同一配置；修正代码提交`2e29ae7` | 同A1 | 5/5轮完成，指标有限；BRACE完成3次真实候选并全部被门控拒绝；简单触发0次动作；机器验收`valid=true` | `results/XJTU-LOCAL-DEV-001.md`；本地`D:/brace-msi-xjtu/XJTU-LOCAL-DEV-001/experiments-a2/`与`validation-experiments-a2.json` |
 | OFFICIAL-RULES-ALIGNED-DEV-001 | SUCCEEDED | 参数量匹配的可替换MLP检查点与BRACE能否在三官方任务口径下完成每任务10轮、三策略公平比较，并形成35分维度的本地证据？ | Gas 1–3初训/4–7开发重分10轮；FD001发动机1–60初训/61–80每2台一轮；XJTU 9初训/3开发按轨迹进度合成10轮；所有既有密封段关闭 | `configs/official_rules_aligned_dev.json`；执行提交`512d477`；报告提交`9c7bdba` | 最多4逻辑CPU、RSS<8GB；每策略10决策轮，候选预算按配置；种子20261111 | 9/9完成、机器验收有效；Gas BRACE +0.229939 Macro-F1，Engine BRACE改善0.248934 RMSE，Bearing BRACE退化35.086308 RMSE；D-027停止同流继续调参 | `results/OFFICIAL-RULES-ALIGNED-DEV-001.md`；本地`D:/brace-msi-official-dev/OFFICIAL-RULES-ALIGNED-DEV-001/` |
+| OFFICIAL-PACKAGE-DEV-001 | PLANNED | 原版训练器真实续训下，简单性能触发与BRACE在A/B/C公开开发包上的候选适应结果、父链安全与资源成本如何？ | 三包只读`public/train.jsonl`续训；同包`public/validation.jsonl`仅作候选门控；无隐藏测试、无真实时间批次 | `configs/official_package_dev.json`；实现基线`2004f87`，执行时由`source-manifest.json`记录干净HEAD | 总估算CPU≤3600秒、墙钟≤1800秒、磁盘≤200MiB；每策略≤3候选、≤600秒CPU/墙钟 | 尚未运行 | 计划产物`D:/brace-msi-official-package/OFFICIAL-PACKAGE-DEV-001/` |
+
+## OFFICIAL-PACKAGE-DEV-001预注册
+
+- 类型：官方训练包的本地开发参考实验；`official_package=true`、`official_scoring_ready=false`，不是平台试跑、隐藏评测或正式成绩。
+- 输入锁：A检查点/训练/验证SHA分别为`fd1e...c757`/`c724...e6c0`/`6be1...fbee`；B为`c7d8...14b4`/`71b2...054a`/`2367...9eb3`；C为`98ec...bc4e`/`fcfa...c281`/`0cc7...aca7`。运行时核验完整64文件清单与完整SHA。
+- 模型继承：只使用随包原版NumPy训练器和官方包检查点；连续2 epoch与1+1恢复等价已在Task 2证明。候选必须证明epoch/step、权重和Adam真实变化；被拒绝候选不得进入父模型链。
+- 队列：先A/B/C各1 epoch Smoke；健康且资源实测不超限后，按A/B/C简单性能触发、A/B/C BRACE串行执行。每个策略固定10个候选适应决策轮；简单策略最多1个候选，BRACE固定最低3且最多3个候选。轮次不是时间批次或真实漂移流。
+- 候选空间：epoch仅1/2/3/5，学习率仅基线的0.25/0.5/1.0倍，批大小仅基线或2倍；每轮最多一个候选，不根据同一验证结果修改动作空间重跑。
+- 门控：A以公开验证Macro-F1严格提高为部署条件；B/C以RMSE严格降低为条件；相等或退化拒绝并保留稳定模型。所有模型可加载、schema、父SHA、输入SHA、资源和有限指标为硬约束。
+- 验证使用：公开验证文件不得进入训练、均值/方差或目标缩放拟合；每个候选记录文件读取次数和逐epoch指标评估次数。反复用于策略选择存在过拟合风险，最终泛化只能由未见隐藏评测确认。
+- 资源：训练前按历史耗时和检查点体积估算，总CPU≤3600秒、墙钟≤1800秒、磁盘≤209,715,200字节；三Smoke后用实际CPU/墙钟/RSS修正，任一超限则停止完整队列。每策略候选CPU和墙钟各≤600秒。
+- 成功标准：三个Smoke完成且真实继承证据有效；六个策略作业各10轮；BRACE每任务3个真实候选；父链、验证账本、失败收据、资源、恢复、报告和机器验收完整；原包哈希不变。
+- 停止条件：任何包/代码/数据SHA变化、验证泄漏、非有限指标、父链纳入拒绝候选、资源估算超限、候选目录冲突或原包出现写入。负结果和失败收据必须保留，不用同一公开验证流继续调参重跑。
+- 禁止项：SwanLab、外部API、平台提交、平台额度、隐藏测试、Docker打包权重、修改RC标签。
 
 ## OFFICIAL-RULES-ALIGNED-DEV-001预注册
 
