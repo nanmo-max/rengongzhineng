@@ -224,3 +224,11 @@
 - Gas密封Accuracy：静态0.4663、简单触发0.6274、BRACE 0.6872；FD001密封RMSE：静态/简单21.9451、BRACE 21.3805。
 - BRACE在两个代理任务上主指标和最差阶段更好，但训练样本和候选耗时明显更高；没有出现简单策略对BRACE的全面支配。
 - 完整逐批、资源和解释边界见`results/LOCAL-EXP-001.md`；这些结果不是官方成绩。
+
+## 2026-11-11：OFFICIAL-PKG-001 Task 1只读清单审计器
+
+- 新增官方A/B/C训练包只读清单配置和审计器，不导入或执行随包训练代码。
+- 对真实训练包核验关键SHA-256、公开训练/验证行数、ID与设备组隔离、NPZ安全schema、Adam状态、模型拓扑和公开验证基线；B固定为34输入、24隐藏、865参数。
+- 篡改副本测试证明检查点哈希不符会在训练启动前失败；原训练包未产生缓存或新文件。
+- TDD红灯：实现前`ModuleNotFoundError: No module named 'brace_msi.official_package'`；绿灯：`3 passed`。
+- 边界保持`official_package=true`、`official_scoring_ready=false`；尚未运行候选训练。
