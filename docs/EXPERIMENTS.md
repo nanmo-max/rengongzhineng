@@ -5,15 +5,15 @@
 ## 当前汇总
 
 - 正式实验：0
-- 探索实验：6（既有3项、XJTU A1/A2及规则对齐开发实验）
+- 探索实验：7（既有3项、XJTU A1/A2、规则对齐开发及官方训练包本地开发实验）
 - 工程验收实验：2次运行尝试（A1 INVALID、A2 SUCCEEDED）
-- 训练运行：43（全部为本地代理、合成协议、XJTU或规则对齐本地开发任务；无官方评分实验）
-- 已报告模型指标：仅本地代理/开发实验，见`results/LOCAL-SMOKE-001.md`、`results/LOCAL-EXP-001.md`、`results/XJTU-LOCAL-DEV-001.md`与`results/OFFICIAL-RULES-ALIGNED-DEV-001.md`
+- 训练运行：58（新增官方训练包本地开发15个真实候选；全部为本地开发任务，无官方评分实验）
+- 已报告模型指标：仅本地代理/开发实验，见`results/LOCAL-SMOKE-001.md`、`results/LOCAL-EXP-001.md`、`results/XJTU-LOCAL-DEV-001.md`、`results/OFFICIAL-RULES-ALIGNED-DEV-001.md`与`results/OFFICIAL-PACKAGE-DEV-001.md`
 - 完整系统模拟：`LOCAL-FORMAL-SIM-001`已完成（只用合法开发段与合成协议任务）
 
 Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所有结果仍是`proxy_only`，不得表述为官方成绩 `[L-DATA-001]` `[L-DATA-002]`。
 
-`OFFICIAL-PACKAGE-DEV-001`的本地执行器已完成自动测试，但截至Task 4尚未预注册或运行真实候选，因此当前汇总、训练运行数和登记表不增加；必须在干净代码提交后先追加预注册，再启动Smoke。
+`OFFICIAL-PACKAGE-DEV-001`已从干净提交完成；结果只属于公开开发包本地续训，不增加“正式实验”计数。
 
 ## 状态定义
 
@@ -36,7 +36,7 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 | XJTU-LOCAL-DEV-001-A1 | INVALID | 新增XJTU-SY数据能否在严格按轴承分组下完成可恢复特征缓存、强静态基线和两种自主更新策略？ | 9初训/3开发；密封未加载；自定RUL，仅本地开发 | `configs/xjtu_local_serial.json`；实现提交`2460577` | 4逻辑CPU；策略最多8候选、50,000训练样本、600秒候选墙钟/CPU | 5轮运行成功，但事后审查发现静态模型用了全部9个初训轴承，策略留出2个锚点，配对比较不公平，判定INVALID | `D:/brace-msi-xjtu/XJTU-LOCAL-DEV-001/experiments/`与`A1-INVALID.json`完整保留 |
 | XJTU-LOCAL-DEV-001-A2 | SUCCEEDED | 修复初训可见性后，五轮队列能否完成且形成至少3次真实候选？ | 静态与策略均用相同7个初训轴承训练、2个初训轴承作锚点；3开发；密封未加载 | 同一配置；修正代码提交`2e29ae7` | 同A1 | 5/5轮完成，指标有限；BRACE完成3次真实候选并全部被门控拒绝；简单触发0次动作；机器验收`valid=true` | `results/XJTU-LOCAL-DEV-001.md`；本地`D:/brace-msi-xjtu/XJTU-LOCAL-DEV-001/experiments-a2/`与`validation-experiments-a2.json` |
 | OFFICIAL-RULES-ALIGNED-DEV-001 | SUCCEEDED | 参数量匹配的可替换MLP检查点与BRACE能否在三官方任务口径下完成每任务10轮、三策略公平比较，并形成35分维度的本地证据？ | Gas 1–3初训/4–7开发重分10轮；FD001发动机1–60初训/61–80每2台一轮；XJTU 9初训/3开发按轨迹进度合成10轮；所有既有密封段关闭 | `configs/official_rules_aligned_dev.json`；执行提交`512d477`；报告提交`9c7bdba` | 最多4逻辑CPU、RSS<8GB；每策略10决策轮，候选预算按配置；种子20261111 | 9/9完成、机器验收有效；Gas BRACE +0.229939 Macro-F1，Engine BRACE改善0.248934 RMSE，Bearing BRACE退化35.086308 RMSE；D-027停止同流继续调参 | `results/OFFICIAL-RULES-ALIGNED-DEV-001.md`；本地`D:/brace-msi-official-dev/OFFICIAL-RULES-ALIGNED-DEV-001/` |
-| OFFICIAL-PACKAGE-DEV-001 | PLANNED | 原版训练器真实续训下，简单性能触发与BRACE在A/B/C公开开发包上的候选适应结果、父链安全与资源成本如何？ | 三包只读`public/train.jsonl`续训；同包`public/validation.jsonl`仅作候选门控；无隐藏测试、无真实时间批次 | `configs/official_package_dev.json`；实现基线`2004f87`，执行时由`source-manifest.json`记录干净HEAD | 总估算CPU≤3600秒、墙钟≤1800秒、磁盘≤200MiB；每策略≤3候选、≤600秒CPU/墙钟 | A1在导入阶段因CLI未加入`src/`失败，0次训练；失败状态保留，修复后待恢复 | `D:/brace-msi-official-package/OFFICIAL-PACKAGE-DEV-001/pipeline-status.json` |
+| OFFICIAL-PACKAGE-DEV-001 | SUCCEEDED | 原版训练器真实续训下，简单性能触发与BRACE在A/B/C公开开发包上的候选适应结果、父链安全与资源成本如何？ | 三包只读`public/train.jsonl`续训；同包`public/validation.jsonl`仅作候选门控；无隐藏测试、无真实时间批次 | `configs/official_package_dev.json`；执行`34098bf`，干净工作树 | 总估算CPU≤3600秒、墙钟≤1800秒、磁盘≤200MiB；每策略≤3候选、≤600秒CPU/墙钟 | 9/9作业、15候选、机器验收有效；A/B BRACE与简单持平但更贵，C BRACE RMSE 51.889566优于简单52.350178；A1导入失败0训练负证据保留 | `results/OFFICIAL-PACKAGE-DEV-001.md`；`D:/brace-msi-official-package/OFFICIAL-PACKAGE-DEV-001/` |
 
 ## OFFICIAL-PACKAGE-DEV-001预注册
 

@@ -254,6 +254,14 @@
 - 验收：`validate_simulation_output(..., minimum_candidates=3)`返回`valid=true`；公开日志白名单、唯一批次提交和稳定模型加载通过。
 - 边界：同L-EVIDENCE-001；不使用INVALID A1作成功证据；不是官方成绩或真实轴承性能证据。
 
+### L-EVIDENCE-003 官方训练包本地开发证据
+
+- 来源：`OFFICIAL-PACKAGE-DEV-001`，执行提交`34098bf42be4bb00c9323351f1b7067bb2d85972`
+- 本地路径：`D:/brace-msi-official-package/OFFICIAL-PACKAGE-DEV-001/`
+- 事实：A/B/C三个Smoke与六个策略作业完成；简单策略与BRACE各任务均10个候选适应决策轮，BRACE每任务3个真实候选；共15个训练候选、15次公开验证文件读取，机器验收`valid=true`。A/B上BRACE与简单策略主指标相同但资源更高；C上BRACE公开验证RMSE为51.889566，优于简单策略52.350178和静态52.868573。
+- 资源：15候选累计CPU 64.781秒、候选墙钟69.547秒、峰值RSS 256,630,784字节；运行根约1.19MB。
+- 边界：`official_package=true`、`official_scoring_ready=false`；轮次不是真实漂移流；反复公开验证用于门控，结论需隐藏评测确认。未运行SwanLab、平台SDK、外部API或隐藏测试。
+
 ## 待核实假设与冲突
 
 ### H-001 正式批次协议

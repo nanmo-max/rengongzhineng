@@ -1,27 +1,28 @@
 # 当前状态
 
 - 最近同步：2026-11-11（Asia/Shanghai）
-- 项目阶段：冻结`BRACE-MSI-0.1.0rc1`不变；官方包设计与计划已批准，当前执行`OFFICIAL-PKG-001`本地适配与候选适应续训 `[D-028]` `[D-029]` `[D-030]`
+- 项目阶段：冻结`BRACE-MSI-0.1.0rc1`不变；`OFFICIAL-PKG-001`本地官方训练包适配、续训与机器验收已完成，按D-031停止同一公开验证集探索，等待外部平台材料
 - 方案版本：BRACE-MSI V4.1，已锁定研究方向 `[D-001]`
-- 正式训练：`OFFICIAL-PACKAGE-DEV-001`已预注册；A1在CLI导入阶段失败且0训练，入口修复和失败归档测试已通过；下一步从干净修复提交恢复A/B/C Smoke
-- 正式实验：0 次；本地代理/开发/工程验收8项、43个训练运行已登记，见 [EXPERIMENTS.md](EXPERIMENTS.md)
+- 正式训练：`OFFICIAL-PACKAGE-DEV-001`已完成；A1导入失败0训练负证据和修复后的9/9作业均保留
+- 正式实验：0 次；本地代理/开发/工程验收9项、58个训练运行已登记，见 [EXPERIMENTS.md](EXPERIMENTS.md)
 - 当前正式数据候选：Gas Sensor Array Drift、NASA C-MAPSS、XJTU-SY轴承数据 `[L-AUTH-004]` `[L-DATA-004]`
 - 重复结论：Gas与C-MAPSS原件和既有代理数据逐文件一致，可复用加载器与指纹；旧代理结果仍不得改名为官方成绩
 - 官方平台/SDK：A/B/C训练包、公开切分与初始权重已取得并审计 `[O-PLATFORM-005]`；正式SDK/批次协议仍未取得 `[H-001]`
 
 ## 当前执行入口
 
-`OFFICIAL-PKG-001`为唯一当前任务。Task 1–4代码与自动测试已完成；`OFFICIAL-PACKAGE-DEV-001`预注册位于`EXPERIMENTS.md`，必须从干净提交启动。外部SDK/许可证等缺口不阻塞本地路径。
+当前没有不依赖外部材料的`READY`任务。`OFFICIAL-PKG-001`已`DONE`；运行根`D:/brace-msi-official-package/OFFICIAL-PACKAGE-DEV-001/`的`validation.json`为`valid=true`。下一步只在正式SDK/评分/许可证或容器运行条件到达后启动对应接入任务。
 全新环境安装的wheel通过`pip check`、95项测试、两协议CLI Smoke及真实SwanLab 0.10.4离线导出。
 `RR-001`因本机无容器运行时且相关Windows功能均未启用而`BLOCKED`；不得用静态审计替代真实镜像证据。
 A1`ce3e907`保留为INVALID负证据，A2`7ef3829`保留为本地代理工程验收成功证据，合成轴承只标记`protocol_only`。
 
 已完成证据：
 
-1. 实现提交`512d477`；报告生成提交`9c7bdba`；完整回归116项通过；
-2. `D:/brace-msi-official-dev/OFFICIAL-RULES-ALIGNED-DEV-001/validation.json`为`valid=true`，前三实验健康检查有效，后台PID 6084已正常退出；
-3. Gas与Engine的BRACE本地指标优于静态，Bearing退化；按D-027不在同一开发流继续调参，Bearing冻结静态安全默认；
-4. 结果与失败分析见`docs/results/OFFICIAL-RULES-ALIGNED-DEV-001.md`。
+1. 官方训练包执行提交`34098bf`，运行时工作树干净；A/B/C原包64文件和关键SHA保持不变；
+2. 三个Smoke、六个策略作业、15个真实候选完成；六策略各10决策轮，BRACE每任务3候选；
+3. 机器验收`valid=true`，拒绝候选未进入父模型链，验证未参与训练/预处理，资源未超限；
+4. A/B上BRACE与简单策略持平但成本更高，C上BRACE公开验证RMSE更低；按D-031不在同一验证集继续调参；
+5. 结果、资源、负证据和机器验收见`docs/results/OFFICIAL-PACKAGE-DEV-001.md`。
 
 ## 当前阻塞
 
@@ -37,7 +38,8 @@ A1`ce3e907`保留为INVALID负证据，A2`7ef3829`保留为本地代理工程验
 ## 近期不做
 
 - 不在`OFFICIAL-RULES-ALIGNED-DEV-001`同一开发流上继续调门控阈值或重跑；
-- 平台训练包到达前不把本地规则对齐训练称为正式平台检查点训练或排行榜实验。
+- 不把公开开发包续训称为真实漂移流、隐藏评测、正式平台成绩或排行榜实验。
+- 不在`OFFICIAL-PACKAGE-DEV-001`同一公开验证集上继续调参、改变动作空间或重跑。
 - 最终工程模型与平台记录规范冻结前，不运行、修改或同步SwanLab。
 - 不接入大模型服务。
 - 不复现论文代码。
