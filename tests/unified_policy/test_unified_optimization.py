@@ -15,8 +15,9 @@ from brace_msi.unified_policy import SharedPolicyConfig
 
 
 class FakeEvaluator:
-    def __init__(self) -> None:
+    def __init__(self, protocol_sha256: str = "9" * 64) -> None:
         self.calls: list[tuple[str, str, str | None]] = []
+        self.protocol_sha256 = protocol_sha256
 
     def evaluate(
         self,
@@ -130,6 +131,30 @@ def test_resume_rejects_source_or_candidate_config_drift(tmp_path: Path) -> None
             candidates={"candidate-good": SharedPolicyConfig(update_drop_threshold=0.03)},
             evaluator=evaluator,
             source_commit="different",
+            experiment_config_sha256="a" * 64,
+            static_tolerance=0.005,
+        )
+
+
+def test_resume_rejects_evaluator_protocol_drift(tmp_path: Path) -> None:
+    run_development_search(
+        runtime_root=tmp_path,
+        task_keys=("task-1", "task-2", "task-3"),
+        candidates=_candidates(),
+        evaluator=FakeEvaluator("8" * 64),
+        source_commit="abc1234",
+        experiment_config_sha256="a" * 64,
+        static_tolerance=0.005,
+        max_jobs=1,
+    )
+
+    with pytest.raises(ValueError, match="execution manifest mismatch"):
+        run_development_search(
+            runtime_root=tmp_path,
+            task_keys=("task-1", "task-2", "task-3"),
+            candidates=_candidates(),
+            evaluator=FakeEvaluator("7" * 64),
+            source_commit="abc1234",
             experiment_config_sha256="a" * 64,
             static_tolerance=0.005,
         )

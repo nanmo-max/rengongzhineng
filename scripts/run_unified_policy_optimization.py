@@ -35,9 +35,7 @@ def _arguments() -> argparse.Namespace:
     parser.add_argument("--gas-archive", type=Path)
     parser.add_argument("--cmapss-zip", type=Path)
     parser.add_argument("--xjtu-cache-root", type=Path)
-    parser.add_argument("--maximum-candidates", type=int)
     parser.add_argument("--max-jobs", type=int)
-    parser.add_argument("--mlp-max-iter", type=int, default=80)
     return parser.parse_args()
 
 
@@ -103,14 +101,12 @@ def main() -> int:
             runtime_root=arguments.runtime_root / "task-evaluations",
             seed=int(config["seed"]),
             baseline_shared_config=baseline,
-            mlp_max_iter=arguments.mlp_max_iter,
+            mlp_max_iter=int(config["runtime"]["mlp_max_iter"]),
         )
         result = run_development_search(
             runtime_root=arguments.runtime_root,
             task_keys=tuple(streams),
-            candidates=candidate_configs_from_config(
-                config, maximum_candidates=arguments.maximum_candidates
-            ),
+            candidates=candidate_configs_from_config(config),
             evaluator=evaluator,
             source_commit=_source_commit(),
             experiment_config_sha256=_sha256(arguments.config),

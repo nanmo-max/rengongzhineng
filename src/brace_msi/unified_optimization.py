@@ -100,6 +100,8 @@ class EvaluationMetrics:
 
 
 class DevelopmentEvaluator(Protocol):
+    protocol_sha256: str
+
     def evaluate(
         self,
         *,
@@ -182,16 +184,20 @@ def _execution_manifest(
     candidates: Mapping[str, SharedPolicyConfig],
     source_commit: str,
     experiment_config_sha256: str,
+    evaluator_protocol_sha256: str,
     static_tolerance: float,
 ) -> dict[str, Any]:
     if not source_commit:
         raise ValueError("source_commit is required")
     if not _SHA256.fullmatch(experiment_config_sha256.lower()):
         raise ValueError("experiment_config_sha256 must be a SHA-256")
+    if not _SHA256.fullmatch(evaluator_protocol_sha256.lower()):
+        raise ValueError("evaluator protocol identity must be a SHA-256")
     payload = {
         "format": "brace-msi.unified-development-manifest.v1",
         "source_commit": source_commit,
         "experiment_config_sha256": experiment_config_sha256.lower(),
+        "evaluator_protocol_sha256": evaluator_protocol_sha256.lower(),
         "task_keys": list(tasks),
         "candidate_configs": {
             candidate_id: _config_payload(candidates[candidate_id])
@@ -390,6 +396,7 @@ def run_development_search(
         candidates=candidates,
         source_commit=source_commit,
         experiment_config_sha256=experiment_config_sha256,
+        evaluator_protocol_sha256=evaluator.protocol_sha256,
         static_tolerance=static_tolerance,
     )
     manifest_path = runtime_root / "execution-manifest.json"

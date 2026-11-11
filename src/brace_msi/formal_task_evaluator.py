@@ -75,6 +75,18 @@ class FormalTaskEvaluator:
         self.seed = seed
         self.baseline_shared_config = baseline_shared_config
         self.mlp_max_iter = mlp_max_iter
+        self.protocol_sha256 = _canonical_sha256(
+            {
+                "format": "brace-msi.formal-task-evaluator.v1",
+                "seed": seed,
+                "baseline_shared_config": asdict(baseline_shared_config),
+                "mlp_max_iter": mlp_max_iter,
+                "task_phases": {
+                    key: _phase_sha256(stream)
+                    for key, stream in sorted(self.streams.items())
+                },
+            }
+        )
 
     @staticmethod
     def _task_directory(task_key: str) -> str:

@@ -120,6 +120,7 @@ def test_optimization_config_has_one_shared_policy_without_task_overrides() -> N
 
     assert isinstance(config["shared_policy"], dict)
     assert isinstance(config["search_space"], dict)
+    assert config["runtime"]["mlp_max_iter"] == 80
     assert set(config["source_sha256"]) == {
         "gas_archive",
         "cmapss_zip",
@@ -127,3 +128,11 @@ def test_optimization_config_has_one_shared_policy_without_task_overrides() -> N
     }
     assert "task_overrides" not in config
     assert "datasets" not in config["shared_policy"]
+    smoke = json.loads(
+        (Path(__file__).parents[2] / "configs" / "unified_policy_smoke.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert smoke["runtime"]["mlp_max_iter"] == 8
+    assert smoke["selection"]["maximum_shared_candidates"] == 2
+    assert smoke["official_test_opportunities_allowed"] == 0

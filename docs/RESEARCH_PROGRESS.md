@@ -288,3 +288,4 @@
 - 已实现无量纲指标退化、身份盲共享动作策略、三阶段manifest/末期一次性锁、任务级leave-one-task-out排序以及可恢复的四策略搜索运行器。
 - 新路径要求Gas、Bearing、Engine共享同一策略参数和预算原则；TaskAdapter可以适配任务类型与模型接口，但决策器无法接收任务ID、数据集/Profile和批次名称。
 - `UNIFIED-POLICY-OPT-001-SMOKE`已预注册，尚未运行真实训练；末期数据和官方十次测试机会均未使用。
+- Smoke A1在提交`cf3adcc`完成15/15作业后，发现CLI训练迭代数未进入执行manifest，存在不同训练协议混合恢复风险；A1立即标记INVALID并保留，未打开末期数据。修复为配置内冻结迭代数并新增评估器协议SHA后，A2另建运行根重跑。

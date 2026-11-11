@@ -1,0 +1,47 @@
+{
+  "format": "brace-msi.unified-policy-optimization.v1",
+  "experiment_id": "UNIFIED-POLICY-OPT-001-SMOKE-A2",
+  "seed": 20261111,
+  "official_test_opportunities_allowed": 0,
+  "runtime": {
+    "mlp_max_iter": 8
+  },
+  "source_sha256": {
+    "gas_archive": "91E8F466F202E7A093D657673CE47311C3E90416F7DF3057966058961C351FE4",
+    "cmapss_zip": "74BEF434A34DB25C7BF72E668EA4CD52AFE5F2CF8E44367C55A82BFD91A5A34F",
+    "xjtu_manifest": "79721C2F773B0CC14E3A1BA6B432614CB37C803622928F4469F2EC07E2E0C93C"
+  },
+  "shared_policy": {
+    "update_drop_threshold": 0.02,
+    "refit_drop_threshold": 0.10,
+    "drift_percentile_threshold": 0.70,
+    "high_drift_percentile_threshold": 0.90,
+    "minimum_sample_support": 0.10,
+    "hpo_failure_threshold": 2,
+    "hpo_min_budget_fraction": 0.25,
+    "replay_fraction": 0.50,
+    "search_budget_fraction": 0.20,
+    "minimum_relative_improvement": 0.0,
+    "maximum_relative_anchor_degradation": 0.02
+  },
+  "search_space": {
+    "update_drop_threshold": [0.01, 0.02, 0.04],
+    "refit_drop_threshold": [0.08, 0.12, 0.20],
+    "drift_percentile_threshold": [0.60, 0.75, 0.90],
+    "replay_fraction": [0.25, 0.50, 0.75],
+    "minimum_relative_improvement": [0.0, 0.002, 0.005],
+    "maximum_relative_anchor_degradation": [0.01, 0.02, 0.05]
+  },
+  "selection": {
+    "maximum_shared_candidates": 2,
+    "static_tolerance": 0.005,
+    "domination_fold_limit": 2,
+    "ranking": [
+      "eligibility",
+      "worst_task_relative_gain",
+      "mean_relative_gain",
+      "gain_over_simple_baseline",
+      "normalized_resource_cost"
+    ]
+  }
+}
