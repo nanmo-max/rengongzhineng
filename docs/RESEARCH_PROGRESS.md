@@ -2,6 +2,14 @@
 
 本文件按时间追加，不回写历史记录。当前状态仍以 [STATUS.md](STATUS.md) 为准。
 
+## 2026-11-11：规则对齐三任务无人值守训练完成
+
+- 以TDD实现参数量匹配MLP、平台已公布指标、三任务10轮无密封流、原子检查点、可恢复9实验队列、机器验收和静态HTML/Markdown报告；实现提交`512d477`，报告提交`9c7bdba`。
+- 完整回归`116 passed`，`compileall`与`git diff --check`通过。前三个静态实验健康检查有效后，PID 6084从断点独立完成余下6个实验并正常退出；终态`validation.json`为`valid=true`。
+- Gas BRACE相对静态提高0.229939 Macro-F1；Engine BRACE减少0.248934 RMSE；Bearing BRACE增加35.086308 RMSE而失败。没有隐藏负结果，也没有构造官方综合分。
+- D-027冻结下一步：不在同一开发流继续调参；Gas/Engine等待平台检查点复验，Bearing默认不更新。机器产物位于`D:/brace-msi-official-dev/OFFICIAL-RULES-ALIGNED-DEV-001/`，聚合说明见`results/OFFICIAL-RULES-ALIGNED-DEV-001.md`。
+- 全程未打开Gas 8–10、FD001 81–100或XJTU密封轴承，未运行SwanLab、未提交平台、未消耗最多10次试运行，也未修改RC标签。
+
 ## 2026-11-11：最新平台赛前规则接入
 
 - 视觉核验`新增`目录4张平台截图并登记SHA-256。确认A/B/C任务分别为气体6类Macro-F1、轴承RUL分钟RMSE/MAE、发动机RUL循环RMSE/NASA非对称分；每任务10轮优化。

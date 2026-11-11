@@ -242,13 +242,15 @@ SYS-005
 
 ### FORMAL-DEV-001 最新规则对齐无人值守训练
 
-- 状态：`IN_PROGRESS`
+- 状态：`DONE`
 - 依赖：O-PLATFORM-001至004、L-AUTH-007、已有三数据加载器与统一Harness
 - 优先级：P0，正式平台前开发路径
 - 完成标准：三任务使用参数量匹配的可替换MLP本地初始检查点；各自构造10个合法开发批次；静态、性能触发和BRACE共享初始检查点并串行运行；官方指标、最差阶段、恢复速度、稳定性和资源分别记录；前三个实验人工健康检查通过后后台独立继续；自动生成汇总分析和下一轮冻结建议；全部产物可断点恢复。
 - 停止条件：原始哈希变化、训练/开发/密封身份交叉、非有限指标、超过4核8GB本地观测边界、输出目录已有冲突证据，或需要把本地重建权重冒充平台权重。
 - 边界：`official_rules_aligned=true`、`official_checkpoint=false`；不消耗平台试运行，不提交平台，不运行SwanLab，不打开既有密封段，不改变RC标签。
 - 实施计划：`docs/plans/OFFICIAL-RULES-ALIGNED-TRAINING.md`
+- 证据：实现提交`512d477`、报告提交`9c7bdba`；`D:/brace-msi-official-dev/OFFICIAL-RULES-ALIGNED-DEV-001/validation.json`为`valid=true`；9/9实验各10轮完成，前三实验健康检查有效，后台PID 6084正常退出；汇总见`docs/results/OFFICIAL-RULES-ALIGNED-DEV-001.md`；完整回归116项通过。
+- 后续：按D-027停止复用同一开发流调参；平台训练包与初始权重到达后另建正式实验ID，`DATA-001`继续`BLOCKED`。
 
 ### XJTU-LOCAL-001 新增轴承数据本地串行训练
 

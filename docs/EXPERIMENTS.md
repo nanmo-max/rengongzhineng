@@ -5,10 +5,10 @@
 ## 当前汇总
 
 - 正式实验：0
-- 探索实验：5（既有3项，加XJTU A1 INVALID与A2 SUCCEEDED）
+- 探索实验：6（既有3项、XJTU A1/A2及规则对齐开发实验）
 - 工程验收实验：2次运行尝试（A1 INVALID、A2 SUCCEEDED）
-- 训练运行：34（全部为本地代理、合成协议或XJTU本地开发任务；无官方评分实验）
-- 已报告模型指标：仅本地代理/开发实验，见`results/LOCAL-SMOKE-001.md`、`results/LOCAL-EXP-001.md`与`results/XJTU-LOCAL-DEV-001.md`
+- 训练运行：43（全部为本地代理、合成协议、XJTU或规则对齐本地开发任务；无官方评分实验）
+- 已报告模型指标：仅本地代理/开发实验，见`results/LOCAL-SMOKE-001.md`、`results/LOCAL-EXP-001.md`、`results/XJTU-LOCAL-DEV-001.md`与`results/OFFICIAL-RULES-ALIGNED-DEV-001.md`
 - 完整系统模拟：`LOCAL-FORMAL-SIM-001`已完成（只用合法开发段与合成协议任务）
 
 Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所有结果仍是`proxy_only`，不得表述为官方成绩 `[L-DATA-001]` `[L-DATA-002]`。
@@ -33,7 +33,7 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 | LOCAL-FORMAL-SIM-001-A2 | SUCCEEDED | 修正真实候选计数和审计恢复后，是否满足原预注册工程验收标准？ | 与A1完全相同，仅开发段与合成协议流；不用于性能调参 | 原配置不变；执行`7ef3829` | 与A1相同 | 三任务真实候选4/4/3；动作增量7、回放1、HPO3；机器验收通过 | `results/LOCAL-FORMAL-SIM-001.md`；本地`artifacts/formal_simulation/LOCAL-FORMAL-SIM-001/run-7ef3829/` |
 | XJTU-LOCAL-DEV-001-A1 | INVALID | 新增XJTU-SY数据能否在严格按轴承分组下完成可恢复特征缓存、强静态基线和两种自主更新策略？ | 9初训/3开发；密封未加载；自定RUL，仅本地开发 | `configs/xjtu_local_serial.json`；实现提交`2460577` | 4逻辑CPU；策略最多8候选、50,000训练样本、600秒候选墙钟/CPU | 5轮运行成功，但事后审查发现静态模型用了全部9个初训轴承，策略留出2个锚点，配对比较不公平，判定INVALID | `D:/brace-msi-xjtu/XJTU-LOCAL-DEV-001/experiments/`与`A1-INVALID.json`完整保留 |
 | XJTU-LOCAL-DEV-001-A2 | SUCCEEDED | 修复初训可见性后，五轮队列能否完成且形成至少3次真实候选？ | 静态与策略均用相同7个初训轴承训练、2个初训轴承作锚点；3开发；密封未加载 | 同一配置；修正代码提交`2e29ae7` | 同A1 | 5/5轮完成，指标有限；BRACE完成3次真实候选并全部被门控拒绝；简单触发0次动作；机器验收`valid=true` | `results/XJTU-LOCAL-DEV-001.md`；本地`D:/brace-msi-xjtu/XJTU-LOCAL-DEV-001/experiments-a2/`与`validation-experiments-a2.json` |
-| OFFICIAL-RULES-ALIGNED-DEV-001 | PLANNED | 参数量匹配的可替换MLP检查点与BRACE能否在三官方任务口径下完成每任务10轮、三策略公平比较，并形成35分维度的本地证据？ | Gas 1–3初训/4–7开发重分10轮；FD001发动机1–60初训/61–80每2台一轮；XJTU 9初训/3开发按轨迹进度合成10轮；所有既有密封段关闭 | `configs/official_rules_aligned_dev.json`；执行提交待定 | 最多4逻辑CPU、RSS<8GB；每策略10决策轮，候选预算按配置；种子20261111 | 待运行；前3个串行实验完成后健康检查，后续后台继续并自动汇总 | `D:/brace-msi-official-dev/OFFICIAL-RULES-ALIGNED-DEV-001/`；仓库提交聚合结果 |
+| OFFICIAL-RULES-ALIGNED-DEV-001 | SUCCEEDED | 参数量匹配的可替换MLP检查点与BRACE能否在三官方任务口径下完成每任务10轮、三策略公平比较，并形成35分维度的本地证据？ | Gas 1–3初训/4–7开发重分10轮；FD001发动机1–60初训/61–80每2台一轮；XJTU 9初训/3开发按轨迹进度合成10轮；所有既有密封段关闭 | `configs/official_rules_aligned_dev.json`；执行提交`512d477`；报告提交`9c7bdba` | 最多4逻辑CPU、RSS<8GB；每策略10决策轮，候选预算按配置；种子20261111 | 9/9完成、机器验收有效；Gas BRACE +0.229939 Macro-F1，Engine BRACE改善0.248934 RMSE，Bearing BRACE退化35.086308 RMSE；D-027停止同流继续调参 | `results/OFFICIAL-RULES-ALIGNED-DEV-001.md`；本地`D:/brace-msi-official-dev/OFFICIAL-RULES-ALIGNED-DEV-001/` |
 
 ## OFFICIAL-RULES-ALIGNED-DEV-001预注册
 
