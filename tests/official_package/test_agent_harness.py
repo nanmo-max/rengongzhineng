@@ -2,13 +2,14 @@ from __future__ import annotations
 
 import hashlib
 import json
-from dataclasses import asdict
+from dataclasses import asdict, replace
 from pathlib import Path
 
 import pytest
 
 from brace_msi.official_agent_harness import (
     DeterministicOfficialProposalProvider,
+    FrozenScheduleOfficialProposalProvider,
     OfficialAgentHarnessConfig,
     official_agent_config_from_mapping,
     run_official_agent_harness,
@@ -62,7 +63,7 @@ class StaticProvider:
 
 
 class FakeTrainer:
-    def __init__(self, metrics: list[float]) -> None:
+    def __init__(self, metrics: list[float | dict[str, float]]) -> None:
         self.metrics = iter(metrics)
         self.calls: list[dict] = []
 
@@ -73,14 +74,19 @@ class FakeTrainer:
         checkpoint.write_bytes(f"{stage_id}:{len(self.calls)}".encode())
         parent_sha = hashlib.sha256(Path(parent).read_bytes()).hexdigest()
         child_sha = hashlib.sha256(checkpoint.read_bytes()).hexdigest()
-        metric = next(self.metrics)
+        metric_value = next(self.metrics)
+        metrics_after = (
+            metric_value
+            if isinstance(metric_value, dict)
+            else {package.primary_metric: metric_value}
+        )
         receipt = CandidateReceipt(
             stage_id=stage_id,
             profile=package.profile,
             parent_sha256=parent_sha,
             checkpoint_sha256=child_sha,
             metrics_before={package.primary_metric: package.baseline_metric},
-            metrics_after={package.primary_metric: metric},
+            metrics_after=metrics_after,
             initial_epochs=20,
             final_epochs=20 + config.epochs,
             initial_steps=80,
@@ -247,6 +253,72 @@ def test_deterministic_provider_uses_same_harness_and_resume_is_idempotent(tmp_p
     assert repeated == finished
     assert len(trainer.calls) == 2
     assert all(row["proposal_source"] == "deterministic" for row in finished.rounds)
+
+
+def test_frozen_schedule_provider_emits_selected_actions_then_noops(audit_a) -> None:
+    provider = FrozenScheduleOfficialProposalProvider(
+        audit_a,
+        (
+            {"epochs": 5, "learning_rate_multiplier": 3.0},
+            {"epochs": 1, "learning_rate_multiplier": 0.3},
+        ),
+    )
+    harness_config = config(
+        rounds=3,
+        allowed_epochs=(1, 3, 5),
+        allowed_learning_rate_multipliers=(0.3, 1.0, 3.0),
+    )
+    state = {
+        "initial_metric": audit_a.baseline_metric,
+        "stable_metric": audit_a.baseline_metric,
+        "rounds": [],
+        "candidate_count": 0,
+        "cpu_seconds": 0.0,
+        "wall_seconds": 0.0,
+    }
+    reader = __import__(
+        "brace_msi.official_agent_harness", fromlist=["HistoryReader"]
+    ).HistoryReader()
+
+    first = provider.propose(reader.build_context(audit_a, state, harness_config))
+    state["rounds"].append({"round": 1, "kind": "candidate", "deployed": True})
+    state["candidate_count"] = 1
+    second = provider.propose(reader.build_context(audit_a, state, harness_config))
+    state["rounds"].append({"round": 2, "kind": "candidate", "deployed": False})
+    state["candidate_count"] = 2
+    third = provider.propose(reader.build_context(audit_a, state, harness_config))
+
+    assert first.proposal.action is Action.REPLAY_REFIT
+    assert first.proposal.parameters["epochs"] == 5
+    assert first.proposal.parameters["learning_rate"] == pytest.approx(
+        audit_a.base_learning_rate * 3.0
+    )
+    assert second.proposal.action is Action.INCREMENTAL_UPDATE
+    assert second.proposal.parameters["learning_rate"] == pytest.approx(
+        audit_a.base_learning_rate * 0.3
+    )
+    assert third.proposal.action is Action.NOOP
+
+
+def test_regression_gate_rejects_primary_gain_when_mae_worsens(tmp_path: Path, audit_a) -> None:
+    package = replace(
+        audit_a,
+        task="regression",
+        primary_metric="rmse",
+        higher_is_better=False,
+        baseline_metric=10.0,
+        baseline_metrics={"rmse": 10.0, "mae": 8.0},
+    )
+    result = run_official_agent_harness(
+        package,
+        tmp_path / "regression-risk",
+        config(rounds=1),
+        FakeTrainer([{"rmse": 9.0, "mae": 9.0}]),
+        DeterministicOfficialProposalProvider(candidate_rounds=1),
+    )
+
+    assert result.rounds[0]["deployed"] is False
+    assert result.rounds[0]["gate_reason"] == "secondary_metric_regression"
 
 
 def test_runtime_config_mapping_keeps_agent_and_trainer_budgets_explicit() -> None:

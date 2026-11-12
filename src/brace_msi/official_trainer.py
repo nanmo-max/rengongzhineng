@@ -251,17 +251,31 @@ def recover_candidate_receipt(
 class OfficialTrainer:
     """Run exactly one official-package trainer in an isolated subprocess."""
 
-    def __init__(self, python_executable: Path | str, timeout_seconds: float = 600.0) -> None:
+    def __init__(
+        self,
+        python_executable: Path | str,
+        timeout_seconds: float = 600.0,
+        allowed_learning_rate_multipliers: tuple[float, ...] = (0.25, 0.5, 1.0),
+    ) -> None:
         self.python_executable = str(python_executable)
         self.timeout_seconds = float(timeout_seconds)
+        self.allowed_learning_rate_multipliers = tuple(
+            float(value) for value in allowed_learning_rate_multipliers
+        )
         if self.timeout_seconds <= 0:
             raise ValueError("timeout_seconds must be positive")
+        if not self.allowed_learning_rate_multipliers or any(
+            value <= 0 for value in self.allowed_learning_rate_multipliers
+        ):
+            raise ValueError("learning-rate multipliers must be positive")
 
-    @staticmethod
-    def _validate_config(package: PackageAudit, config: CandidateConfig) -> None:
+    def _validate_config(self, package: PackageAudit, config: CandidateConfig) -> None:
         if config.epochs not in {1, 2, 3, 5}:
             raise ValueError("epochs must be one of 1, 2, 3, 5")
-        allowed_rates = {package.base_learning_rate * factor for factor in (0.25, 0.5, 1.0)}
+        allowed_rates = {
+            package.base_learning_rate * factor
+            for factor in self.allowed_learning_rate_multipliers
+        }
         if not any(math.isclose(config.learning_rate, value, rel_tol=0.0, abs_tol=1e-15) for value in allowed_rates):
             raise ValueError("learning rate is outside the approved multipliers")
         if config.batch_size not in {package.base_batch_size, package.base_batch_size * 2}:

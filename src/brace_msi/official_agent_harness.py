@@ -243,6 +243,69 @@ class DeterministicOfficialProposalProvider:
         )
 
 
+class FrozenScheduleOfficialProposalProvider:
+    """Replay a preregistered per-profile candidate schedule, then emit no-ops."""
+
+    def __init__(
+        self,
+        package: PackageAudit,
+        schedule: tuple[Mapping[str, Any], ...],
+    ) -> None:
+        if not schedule:
+            raise ValueError("frozen candidate schedule must not be empty")
+        self.package = package
+        self.schedule = schedule
+
+    def propose(self, context: AgentContext) -> ProposalOutcome:
+        index = context.round_index - 1
+        if index < len(self.schedule):
+            item = self.schedule[index]
+            epochs = int(item["epochs"])
+            multiplier = float(item["learning_rate_multiplier"])
+            action = Action.INCREMENTAL_UPDATE if epochs == 1 else Action.REPLAY_REFIT
+            parameters: dict[str, Any] = {
+                "epochs": epochs,
+                "learning_rate": self.package.base_learning_rate * multiplier,
+            }
+            tool = "train_incremental"
+            if action is Action.REPLAY_REFIT:
+                tool = "train_replay_refit"
+                parameters["replay_fraction"] = 1.0
+        else:
+            action = Action.NOOP
+            parameters = {}
+            tool = "noop"
+        proposal = ExperimentProposal(
+            schema_version="brace-msi.experiment-proposal.v1",
+            action=action,
+            tool=tool,
+            rationale="preregistered sprint candidate schedule",
+            parameters=parameters,
+            max_cpu_seconds=max(0.001, float(context.budget["cpu_seconds_remaining"])),
+            max_candidates=1,
+            stop_conditions=("budget_exhausted", "schedule_complete"),
+        )
+        context_hash = hashlib.sha256(
+            json.dumps(
+                context.to_payload(), sort_keys=True, separators=(",", ":")
+            ).encode("utf-8")
+        ).hexdigest()
+        return ProposalOutcome(
+            proposal=proposal,
+            source="deterministic",
+            receipt=AgentCallReceipt(
+                status="accepted",
+                model="deterministic-frozen-schedule",
+                model_path_configured=False,
+                prompt_sha256=context_hash,
+                response_sha256=None,
+                input_tokens=0,
+                output_tokens=0,
+                latency_seconds=0.0,
+            ),
+        )
+
+
 def run_official_agent_harness(
     package: PackageAudit,
     runtime_dir: Path,
@@ -353,7 +416,10 @@ def run_official_agent_harness(
         receipt: CandidateReceipt = trainer.run_candidate(
             package, parent, output, candidate_config, stage_id
         )
-        metric = _validate_receipt(package, receipt, parent_sha, output)
+        candidate_metrics = _validate_receipt_metrics(
+            package, receipt, parent_sha, output
+        )
+        metric = candidate_metrics[package.primary_metric]
         prospective_cpu = float(state["cpu_seconds"]) + receipt.cpu_seconds
         prospective_wall = float(state["wall_seconds"]) + receipt.wall_seconds
         prospective_rss = max(int(state["peak_rss_bytes"]), receipt.peak_rss_bytes)
@@ -367,7 +433,13 @@ def run_official_agent_harness(
             if package.higher_is_better
             else metric < float(state["stable_metric"])
         )
-        deployed = resources_ok and improved
+        secondary_ok = True
+        if package.task == "regression" and "mae" in state["stable_metrics"]:
+            secondary_ok = (
+                "mae" in candidate_metrics
+                and candidate_metrics["mae"] <= float(state["stable_metrics"]["mae"])
+            )
+        deployed = resources_ok and improved and secondary_ok
         record = {
             **base_record,
             "kind": "candidate",
@@ -382,6 +454,8 @@ def run_official_agent_harness(
             "checkpoint_sha256": receipt.checkpoint_sha256,
             "metric_before": state["stable_metric"],
             "metric_after": metric,
+            "metrics_before": dict(state["stable_metrics"]),
+            "metrics_after": candidate_metrics,
             "primary_metric": package.primary_metric,
             "deployed": deployed,
             "gate_reason": (
@@ -390,6 +464,8 @@ def run_official_agent_harness(
                 else "actual_resource_budget_exceeded"
                 if not resources_ok
                 else "no_strict_public_validation_improvement"
+                if not improved
+                else "secondary_metric_regression"
             ),
             "cpu_seconds": receipt.cpu_seconds,
             "wall_seconds": receipt.wall_seconds,
@@ -406,6 +482,7 @@ def run_official_agent_harness(
             state["stable_checkpoint"] = str(output / "checkpoint.npz")
             state["stable_sha256"] = receipt.checkpoint_sha256
             state["stable_metric"] = metric
+            state["stable_metrics"] = candidate_metrics
         _persist(runtime_dir, state)
 
     return _result(state)
@@ -434,6 +511,7 @@ def validate_official_agent_harness(
     stable_sha = state["initial_sha256"]
     stable_checkpoint = Path(state["initial_checkpoint"])
     stable_metric = float(state["initial_metric"])
+    stable_metrics = dict(state["initial_metrics"])
     candidate_count = 0
     accepted_count = 0
     cpu_seconds = 0.0
@@ -466,7 +544,10 @@ def validate_official_agent_harness(
             )
         except (OSError, json.JSONDecodeError, TypeError) as exc:
             raise ValueError("candidate receipt is invalid") from exc
-        metric = _validate_receipt(package, candidate_receipt, stable_sha, output)
+        candidate_metrics = _validate_receipt_metrics(
+            package, candidate_receipt, stable_sha, output
+        )
+        metric = candidate_metrics[package.primary_metric]
         if (
             row["checkpoint_sha256"] != candidate_receipt.checkpoint_sha256
             or not math.isclose(float(row["metric_after"]), metric, rel_tol=0.0, abs_tol=0.0)
@@ -483,7 +564,13 @@ def validate_official_agent_harness(
         improved = (
             metric > stable_metric if package.higher_is_better else metric < stable_metric
         )
-        expected_deployment = resources_ok and improved
+        secondary_ok = True
+        if package.task == "regression" and "mae" in stable_metrics:
+            secondary_ok = (
+                "mae" in candidate_metrics
+                and candidate_metrics["mae"] <= float(stable_metrics["mae"])
+            )
+        expected_deployment = resources_ok and improved and secondary_ok
         if bool(row["deployed"]) != expected_deployment:
             raise ValueError("candidate deployment gate cannot be recomputed")
         if expected_deployment:
@@ -491,6 +578,7 @@ def validate_official_agent_harness(
             stable_sha = candidate_receipt.checkpoint_sha256
             stable_checkpoint = output / "checkpoint.npz"
             stable_metric = metric
+            stable_metrics = candidate_metrics
 
     expected_values = {
         "candidate_count": candidate_count,
@@ -498,6 +586,7 @@ def validate_official_agent_harness(
         "stable_sha256": stable_sha,
         "stable_checkpoint": str(stable_checkpoint),
         "stable_metric": stable_metric,
+        "stable_metrics": stable_metrics,
         "total_input_tokens": input_tokens,
         "total_output_tokens": output_tokens,
         "agent_call_count": agent_call_count,
@@ -528,12 +617,12 @@ def validate_official_agent_harness(
     }
 
 
-def _validate_receipt(
+def _validate_receipt_metrics(
     package: PackageAudit,
     receipt: CandidateReceipt,
     parent_sha: str,
     output: Path,
-) -> float:
+) -> dict[str, float]:
     if receipt.parent_sha256 != parent_sha:
         raise ValueError("candidate parent mismatch")
     if Path(receipt.output_dir).resolve() != output.resolve():
@@ -543,10 +632,27 @@ def _validate_receipt(
         raise ValueError("candidate checkpoint mismatch")
     if not receipt.model_state_changed or not receipt.optimizer_state_changed:
         raise ValueError("candidate state did not change")
-    metric = receipt.metrics_after.get(package.primary_metric)
-    if isinstance(metric, bool) or not isinstance(metric, (int, float)) or not math.isfinite(float(metric)):
-        raise ValueError("candidate metric is invalid")
-    return float(metric)
+    metrics: dict[str, float] = {}
+    for name, raw in receipt.metrics_after.items():
+        if isinstance(raw, bool) or not isinstance(raw, (int, float)) or not math.isfinite(float(raw)):
+            raise ValueError("candidate metric is invalid")
+        metrics[str(name)] = float(raw)
+    if package.primary_metric not in metrics:
+        raise ValueError("candidate primary metric is missing")
+    return metrics
+
+
+def _validate_receipt(
+    package: PackageAudit,
+    receipt: CandidateReceipt,
+    parent_sha: str,
+    output: Path,
+) -> float:
+    """Backward-compatible primary-metric validator used by existing callers."""
+
+    return _validate_receipt_metrics(package, receipt, parent_sha, output)[
+        package.primary_metric
+    ]
 
 
 def _initial_state(
@@ -562,9 +668,11 @@ def _initial_state(
         "initial_checkpoint": str(package.checkpoint_path),
         "initial_sha256": package.checkpoint_sha256,
         "initial_metric": package.baseline_metric,
+        "initial_metrics": dict(package.baseline_metrics),
         "stable_checkpoint": str(package.checkpoint_path),
         "stable_sha256": package.checkpoint_sha256,
         "stable_metric": package.baseline_metric,
+        "stable_metrics": dict(package.baseline_metrics),
         "config_sha256": _config_sha256(config),
         "expected_rounds": config.rounds,
         "rounds": [],

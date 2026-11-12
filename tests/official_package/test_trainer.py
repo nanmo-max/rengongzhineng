@@ -33,6 +33,18 @@ def one_epoch(audit_a) -> CandidateConfig:
     return CandidateConfig(epochs=1, learning_rate=audit_a.base_learning_rate, batch_size=audit_a.base_batch_size)
 
 
+def test_trainer_can_use_a_frozen_sprint_multiplier(audit_a) -> None:
+    trainer = OfficialTrainer(
+        PYTHON,
+        allowed_learning_rate_multipliers=(0.3, 1.0, 3.0),
+    )
+
+    trainer._validate_config(
+        audit_a,
+        CandidateConfig(5, audit_a.base_learning_rate * 3.0, audit_a.base_batch_size),
+    )
+
+
 def test_run_candidate_verifies_real_state_change_and_refuses_overwrite(tmp_path: Path, audit_a) -> None:
     trainer = OfficialTrainer(python_executable=PYTHON, timeout_seconds=30)
     output = tmp_path / "candidate"

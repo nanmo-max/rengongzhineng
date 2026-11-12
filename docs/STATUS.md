@@ -3,7 +3,7 @@
 - 最近同步：2026-11-12（Asia/Shanghai）
 - 当前阶段：24小时竞赛冲刺——三任务安全候选集成与十轮Harness
 - 当前路线：**Qwen3.5-4B PyTRiO Agent + BRACE确定性Harness + 官方A/B/C工业模型 + 经验证的开源优化方法** `[D-035]`
-- 当前唯一任务：`LOOP-10-001`（`READY`）；Gas/Bearing/Engine候选均已冻结，开始接入确定性十轮Harness
+- 当前唯一任务：`LOOP-10-001`（`IN_PROGRESS`）；执行预注册`SPRINT-HARNESS-001`
 - 稳定边界：`BRACE-MSI-0.1.0rc1`、原始训练包、既有实验和RC标签保持不变；新工作在`task/core-001`分支增量实现
 - 官方试运行：0次；不得用于基础调试
 

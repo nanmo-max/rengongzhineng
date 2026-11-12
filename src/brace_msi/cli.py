@@ -14,6 +14,7 @@ from .harness import HarnessConfig, UnifiedHarness
 from .official_sdk import OfficialSdkSpec, load_official_adapter_factory
 from .official_agent_harness import (
     DeterministicOfficialProposalProvider,
+    FrozenScheduleOfficialProposalProvider,
     official_agent_config_from_mapping,
     run_official_agent_harness,
     validate_official_agent_harness,
@@ -152,8 +153,13 @@ def main(argv: Sequence[str] | None = None) -> int:
                 )
             )
             return 0
-        deterministic = DeterministicOfficialProposalProvider(
-            candidate_rounds=harness_config.max_candidates
+        schedule = raw_config.get("deterministic_schedules", {}).get(args.profile)
+        deterministic = (
+            FrozenScheduleOfficialProposalProvider(package, tuple(schedule))
+            if schedule
+            else DeterministicOfficialProposalProvider(
+                candidate_rounds=harness_config.max_candidates
+            )
         )
         if args.provider == "pytrio":
             provider = PyTrioAgentClient(
@@ -169,6 +175,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             OfficialTrainer(
                 python_executable=Path(sys.executable),
                 timeout_seconds=args.timeout_seconds,
+                allowed_learning_rate_multipliers=(
+                    harness_config.allowed_learning_rate_multipliers
+                ),
             ),
             provider,
             fallback_provider=deterministic,
