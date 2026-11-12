@@ -27,6 +27,12 @@ _PUBLIC_FORBIDDEN_KEYS = {
     "token",
 }
 
+_POST_VERIFICATION_PATHS = (
+    "docs/",
+    "scripts/build_release_candidate.py",
+    "tests/system/test_release_builder.py",
+)
+
 
 def _git(root: Path, *args: str) -> str:
     return subprocess.run(
@@ -124,9 +130,60 @@ def run_release_checks(
     return results
 
 
+def load_release_verification(
+    path: Path,
+    *,
+    current_commit: str,
+    changed_paths: tuple[str, ...],
+    is_ancestor: bool,
+) -> dict[str, object]:
+    """Accept recorded checks only when runtime code is unchanged afterward."""
+
+    try:
+        evidence = json.loads(Path(path).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise RuntimeError("release verification evidence is invalid") from exc
+    required = {
+        "pytest": ("status", "passed"),
+        "clean_environment": ("status", "version"),
+        "pip_check": ("status",),
+        "compileall": ("status",),
+    }
+    if not isinstance(evidence, dict) or not isinstance(evidence.get("runtime_commit"), str):
+        raise RuntimeError("release verification evidence schema is invalid")
+    if not is_ancestor:
+        raise RuntimeError("verified runtime commit is not an ancestor of release")
+    if not current_commit:
+        raise RuntimeError("release commit is missing")
+    for section, fields in required.items():
+        item = evidence.get(section)
+        if not isinstance(item, dict) or item.get("status") != "PASS" or any(field not in item for field in fields):
+            raise RuntimeError(f"release verification section is not PASS: {section}")
+    if int(evidence["pytest"]["passed"]) < 1:
+        raise RuntimeError("release verification contains no passing tests")
+    if evidence["clean_environment"]["version"] != "0.2.0rc2":
+        raise RuntimeError("clean environment installed the wrong release version")
+    unsafe = [
+        value
+        for value in changed_paths
+        if not any(
+            value == allowed or value.startswith(allowed)
+            for allowed in _POST_VERIFICATION_PATHS
+        )
+    ]
+    if unsafe:
+        raise RuntimeError(f"runtime-affecting files changed after verification: {unsafe}")
+    return evidence
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument(
+        "--verification-evidence",
+        type=Path,
+        help="reuse recorded PASS checks when only release docs/tooling changed afterward",
+    )
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
     output = args.output.resolve()
@@ -136,7 +193,27 @@ def main() -> int:
     if status:
         raise RuntimeError("release source tree must be clean before packaging")
 
-    verification = run_release_checks(root)
+    if args.verification_evidence:
+        recorded = json.loads(args.verification_evidence.read_text(encoding="utf-8"))
+        runtime_commit = str(recorded.get("runtime_commit", ""))
+        ancestry = subprocess.run(
+            ["git", "merge-base", "--is-ancestor", runtime_commit, "HEAD"],
+            cwd=root,
+            check=False,
+        ).returncode == 0
+        changed = tuple(
+            line
+            for line in _git(root, "diff", "--name-only", f"{runtime_commit}..HEAD").splitlines()
+            if line
+        )
+        verification = load_release_verification(
+            args.verification_evidence,
+            current_commit=_git(root, "rev-parse", "HEAD"),
+            changed_paths=changed,
+            is_ancestor=ancestry,
+        )
+    else:
+        verification = run_release_checks(root)
     tracked = _tracked_files(root)
     audit = audit_release_tree(root, tracked)
     if audit.blocking_findings:

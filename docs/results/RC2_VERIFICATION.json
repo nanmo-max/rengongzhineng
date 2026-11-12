@@ -1,0 +1,37 @@
+{
+  "format": "brace-msi.release-verification.v1",
+  "release_id": "BRACE-MSI-0.2.0rc2",
+  "runtime_commit": "3af2afc3727cc2a74fe4afe3e29073896c48c597",
+  "pytest": {
+    "status": "PASS",
+    "passed": 221,
+    "seconds": 61.10,
+    "command": "python -m pytest -q --tb=short"
+  },
+  "clean_environment": {
+    "status": "PASS",
+    "path": "D:/brace-msi-release/rc2-clean",
+    "version": "0.2.0rc2",
+    "pytest_passed": 221,
+    "pytest_seconds": 68.10
+  },
+  "pip_check": {
+    "status": "PASS",
+    "summary": "No broken requirements found."
+  },
+  "compileall": {
+    "status": "PASS",
+    "targets": ["src", "tests", "scripts"]
+  },
+  "docker_context": {
+    "status": "PASS_STATIC_ONLY",
+    "included_file_count": 208,
+    "total_bytes": 1409262,
+    "under_2gb": true,
+    "forbidden_files": []
+  },
+  "container_runtime": {
+    "status": "BLOCKED_NO_LOCAL_RUNTIME",
+    "ci_workflow": ".github/workflows/container-readiness.yml"
+  }
+}

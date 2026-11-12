@@ -8,10 +8,10 @@
 4. PyTRiO边界已在`src/brace_msi/pytrio_agent.py`实现：配置注入、假客户端、严格JSON提案、秘密字段拒绝、Token/延迟收据和确定性降级；专项8项、全量189项测试通过。下一步不得绕过该边界直接调用SDK。
 5. 官方训练器主链位于`src/brace_msi/official_agent_harness.py`，入口`python -m brace_msi official-agent-run`；`FORMAL-AGENT-SMOKE-001`已完成且3/3复算有效。不要续跑该Smoke的剩余轮次或用其公开验证调参。
 6. 执行沙箱位于`src/brace_msi/action_sandbox.py`：工具注册表、参数、估算预算、隔离路径和插件哈希已测试。新动作必须先扩展注册表及测试，不能在Harness内临时分支执行。
-7. `BRACE-MSI-0.1.0rc1`、原始训练包、历史实验和RC标签不修改。新代码在`task/core-001`提交，未经完整验收不替换RC或合并main。
+7. `BRACE-MSI-0.1.0rc1`历史标签不修改；当前冲刺候选为`BRACE-MSI-0.2.0rc2`。新代码仍在`task/core-001`，不合并main。
 8. 正式平台事件字段、比赛Base URL/凭据、评分公式、SwanLab规范和真实Docker运行仍是外部缺口；记录阻塞并继续本地不受影响任务。
 9. `PERF-A-REPLAY-001`的A1指纹失败和A2有效结果均已保留；A2的开发胜者为`current_only`，不将均匀/类平衡回放带入Gas主线。恢复时不重复核对已冻结哈希或重跑A2，除非相关文件确有更新。
-10. B/C冻结候选分别为5 epoch×3x LR与5 epoch×1x LR；十轮Harness最终C稳定RMSE进一步为51.635999。当前只做Release验收，不再训练或扩大候选空间。
+10. B/C冻结候选分别为5 epoch×3x LR与5 epoch×1x LR；十轮Harness最终C稳定RMSE进一步为51.635999。RC2代码与全新环境均221项测试通过；当前只生成交付包，不再训练或扩大候选空间。
 
 以下旧恢复入口保留历史上下文；若与本节冲突，以`STATUS.md`、`TASKS.md`和本节为准。
 

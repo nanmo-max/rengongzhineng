@@ -3,8 +3,8 @@
 - 最近同步：2026-11-12（Asia/Shanghai）
 - 当前阶段：24小时竞赛冲刺——Release与容器验收
 - 当前路线：**Qwen3.5-4B PyTRiO Agent + BRACE确定性Harness + 官方A/B/C工业模型 + 经验证的开源优化方法** `[D-035]`
-- 当前唯一任务：`FORMAL-RELEASE-001`（`IN_PROGRESS`，本地可完成部分）；真实SDK/SwanLab与容器运行时分别保留外部阻塞
-- 稳定边界：`BRACE-MSI-0.1.0rc1`、原始训练包、既有实验和RC标签保持不变；新工作在`task/core-001`分支增量实现
+- 当前唯一任务：`FORMAL-RELEASE-001`（`IN_PROGRESS`，本地代码/干净环境已通过）；真实SDK/SwanLab与容器运行时分别保留外部阻塞
+- 稳定边界：`BRACE-MSI-0.1.0rc1`历史标签保持不变；当前冲刺候选为`BRACE-MSI-0.2.0rc2`，仍在`task/core-001`且不合并main
 - 官方试运行：0次；不得用于基础调试
 
 ## 已确认
@@ -21,7 +21,7 @@
 
 ## 当前执行入口
 
-`SPRINT-HARNESS-001`已在干净提交完成：A/B/C均10轮、3个真实候选、7个有理由no-op，机器复算有效；最终主指标为0.725695 Macro-F1、637.180224 RMSE、51.635999 RMSE。停止训练与算法扩展，进入Docker、干净环境、交付审计和一次最终回归。
+`SPRINT-HARNESS-001`已完成。RC2代码环境和全新venv均`221 passed`，全新环境版本、`pip check`、编译和Docker上下文静态审计通过。停止训练与算法扩展；剩余本地动作只有生成确定性源码/证据包，真实容器与平台接入保持外部阻塞。
 
 正式路线、已知能力与未知边界见[FORMAL_ROUTE.md](FORMAL_ROUTE.md)。实验必须遵守[EXPERIMENT_PROTOCOL.md](EXPERIMENT_PROTOCOL.md)。
 
