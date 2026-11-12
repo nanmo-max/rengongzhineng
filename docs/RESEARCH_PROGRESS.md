@@ -394,3 +394,11 @@
 - 验证：专项`27 passed`，完整回归`233 passed in 63.48s`，编译、wheel包含性、diff与敏感信息扫描通过；独立代码审查无剩余Critical/Important。prepare-only产物位于`D:/brace-msi-pytrio/PYTRIO-SFT-001/`，真实采样/训练调用0次。
 - 当前阻塞：用户截图时账户余额曾显示0，SDK无余额查询接口。必须先由用户确认当前可用额度大于0，再用全新`PYTRIO-SFT-001-A1`目录执行收费SFT；不得把本地准备写成微调完成。
 
+## 2026-11-12：PYTRIO-SFT-001-A1失败与根因修复
+
+- 用户确认充值10元后启动A1。按官方Qwen3.5-4B公开价格与字符/token最坏上界，完整A1预估约0.65元；未扩展预注册范围。
+- 基础模型12条留出评测完成：输入4,213 Token、输出2,425 Token，严格schema/action/tool/budget/policy有效率均为0，说明结构化SFT有明确作用空间。
+- 首个`forward_backward`和`optim_step`返回后，本地计算loss时将PyTRiO 0.2.9的`TensorData`直接传给`np.asarray`，触发`TypeError`。进程按失败边界停止，后续17步、持久化保存和微调复评均未执行；A1目录和失败收据保留。
+- 根因是本地假客户端只返回NumPy数组，没有覆盖SDK真实强类型张量。修复为优先调用`TensorData.to_numpy()`、其次`tolist()`，再展平为数值数组；另区分远程已提交步与本地已记录loss步。
+- 新增真实`TensorData`形态及远程请求/完成计数分离的红绿回归测试；专项20项、完整回归`235 passed in 62.58s`。未启动A2；按照L-AUTH-010，A2需用户重新授权并使用全新目录。
+

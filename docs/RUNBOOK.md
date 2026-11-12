@@ -75,11 +75,12 @@ D:\anaconda3\python.exe scripts\run_pytrio_sft.py `
 
 ```powershell
 D:\anaconda3\python.exe scripts\run_pytrio_sft.py `
-  --output-dir D:\brace-msi-pytrio\PYTRIO-SFT-001-A1 `
+  --output-dir D:\brace-msi-pytrio\PYTRIO-SFT-001-A2 `
   --execute
 ```
 
-每次远程执行必须使用全新的运行目录；脚本会拒绝复用已有目录，避免覆盖失败或负结果。
+`PYTRIO-SFT-001-A1`已是失败历史，不得复用。任何后续远程执行必须先获得新的付费授权并使用
+全新运行目录；脚本会拒绝复用已有目录，避免覆盖失败或负结果。
 只有`result.json`状态为`succeeded`、`sampler_model_path`以`trio://`开头且训练后留出门通过时，
 才可把该路径填入平台“持久化Sampler微调权重”。失败时使用基础模型或确定性降级，不删除
 `failure.json`。

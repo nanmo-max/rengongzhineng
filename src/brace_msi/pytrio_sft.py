@@ -198,6 +198,9 @@ def run_remote_pytrio_sft(
     stage = "preflight"
     started = time.perf_counter()
     steps: list[dict[str, Any]] = []
+    forward_backward_requests_submitted = 0
+    optimizer_requests_submitted = 0
+    remote_steps_completed = 0
     model_path: str | None = None
     supported_models: list[str] = []
     try:
@@ -252,11 +255,14 @@ def run_remote_pytrio_sft(
                 batch = [encoded[index] for index in indices]
                 step_started = time.perf_counter()
                 fwdbwd = trainer.forward_backward(batch, "cross_entropy")
+                forward_backward_requests_submitted += 1
                 optim = trainer.optim_step(
                     trio_module.AdamParams(learning_rate=config.learning_rate)
                 )
+                optimizer_requests_submitted += 1
                 fwdbwd_result = fwdbwd.result()
                 optim.result()
+                remote_steps_completed += 1
                 global_step += 1
                 loss = _weighted_loss(fwdbwd_result, batch)
                 step = {
@@ -313,6 +319,13 @@ def run_remote_pytrio_sft(
             "status": "succeeded",
             "supported_models": supported_models,
             "training_steps": len(steps),
+            "training_steps_submitted": min(
+                forward_backward_requests_submitted,
+                optimizer_requests_submitted,
+            ),
+            "forward_backward_requests_submitted": forward_backward_requests_submitted,
+            "optimizer_requests_submitted": optimizer_requests_submitted,
+            "remote_steps_completed": remote_steps_completed,
             "training_examples_seen": len(corpus.train) * config.epochs,
             "final_loss_per_supervised_token": steps[-1][
                 "loss_per_supervised_token"
@@ -333,6 +346,13 @@ def run_remote_pytrio_sft(
             "failed_stage": stage,
             "error_category": type(exc).__name__,
             "training_steps_completed": len(steps),
+            "training_steps_submitted": min(
+                forward_backward_requests_submitted,
+                optimizer_requests_submitted,
+            ),
+            "forward_backward_requests_submitted": forward_backward_requests_submitted,
+            "optimizer_requests_submitted": optimizer_requests_submitted,
+            "remote_steps_completed": remote_steps_completed,
             "supported_models": supported_models,
             "sampler_model_path": model_path,
             "base_evaluation_partial": _read_evaluation_summary(
@@ -446,10 +466,10 @@ def _evaluation_payload(
 
 def _weighted_loss(result: Any, batch: list[Any]) -> float:
     logprobs = np.concatenate(
-        [np.asarray(output["logprobs"], dtype=np.float64) for output in result.loss_fn_outputs]
+        [_numeric_array(output["logprobs"]) for output in result.loss_fn_outputs]
     )
     weights = np.concatenate(
-        [np.asarray(item.loss_fn_inputs["weights"], dtype=np.float64) for item in batch]
+        [_numeric_array(item.loss_fn_inputs["weights"]) for item in batch]
     )
     denominator = float(weights.sum())
     if denominator <= 0 or logprobs.shape != weights.shape:
@@ -458,6 +478,14 @@ def _weighted_loss(result: Any, batch: list[Any]) -> float:
     if not math.isfinite(loss):
         raise ValueError("non-finite training loss")
     return loss
+
+
+def _numeric_array(value: Any) -> np.ndarray:
+    if hasattr(value, "to_numpy"):
+        value = value.to_numpy()
+    elif hasattr(value, "tolist"):
+        value = value.tolist()
+    return np.asarray(value, dtype=np.float64).reshape(-1)
 
 
 def _validate_frozen_corpus(

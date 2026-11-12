@@ -16,6 +16,7 @@ from brace_msi.pytrio_sft import (
     materialize_brace_sft_corpus,
     run_remote_pytrio_sft,
     score_proposal_response,
+    _weighted_loss,
 )
 
 
@@ -165,12 +166,42 @@ def test_remote_run_config_is_bounded() -> None:
     assert config.weight_name == "brace-msi-agent-sft-v1"
 
 
+class _TensorData:
+    def __init__(self, values):
+        self.values = np.asarray(values)
+
+    def to_numpy(self):
+        return self.values
+
+
+def test_weighted_loss_accepts_pytrio_tensor_data() -> None:
+    result = type(
+        "Forward",
+        (),
+        {"loss_fn_outputs": [{"logprobs": _TensorData([-1.0, -2.0])}]},
+    )()
+    batch = [
+        type(
+            "Datum",
+            (),
+            {"loss_fn_inputs": {"weights": _TensorData([1.0, 1.0])}},
+        )()
+    ]
+
+    assert _weighted_loss(result, batch) == pytest.approx(1.5)
+
+
 class _Future:
     def __init__(self, value):
         self.value = value
 
     def result(self):
         return self.value
+
+
+class _ErrorFuture:
+    def result(self):
+        raise RuntimeError("simulated optimizer result failure")
 
 
 class _Sequence:
@@ -273,6 +304,10 @@ def test_remote_run_is_non_overwriting_and_persists_sampler(tmp_path: Path) -> N
     result = run_remote_pytrio_sft(output, PyTrioSftRunConfig(), trio_module=trio)
 
     assert result["status"] == "succeeded"
+    assert result["training_steps_submitted"] == 18
+    assert result["forward_backward_requests_submitted"] == 18
+    assert result["optimizer_requests_submitted"] == 18
+    assert result["remote_steps_completed"] == 18
     assert result["sampler_model_path"].startswith("trio://")
     assert service.trainer.save_calls == [
         {"name": "brace-msi-agent-sft-v1", "ttl_seconds": None}
@@ -306,6 +341,8 @@ def test_saved_sampler_path_survives_tuned_evaluation_failure(tmp_path: Path) ->
     assert failure["failed_stage"] == "tuned_evaluation"
     assert failure["sampler_model_path"] == sampler["model_path"]
     assert failure["training_steps_completed"] == 18
+    assert failure["training_steps_submitted"] == 18
+    assert failure["remote_steps_completed"] == 18
     assert failure["base_evaluation_partial"]["examples"] == 12
     assert failure["tuned_evaluation_partial"]["examples"] == 2
     assert failure["tuned_evaluation_partial"]["output_tokens"] > 0
@@ -326,4 +363,28 @@ def test_changed_seed_fails_before_service_call(tmp_path: Path) -> None:
     failure = json.loads((output / "failure.json").read_text(encoding="utf-8"))
     assert failure["failed_stage"] == "preflight"
     assert failure["error_category"] == "ValueError"
+
+
+def test_remote_request_and_completion_counts_are_distinct(tmp_path: Path) -> None:
+    class _FailingTrainer(_Trainer):
+        def optim_step(self, params):
+            return _ErrorFuture()
+
+    service = _Service()
+    service.trainer = _FailingTrainer()
+    output = tmp_path / "optimizer-result-failure"
+
+    with pytest.raises(RuntimeError, match="optimizer result"):
+        run_remote_pytrio_sft(
+            output,
+            PyTrioSftRunConfig(),
+            trio_module=_RemoteFakeTrio(service),
+        )
+
+    failure = json.loads((output / "failure.json").read_text(encoding="utf-8"))
+    assert failure["forward_backward_requests_submitted"] == 1
+    assert failure["optimizer_requests_submitted"] == 1
+    assert failure["training_steps_submitted"] == 1
+    assert failure["remote_steps_completed"] == 0
+    assert failure["training_steps_completed"] == 0
 

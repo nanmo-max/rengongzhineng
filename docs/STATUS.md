@@ -3,7 +3,7 @@
 - 最近同步：2026-11-12（Asia/Shanghai）
 - 当前阶段：BRACE-MSI-0.2.0rc2本地Release与真实容器验收保持冻结；独立开展正式PyTRiO Sampler微调准备
 - 当前路线：**Qwen3.5-4B PyTRiO Agent + BRACE确定性Harness + 官方A/B/C工业模型 + 经验证的开源优化方法** `[D-035]`
-- 当前唯一任务：`PYTRIO-SFT-001`（`IN_PROGRESS`）；用户已确认PyTRiO充值10元，按预注册从全新`PYTRIO-SFT-001-A1`目录执行基础评测、rank 8/3 epoch SFT、持久化Sampler与留出复评。`FORMAL-RELEASE-001`仍为`BLOCKED_OFFICIAL_MATERIALS`，不修改已冻结RC2镜像。
+- 当前唯一任务：`PYTRIO-SFT-001`（`BLOCKED_A2_AUTHORIZATION`）；A1已按停止条件保留失败证据：基础评测完成，首个远程训练步返回后本地loss解析遇到PyTRiO 0.2.9 `TensorData`类型错误。修复与专项测试完成，但按预注册不得自行启动A2。`FORMAL-RELEASE-001`仍为`BLOCKED_OFFICIAL_MATERIALS`，不修改已冻结RC2镜像。
 - 稳定边界：`BRACE-MSI-0.1.0rc1`历史标签保持不变；当前冲刺候选为`BRACE-MSI-0.2.0rc2`，仍在`task/core-001`且不合并main
 - 官方试运行：0次；不得用于基础调试
 
@@ -19,11 +19,12 @@
 8. `ACTION-SANDBOX-001`已完成：执行侧使用可指纹化工具注册表，任务/参数/预算/输出路径均先检查；论文插件登记必须具备固定根、许可证和文件哈希。全量回归`201 passed`。
 9. `PERF-A-001`已完成有界诊断：过采样实验为负；因果回放实验15候选中`current_only`通过开发选择，两种回放均未超过+0.005门。冻结确认上`current_only` Macro-F1均值0.469553，高于静态0.324722，但Batch 6—7历史暴露，不当作独立泛化证据。官方试运行/PyTRiO/SwanLab使用均0；全量回归`212 passed`。
 10. 2026-11-12本机`trio login`成功；只读服务能力查询确认当前模型白名单为`Qwen/Qwen3.5-4B`与`Qwen/Qwen3.8-27B`。未读取、打印或提交真实API Key，用户粘贴的Key仅为官方示例占位内容。
-11. `PYTRIO-SFT-001`本地准备完成：24训练/12留出，训练和留出archetype不交叉；assistant-only loss、预算安全率、持久化收据、逐样本Token/哈希、失败保留和预注册SHA fail-closed均有自动测试。完整回归`233 passed`；真实PyTRiO训练/采样调用仍为0。
+11. `PYTRIO-SFT-001`本地准备完成：24训练/12留出，训练和留出archetype不交叉；assistant-only loss、预算安全率、持久化收据、逐样本Token/哈希、失败保留和预注册SHA fail-closed均有自动测试。该条的“远程调用0次”只属于A1启动前的历史状态，已由下一条真实A1证据取代。
+12. `PYTRIO-SFT-001-A1`真实远程尝试失败并停止：基础模型12例严格schema有效率0，输入4,213 Token、输出2,425 Token；首个训练调用已返回，随后本地`TensorData`解析报`TypeError`，未生成Sampler。失败收据完整保留；已增加`TensorData.to_numpy()`兼容，专项20项及完整回归235项通过，A2未启动。
 
 ## 当前执行入口
 
-`SPRINT-HARNESS-001`与RC2本地发布均完成。最终Harness镜像归档为`D:/brace-msi-release/BRACE-MSI-0.2.0rc2/BRACE-MSI-0.2.0rc2-image-clean.tar`，SHA-256 `7b64490b...2e09327`；镜像保持冻结，不重训A/B/C。PyTRiO当前入口为`scripts/run_pytrio_sft.py`：prepare-only证据在`D:/brace-msi-pytrio/PYTRIO-SFT-001/`；确认额度后才从全新`PYTRIO-SFT-001-A1`目录执行`--execute`。
+`SPRINT-HARNESS-001`与RC2本地发布均完成。最终Harness镜像归档为`D:/brace-msi-release/BRACE-MSI-0.2.0rc2/BRACE-MSI-0.2.0rc2-image-clean.tar`，SHA-256 `7b64490b...2e09327`；镜像保持冻结，不重训A/B/C。PyTRiO A1目录已失败并锁定，不得复用；只有用户重新授权后，才可用`scripts/run_pytrio_sft.py`从全新`D:/brace-msi-pytrio/PYTRIO-SFT-001-A2/`执行。
 
 正式路线、已知能力与未知边界见[FORMAL_ROUTE.md](FORMAL_ROUTE.md)。实验必须遵守[EXPERIMENT_PROTOCOL.md](EXPERIMENT_PROTOCOL.md)。
 
@@ -35,7 +36,7 @@
 - SwanLab比赛项目、必填字段及无公网同步责任待发布 `[H-004]`。
 - Docker宿主机阻塞已解除；真实镜像、体积、禁入文件、非root身份、4核8GB断网Smoke和可重载`docker save`归档均有证据，见`results/RC2_CONTAINER_ACCEPTANCE.json`。
 
-这些缺口不阻塞当前PyTRiO SFT；用户已确认10元余额到账。按官方Qwen3.5-4B公开单价和字符/token最坏上界估算，本轮上限约0.65元，仍以本地Token收据为准。
+这些缺口不阻塞PyTRiO SFT，但A1失败后的A2属于新的付费尝试，按L-AUTH-010边界必须由用户再次授权。A1只完成基础评测和首个远程训练调用，预计消耗远低于1元；最终以PyTRiO用量页为准。
 
 ## 禁止事项
 
