@@ -1,0 +1,35 @@
+{
+  "format": "brace-msi.perf-a-oversampling.v1",
+  "experiment_id": "PERF-A-OVER-001",
+  "profile": "A",
+  "seed": 20261112,
+  "split_salt": "brace-msi-perf-a-confirm-v1",
+  "development_fraction": 0.7,
+  "confirmation_exposure": "historically_exposed_overall_but_sample_split_frozen_before_candidate_metrics",
+  "selection_metric": "macro_f1",
+  "minimum_development_improvement": 0.005,
+  "minimum_target_class_f1": 0.05,
+  "target_class": "Acetaldehyde",
+  "candidates": [
+    {"id": "unweighted-e1-lr1", "target_multiplier": 1, "epochs": 1, "learning_rate_multiplier": 1.0},
+    {"id": "acetaldehyde-x2-e1-lr1", "target_multiplier": 2, "epochs": 1, "learning_rate_multiplier": 1.0},
+    {"id": "acetaldehyde-x3-e1-lr1", "target_multiplier": 3, "epochs": 1, "learning_rate_multiplier": 1.0},
+    {"id": "acetaldehyde-x4-e1-lr1", "target_multiplier": 4, "epochs": 1, "learning_rate_multiplier": 1.0},
+    {"id": "acetaldehyde-x3-e1-lr05", "target_multiplier": 3, "epochs": 1, "learning_rate_multiplier": 0.5},
+    {"id": "acetaldehyde-x4-e1-lr05", "target_multiplier": 4, "epochs": 1, "learning_rate_multiplier": 0.5}
+  ],
+  "resource_limits": {
+    "max_candidates": 6,
+    "max_cpu_seconds": 120.0,
+    "max_wall_seconds": 180.0,
+    "max_peak_rss_bytes": 1073741824,
+    "official_test_opportunities": 0,
+    "pytrio_calls": 0
+  },
+  "stop_conditions": [
+    "package_or_source_hash_mismatch",
+    "train_development_confirmation_id_overlap",
+    "candidate_resource_limit_exceeded",
+    "no_candidate_meets_development_success_gate"
+  ]
+}
