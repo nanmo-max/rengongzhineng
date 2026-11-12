@@ -7,7 +7,7 @@
 ```text
 ROUTE-001(DONE)
   -> PYTRIO-001(DONE)
-  -> PYTRIO-SFT-001(BLOCKED_CREDIT_CONFIRMATION)
+  -> PYTRIO-SFT-001(IN_PROGRESS)
   -> OFFICIAL-HARNESS-002(DONE)
   -> ACTION-SANDBOX-001(DONE)
   -> PERF-A-001(DONE) -> PERF-B-001(DONE) -> PERF-C-001(DONE)
@@ -40,7 +40,7 @@ ROUTE-001(DONE)
 
 ### PYTRIO-SFT-001 BRACE结构化提案Sampler微调
 
-- 状态：`BLOCKED_CREDIT_CONFIRMATION`（本地实现和证据已完成；远程训练需确认当前账户可用额度）
+- 状态：`IN_PROGRESS`（用户已确认充值10元；远程A1按预注册执行）
 - 依赖：PYTRIO-001、Qwen3.5-4B位于当前PyTRiO模型白名单、用户已完成本机`trio login`
 - 优先级：P0
 - 完成标准：生成不含原始样本/密钥的版本化训练与留出评测语料；普通生成式SFT只监督assistant JSON；训练前后比较严格schema有效率、允许动作匹配率和预算安全性；保存持久化Sampler路径；本地记录数据哈希、SDK版本、超参数、loss、Token/步骤与失败；Sampler异常仍由确定性Harness降级

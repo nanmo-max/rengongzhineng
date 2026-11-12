@@ -3,7 +3,7 @@
 - 最近同步：2026-11-12（Asia/Shanghai）
 - 当前阶段：BRACE-MSI-0.2.0rc2本地Release与真实容器验收保持冻结；独立开展正式PyTRiO Sampler微调准备
 - 当前路线：**Qwen3.5-4B PyTRiO Agent + BRACE确定性Harness + 官方A/B/C工业模型 + 经验证的开源优化方法** `[D-035]`
-- 当前唯一任务：`PYTRIO-SFT-001`（`BLOCKED_CREDIT_CONFIRMATION`）；本地语料、留出评测、远程训练脚本与审计边界均已完成，等待用户确认PyTRiO当前可用额度后才执行收费采样/训练。`FORMAL-RELEASE-001`仍为`BLOCKED_OFFICIAL_MATERIALS`，不修改已冻结RC2镜像。
+- 当前唯一任务：`PYTRIO-SFT-001`（`IN_PROGRESS`）；用户已确认PyTRiO充值10元，按预注册从全新`PYTRIO-SFT-001-A1`目录执行基础评测、rank 8/3 epoch SFT、持久化Sampler与留出复评。`FORMAL-RELEASE-001`仍为`BLOCKED_OFFICIAL_MATERIALS`，不修改已冻结RC2镜像。
 - 稳定边界：`BRACE-MSI-0.1.0rc1`历史标签保持不变；当前冲刺候选为`BRACE-MSI-0.2.0rc2`，仍在`task/core-001`且不合并main
 - 官方试运行：0次；不得用于基础调试
 
@@ -35,7 +35,7 @@
 - SwanLab比赛项目、必填字段及无公网同步责任待发布 `[H-004]`。
 - Docker宿主机阻塞已解除；真实镜像、体积、禁入文件、非root身份、4核8GB断网Smoke和可重载`docker save`归档均有证据，见`results/RC2_CONTAINER_ACCEPTANCE.json`。
 
-这些缺口不阻塞使用假客户端、官方训练包和本地公开开发数据完成P0/P1实现。当前另有一个明确人工输入：确认PyTRiO账户已到账且可用余额大于0，之后从全新`PYTRIO-SFT-001-A1`目录执行远程SFT。
+这些缺口不阻塞当前PyTRiO SFT；用户已确认10元余额到账。按官方Qwen3.5-4B公开单价和字符/token最坏上界估算，本轮上限约0.65元，仍以本地Token收据为准。
 
 ## 禁止事项
 
