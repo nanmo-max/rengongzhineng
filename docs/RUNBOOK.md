@@ -59,3 +59,27 @@ python -m venv .venv
 SwanLab是可选发布依赖，不影响无模型服务的核心Harness。安装、离线导出、安全边界和显式同步
 流程见 [SWANLAB_INTEGRATION.md](SWANLAB_INTEGRATION.md)。任何同步都必须由操作者在核实官方
 项目、公开范围和认证方式后单独执行。
+
+## PyTRiO结构化提案Sampler
+
+先完成`trio login`，不要把API Key写入命令、配置或Git。零远程调用地生成并核验冻结语料：
+
+```powershell
+D:\anaconda3\python.exe scripts\run_pytrio_sft.py `
+  --output-dir D:\brace-msi-pytrio\PYTRIO-SFT-001
+```
+
+只有账户额度已确认且`docs/EXPERIMENTS.md`中的`PYTRIO-SFT-001`预注册未变化时，才显式加入
+`--execute`。该模式会先评测基础模型，再执行rank 8、3 epoch的有界SFT，保存持久化Sampler，
+最后用同一留出集评测。产物只保存响应哈希、Token计数和聚合得分，不保存API Key或原始响应：
+
+```powershell
+D:\anaconda3\python.exe scripts\run_pytrio_sft.py `
+  --output-dir D:\brace-msi-pytrio\PYTRIO-SFT-001-A1 `
+  --execute
+```
+
+每次远程执行必须使用全新的运行目录；脚本会拒绝复用已有目录，避免覆盖失败或负结果。
+只有`result.json`状态为`succeeded`、`sampler_model_path`以`trio://`开头且训练后留出门通过时，
+才可把该路径填入平台“持久化Sampler微调权重”。失败时使用基础模型或确定性降级，不删除
+`failure.json`。

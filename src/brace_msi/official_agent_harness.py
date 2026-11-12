@@ -175,6 +175,11 @@ class HistoryReader:
                 "official_numpy_trainer": True,
                 "supports_resume": True,
                 "supports_partial_fit": False,
+                "allowed_actions": [
+                    Action.NOOP.value,
+                    Action.INCREMENTAL_UPDATE.value,
+                    Action.REPLAY_REFIT.value,
+                ],
                 "allowed_epochs": list(config.allowed_epochs),
                 "allowed_learning_rate_multipliers": list(
                     config.allowed_learning_rate_multipliers

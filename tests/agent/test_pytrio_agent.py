@@ -7,6 +7,7 @@ import pytest
 from brace_msi.policies import Action
 from brace_msi.pytrio_agent import (
     AgentContext,
+    build_agent_prompt,
     ExperimentProposal,
     PyTrioAgentClient,
     PyTrioAgentConfig,
@@ -166,3 +167,25 @@ def test_config_contains_no_credentials_and_defaults_to_confirmed_model() -> Non
     assert config.model == "Qwen/Qwen3.5-4B"
     assert "key" not in repr(config).lower()
     assert "credential" not in repr(config).lower()
+
+
+def test_prompt_only_advertises_runtime_executable_actions() -> None:
+    payload = context().to_payload()
+    payload["capabilities"]["allowed_actions"] = [
+        "noop",
+        "incremental_update",
+        "replay_refit",
+    ]
+
+    prompt = build_agent_prompt(payload)
+
+    schema_line = next(
+        line for line in prompt.splitlines() if line.startswith("PROPOSAL_SCHEMA=")
+    )
+    schema = json.loads(schema_line.split("=", 1)[1])
+    assert schema["action"] == [
+        "incremental_update",
+        "noop",
+        "replay_refit",
+    ]
+    assert set(schema["tool_mapping"]) == set(schema["action"])

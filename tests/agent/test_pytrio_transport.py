@@ -14,12 +14,16 @@ class FakeFuture:
 
 
 class FakeTokenizer:
-    def apply_chat_template(self, messages, *, tokenize, add_generation_prompt):
+    def apply_chat_template(
+        self, messages, *, tokenize, add_generation_prompt, enable_thinking
+    ):
         assert tokenize is False
         assert add_generation_prompt is True
+        assert enable_thinking is False
         return messages[0]["content"]
 
-    def encode(self, text: str) -> list[int]:
+    def encode(self, text: str, *, add_special_tokens: bool) -> list[int]:
+        assert add_special_tokens is False
         return list(range(len(text.split())))
 
 

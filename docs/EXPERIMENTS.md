@@ -46,6 +46,17 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 | REGRESSION-SPRINT-001 | SUCCEEDED | B/C各一次9候选有界矩阵能否稳定超过官方静态基线并固化安全候选？ | B整轴承`*_1/*_2/*_3`训练/开发/确认；C整发动机FD001+2/FD003/FD004训练/开发/确认；公开validation仅冻结后门控 | `configs/regression_sprint.json`；执行提交`241a465` | 每任务1父模型+9矩阵+1最终候选；单次≤180秒；官方试运行/PyTRiO/SwanLab=0 | A1训练前缓存指纹失败、0候选；修复后B/C均9/9成功并接受：B RMSE 681.159833→637.180224，C 52.868573→52.367735；两者MAE均改善，按D-039停止搜索 | `results/REGRESSION-SPRINT-001.md`；`D:/brace-msi-sprint/REGRESSION-SPRINT-001/`；机器校验`valid=true` |
 | SPRINT-HARNESS-001 | SUCCEEDED | 三个冻结任务候选能否在同一确定性Harness中各完成10轮、3次真实候选、预算检查、MAE风险门控和7次有理由跳过？ | 官方A/B/C公开训练包；不是实时漂移流，公开validation为历史暴露候选门控 | `configs/sprint_harness.json`；执行提交`09770c6`，干净树 | 每任务3候选、10轮、CPU/墙钟≤600秒、RSS≤512MiB；Token/官方试运行/SwanLab=0 | A/B/C均10轮、3候选、7 no-op并复算有效；稳定主指标0.725695/637.180224/51.635999，C进一步改善；回归MAE均未退化 | `results/SPRINT-HARNESS-001.md`；`D:/brace-msi-sprint/SPRINT-HARNESS-001/` |
 | RC2-CONTAINER-ACCEPTANCE-001 | SUCCEEDED | RC2 Harness镜像能否在真实Linux容器中满足体积、非root、禁入文件、4核8GB断网和归档可重载要求？ | 仅协议合成Smoke；不加载官方/代理原始数据，不形成性能结论 | Dockerfile来自干净提交`e28113c`；镜像`brace-msi:0.2.0rc2` | `--network=none --cpus=4 --memory=8g --pids-limit=256`；镜像<2GB | 镜像170,356,869字节，UID 10001、`pip check`通过、禁入文件0；Smoke完成3候选；`docker save`归档可重载 | `docs/results/RC2_CONTAINER_ACCEPTANCE.json`；`D:/brace-msi-release/BRACE-MSI-0.2.0rc2/BRACE-MSI-0.2.0rc2-image-clean.tar` |
+| PYTRIO-SFT-001 | PLANNED | 对Qwen3.5-4B进行有界SFT，能否提高BRACE提案严格schema有效率和允许动作/工具匹配率，并得到可提交的持久化Sampler？ | 24条合成聚合决策训练场景；12条按scenario ID隔离的留出场景；无工业原始样本、标签、任务名称、密钥或隐藏数据 | `src/brace_msi/pytrio_sft.py`、`scripts/run_pytrio_sft.py`；语料SHA见预注册 | rank 8、3 epoch、batch 4、18训练步；基础/微调各12次留出采样；官方试运行0；远程执行前确认账户额度 | 尚未远程运行；prepare-only成功、远程调用0次 | `D:/brace-msi-pytrio/PYTRIO-SFT-001/` |
+
+## PYTRIO-SFT-001预注册
+
+- 研究问题：普通assistant-only SFT能否让Qwen3.5-4B更稳定地输出BRACE允许的单一JSON提案，同时不削弱确定性Harness的预算、安全门与降级边界。
+- 语料：固定种子20261112；训练24例、留出12例；训练SHA-256 `1d6763854a307ccbd10f1b2b6c49a748d8272288ff2dcf9665d9f58f3b0717c3`，留出SHA-256 `5119947ed2f81b99bc32729d6e53aa7d4fa86472feb0bc4953aa8fff9c6bb824`。训练与留出使用互不重叠的archetype和scenario ID；语料是合成聚合策略场景，不是A/B/C数据或实验成绩。
+- 模型与训练：`Qwen/Qwen3.5-4B`；LoRA rank 8；3 epoch；batch 4；学习率`1e-4`；18步。prompt/system内容loss权重为0，只监督assistant JSON及EOS。
+- 留出指标：严格schema有效率、action匹配率、tool匹配率、预算安全率和policy匹配率；基础模型与持久化Sampler使用同一12例、温度0、固定seed比较。逐响应仅保存SHA-256、Token计数和布尔得分，不保存原文。
+- 成功标准：远程训练完成；loss有限；`save_weights_for_sampler(..., ttl_seconds=None)`返回`trio://`路径；微调后schema有效率不低于基础模型且policy匹配率提高，或两者已满分且输出Token/失败率不恶化。若未达到，Sampler不替换基础模型，负结果保留。
+- 停止条件：账户额度不可用、模型不在实时白名单、SDK签名变化、训练/评测异常、返回路径非持久化`trio://`、语料哈希变化、非有限loss或凭据/原始数据进入产物。
+- 产物：每次远程尝试使用不可复用的新目录；本地语料/manifest、run spec、训练进度、基础/微调留出汇总、持久化Sampler收据、result或failure；不提交API Key，不运行SwanLab，不消耗官方十次试运行。
 
 ## UNIFIED-POLICY-OPT-001-SMOKE预注册
 

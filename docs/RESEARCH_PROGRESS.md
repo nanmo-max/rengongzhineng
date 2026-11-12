@@ -385,3 +385,12 @@
 - 使用`--network=none --cpus=4 --memory=8g --pids-limit=256`运行`synthetic-smoke`，状态`completed`且`candidate_count=3`；这只证明协议/容器运行，不是正式数据性能实验。
 - 最终`docker save`归档为`D:/brace-msi-release/BRACE-MSI-0.2.0rc2/BRACE-MSI-0.2.0rc2-image-clean.tar`，170,378,752字节，SHA-256 `7b64490b0456c4b36bdc6189f34c9ce5e372894b911d76a3b40a6e8142e09327`；重新加载验证可读。发布相关定向测试`8 passed`，未重跑训练或完整回归。
 
+## 2026-11-12：PYTRIO-SFT-001本地准备与审计
+
+- 审计并安装官方`SwanHubX/pytrio-skill` v0.2.3；本机`pytrio 0.2.9`登录状态有效，只读能力查询实时返回`Qwen/Qwen3.5-4B`和`Qwen/Qwen3.8-27B`。未读取或保存真实API Key。
+- 新增BRACE提案Agent的普通生成式SFT链：24条训练场景、12条archetype隔离留出场景；prompt权重为0，只监督严格assistant JSON和EOS。训练/留出固定SHA已写入代码与实验预注册。
+- 留出评测记录schema/action/tool/预算安全/policy匹配率；每次远程响应后原子保存哈希和Token，不保存原始响应。远程输出目录不可复用，持久化Sampler保存后立即落独立收据，后续失败仍保留`trio://`路径。
+- 远程执行在创建ServiceClient前核对固定seed与两份语料SHA；SDK导入、预检、部分采样、训练、保存和后评测失败均生成`failure.json`。模型服务失败时原有确定性Harness降级边界不变。
+- 验证：专项`27 passed`，完整回归`233 passed in 63.48s`，编译、wheel包含性、diff与敏感信息扫描通过；独立代码审查无剩余Critical/Important。prepare-only产物位于`D:/brace-msi-pytrio/PYTRIO-SFT-001/`，真实采样/训练调用0次。
+- 当前阻塞：用户截图时账户余额曾显示0，SDK无余额查询接口。必须先由用户确认当前可用额度大于0，再用全新`PYTRIO-SFT-001-A1`目录执行收费SFT；不得把本地准备写成微调完成。
+

@@ -7,6 +7,7 @@
 ```text
 ROUTE-001(DONE)
   -> PYTRIO-001(DONE)
+  -> PYTRIO-SFT-001(BLOCKED_CREDIT_CONFIRMATION)
   -> OFFICIAL-HARNESS-002(DONE)
   -> ACTION-SANDBOX-001(DONE)
   -> PERF-A-001(DONE) -> PERF-B-001(DONE) -> PERF-C-001(DONE)
@@ -36,6 +37,16 @@ ROUTE-001(DONE)
 - 完成标准：Qwen3.5-4B模型名和服务参数由配置/环境注入；Sampler调用可替换；严格解析结构化实验提案；记录Token、延迟和错误；不序列化密钥；服务缺失、超时、非法输出时返回可审计的确定性降级；自动测试不访问真实服务
 - 停止条件：实现需要真实密钥、付费调用或猜测比赛专用字段；此时保留接口并用假客户端完成测试
 - 证据：`src/brace_msi/pytrio_agent.py`、`tests/agent/test_pytrio_agent.py`、`tests/agent/test_pytrio_transport.py`；8项专项测试与完整回归`189 passed`；真实服务调用0次，凭据0项
+
+### PYTRIO-SFT-001 BRACE结构化提案Sampler微调
+
+- 状态：`BLOCKED_CREDIT_CONFIRMATION`（本地实现和证据已完成；远程训练需确认当前账户可用额度）
+- 依赖：PYTRIO-001、Qwen3.5-4B位于当前PyTRiO模型白名单、用户已完成本机`trio login`
+- 优先级：P0
+- 完成标准：生成不含原始样本/密钥的版本化训练与留出评测语料；普通生成式SFT只监督assistant JSON；训练前后比较严格schema有效率、允许动作匹配率和预算安全性；保存持久化Sampler路径；本地记录数据哈希、SDK版本、超参数、loss、Token/步骤与失败；Sampler异常仍由确定性Harness降级
+- 停止条件：当前账户无可用训练额度、真实付费训练未经用户确认、支持模型/API签名变化、语料含私有数据或密钥、或无法获得持久化Sampler路径；停止时保留本地准备与失败证据，不伪造训练完成
+- 当前边界：官方Skill `pytrio-skill` v0.2.3已审计并安装；本地SDK为`pytrio 0.2.9`，实时白名单返回`Qwen/Qwen3.5-4B`和`Qwen/Qwen3.8-27B`。24条训练与12条archetype隔离留出语料已冻结，prepare-only远程调用0次；专项27项、完整回归233项、编译与敏感信息扫描通过。尚未启动收费训练或采样。
+- 本地证据：`src/brace_msi/pytrio_sft.py`、`scripts/run_pytrio_sft.py`、`tests/agent/test_pytrio_sft.py`、`D:/brace-msi-pytrio/PYTRIO-SFT-001/`；独立代码审查无剩余Critical/Important。
 
 ### OFFICIAL-HARNESS-002 官方训练器主Harness接入
 

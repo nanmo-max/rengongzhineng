@@ -1,9 +1,9 @@
 # 当前状态
 
 - 最近同步：2026-11-12（Asia/Shanghai）
-- 当前阶段：BRACE-MSI-0.2.0rc2本地Release与真实容器验收完成，等待官方平台接入
+- 当前阶段：BRACE-MSI-0.2.0rc2本地Release与真实容器验收保持冻结；独立开展正式PyTRiO Sampler微调准备
 - 当前路线：**Qwen3.5-4B PyTRiO Agent + BRACE确定性Harness + 官方A/B/C工业模型 + 经验证的开源优化方法** `[D-035]`
-- 当前唯一任务：`FORMAL-RELEASE-001`（`BLOCKED_OFFICIAL_MATERIALS`）；本地Docker镜像、4核8GB断网Smoke与`docker save`归档均已通过，只等待正式SDK事件映射、评分细则与比赛SwanLab规范
+- 当前唯一任务：`PYTRIO-SFT-001`（`BLOCKED_CREDIT_CONFIRMATION`）；本地语料、留出评测、远程训练脚本与审计边界均已完成，等待用户确认PyTRiO当前可用额度后才执行收费采样/训练。`FORMAL-RELEASE-001`仍为`BLOCKED_OFFICIAL_MATERIALS`，不修改已冻结RC2镜像。
 - 稳定边界：`BRACE-MSI-0.1.0rc1`历史标签保持不变；当前冲刺候选为`BRACE-MSI-0.2.0rc2`，仍在`task/core-001`且不合并main
 - 官方试运行：0次；不得用于基础调试
 
@@ -18,10 +18,12 @@
 7. `OFFICIAL-HARNESS-002`已完成：同一CLI入口可选择PyTRiO或确定性提供者，A/B/C真实训练器集成Smoke各完成1个候选，3/3机器复算`valid=true`；全量回归`196 passed`。该Smoke只证明链路，公开验证改善不是新独立性能结论。
 8. `ACTION-SANDBOX-001`已完成：执行侧使用可指纹化工具注册表，任务/参数/预算/输出路径均先检查；论文插件登记必须具备固定根、许可证和文件哈希。全量回归`201 passed`。
 9. `PERF-A-001`已完成有界诊断：过采样实验为负；因果回放实验15候选中`current_only`通过开发选择，两种回放均未超过+0.005门。冻结确认上`current_only` Macro-F1均值0.469553，高于静态0.324722，但Batch 6—7历史暴露，不当作独立泛化证据。官方试运行/PyTRiO/SwanLab使用均0；全量回归`212 passed`。
+10. 2026-11-12本机`trio login`成功；只读服务能力查询确认当前模型白名单为`Qwen/Qwen3.5-4B`与`Qwen/Qwen3.8-27B`。未读取、打印或提交真实API Key，用户粘贴的Key仅为官方示例占位内容。
+11. `PYTRIO-SFT-001`本地准备完成：24训练/12留出，训练和留出archetype不交叉；assistant-only loss、预算安全率、持久化收据、逐样本Token/哈希、失败保留和预注册SHA fail-closed均有自动测试。完整回归`233 passed`；真实PyTRiO训练/采样调用仍为0。
 
 ## 当前执行入口
 
-`SPRINT-HARNESS-001`与RC2本地发布均完成。最终Harness镜像归档为`D:/brace-msi-release/BRACE-MSI-0.2.0rc2/BRACE-MSI-0.2.0rc2-image-clean.tar`，SHA-256 `7b64490b...2e09327`；镜像170,356,869字节，已在linux/amd64、非root、`--network=none --cpus=4 --memory=8g`下完成3候选协议Smoke。源码归档SHA-256仍为`da9e4a4c...bd8b7ae`，历史回归证据仍为`221 passed`；本次仅额外运行8项发布相关测试并通过。停止训练与算法扩展，只等待官方平台材料。
+`SPRINT-HARNESS-001`与RC2本地发布均完成。最终Harness镜像归档为`D:/brace-msi-release/BRACE-MSI-0.2.0rc2/BRACE-MSI-0.2.0rc2-image-clean.tar`，SHA-256 `7b64490b...2e09327`；镜像保持冻结，不重训A/B/C。PyTRiO当前入口为`scripts/run_pytrio_sft.py`：prepare-only证据在`D:/brace-msi-pytrio/PYTRIO-SFT-001/`；确认额度后才从全新`PYTRIO-SFT-001-A1`目录执行`--execute`。
 
 正式路线、已知能力与未知边界见[FORMAL_ROUTE.md](FORMAL_ROUTE.md)。实验必须遵守[EXPERIMENT_PROTOCOL.md](EXPERIMENT_PROTOCOL.md)。
 
@@ -33,7 +35,7 @@
 - SwanLab比赛项目、必填字段及无公网同步责任待发布 `[H-004]`。
 - Docker宿主机阻塞已解除；真实镜像、体积、禁入文件、非root身份、4核8GB断网Smoke和可重载`docker save`归档均有证据，见`results/RC2_CONTAINER_ACCEPTANCE.json`。
 
-这些缺口不阻塞使用假客户端、官方训练包和本地公开开发数据完成P0/P1实现。
+这些缺口不阻塞使用假客户端、官方训练包和本地公开开发数据完成P0/P1实现。当前另有一个明确人工输入：确认PyTRiO账户已到账且可用余额大于0，之后从全新`PYTRIO-SFT-001-A1`目录执行远程SFT。
 
 ## 禁止事项
 

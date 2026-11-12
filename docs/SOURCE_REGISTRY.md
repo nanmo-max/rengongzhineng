@@ -251,6 +251,12 @@
 - 事实：官方客户端可通过`pip install pytrio`安装；`ServiceClient`支持查询模型、创建Sampler与LoRA训练客户端；提供`sample`、`forward_backward`、`optim_step`及权重保存/恢复；支持`PYTRIO_API_KEY`、`PYTRIO_BASE_URL`和OpenAI兼容端点。快速开始当前示例列出`Qwen/Qwen3.6-27B`与`Qwen/Qwen3.5-4B`。
 - 边界：通用文档不确认比赛环境的Base URL、凭据注入、模型白名单、Token计量或十轮评测事件协议；正式实现必须运行时配置并核验，不写死公开端点或示例模型列表。
 
+### O-PYTRIO-002 当前账户SDK与模型能力实测
+
+- 来源：本机`pytrio 0.2.9`、`trio env show`、登录后的`ServiceClient.get_supported_models()`只读调用，以及官方`SwanHubX/pytrio-skill` v0.2.3；核验日期2026-11-12。
+- 事实：本机已登录且未在仓库读取/保存凭据；当前服务实时返回`Qwen/Qwen3.5-4B`和`Qwen/Qwen3.8-27B`两项模型。SDK签名确认LoRA客户端支持`base_model/rank/seed`，`save_weights_for_sampler(name, ttl_seconds=None)`返回用于Sampler的持久化权重结果。
+- 边界：模型列表只代表当前账户在核验时可见能力，不等于正式评测容器白名单；只读能力查询不证明账户有可用付费额度，也不证明训练、保存或平台提交已经成功。
+
 ### O-PAPER-001 不平衡在线持续学习与类平衡回放
 
 - 来源：Chrysakis & Moens, *Online Continual Learning from Imbalanced Data*, ICML 2020，PMLR 119:1952–1961；PMLR论文与补充材料，核验日期2026-11-12。

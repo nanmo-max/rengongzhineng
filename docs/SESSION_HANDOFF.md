@@ -3,9 +3,9 @@
 ## 2026-11-12正式路线恢复入口（当前）
 
 1. 当前路线以`docs/FORMAL_ROUTE.md`、D-035至D-037为准：Qwen3.5-4B PyTRiO Agent + BRACE确定性Harness + 官方A/B/C工业模型 + 经验证开源方法。
-2. 当前唯一任务从`STATUS.md`读取；本次同步时`FORMAL-RELEASE-001`为`BLOCKED_OFFICIAL_MATERIALS`。实际Docker镜像、体积/禁入文件、4核8GB断网Smoke和`docker save`均已通过；不得重跑模型训练、矩阵或完整回归。
+2. 当前唯一任务从`STATUS.md`读取；本次同步时`PYTRIO-SFT-001`为`BLOCKED_CREDIT_CONFIRMATION`，`FORMAL-RELEASE-001`仍为`BLOCKED_OFFICIAL_MATERIALS`。实际Docker镜像、体积/禁入文件、4核8GB断网Smoke和`docker save`均已通过；不得重跑A/B/C模型训练或矩阵。
 3. A/B/C官方训练器入口位于`src/brace_msi/official_trainer.py`及`official_rounds.py`；新实现必须复用只读清单、隔离子进程和父检查点验证。
-4. PyTRiO边界已在`src/brace_msi/pytrio_agent.py`实现：配置注入、假客户端、严格JSON提案、秘密字段拒绝、Token/延迟收据和确定性降级；专项8项、全量189项测试通过。下一步不得绕过该边界直接调用SDK。
+4. PyTRiO推理边界位于`src/brace_msi/pytrio_agent.py`；SFT语料、留出评测与远程训练边界位于`src/brace_msi/pytrio_sft.py`及`scripts/run_pytrio_sft.py`。当前完整回归233项通过。下一步不得绕过这些边界直接调用SDK。
 5. 官方训练器主链位于`src/brace_msi/official_agent_harness.py`，入口`python -m brace_msi official-agent-run`；`FORMAL-AGENT-SMOKE-001`已完成且3/3复算有效。不要续跑该Smoke的剩余轮次或用其公开验证调参。
 6. 执行沙箱位于`src/brace_msi/action_sandbox.py`：工具注册表、参数、估算预算、隔离路径和插件哈希已测试。新动作必须先扩展注册表及测试，不能在Harness内临时分支执行。
 7. `BRACE-MSI-0.1.0rc1`历史标签不修改；当前冲刺候选为`BRACE-MSI-0.2.0rc2`。新代码仍在`task/core-001`，不合并main。
@@ -13,6 +13,7 @@
 9. `PERF-A-REPLAY-001`的A1指纹失败和A2有效结果均已保留；A2的开发胜者为`current_only`，不将均匀/类平衡回放带入Gas主线。恢复时不重复核对已冻结哈希或重跑A2，除非相关文件确有更新。
 10. B/C冻结候选分别为5 epoch×3x LR与5 epoch×1x LR；十轮Harness最终C稳定RMSE进一步为51.635999。RC2代码与全新环境均221项测试通过；交付包位于`D:/brace-msi-release/BRACE-MSI-0.2.0rc2/`。无新外部材料或容器环境时保持冻结。
 11. 最终上传镜像为`D:/brace-msi-release/BRACE-MSI-0.2.0rc2/BRACE-MSI-0.2.0rc2-image-clean.tar`，SHA-256 `7b64490b...2e09327`；验收记录见`docs/results/RC2_CONTAINER_ACCEPTANCE.json`。平台上传时选择该`docker save`归档，不上传源码ZIP冒充镜像。
+12. `PYTRIO-SFT-001`本地prepare-only产物位于`D:/brace-msi-pytrio/PYTRIO-SFT-001/`；远程调用0次。用户确认余额后，按`docs/RUNBOOK.md`使用全新`D:/brace-msi-pytrio/PYTRIO-SFT-001-A1/`执行`--execute`，不可复用prepare目录或覆盖失败证据。
 
 以下旧恢复入口保留历史上下文；若与本节冲突，以`STATUS.md`、`TASKS.md`和本节为准。
 

@@ -179,8 +179,9 @@ class PyTrioSamplingTransport:
             [{"role": "user", "content": prompt}],
             tokenize=False,
             add_generation_prompt=True,
+            enable_thinking=False,
         )
-        input_ids = tokenizer.encode(input_text)
+        input_ids = tokenizer.encode(input_text, add_special_tokens=False)
         params = trio.SamplingParams(
             max_tokens=max_tokens,
             seed=seed,
@@ -217,7 +218,7 @@ class PyTrioAgentClient:
 
     def propose(self, context: AgentContext) -> ProposalOutcome:
         payload = context.to_payload()
-        prompt = _build_prompt(payload)
+        prompt = build_agent_prompt(payload)
         prompt_hash = _sha256_text(prompt)
         started = self.clock()
         try:
@@ -403,11 +404,32 @@ def _validate_safe_json(value: Any, *, path: str = "context") -> None:
     raise ValueError(f"unsupported value at {path}: {type(value).__name__}")
 
 
-def _build_prompt(payload: Mapping[str, Any]) -> str:
+def build_agent_prompt(payload: Mapping[str, Any]) -> str:
+    """Build the exact prompt used by both runtime inference and SFT.
+
+    A runtime may expose fewer tools than the versioned proposal schema knows
+    about.  When ``capabilities.allowed_actions`` is present, only that
+    executable subset is advertised to the model.  The deterministic harness
+    still validates the returned proposal independently.
+    """
+    requested = payload.get("capabilities", {}).get("allowed_actions")
+    if isinstance(requested, list):
+        allowed_actions = {
+            action
+            for action in _ALLOWED_TOOLS
+            if action.value in requested
+        }
+        if not allowed_actions:
+            allowed_actions = {Action.NOOP}
+    else:
+        allowed_actions = set(_ALLOWED_TOOLS)
     schema = {
         "schema_version": PROPOSAL_SCHEMA_VERSION,
-        "action": sorted(action.value for action in _ALLOWED_TOOLS),
-        "tool_mapping": {action.value: tool for action, tool in _ALLOWED_TOOLS.items()},
+        "action": sorted(action.value for action in allowed_actions),
+        "tool_mapping": {
+            action.value: _ALLOWED_TOOLS[action]
+            for action in sorted(allowed_actions, key=lambda item: item.value)
+        },
         "parameters_allowed": sorted(_ALLOWED_PARAMETER_KEYS),
         "required_fields": [
             "schema_version",
