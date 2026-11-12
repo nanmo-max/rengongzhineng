@@ -2,22 +2,42 @@
 
 ## 1. 设计目标
 
-系统处理的是“如何自主决定一次训练是否值得执行”，而不是为三个公开数据集分别手工刷分。BRACE-MSI围绕训练前预算决策、训练后风险门控和后续批次收益反馈构建 `[D-001]`。
+系统处理的是“如何让Agent提出有价值的任务专属实验，并由确定性Harness判断该实验是否安全、值得执行和部署”。BRACE-MSI统一实验生命周期、工具边界、预算、安全、审计和回滚；Gas、Bearing、Engine允许独立模型、参数、动作和历史，不按数据集名称在共享代码中硬编码捷径 `[D-035]`。
 
 ## 2. 组件与边界
 
 ```text
-OfficialSDKAdapter
+OfficialRuntimeAdapter
   -> TaskBootstrap
-  -> StreamRunner
-  -> EvidenceRouter / DiagnosisEngine
-  -> ActionPolicy / BudgetAllocator
-  -> ExperimentRunner / ModelAdapter
-  -> StatisticalEvaluator
+  -> Official A/B/C Checkpoint + HistoryReader
+  -> PyTrioAgentClient(Qwen3.5-4B) / DeterministicFallback
+  -> StructuredProposalValidator
+  -> ToolAllowlist / BudgetLedger
+  -> SandboxedOfficialTrainer / ModelAdapter
+  -> IndependentEvaluator
   -> SafetyGate
   -> ModelRegistry / RollbackManager
   -> SwanLabLogger + PrivateAuditLog
 ```
+
+### PyTrioAgentClient与HistoryReader
+
+- 只接收脱敏的任务元数据、聚合指标、资源、历史动作和失败摘要，不接收密钥或逐样本私有数据。
+- 只输出版本化JSON提案；模型名、Sampler路径、Base URL和凭据由运行时注入 `[D-036]`。
+- 记录请求/响应哈希、Token、延迟和错误；服务不可用、超时或输出非法时退回确定性策略。
+- Agent不能直接训练、部署、调用shell或修改原始训练包。
+
+### StructuredProposalValidator与ToolAllowlist
+
+- 提案必须命中允许的动作、模型/训练参数schema、路径根和单轮资源上限。
+- 代码级增强只允许预先登记、测试通过、固定哈希的插件；不得执行模型临时生成的源代码 `[D-011]`。
+- 所有候选在隔离目录运行，成功加载并通过独立评估前不得替换稳定模型。
+
+### 三任务适配
+
+- 统一组件：历史格式、提案schema、预算账本、工具边界、SafetyGate、注册表和日志。
+- 任务独立组件：模型/检查点、指标方向、超参数空间、训练动作、回放缓冲和历史经验。
+- 正式平台字段只存在于`OfficialRuntimeAdapter`，不得渗入核心策略。
 
 ### OfficialSDKAdapter
 
@@ -43,7 +63,7 @@ OfficialSDKAdapter
 
 ### ActionPolicy与BudgetAllocator
 
-白名单动作：`NOOP`、`RECALIBRATE`、`INCREMENTAL_UPDATE`、`REPLAY_REFIT`、`FAMILY_SWITCH`、`BOUNDED_HPO`、`ROLLBACK`。运行时禁止生成并执行任意代码 `[D-011]`。
+白名单动作：`NOOP`、`RECALIBRATE`、`INCREMENTAL_UPDATE`、`REPLAY_REFIT`、`FAMILY_SWITCH`、`BOUNDED_HPO`、`REGISTERED_PLUGIN`、`ROLLBACK`。运行时禁止生成并执行任意代码 `[D-011]`。
 
 三段式“快速修复、稳定适应、定向搜索”是升级优先级，不是每次固定菜单。至少三次真实候选事件属于宣讲要求，最终计数语义待核实 `[B-ITER-001]` `[H-003]`。
 
@@ -74,4 +94,4 @@ SwanLab记录被训工业模型的公开合规训练过程；本地审计记录�
 - 运行时自由代码生成。
 - 依赖公网搜索或外部API。
 - 在镜像内打包大模型或Embedding权重。
-- 在正式SDK公布前写死平台名、模型名和调用顺序。
+- 在正式SDK公布前写死比赛端点、密钥、事件字段和调用顺序；Qwen3.5-4B仅作为当前默认配置而不是核心常量。

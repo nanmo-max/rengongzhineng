@@ -5,6 +5,93 @@
 ## 当前任务图
 
 ```text
+ROUTE-001(DONE)
+  -> PYTRIO-001(IN_PROGRESS)
+  -> OFFICIAL-HARNESS-002
+  -> ACTION-SANDBOX-001
+  -> PERF-A-001 / PERF-B-001 / PERF-C-001
+  -> PAPER-METHOD-001
+  -> LOOP-10-001
+  -> FORMAL-COMPARE-001
+  -> FORMAL-RELEASE-001
+```
+
+以上是D-035当前正式执行图；下方旧任务图与任务记录保留作历史证据，不再决定当前路线。
+
+## 当前正式路线任务
+
+### ROUTE-001 正式路线锁定与SSOT同步
+
+- 状态：`DONE`
+- 依赖：O-PLATFORM-005、O-PYTRIO-001、B-PLATFORM-002、L-AUTH-009
+- 优先级：P0
+- 完成标准：正式路线、平台能力、未知接口、任务图、实验成功标准和风险边界写入既有SSOT；旧决策和负结果不删除
+- 证据：`docs/FORMAL_ROUTE.md`、`D-035`至`D-037`及本节
+
+### PYTRIO-001 PyTRiO结构化Agent客户端
+
+- 状态：`IN_PROGRESS`
+- 依赖：ROUTE-001
+- 优先级：P0
+- 完成标准：Qwen3.5-4B模型名和服务参数由配置/环境注入；Sampler调用可替换；严格解析结构化实验提案；记录Token、延迟和错误；不序列化密钥；服务缺失、超时、非法输出时返回可审计的确定性降级；自动测试不访问真实服务
+- 停止条件：实现需要真实密钥、付费调用或猜测比赛专用字段；此时保留接口并用假客户端完成测试
+- 证据：完成后填写源码、测试与验证命令
+
+### OFFICIAL-HARNESS-002 官方训练器主Harness接入
+
+- 状态：`READY`
+- 依赖：PYTRIO-001
+- 优先级：P0
+- 完成标准：A/B/C真实检查点、HistoryReader、Agent/确定性提案、隔离训练、独立评估、SafetyGate及部署/拒绝/回滚贯通；同一入口可关闭Agent；不修改原包
+- 停止条件：需要正式平台事件字段时只阻塞RuntimeAdapter，不阻塞本地训练包工作流
+
+### ACTION-SANDBOX-001 受控工具和配置修改
+
+- 状态：`BLOCKED`
+- 依赖：OFFICIAL-HARNESS-002
+- 优先级：P0
+- 完成标准：工具白名单、参数schema、允许路径/配置键、候选隔离、预算预检和审计齐全；模型文本不得直接成为shell或Python代码
+- 停止条件：任何路径能绕过预算、SafetyGate或写入原始包
+
+### PERF-A-001 / PERF-B-001 / PERF-C-001 三任务独立性能优化
+
+- 状态：`BLOCKED`
+- 依赖：ACTION-SANDBOX-001；各任务新实验预注册
+- 优先级：P1
+- 完成标准：分别完成数据/误差/阶段/资源诊断，建立静态、固定更新和BRACE无大模型对照，运行有明确假设的低成本优化；不能仅凭训练集或已反复使用的单次验证指标宣布成功
+- 停止条件：独立确认数据未冻结、原始数据指纹变化、或连续候选无增益且作用机制不成立
+
+### PAPER-METHOD-001 高价值开源方法筛选与复现
+
+- 状态：`BLOCKED`
+- 依赖：至少一个PERF任务给出可测量瓶颈
+- 优先级：P1
+- 完成标准：论文贡献、官方代码、许可证、CPU/内存、官方模型兼容性审计通过；独立实验ID下完成基线、复现、消融和失败记录；只有实测有效方法进入主Harness
+- 停止条件：无明确瓶颈、许可证不清、依赖GPU/公网、或4核8GB预算不成立
+
+### LOOP-10-001 PyTRiO+BRACE十轮自主闭环
+
+- 状态：`BLOCKED`
+- 依赖：三项PERF任务完成最低可用候选；PAPER方法非强制依赖
+- 优先级：P2
+- 完成标准：每任务十轮历史读取、提案、检查、训练/跳过、评估、门控和记录；每任务至少三次真实候选；无意义训练允许跳过但必须记录；服务失败可完成确定性降级
+
+### FORMAL-COMPARE-001 正式对照与消融
+
+- 状态：`BLOCKED`
+- 依赖：LOOP-10-001
+- 优先级：P3
+- 完成标准：官方静态、固定更新、BRACE无大模型、PyTRiO+BRACE及有效论文方法在同一可见性和预算下比较；报告主指标、最差阶段、恢复、CPU/RSS、Token/费用、接受/回滚；负结果保留
+
+### FORMAL-RELEASE-001 正式环境与交付
+
+- 状态：`BLOCKED`
+- 依赖：FORMAL-COMPARE-001、正式SDK/SwanLab规范、可用容器运行时
+- 优先级：P4
+- 完成标准：Docker构建、4核8GB断网、正式RuntimeAdapter、最终模型重训SwanLab记录、十轮无人值守、干净环境独立复现及交付审计全部通过
+- 停止条件：外部规范或容器环境缺失时明确`BLOCKED`，不得制造通过证据
+
+```text
 DOC-001
   -> CORE-001 -> SDK-001 -> CORE-002 -> CORE-003
   -> DATA-001 -> BASE-001/BASE-002/BASE-003
@@ -348,7 +435,7 @@ SYS-005
 
 ### UNIFIED-POLICY-001 三任务统一策略优化
 
-- 状态：`IN_PROGRESS`
+- 状态：`STOPPED`
 - 依赖：OFFICIAL-PKG-001、FORMAL-DEV-001、XJTU-LOCAL-001、L-AUTH-008
 - 优先级：P0，当前唯一执行任务
 - 完成标准：实现身份盲、无量纲的共享策略核心；冻结三阶段manifest；完成三个任务级leave-one-task-out fold；公平比较静态、固定低成本、性能触发和BRACE；冻结一组共享配置；末期只测且明确历史暴露等级；生成资源、失败、停止条件和机器验收证据。
@@ -356,7 +443,7 @@ SYS-005
 - 设计：`docs/superpowers/specs/2026-11-11-unified-policy-optimization-design.md`
 - 实施计划：`docs/superpowers/plans/2026-11-11-unified-policy-optimization.md`
 - 边界：不修改D-031冻结实验、RC标签、main或原始数据；Gas/FD001末期为历史暴露，XJTU末期首次打开前必须预注册；不运行SwanLab和平台SDK。
-- 当前运行：`UNIFIED-POLICY-OPT-001-DEV-A1`，提交`e057589`；24组共享配置、81个串行作业，运行根`D:/brace-msi-unified/UNIFIED-POLICY-OPT-001-DEV-A1/`。2026-11-12交接快照74/81收据，后台Python PID 7416。
+- 当前证据：`UNIFIED-POLICY-OPT-001-DEV-A1`已完成81/81作业并严格验收`valid=true`；复杂BRACE在3/3留出fold无性能优势且资源更高。D-035已替代该路线为当前正式方向；不执行末期测试，配置、报告和负结果继续保留。报告见`docs/results/UNIFIED-POLICY-OPT-001.md`。
 
 ### LOCAL-BASE-STRONG 强静态CPU基线补充
 

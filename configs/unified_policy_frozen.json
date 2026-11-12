@@ -1,0 +1,44 @@
+{
+  "format": "brace-msi.unified-policy-freeze.v1",
+  "experiment_id": "UNIFIED-POLICY-OPT-001-DEV-A1",
+  "selection_scope": "bootstrap_train_and_policy_development_only",
+  "selected_policy": {
+    "name": "normalized_performance_triggered",
+    "performance_drop_threshold": 0.0,
+    "reason": "The preregistered complex-policy stopping rule fired in all three leave-one-task-out folds; the simpler identity-blind comparator is the final candidate."
+  },
+  "complex_brace_comparator": {
+    "config_id": "shared-f8881ba9c291",
+    "config": {
+      "drift_percentile_threshold": 0.75,
+      "high_drift_percentile_threshold": 0.9,
+      "hpo_failure_threshold": 2,
+      "hpo_min_budget_fraction": 0.25,
+      "maximum_relative_anchor_degradation": 0.05,
+      "minimum_relative_improvement": 0.002,
+      "minimum_sample_support": 0.1,
+      "refit_drop_threshold": 0.12,
+      "replay_fraction": 0.5,
+      "search_budget_fraction": 0.2,
+      "update_drop_threshold": 0.02
+    },
+    "role": "terminal_comparator_only_not_selected_candidate"
+  },
+  "development_evidence": {
+    "execution_manifest_sha256": "47cef397bf47902b7c3a82635d6f7caa2a00cc98a101c72d42feec8bbcb9ae70",
+    "summary_sha256": "92f12971c89efcef858a5bd0630666d5b62e36a31580e2dfa600cfd0eab8bd58",
+    "machine_validation": true,
+    "job_count": 81,
+    "leave_one_task_out_fold_count": 3,
+    "complex_policy_dominated_fold_count": 3,
+    "official_test_opportunities_used": 0
+  },
+  "terminal_contract": {
+    "prediction_only": true,
+    "single_open": true,
+    "selection_feedback_forbidden": true,
+    "gas_exposure": "historically_exposed_terminal",
+    "engine_exposure": "historically_exposed_terminal",
+    "bearing_exposure": "virgin_terminal"
+  }
+}

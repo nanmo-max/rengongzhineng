@@ -245,6 +245,25 @@
 - 事实：Python SDK支持`mode="offline"`本地记录、`on_online_error="offline"`降级、`public`可见性参数；官方CLI提供`swanlab sync`将本地日志同步到云端或私有部署。
 - 边界：比赛要求的字段、公开项目命名、认证注入和无公网评测后的正式同步流程仍属H-004，不由通用SwanLab文档解除。
 
+### O-PYTRIO-001 PyTRiO官方训练与推理接口
+
+- 来源：`https://docs.pytrio.com/docs`、`/docs/quick-start`、`/docs/guide/train`、`/docs/guide/sample`、`/docs/advanced/openai`与`/docs/advanced/configuration`；核验日期2026-11-12。
+- 事实：官方客户端可通过`pip install pytrio`安装；`ServiceClient`支持查询模型、创建Sampler与LoRA训练客户端；提供`sample`、`forward_backward`、`optim_step`及权重保存/恢复；支持`PYTRIO_API_KEY`、`PYTRIO_BASE_URL`和OpenAI兼容端点。快速开始当前示例列出`Qwen/Qwen3.6-27B`与`Qwen/Qwen3.5-4B`。
+- 边界：通用文档不确认比赛环境的Base URL、凭据注入、模型白名单、Token计量或十轮评测事件协议；正式实现必须运行时配置并核验，不写死公开端点或示例模型列表。
+
+### B-PLATFORM-002 平台模型提交校验答复
+
+- 来源：用户于2026-11-12转述的参赛平台教师答复与已完成校验结果。
+- 事实：同一API Key和镜像选择Qwen3.5-4B基础模型可通过提交校验；LoRA Sampler先前校验失败的原因是权重未正确持久化，持久化后已解决；教师确认其余所问事项不存在额外限制。
+- 证据等级：平台支持沟通与实际校验结果，高于推测但不替代公开SDK/比赛书面规范。
+- 边界：不得在仓库记录API Key或真实凭据；Sampler路径、模型名和服务地址均由运行配置注入。
+
+### L-AUTH-009 正式路线锁定与连续执行授权
+
+- 来源：用户2026-11-12当前指令。
+- 事实：正式路线锁定为“Qwen3.5-4B PyTRiO Agent + BRACE确定性Harness + 官方A/B/C工业模型 + 经过验证的开源优化方法”；统一Harness工作流，允许三个任务独立模型、参数、动作和历史；授权连续完成文档、P0集成、公开开发优化、论文复现、十轮闭环、对照和交付准备。
+- 边界：不修改原始训练包或RC标签，不消耗官方十次试运行进行基础调试；付费、密钥、正式平台权限和缺失接口仍需外部授权或材料。
+
 ### L-EVIDENCE-001 完整系统本地模拟证据
 
 - 来源：`LOCAL-FORMAL-SIM-001`，执行提交`ce3e907840ae4652be568d1b1eedc4e547702cec`
@@ -277,7 +296,7 @@
 
 ### H-002 平台与模型名称
 
-记录中出现PyTRiO、PyTorch、PyArrow、Petrel及多个Qwen名称。只接受正式SDK提供的模型ID和白名单。
+PyTRiO通用接口、Qwen3.5-4B基础模型平台校验和持久化Sampler路线已确认，模型服务不再构成架构设计阻塞。正式比赛Base URL、凭据注入、运行时白名单与Token计量仍待平台环境确认；实现必须配置化并在启动时核验。
 
 ### H-003 评分与迭代计数
 

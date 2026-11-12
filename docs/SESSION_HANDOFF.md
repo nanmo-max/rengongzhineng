@@ -1,12 +1,23 @@
 # 新会话恢复与交接
 
-## 2026-11-12统一策略搜索恢复入口
+## 2026-11-12正式路线恢复入口（当前）
 
-1. 检查后台命令是否仍含`run_unified_policy_optimization.py ... UNIFIED-POLICY-OPT-001-DEV-A1`；交接时Python PID为7416，但PID可能自然退出。
-2. 读取`D:/brace-msi-unified/UNIFIED-POLICY-OPT-001-DEV-A1/state.json`并统计`jobs/**/receipt.json`。预期总作业81；交接快照为74。
-3. 若进程已退出且81/81完成，执行：`D:/anaconda3/python.exe scripts/run_unified_policy_optimization.py --runtime-root D:/brace-msi-unified/UNIFIED-POLICY-OPT-001-DEV-A1 --validate-only`。
-4. 若进程已退出但未完成，使用`EXPERIMENTS.md`登记的同一提交、配置和原命令恢复；执行manifest会拒绝源码、配置或评估协议漂移。
-5. 严格验收通过前不得读取末期数据、冻结最终配置或更新为成功结论；不得使用官方十次测试机会。
+1. 当前路线以`docs/FORMAL_ROUTE.md`、D-035至D-037为准：Qwen3.5-4B PyTRiO Agent + BRACE确定性Harness + 官方A/B/C工业模型 + 经验证开源方法。
+2. 当前唯一任务从`STATUS.md`读取；本次同步时为`PYTRIO-001`。先运行`git status --short`并保留所有历史证据，不重跑统一策略矩阵或末期测试。
+3. A/B/C官方训练器入口位于`src/brace_msi/official_trainer.py`及`official_rounds.py`；新实现必须复用只读清单、隔离子进程和父检查点验证。
+4. PyTRiO实现必须配置注入、假客户端可测、严格JSON提案、秘密脱敏、Token/延迟收据和确定性降级；不得需要真实API Key才能通过测试。
+5. `BRACE-MSI-0.1.0rc1`、原始训练包、历史实验和RC标签不修改。新代码在`task/core-001`提交，未经完整验收不替换RC或合并main。
+6. 正式平台事件字段、比赛Base URL/凭据、评分公式、SwanLab规范和真实Docker运行仍是外部缺口；记录阻塞并继续本地不受影响任务。
+
+以下旧恢复入口保留历史上下文；若与本节冲突，以`STATUS.md`、`TASKS.md`和本节为准。
+
+## 2026-11-12统一策略末期评估恢复入口
+
+1. 完整开发搜索已完成81/81并严格验收`valid=true`；不存在需要恢复的后台进程，不得重复运行开发矩阵。
+2. 读取`docs/results/UNIFIED-POLICY-OPT-001.md`和`configs/unified_policy_frozen.json`；最终候选为简单`normalized_performance_triggered`，复杂`shared-f8881ba9c291`仅作对照。
+3. 复杂BRACE在3/3任务级留出fold无优势且资源更高，D-034禁止继续增加复杂机制或用末期结果调参。
+4. 下一步只实现并验证prediction-only一次性末期入口；必须先提交冻结配置与末期协议，随后才能打开末期数据。
+5. Gas与FD001末期必须标记历史暴露；只有未打开的XJTU密封轴承可标记virgin。不得使用官方十次测试机会。
 
 ## 恢复指令
 

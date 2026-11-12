@@ -290,3 +290,18 @@
 - `UNIFIED-POLICY-OPT-001-SMOKE`已预注册，尚未运行真实训练；末期数据和官方十次测试机会均未使用。
 - Smoke A1在提交`cf3adcc`完成15/15作业后，发现CLI训练迭代数未进入执行manifest，存在不同训练协议混合恢复风险；A1立即标记INVALID并保留，未打开末期数据。修复为配置内冻结迭代数并新增评估器协议SHA后，A2另建运行根重跑。
 - Smoke A2在提交`72898b9`完成15/15真实开发作业和3个任务级留出fold，严格验收`valid=true`、官方测试次数0；所有策略按任务共享检查点和阶段manifest。该结果只证明统一搜索链可运行，正式共享参数仍需完整有界搜索确定。
+
+## 2026-11-12：UNIFIED-POLICY-OPT-001-DEV-A1完成并触发停止规则
+
+- 在干净执行提交`e057589`完成24组共享配置、9个基线和72个复杂BRACE作业，共81/81；严格复算返回`valid=true`、3个任务级留出fold、官方测试次数0。
+- 留出Bearing时复杂策略与简单策略性能持平但多用0.968750 CPU秒；留出Engine与Gas时复杂策略相对简单策略归一化增益分别为-0.001265与-0.021493，且CPU成本分别为33.843750与16.640625秒。
+- 复杂BRACE在3/3留出fold均无优势并消耗更多资源，触发预注册停止规则；没有打开任何末期数据，也没有根据末期反馈调参。
+- 按D-034冻结`normalized_performance_triggered`为最终候选；复杂全中期排序最优项`shared-f8881ba9c291`仅保留为一次性末期对照。
+- 证据：`docs/results/UNIFIED-POLICY-OPT-001.md`、`configs/unified_policy_frozen.json`及`D:/brace-msi-unified/UNIFIED-POLICY-OPT-001-DEV-A1/`。
+
+## 2026-11-12：正式路线D-035锁定
+
+- 根据PyTRiO官方文档、Qwen3.5-4B平台校验结果、官方A/B/C训练包和用户当前授权，将正式路线锁定为“Qwen3.5-4B PyTRiO Agent + BRACE确定性Harness + 官方A/B/C工业模型 + 经验证的开源优化方法”。
+- 新建`docs/FORMAL_ROUTE.md`，并同步STATUS、TASKS、IMPLEMENTATION_PLAN、ARCHITECTURE、WORKFLOW、EXPERIMENT_PROTOCOL、SOURCE_REGISTRY、DECISION_LOG、RISK_REGISTER和SESSION_HANDOFF。
+- D-032/D-034统一策略路线停止为历史研究；81/81开发作业和复杂策略负结果保留，不执行末期测试，也不改写既有RC与训练包证据。
+- 当前任务切换为`PYTRIO-001`。本条只记录路线与文档治理完成，不声称PyTRiO代码、真实服务调用或三任务新增性能已经实现。
