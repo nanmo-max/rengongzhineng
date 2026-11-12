@@ -1,9 +1,9 @@
 # 当前状态
 
 - 最近同步：2026-11-12（Asia/Shanghai）
-- 当前阶段：正式路线P0——PyTRiO Agent与官方A/B/C训练器接入
+- 当前阶段：正式路线P0——官方A/B/C训练器进入统一Harness
 - 当前路线：**Qwen3.5-4B PyTRiO Agent + BRACE确定性Harness + 官方A/B/C工业模型 + 经验证的开源优化方法** `[D-035]`
-- 当前唯一任务：`PYTRIO-001`（`IN_PROGRESS`）
+- 当前唯一任务：`OFFICIAL-HARNESS-002`（`IN_PROGRESS`）
 - 稳定边界：`BRACE-MSI-0.1.0rc1`、原始训练包、既有实验和RC标签保持不变；新工作在`task/core-001`分支增量实现
 - 官方试运行：0次；不得用于基础调试
 
@@ -14,10 +14,11 @@
 3. 平台已校验通过Qwen3.5-4B基础模型；持久化Sampler先前失败源于权重未持久化，现已解决 `[B-PLATFORM-002]`。
 4. 防泄漏状态机、预算、候选隔离、SafetyGate、回滚、恢复、本地审计及官方训练器子进程边界已有自动测试。
 5. 统一策略开发搜索81/81已结束：复杂共享策略被简单触发策略支配。该负结果保留，但D-032/D-034已由D-035替代为历史路线，不执行其末期测试。
+6. `PYTRIO-001`已完成：Qwen3.5-4B配置化Sampler、严格提案schema、秘密字段拒绝、Token/延迟收据和确定性降级通过8项专项测试；完整回归`189 passed`，未调用真实服务。
 
 ## 当前执行入口
 
-先完成`PYTRIO-001`：实现可注入的PyTRiO Qwen3.5-4B客户端、严格结构化实验提案、Token/延迟收据、秘密脱敏和确定性降级，测试不得调用真实服务。完成后按[TASKS.md](TASKS.md)进入`OFFICIAL-HARNESS-002`，把官方训练器接入现有统一Harness。
+当前执行`OFFICIAL-HARNESS-002`：复用官方训练包只读清单、隔离训练器和现有SafetyGate，将HistoryReader、PyTRiO/确定性提案、训练、独立评估及部署/拒绝/回滚接入同一入口；真实服务仍由假传输层替代。
 
 正式路线、已知能力与未知边界见[FORMAL_ROUTE.md](FORMAL_ROUTE.md)。实验必须遵守[EXPERIMENT_PROTOCOL.md](EXPERIMENT_PROTOCOL.md)。
 

@@ -305,3 +305,10 @@
 - 新建`docs/FORMAL_ROUTE.md`，并同步STATUS、TASKS、IMPLEMENTATION_PLAN、ARCHITECTURE、WORKFLOW、EXPERIMENT_PROTOCOL、SOURCE_REGISTRY、DECISION_LOG、RISK_REGISTER和SESSION_HANDOFF。
 - D-032/D-034统一策略路线停止为历史研究；81/81开发作业和复杂策略负结果保留，不执行末期测试，也不改写既有RC与训练包证据。
 - 当前任务切换为`PYTRIO-001`。本条只记录路线与文档治理完成，不声称PyTRiO代码、真实服务调用或三任务新增性能已经实现。
+
+## 2026-11-12：PYTRIO-001完成
+
+- 新增`src/brace_msi/pytrio_agent.py`，按PyTRiO官方Sampler API惰性创建`ServiceClient`与sampling client；默认模型为已确认的`Qwen/Qwen3.5-4B`，模型路径和SDK环境由运行时注入。
+- Agent只能输出`brace-msi.experiment-proposal.v1`严格JSON；动作/工具映射、参数键、候选数、CPU提案上限和停止条件在本地校验。原始提示词/响应不进入收据，只保存SHA-256、Token数、延迟和错误类别。
+- 非法JSON、越权工具、传输异常均回退到调用方提供的确定性提案；含API Key等秘密字段的上下文在调用传输层前失败关闭。
+- 验证：`D:\anaconda3\python.exe -m pytest tests/agent -q --tb=short`为`8 passed`；全量`D:\anaconda3\python.exe -m pytest -q --tb=short`为`189 passed in 58.84s`。未使用真实凭据、外部模型调用或付费资源。

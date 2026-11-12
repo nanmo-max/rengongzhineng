@@ -3,9 +3,9 @@
 ## 2026-11-12正式路线恢复入口（当前）
 
 1. 当前路线以`docs/FORMAL_ROUTE.md`、D-035至D-037为准：Qwen3.5-4B PyTRiO Agent + BRACE确定性Harness + 官方A/B/C工业模型 + 经验证开源方法。
-2. 当前唯一任务从`STATUS.md`读取；本次同步时为`PYTRIO-001`。先运行`git status --short`并保留所有历史证据，不重跑统一策略矩阵或末期测试。
+2. 当前唯一任务从`STATUS.md`读取；本次同步时为`OFFICIAL-HARNESS-002`。先运行`git status --short`并保留所有历史证据，不重跑统一策略矩阵或末期测试。
 3. A/B/C官方训练器入口位于`src/brace_msi/official_trainer.py`及`official_rounds.py`；新实现必须复用只读清单、隔离子进程和父检查点验证。
-4. PyTRiO实现必须配置注入、假客户端可测、严格JSON提案、秘密脱敏、Token/延迟收据和确定性降级；不得需要真实API Key才能通过测试。
+4. PyTRiO边界已在`src/brace_msi/pytrio_agent.py`实现：配置注入、假客户端、严格JSON提案、秘密字段拒绝、Token/延迟收据和确定性降级；专项8项、全量189项测试通过。下一步不得绕过该边界直接调用SDK。
 5. `BRACE-MSI-0.1.0rc1`、原始训练包、历史实验和RC标签不修改。新代码在`task/core-001`提交，未经完整验收不替换RC或合并main。
 6. 正式平台事件字段、比赛Base URL/凭据、评分公式、SwanLab规范和真实Docker运行仍是外部缺口；记录阻塞并继续本地不受影响任务。
 

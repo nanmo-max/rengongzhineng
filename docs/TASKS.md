@@ -30,16 +30,16 @@ ROUTE-001(DONE)
 
 ### PYTRIO-001 PyTRiO结构化Agent客户端
 
-- 状态：`IN_PROGRESS`
+- 状态：`DONE`
 - 依赖：ROUTE-001
 - 优先级：P0
 - 完成标准：Qwen3.5-4B模型名和服务参数由配置/环境注入；Sampler调用可替换；严格解析结构化实验提案；记录Token、延迟和错误；不序列化密钥；服务缺失、超时、非法输出时返回可审计的确定性降级；自动测试不访问真实服务
 - 停止条件：实现需要真实密钥、付费调用或猜测比赛专用字段；此时保留接口并用假客户端完成测试
-- 证据：完成后填写源码、测试与验证命令
+- 证据：`src/brace_msi/pytrio_agent.py`、`tests/agent/test_pytrio_agent.py`、`tests/agent/test_pytrio_transport.py`；8项专项测试与完整回归`189 passed`；真实服务调用0次，凭据0项
 
 ### OFFICIAL-HARNESS-002 官方训练器主Harness接入
 
-- 状态：`READY`
+- 状态：`IN_PROGRESS`
 - 依赖：PYTRIO-001
 - 优先级：P0
 - 完成标准：A/B/C真实检查点、HistoryReader、Agent/确定性提案、隔离训练、独立评估、SafetyGate及部署/拒绝/回滚贯通；同一入口可关闭Agent；不修改原包
