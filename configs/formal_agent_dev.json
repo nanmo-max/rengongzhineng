@@ -4,6 +4,7 @@
   "official_scoring_ready": false,
   "rounds": 10,
   "max_candidates_per_policy": 3,
+  "minimum_candidate_events": 3,
   "max_cpu_seconds_per_policy": 600.0,
   "max_wall_seconds_per_policy": 600.0,
   "max_peak_rss_bytes_per_policy": 8589934592,

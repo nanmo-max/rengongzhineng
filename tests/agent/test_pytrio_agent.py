@@ -198,3 +198,18 @@ def test_prompt_only_advertises_runtime_executable_actions() -> None:
         "replay_refit",
     ]
     assert set(schema["tool_mapping"]) == set(schema["action"])
+
+
+def test_prompt_exposes_minimum_candidate_policy_without_task_identity_rules() -> None:
+    payload = context().to_payload()
+    payload["evidence"]["minimum_candidate_events_remaining"] = 2
+
+    prompt = build_agent_prompt(payload)
+
+    policy_line = next(
+        line for line in prompt.splitlines() if line.startswith("CONTROL_POLICY=")
+    )
+    policy = json.loads(policy_line.split("=", 1)[1])
+    assert policy["minimum_candidate_events_remaining"] == 2
+    assert "dataset" not in policy_line.lower()
+    assert policy["minimum_candidate_rule"]["first_action"] == "incremental_update"

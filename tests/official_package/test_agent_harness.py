@@ -136,6 +136,7 @@ def config(**updates) -> OfficialAgentHarnessConfig:
     values = {
         "rounds": 3,
         "max_candidates": 3,
+        "minimum_candidate_events": 0,
         "max_cpu_seconds": 30.0,
         "max_wall_seconds": 30.0,
         "max_peak_rss_bytes": 1024 * 1024,
@@ -149,6 +150,30 @@ def config(**updates) -> OfficialAgentHarnessConfig:
     if "rounds" in updates and "max_candidates" not in updates:
         values["max_candidates"] = min(values["max_candidates"], values["rounds"])
     return OfficialAgentHarnessConfig(**values)
+
+
+def test_minimum_candidate_guard_overrides_agent_noop_and_keeps_receipt(
+    tmp_path: Path, audit_a
+) -> None:
+    provider = StaticProvider([proposal(Action.NOOP)])
+    trainer = FakeTrainer([0.72])
+
+    result = run_official_agent_harness(
+        audit_a,
+        tmp_path / "minimum-guard",
+        config(rounds=1, max_candidates=1, minimum_candidate_events=1),
+        trainer,
+        provider,
+        fallback_provider=DeterministicOfficialProposalProvider(candidate_rounds=1),
+    )
+
+    assert result.candidate_count == 1
+    assert result.agent_call_count == 1
+    assert result.total_input_tokens == 100
+    assert result.rounds[0]["action"] == "incremental_update"
+    assert result.rounds[0]["suggested_action"] == "noop"
+    assert result.rounds[0]["guard_override_reason"] == "minimum_candidate_events"
+    assert provider.contexts[0].evidence["minimum_candidate_events_remaining"] == 1
 
 
 def test_agent_rounds_train_gate_and_never_chain_rejected_candidate(tmp_path: Path, audit_a) -> None:
@@ -326,6 +351,7 @@ def test_runtime_config_mapping_keeps_agent_and_trainer_budgets_explicit() -> No
         {
             "rounds": 10,
             "max_candidates_per_policy": 3,
+            "minimum_candidate_events": 3,
             "max_cpu_seconds_per_policy": 40,
             "max_wall_seconds_per_policy": 50,
             "max_peak_rss_bytes_per_policy": 1234,
@@ -338,6 +364,7 @@ def test_runtime_config_mapping_keeps_agent_and_trainer_budgets_explicit() -> No
     )
 
     assert parsed.max_candidates == 3
+    assert parsed.minimum_candidate_events == 3
     assert parsed.max_cpu_seconds == 40
     assert parsed.max_agent_calls == 7
     assert parsed.max_total_output_tokens == 2000

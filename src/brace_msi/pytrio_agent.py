@@ -447,14 +447,39 @@ def build_agent_prompt(payload: Mapping[str, Any]) -> str:
             "stop_conditions",
         ],
     }
-    return (
+    control_policy = None
+    evidence = payload.get("evidence", {})
+    if isinstance(evidence, Mapping) and "minimum_candidate_events_remaining" in evidence:
+        remaining = evidence["minimum_candidate_events_remaining"]
+        if isinstance(remaining, bool) or not isinstance(remaining, int) or remaining < 0:
+            raise ValueError("minimum_candidate_events_remaining must be nonnegative")
+        control_policy = {
+            "minimum_candidate_events_remaining": remaining,
+            "minimum_candidate_rule": {
+                "first_action": Action.INCREMENTAL_UPDATE.value,
+                "after_rejected_candidate": Action.REPLAY_REFIT.value,
+                "noop_allowed_when_remaining": 0,
+            },
+            "priority": [
+                "hard_budget_and_data_safety",
+                "minimum_real_candidate_compliance",
+                "performance_and_history_evidence",
+            ],
+        }
+    prompt = (
         "You are the experiment-proposal component of BRACE-MSI. "
         "Return exactly one JSON object and no commentary. You may only propose; "
         "the deterministic harness independently validates budget, trains, evaluates, "
         "and deploys.\n"
         f"PROPOSAL_SCHEMA={json.dumps(schema, sort_keys=True, separators=(',', ':'))}\n"
-        f"TASK_STATE={json.dumps(payload, sort_keys=True, separators=(',', ':'))}"
     )
+    if control_policy is not None:
+        prompt += (
+            "CONTROL_POLICY="
+            + json.dumps(control_policy, sort_keys=True, separators=(",", ":"))
+            + "\n"
+        )
+    return prompt + f"TASK_STATE={json.dumps(payload, sort_keys=True, separators=(',', ':'))}"
 
 
 def _sha256_text(value: str) -> str:

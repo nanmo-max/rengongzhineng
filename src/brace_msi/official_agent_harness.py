@@ -39,6 +39,7 @@ from .pytrio_agent import (
 class OfficialAgentHarnessConfig:
     rounds: int = 10
     max_candidates: int = 3
+    minimum_candidate_events: int = 0
     max_cpu_seconds: float = 600.0
     max_wall_seconds: float = 600.0
     max_peak_rss_bytes: int = 8 * 1024**3
@@ -53,6 +54,10 @@ class OfficialAgentHarnessConfig:
             raise ValueError("rounds must be in [1, 100]")
         if not 1 <= self.max_candidates <= self.rounds:
             raise ValueError("max_candidates must be in [1, rounds]")
+        if not 0 <= self.minimum_candidate_events <= self.max_candidates:
+            raise ValueError(
+                "minimum_candidate_events must be in [0, max_candidates]"
+            )
         if self.max_cpu_seconds <= 0 or self.max_wall_seconds <= 0:
             raise ValueError("time budgets must be positive")
         if self.max_peak_rss_bytes <= 0:
@@ -97,9 +102,13 @@ def official_agent_config_from_mapping(
 ) -> OfficialAgentHarnessConfig:
     """Build the formal harness limits from a versioned runtime config."""
 
+    max_candidates = int(value.get("max_candidates_per_policy", 3))
     return OfficialAgentHarnessConfig(
         rounds=int(value.get("rounds", 10)),
-        max_candidates=int(value.get("max_candidates_per_policy", 3)),
+        max_candidates=max_candidates,
+        minimum_candidate_events=int(
+            value.get("minimum_candidate_events", min(3, max_candidates))
+        ),
         max_cpu_seconds=float(value.get("max_cpu_seconds_per_policy", 600.0)),
         max_wall_seconds=float(value.get("max_wall_seconds_per_policy", 600.0)),
         max_peak_rss_bytes=int(
@@ -158,6 +167,11 @@ class HistoryReader:
                     1
                     for row in state["rounds"]
                     if row.get("kind") == "candidate" and not row.get("deployed")
+                ),
+                "data_quality_ok": True,
+                "minimum_candidate_events_remaining": max(
+                    0,
+                    config.minimum_candidate_events - int(state["candidate_count"]),
                 ),
             },
             history=history,
@@ -345,6 +359,24 @@ def run_official_agent_harness(
             except Exception:
                 outcome = safe_fallback.propose(context)
         validate_experiment_proposal(outcome.proposal)
+        suggested_action = outcome.proposal.action
+        guard_override_reason = None
+        if (
+            outcome.proposal.action is Action.NOOP
+            and int(state["candidate_count"]) < config.minimum_candidate_events
+        ):
+            guarded = safe_fallback.propose(context)
+            if guarded.proposal.action is Action.NOOP:
+                guarded = DeterministicOfficialProposalProvider(
+                    candidate_rounds=round_number
+                ).propose(context)
+            validate_experiment_proposal(guarded.proposal)
+            outcome = ProposalOutcome(
+                proposal=guarded.proposal,
+                source=outcome.source,
+                receipt=outcome.receipt,
+            )
+            guard_override_reason = "minimum_candidate_events"
         if outcome.receipt.input_tokens < 0 or outcome.receipt.output_tokens < 0:
             raise ValueError("agent token counts must be nonnegative")
         if outcome.source == "pytrio":
@@ -357,6 +389,9 @@ def run_official_agent_harness(
             "proposal_source": outcome.source,
             "agent_receipt": asdict(outcome.receipt),
         }
+        if guard_override_reason is not None:
+            base_record["suggested_action"] = suggested_action.value
+            base_record["guard_override_reason"] = guard_override_reason
 
         token_budget_exceeded = (
             int(state["total_input_tokens"]) > config.max_total_input_tokens
