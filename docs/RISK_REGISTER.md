@@ -7,7 +7,7 @@
 | R-003 | P0 | 三次迭代计数不合规 | 被拒候选不计数或要求部署 | 以正式定义配置计数；准备三个真实候选 | 技术负责人 | PARTIAL：SPRINT-HARNESS-001中每任务均完成3次真实候选且父链可复算；官方是否计拒绝候选仍待H-003 |
 | R-004 | P0 | 标签可见性错误造成泄漏 | 同样本先训练后预测 | 事件级样本身份检查；非法顺序测试 | 技术负责人 | MITIGATED：`src/brace_msi/protocol/__init__.py`与`tests/protocol/test_state_machine.py`，13项测试通过；正式SDK映射后仍需复验 |
 | R-005 | P0 | SwanLab公开与B包保密冲突 | 日志包含逐样本私有信息 | 公开/私有双日志；字段白名单；只在最终工程模型正式重训时生成云端记录 | 队员B | PARTIAL：当前阶段按D-023不运行或同步SwanLab；真实SwanLab 0.10.4离线适配已验证，比赛项目、公开范围和同步责任仍等待H-004 |
-| R-006 | P0 | 镜像超过2GB或依赖GPU | 引入PyTorch/权重/重依赖 | 轻量CPU栈；持续体积检查 | 队员A | PARTIAL/BLOCKED_LOCAL：本机无Docker/Podman且启用WSL需重启；已新增CI真实构建、<2GB、禁入文件及`--network=none --cpus=4 --memory=8g`验收流程，尚未取得实际运行产物 |
+| R-006 | P0 | 镜像超过2GB或依赖GPU | 引入PyTorch/权重/重依赖 | 轻量CPU栈；持续体积检查 | 队员A | BLOCKED_EXTERNAL：本机无Docker/Podman且启用WSL需重启；CI真实构建/<2GB/禁入文件/4核8GB断网验收流程已提交，但仓库无可触发远端且尚无实际镜像产物；RC2清单保持`image_artifact=null` |
 | R-007 | P0 | 截止日期认知错误 | 学校通知晚于内部假设 | 按11月13日准备；专人核实书面通知 | 团队通知负责人 | OPEN |
 | R-008 | P1 | BRACE复杂策略被简单更新支配 | EXP-002全面落后 | 停止扩展，回到动作选择/预算策略 | 技术负责人 | REALIZED/MITIGATED：`UNIFIED-POLICY-OPT-001-DEV-A1`中复杂BRACE在3/3任务级留出fold相对简单触发策略无优势且资源更高；已按D-034停止复杂扩展并冻结简单统一候选，证据见`docs/results/UNIFIED-POLICY-OPT-001.md` |
 | R-009 | P1 | 公开数据过拟合，B包失效 | 跨任务/密封段性能崩溃 | 通用接口、验证暴露记账、每轮单候选、禁止验证参与训练/预处理；最终以隐藏评测确认 | 技术负责人 | CONTROLLED/OPEN：`OFFICIAL-PACKAGE-DEV-001`记录15次成功训练器加载、15次预检哈希、12次套件审计读取和33次候选指标计算；D-031冻结同流继续调参。反复公开验证的选择偏差无法由本地消除，仍需隐藏评测确认 |

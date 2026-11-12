@@ -369,4 +369,5 @@
 - 冲刺运行时代码提交`3af2afc3727cc2a74fe4afe3e29073896c48c597`完整回归`221 passed`；全新venv安装锁定依赖、SwanLab与wheel `0.2.0rc2`后，`pip check`无冲突、完整回归同为`221 passed`，编译检查通过。
 - Docker上下文静态审计208文件、1,409,262字节、无数据/权重/密钥禁入项。实际镜像和4核8GB断网容器仍无本地运行时证据；CI验收入口存在但尚未执行。
 - 发布校验记录固化于`results/RC2_VERIFICATION.json`；后续纯文档和发布工具变更不得改动运行时代码，否则必须重新完整回归。
+- 确定性交付包已由干净提交`5d13b78`生成：源码归档193个跟踪文件，SHA-256 `da9e4a4c...bd8b7ae`；发布清单同时保留A1 INVALID、A2 SUCCEEDED、回归矩阵和十轮Harness证据边界，`image_artifact=null`未伪造容器通过。
 

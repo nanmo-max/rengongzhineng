@@ -91,11 +91,13 @@ ROUTE-001(DONE)
 
 ### FORMAL-RELEASE-001 正式环境与交付
 
-- 状态：`IN_PROGRESS`（先完成不依赖外部材料的代码、干净环境、CI镜像与交付审计）
+- 状态：`BLOCKED_EXTERNAL`（全部本地可执行项已完成）
 - 依赖：FORMAL-COMPARE-001、正式SDK/SwanLab规范、可用容器运行时
 - 优先级：P4
 - 完成标准：Docker构建、4核8GB断网、正式RuntimeAdapter、最终模型重训SwanLab记录、十轮无人值守、干净环境独立复现及交付审计全部通过
 - 停止条件：外部规范或容器环境缺失时明确`BLOCKED`，不得制造通过证据
+- 本地证据：RC2运行时代码/全新venv均`221 passed`，`pip check`、编译、静态上下文与确定性归档通过；交付包`D:/brace-msi-release/BRACE-MSI-0.2.0rc2/`，源归档SHA-256 `da9e4a4cc04596177ed960a119cc738869097972ef6db27e2311929afbd8b7ae`。
+- 外部剩余：实际Docker镜像与4核8GB断网验收、正式SDK事件映射、评分细则和比赛SwanLab规范；未满足前不得标记全量DONE。
 
 ```text
 DOC-001

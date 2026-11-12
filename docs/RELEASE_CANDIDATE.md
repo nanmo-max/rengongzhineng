@@ -52,9 +52,14 @@ python scripts/build_release_candidate.py `
 
 `image_artifact`在没有真实镜像时必须为`null`，不得用源码压缩包或Docker上下文大小替代。
 
+当前已生成交付包：`D:/brace-msi-release/BRACE-MSI-0.2.0rc2/`。发布源提交为
+`5d13b78f1efabc97fef93b2a2906b5195c3eaa9c`，源码归档SHA-256为
+`da9e4a4cc04596177ed960a119cc738869097972ef6db27e2311929afbd8b7ae`，发布清单SHA-256为
+`28e8a752ee2e5e2f9cdc9bc7463c3f2803ac3222c520e73ee120cbf7e3e71502`。
+
 ## 真实平台到货后的唯一工作方向
 
-1. 登记并校验SDK、数据、评分与SwanLab规范的版本和哈希；
+1. 登记并校验SDK、评分与SwanLab规范的版本和哈希；
 2. 实现插件内真实字段映射及数据/预测出入站；
 3. 构建并验收4核8GB、无公网、低于2GB的Linux镜像；
 4. 只在官方开发流上做评分优化，不重开既有代理密封段。
