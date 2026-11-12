@@ -12,6 +12,7 @@ from brace_msi.official_agent_harness import (
     OfficialAgentHarnessConfig,
     official_agent_config_from_mapping,
     run_official_agent_harness,
+    validate_official_agent_harness,
 )
 from brace_msi.official_package import audit_package_root
 from brace_msi.official_trainer import CandidateReceipt
@@ -268,3 +269,30 @@ def test_runtime_config_mapping_keeps_agent_and_trainer_budgets_explicit() -> No
     assert parsed.max_cpu_seconds == 40
     assert parsed.max_agent_calls == 7
     assert parsed.max_total_output_tokens == 2000
+
+
+def test_machine_validator_recomputes_parent_chain_gate_and_usage(tmp_path: Path, audit_a) -> None:
+    runtime = tmp_path / "validate"
+    harness_config = config(rounds=2, max_candidates=2)
+    run_official_agent_harness(
+        audit_a,
+        runtime,
+        harness_config,
+        FakeTrainer([0.72, 0.70]),
+        DeterministicOfficialProposalProvider(candidate_rounds=2),
+    )
+
+    result = validate_official_agent_harness(runtime, audit_a, harness_config)
+
+    assert result["valid"] is True
+    assert result["candidate_count"] == 2
+    state_path = runtime / "state.json"
+    state = json.loads(state_path.read_text(encoding="utf-8"))
+    state["rounds"][1]["deployed"] = True
+    state_path.write_text(json.dumps(state), encoding="utf-8")
+    (runtime / "audit.jsonl").write_text(
+        "".join(json.dumps(row) + "\n" for row in state["rounds"]),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="deployment gate"):
+        validate_official_agent_harness(runtime, audit_a, harness_config)

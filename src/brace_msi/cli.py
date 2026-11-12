@@ -16,6 +16,7 @@ from .official_agent_harness import (
     DeterministicOfficialProposalProvider,
     official_agent_config_from_mapping,
     run_official_agent_harness,
+    validate_official_agent_harness,
 )
 from .official_package import audit_package_root
 from .official_trainer import OfficialTrainer
@@ -83,6 +84,7 @@ def _parser() -> argparse.ArgumentParser:
     official_agent.add_argument("--model-path")
     official_agent.add_argument("--max-rounds-this-call", type=int)
     official_agent.add_argument("--timeout-seconds", type=float, default=600.0)
+    official_agent.add_argument("--validate-only", action="store_true")
     return parser
 
 
@@ -140,6 +142,16 @@ def main(argv: Sequence[str] | None = None) -> int:
         raw_config = json.loads(args.config.read_text(encoding="utf-8"))
         package = audit_package_root(args.package_root, raw_config)[args.profile]
         harness_config = official_agent_config_from_mapping(raw_config)
+        if args.validate_only:
+            print(
+                json.dumps(
+                    validate_official_agent_harness(
+                        args.runtime_root, package, harness_config
+                    ),
+                    allow_nan=False,
+                )
+            )
+            return 0
         deterministic = DeterministicOfficialProposalProvider(
             candidate_rounds=harness_config.max_candidates
         )

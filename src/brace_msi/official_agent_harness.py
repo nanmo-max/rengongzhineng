@@ -370,6 +370,123 @@ def run_official_agent_harness(
     return _result(state)
 
 
+def validate_official_agent_harness(
+    runtime_dir: Path,
+    package: PackageAudit,
+    config: OfficialAgentHarnessConfig,
+) -> dict[str, Any]:
+    """Reopen persisted evidence and recompute the accepted-only model chain."""
+
+    runtime_dir = Path(runtime_dir)
+    state = _load_or_initialize(runtime_dir, package, config)
+    rounds = state["rounds"]
+    if [row.get("round") for row in rounds] != list(range(1, len(rounds) + 1)):
+        raise ValueError("round sequence is not contiguous")
+    audit_rows = [
+        json.loads(line)
+        for line in (runtime_dir / "audit.jsonl").read_text(encoding="utf-8").splitlines()
+        if line
+    ]
+    if audit_rows != rounds:
+        raise ValueError("audit log does not match state")
+
+    stable_sha = state["initial_sha256"]
+    stable_checkpoint = Path(state["initial_checkpoint"])
+    stable_metric = float(state["initial_metric"])
+    candidate_count = 0
+    accepted_count = 0
+    cpu_seconds = 0.0
+    wall_seconds = 0.0
+    peak_rss_bytes = 0
+    input_tokens = 0
+    output_tokens = 0
+    agent_call_count = 0
+    for row in rounds:
+        receipt_summary = row.get("agent_receipt")
+        if not isinstance(receipt_summary, dict):
+            raise ValueError("agent receipt is missing")
+        input_tokens += int(receipt_summary["input_tokens"])
+        output_tokens += int(receipt_summary["output_tokens"])
+        if row.get("proposal_source") == "pytrio":
+            agent_call_count += 1
+        if row["kind"] != "candidate":
+            if row["kind"] not in {"noop", "proposal_rejected"}:
+                raise ValueError("unknown round kind")
+            continue
+
+        candidate_count += 1
+        if row["parent_sha256"] != stable_sha:
+            raise ValueError("candidate parent chain is invalid")
+        output = Path(row["output_dir"])
+        receipt_path = output / "candidate-receipt.json"
+        try:
+            candidate_receipt = CandidateReceipt(
+                **json.loads(receipt_path.read_text(encoding="utf-8"))
+            )
+        except (OSError, json.JSONDecodeError, TypeError) as exc:
+            raise ValueError("candidate receipt is invalid") from exc
+        metric = _validate_receipt(package, candidate_receipt, stable_sha, output)
+        if (
+            row["checkpoint_sha256"] != candidate_receipt.checkpoint_sha256
+            or not math.isclose(float(row["metric_after"]), metric, rel_tol=0.0, abs_tol=0.0)
+        ):
+            raise ValueError("candidate row does not match receipt")
+        cpu_seconds += candidate_receipt.cpu_seconds
+        wall_seconds += candidate_receipt.wall_seconds
+        peak_rss_bytes = max(peak_rss_bytes, candidate_receipt.peak_rss_bytes)
+        resources_ok = (
+            cpu_seconds <= config.max_cpu_seconds
+            and wall_seconds <= config.max_wall_seconds
+            and peak_rss_bytes <= config.max_peak_rss_bytes
+        )
+        improved = (
+            metric > stable_metric if package.higher_is_better else metric < stable_metric
+        )
+        expected_deployment = resources_ok and improved
+        if bool(row["deployed"]) != expected_deployment:
+            raise ValueError("candidate deployment gate cannot be recomputed")
+        if expected_deployment:
+            accepted_count += 1
+            stable_sha = candidate_receipt.checkpoint_sha256
+            stable_checkpoint = output / "checkpoint.npz"
+            stable_metric = metric
+
+    expected_values = {
+        "candidate_count": candidate_count,
+        "accepted_count": accepted_count,
+        "stable_sha256": stable_sha,
+        "stable_checkpoint": str(stable_checkpoint),
+        "stable_metric": stable_metric,
+        "total_input_tokens": input_tokens,
+        "total_output_tokens": output_tokens,
+        "agent_call_count": agent_call_count,
+    }
+    for key, value in expected_values.items():
+        if state.get(key) != value:
+            raise ValueError(f"state aggregate mismatch: {key}")
+    if not math.isclose(float(state["cpu_seconds"]), cpu_seconds):
+        raise ValueError("state aggregate mismatch: cpu_seconds")
+    if not math.isclose(float(state["wall_seconds"]), wall_seconds):
+        raise ValueError("state aggregate mismatch: wall_seconds")
+    if int(state["peak_rss_bytes"]) != peak_rss_bytes:
+        raise ValueError("state aggregate mismatch: peak_rss_bytes")
+    return {
+        "valid": True,
+        "profile": package.profile,
+        "round_count": len(rounds),
+        "complete": len(rounds) == config.rounds,
+        "candidate_count": candidate_count,
+        "accepted_count": accepted_count,
+        "stable_metric": stable_metric,
+        "cpu_seconds": cpu_seconds,
+        "wall_seconds": wall_seconds,
+        "peak_rss_bytes": peak_rss_bytes,
+        "agent_call_count": agent_call_count,
+        "total_input_tokens": input_tokens,
+        "total_output_tokens": output_tokens,
+    }
+
+
 def _proposal_rejection(
     package: PackageAudit,
     state: Mapping[str, Any],

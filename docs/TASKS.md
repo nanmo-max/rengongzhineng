@@ -39,15 +39,16 @@ ROUTE-001(DONE)
 
 ### OFFICIAL-HARNESS-002 官方训练器主Harness接入
 
-- 状态：`IN_PROGRESS`
+- 状态：`DONE`
 - 依赖：PYTRIO-001
 - 优先级：P0
 - 完成标准：A/B/C真实检查点、HistoryReader、Agent/确定性提案、隔离训练、独立评估、SafetyGate及部署/拒绝/回滚贯通；同一入口可关闭Agent；不修改原包
 - 停止条件：需要正式平台事件字段时只阻塞RuntimeAdapter，不阻塞本地训练包工作流
+- 证据：`src/brace_msi/official_agent_harness.py`、`python -m brace_msi official-agent-run`、7项专项测试、全量`196 passed`；`FORMAL-AGENT-SMOKE-001`在提交`24c70c8`上完成A/B/C各1个真实候选，3/3机器复算`valid=true`，详见`docs/results/FORMAL-AGENT-SMOKE-001.md`
 
 ### ACTION-SANDBOX-001 受控工具和配置修改
 
-- 状态：`BLOCKED`
+- 状态：`IN_PROGRESS`
 - 依赖：OFFICIAL-HARNESS-002
 - 优先级：P0
 - 完成标准：工具白名单、参数schema、允许路径/配置键、候选隔离、预算预检和审计齐全；模型文本不得直接成为shell或Python代码

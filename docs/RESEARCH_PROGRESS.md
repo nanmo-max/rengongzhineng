@@ -312,3 +312,11 @@
 - Agent只能输出`brace-msi.experiment-proposal.v1`严格JSON；动作/工具映射、参数键、候选数、CPU提案上限和停止条件在本地校验。原始提示词/响应不进入收据，只保存SHA-256、Token数、延迟和错误类别。
 - 非法JSON、越权工具、传输异常均回退到调用方提供的确定性提案；含API Key等秘密字段的上下文在调用传输层前失败关闭。
 - 验证：`D:\anaconda3\python.exe -m pytest tests/agent -q --tb=short`为`8 passed`；全量`D:\anaconda3\python.exe -m pytest -q --tb=short`为`189 passed in 58.84s`。未使用真实凭据、外部模型调用或付费资源。
+
+## 2026-11-12：OFFICIAL-HARNESS-002完成
+
+- 新增`official_agent_harness.py`及`official-agent-run` CLI：HistoryReader只暴露聚合历史；提案经schema、动作、参数、Token、候选和CPU预算检查后才进入官方原版训练器；候选收据、严格改善门控和接受链可独立复算。
+- PyTRiO和确定性提供者使用同一执行路径；服务异常或调用预算耗尽时可确定性降级。原始训练包、稳定父模型、候选目录和部署指针分离。
+- 预注册并运行`FORMAL-AGENT-SMOKE-001`：提交`24c70c8`上A/B/C各执行1个1-epoch真实候选，均通过公开验证严格改善门控；机器复算3/3为`valid=true`，合计CPU 12.75秒，Token和官方试运行均为0。
+- 指标改善只用于链路验收：A 0.714030→0.725695 Macro-F1，B 681.159833→657.645417 RMSE，C 52.868573→52.350178 RMSE。公开验证已重复使用，不能称为独立泛化或官方成绩。
+- 全量验证：`196 passed in 58.41s`。结果见`docs/results/FORMAL-AGENT-SMOKE-001.md`。
