@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import re
 
 import pytest
 
@@ -18,11 +19,21 @@ REAL_RAW = Path(r"C:\Users\Administrator\Desktop\官方\Dataset")
 REAL_PACKAGE = Path(
     r"C:\Users\Administrator\Desktop\人工智能创新大赛\训练包\cpu-a-guide-20261110-v1\public"
 )
+REPLAY_CONFIG = Path(__file__).resolve().parents[2] / "configs" / "perf_a_replay.json"
 
 
 def raw_line(label: int, offset: float = 0.0) -> str:
     return " ".join(
         [str(label), *[f"{index}:{offset + index / 10}" for index in range(1, 129)]]
+    )
+
+
+def test_preregistered_batch_hashes_are_canonical_sha256() -> None:
+    config = json.loads(REPLAY_CONFIG.read_text(encoding="utf-8"))
+
+    assert all(
+        re.fullmatch(r"[0-9a-f]{64}", value)
+        for value in config["raw_batch_sha256"].values()
     )
 
 
