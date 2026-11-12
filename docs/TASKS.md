@@ -48,15 +48,16 @@ ROUTE-001(DONE)
 
 ### ACTION-SANDBOX-001 受控工具和配置修改
 
-- 状态：`IN_PROGRESS`
+- 状态：`DONE`
 - 依赖：OFFICIAL-HARNESS-002
 - 优先级：P0
 - 完成标准：工具白名单、参数schema、允许路径/配置键、候选隔离、预算预检和审计齐全；模型文本不得直接成为shell或Python代码
 - 停止条件：任何路径能绕过预算、SafetyGate或写入原始包
+- 证据：`src/brace_msi/action_sandbox.py`、`tests/agent/test_action_sandbox.py`及`official_agent_harness.py`集成；版本化工具注册表、任务兼容、参数白名单、训练前CPU估算、输出路径隔离、插件根/许可证/哈希检查通过5项专项测试；全量`201 passed`
 
 ### PERF-A-001 / PERF-B-001 / PERF-C-001 三任务独立性能优化
 
-- 状态：`BLOCKED`
+- 状态：`IN_PROGRESS`（当前只执行`PERF-A-001`；B/C等待A完成或停止）
 - 依赖：ACTION-SANDBOX-001；各任务新实验预注册
 - 优先级：P1
 - 完成标准：分别完成数据/误差/阶段/资源诊断，建立静态、固定更新和BRACE无大模型对照，运行有明确假设的低成本优化；不能仅凭训练集或已反复使用的单次验证指标宣布成功

@@ -149,7 +149,7 @@ def test_agent_rounds_train_gate_and_never_chain_rejected_candidate(tmp_path: Pa
     provider = StaticProvider(
         [
             proposal(Action.INCREMENTAL_UPDATE, epochs=1),
-            proposal(Action.REPLAY_REFIT, epochs=2, replay_fraction=0.5),
+            proposal(Action.REPLAY_REFIT, epochs=2, replay_fraction=1.0),
             proposal(Action.INCREMENTAL_UPDATE, epochs=1),
         ]
     )

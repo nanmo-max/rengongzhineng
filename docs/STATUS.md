@@ -1,9 +1,9 @@
 # 当前状态
 
 - 最近同步：2026-11-12（Asia/Shanghai）
-- 当前阶段：正式路线P0——执行侧工具、配置与预算沙箱
+- 当前阶段：P1——Gas公开数据真实性能诊断与优化
 - 当前路线：**Qwen3.5-4B PyTRiO Agent + BRACE确定性Harness + 官方A/B/C工业模型 + 经验证的开源优化方法** `[D-035]`
-- 当前唯一任务：`ACTION-SANDBOX-001`（`IN_PROGRESS`）
+- 当前唯一任务：`PERF-A-001`（`IN_PROGRESS`）；Bearing/Engine尚未启动
 - 稳定边界：`BRACE-MSI-0.1.0rc1`、原始训练包、既有实验和RC标签保持不变；新工作在`task/core-001`分支增量实现
 - 官方试运行：0次；不得用于基础调试
 
@@ -16,10 +16,11 @@
 5. 统一策略开发搜索81/81已结束：复杂共享策略被简单触发策略支配。该负结果保留，但D-032/D-034已由D-035替代为历史路线，不执行其末期测试。
 6. `PYTRIO-001`已完成：Qwen3.5-4B配置化Sampler、严格提案schema、秘密字段拒绝、Token/延迟收据和确定性降级通过8项专项测试；完整回归`189 passed`，未调用真实服务。
 7. `OFFICIAL-HARNESS-002`已完成：同一CLI入口可选择PyTRiO或确定性提供者，A/B/C真实训练器集成Smoke各完成1个候选，3/3机器复算`valid=true`；全量回归`196 passed`。该Smoke只证明链路，公开验证改善不是新独立性能结论。
+8. `ACTION-SANDBOX-001`已完成：执行侧使用可指纹化工具注册表，任务/参数/预算/输出路径均先检查；论文插件登记必须具备固定根、许可证和文件哈希。全量回归`201 passed`。
 
 ## 当前执行入口
 
-当前执行`ACTION-SANDBOX-001`：把提案执行权限进一步收紧到版本化工具注册表、任务专属允许参数、路径边界、训练前资源估计和候选插件哈希；确保模型文本没有通向shell、动态Python或原始训练包写入的路径。
+当前只执行`PERF-A-001`：先审计Gas官方训练器的数据与损失实现、冻结新的训练内部开发/确认方案并预注册低成本实验，再运行候选。不得使用官方十次机会，不把已反复使用的`public/validation.jsonl`当成独立测试。
 
 正式路线、已知能力与未知边界见[FORMAL_ROUTE.md](FORMAL_ROUTE.md)。实验必须遵守[EXPERIMENT_PROTOCOL.md](EXPERIMENT_PROTOCOL.md)。
 

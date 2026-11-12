@@ -20,6 +20,12 @@ from typing import Any, Protocol
 from .official_package import PackageAudit
 from .official_trainer import CandidateConfig, CandidateReceipt
 from .policies import Action
+from .action_sandbox import (
+    ActionSandboxError,
+    BudgetSnapshot,
+    assert_isolated_output_path,
+    default_official_tool_registry,
+)
 from .pytrio_agent import (
     AgentCallReceipt,
     AgentContext,
@@ -255,6 +261,7 @@ def run_official_agent_harness(
         raise ValueError("max_rounds_this_call must be positive")
     stop_at = min(config.rounds, len(state["rounds"]) + call_limit)
     reader = HistoryReader()
+    tool_registry = default_official_tool_registry()
 
     while len(state["rounds"]) < stop_at:
         round_number = len(state["rounds"]) + 1
@@ -287,11 +294,32 @@ def run_official_agent_harness(
             int(state["total_input_tokens"]) > config.max_total_input_tokens
             or int(state["total_output_tokens"]) > config.max_total_output_tokens
         )
-        rejection = (
-            "agent_token_budget_exceeded"
-            if token_budget_exceeded
-            else _proposal_rejection(package, state, config, outcome.proposal)
-        )
+        plan = None
+        if token_budget_exceeded:
+            rejection = "agent_token_budget_exceeded"
+        else:
+            try:
+                plan = tool_registry.build_plan(
+                    outcome.proposal,
+                    package,
+                    BudgetSnapshot(
+                        candidate_slots_remaining=config.max_candidates
+                        - int(state["candidate_count"]),
+                        cpu_seconds_remaining=max(
+                            0.0,
+                            config.max_cpu_seconds - float(state["cpu_seconds"]),
+                        ),
+                        wall_seconds_remaining=max(
+                            0.0,
+                            config.max_wall_seconds - float(state["wall_seconds"]),
+                        ),
+                    ),
+                    allowed_epochs=config.allowed_epochs,
+                    allowed_learning_rate_multipliers=config.allowed_learning_rate_multipliers,
+                )
+                rejection = None
+            except ActionSandboxError as exc:
+                rejection = exc.code
         if rejection is not None:
             state["rounds"].append(
                 {**base_record, "kind": "proposal_rejected", "reason": rejection}
@@ -300,13 +328,21 @@ def run_official_agent_harness(
             continue
         if outcome.proposal.action is Action.NOOP:
             state["rounds"].append(
-                {**base_record, "kind": "noop", "reason": "proposal_noop"}
+                {
+                    **base_record,
+                    "kind": "noop",
+                    "reason": "proposal_noop",
+                    "tool_registry_sha256": plan.tool_registry_sha256,
+                }
             )
             _persist(runtime_dir, state)
             continue
 
-        candidate_config = _candidate_config(package, config, outcome.proposal)
+        if plan is None or plan.candidate_config is None:
+            raise RuntimeError("candidate proposal produced no execution plan")
+        candidate_config = plan.candidate_config
         output = runtime_dir / "candidates" / f"round-{round_number:02d}"
+        assert_isolated_output_path(package.package_dir, runtime_dir, output)
         if output.exists() or output.with_name(output.name + ".failure.json").exists():
             raise FileExistsError(f"candidate output conflict: {output}")
         parent = Path(state["stable_checkpoint"])
@@ -337,6 +373,11 @@ def run_official_agent_harness(
             "kind": "candidate",
             "stage_id": stage_id,
             "config": asdict(candidate_config),
+            "tool_id": plan.tool_id,
+            "tool_version": plan.tool_version,
+            "tool_registry_sha256": plan.tool_registry_sha256,
+            "estimated_training_sample_visits": plan.estimated_training_sample_visits,
+            "estimated_cpu_seconds": plan.estimated_cpu_seconds,
             "parent_sha256": parent_sha,
             "checkpoint_sha256": receipt.checkpoint_sha256,
             "metric_before": state["stable_metric"],
@@ -485,56 +526,6 @@ def validate_official_agent_harness(
         "total_input_tokens": input_tokens,
         "total_output_tokens": output_tokens,
     }
-
-
-def _proposal_rejection(
-    package: PackageAudit,
-    state: Mapping[str, Any],
-    config: OfficialAgentHarnessConfig,
-    proposal: ExperimentProposal,
-) -> str | None:
-    if proposal.action is Action.NOOP:
-        return None
-    if proposal.action not in {Action.INCREMENTAL_UPDATE, Action.REPLAY_REFIT}:
-        return "action_not_executable"
-    if int(state["candidate_count"]) >= config.max_candidates:
-        return "candidate_budget_exhausted"
-    remaining_cpu = config.max_cpu_seconds - float(state["cpu_seconds"])
-    if proposal.max_cpu_seconds > remaining_cpu:
-        return "proposal_cpu_budget_exceeds_remaining"
-    if proposal.max_candidates > config.max_candidates - int(state["candidate_count"]):
-        return "proposal_candidate_budget_exceeds_remaining"
-    try:
-        _candidate_config(package, config, proposal)
-    except ValueError:
-        return "candidate_config_not_allowed"
-    return None
-
-
-def _candidate_config(
-    package: PackageAudit,
-    config: OfficialAgentHarnessConfig,
-    proposal: ExperimentProposal,
-) -> CandidateConfig:
-    parameters = dict(proposal.parameters)
-    epochs = parameters.get("epochs", 1)
-    learning_rate = parameters.get("learning_rate", package.base_learning_rate)
-    batch_size = parameters.get("batch_size", package.base_batch_size)
-    if isinstance(epochs, bool) or not isinstance(epochs, int) or epochs not in config.allowed_epochs:
-        raise ValueError("epochs not allowed")
-    if isinstance(learning_rate, bool) or not isinstance(learning_rate, (int, float)):
-        raise ValueError("learning_rate must be numeric")
-    allowed_rates = tuple(
-        package.base_learning_rate * multiplier
-        for multiplier in config.allowed_learning_rate_multipliers
-    )
-    if not any(math.isclose(float(learning_rate), rate, rel_tol=1e-12) for rate in allowed_rates):
-        raise ValueError("learning_rate not allowed")
-    if isinstance(batch_size, bool) or not isinstance(batch_size, int):
-        raise ValueError("batch_size must be an integer")
-    if batch_size != package.base_batch_size:
-        raise ValueError("batch_size not allowed")
-    return CandidateConfig(epochs, float(learning_rate), batch_size)
 
 
 def _validate_receipt(
