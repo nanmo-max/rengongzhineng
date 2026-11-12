@@ -7,7 +7,7 @@
 ```text
 ROUTE-001(DONE)
   -> PYTRIO-001(DONE)
-  -> PYTRIO-SFT-001(BLOCKED_A2_AUTHORIZATION)
+  -> PYTRIO-SFT-001(IN_PROGRESS)
   -> OFFICIAL-HARNESS-002(DONE)
   -> ACTION-SANDBOX-001(DONE)
   -> PERF-A-001(DONE) -> PERF-B-001(DONE) -> PERF-C-001(DONE)
@@ -40,12 +40,12 @@ ROUTE-001(DONE)
 
 ### PYTRIO-SFT-001 BRACE结构化提案Sampler微调
 
-- 状态：`BLOCKED_A2_AUTHORIZATION`（A1在首个远程训练步返回后因SDK `TensorData`本地解析错误停止；修复和回归完成，按预注册等待用户授权A2）
+- 状态：`IN_PROGRESS`（L-AUTH-011已授权在10元总预算内自主执行A2及后续受控验证）
 - 依赖：PYTRIO-001、Qwen3.5-4B位于当前PyTRiO模型白名单、用户已完成本机`trio login`
 - 优先级：P0
 - 完成标准：生成不含原始样本/密钥的版本化训练与留出评测语料；普通生成式SFT只监督assistant JSON；训练前后比较严格schema有效率、允许动作匹配率和预算安全性；保存持久化Sampler路径；本地记录数据哈希、SDK版本、超参数、loss、Token/步骤与失败；Sampler异常仍由确定性Harness降级
 - 停止条件：当前账户无可用训练额度、真实付费训练未经用户确认、支持模型/API签名变化、语料含私有数据或密钥、或无法获得持久化Sampler路径；停止时保留本地准备与失败证据，不伪造训练完成
-- 当前边界：官方Skill `pytrio-skill` v0.2.3已审计并安装；本地SDK为`pytrio 0.2.9`，实时白名单返回`Qwen/Qwen3.5-4B`和`Qwen/Qwen3.8-27B`。24条训练与12条archetype隔离留出语料已冻结，prepare-only远程调用0次；专项27项、完整回归233项、编译与敏感信息扫描通过。尚未启动收费训练或采样。
+- 当前边界：官方Skill `pytrio-skill` v0.2.3已审计并安装；本地SDK为`pytrio 0.2.9`，实时白名单返回`Qwen/Qwen3.5-4B`和`Qwen/Qwen3.8-27B`。24条训练与12条archetype隔离留出语料已冻结。A1已产生真实采样和首个训练请求但失败；修复后完整回归235项通过，A2按L-AUTH-011从新目录继续。累计费用不得超过10元。
 - 本地证据：`src/brace_msi/pytrio_sft.py`、`scripts/run_pytrio_sft.py`、`tests/agent/test_pytrio_sft.py`、`D:/brace-msi-pytrio/PYTRIO-SFT-001/`；独立代码审查无剩余Critical/Important。
 - A1失败证据：`D:/brace-msi-pytrio/PYTRIO-SFT-001-A1/failure.json`；基础评测12/12完成，4,213输入Token、2,425输出Token，严格schema有效率0；远程首步已返回但在本地loss换算时因`TensorData`不能直接传给NumPy而中止，无持久化Sampler。已改为优先`to_numpy()`并新增真实SDK形态及远程请求/完成分离回归测试；专项20项、完整回归235项通过，未自动重试。
 
