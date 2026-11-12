@@ -303,6 +303,11 @@ class PyTrioAgentClient:
 
 def parse_experiment_proposal(raw: str) -> ExperimentProposal:
     cleaned = raw.strip()
+    # PyTRiO/Qwen can expose the chat-template terminator in ``sequence.text``.
+    # Accept only the exact observed suffix; arbitrary trailing text remains an
+    # error so the model cannot smuggle instructions past the JSON boundary.
+    if cleaned.endswith("<|im_end|>"):
+        cleaned = cleaned[: -len("<|im_end|>")].rstrip()
     if cleaned.startswith("```"):
         lines = cleaned.splitlines()
         if len(lines) >= 3 and lines[-1].strip() == "```":

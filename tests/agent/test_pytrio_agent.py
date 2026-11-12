@@ -9,6 +9,7 @@ from brace_msi.pytrio_agent import (
     AgentContext,
     build_agent_prompt,
     ExperimentProposal,
+    parse_experiment_proposal,
     PyTrioAgentClient,
     PyTrioAgentConfig,
     SamplingResult,
@@ -66,6 +67,14 @@ def valid_response() -> str:
             "stop_conditions": ["no_validation_gain", "budget_exhausted"],
         }
     )
+
+
+def test_parser_accepts_qwen_im_end_suffix_but_rejects_other_trailing_text() -> None:
+    proposal = parse_experiment_proposal(valid_response() + "<|im_end|>\n")
+
+    assert proposal.action is Action.REPLAY_REFIT
+    with pytest.raises(json.JSONDecodeError):
+        parse_experiment_proposal(valid_response() + " trailing text")
 
 
 def test_valid_structured_proposal_records_only_hashes_and_usage() -> None:
