@@ -47,6 +47,7 @@
 | D-041 | 2026-11-12 | LOCKED | PyTRiO/Qwen Sampler返回文本仅允许在JSON边界剥离已实测的精确`<|im_end|>`后缀；其他任意尾随文本继续失败关闭。A2原始误判评测保留，不回写；修正后通过新文件复评同一Sampler。 | `PYTRIO-SFT-001-A2`真实输出、红绿回归测试、提交`6da8cea` |
 | D-042 | 2026-11-12 | LOCKED | A2 Sampler在三任务静态包对照中30/30建议noop，性能完全来自最低候选守卫；不得表述为大模型带来性能增益。只允许再做一次包含身份无关最低候选证据的有界SFT与新留出验证；若主动候选率仍无改善，则停止LLM调参，正式默认使用确定性BRACE并保留Sampler为可选建议器。 | `PYTRIO-HARNESS-001-A2`六运行均机器复算有效；R-028停止原则 |
 | D-043 | 2026-11-12 | LOCKED | A3是D-042允许的最后一次LLM调参并已通过：新留出五项100%，真实A/B/C首轮3/3主动训练。正式候选冻结为“A3持久化Sampler负责结构化动作意图 + BRACE使用已冻结任务参数日程 + ActionSandbox/SafetyGate最终裁决”；此后不再扩充语料、epoch或LLM搜索。Agent没有单独创造工业模型性能，性能贡献归于已冻结参数与门控；候选预算耗尽后的建议必须在训练前拒绝并保留审计。 | `PYTRIO-SFT-001-A3`、`PYTRIO-COMPETITIVE-001-A1`、`docs/results/PYTRIO-COMPETITIVE-001-A1.md` |
+| D-044 | 2026-11-13 | LOCKED | RC3、A3和三任务参数保持冻结；允许执行一次`SWANLAB-FINAL-001`最终工程记录重跑并同步公开聚合指标。该运行只形成提交记录，不参与模型/策略选择；GitHub只推送脱敏源码与证据，镜像、数据、权重、凭据和完整Sampler路径不得进入仓库。 | L-AUTH-012、O-SWANLAB-002、D-023阶段条件已满足 |
 
 ## 已被替代的历史决策
 

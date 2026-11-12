@@ -1,9 +1,9 @@
 # 当前状态
 
-- 最近同步：2026-11-12（Asia/Shanghai）
-- 当前阶段：`BRACE-MSI-0.3.0rc3`本地正式候选已完成PyTRiO、三任务十轮、真实容器与干净环境验收；停止本地调参，等待官方运行接口
+- 最近同步：2026-11-13（Asia/Shanghai）
+- 当前阶段：`BRACE-MSI-0.3.0rc3`保持冻结；进入提交材料、GitHub脱敏发布与SwanLab最终工程记录阶段
 - 当前路线：**Qwen3.5-4B PyTRiO Agent + BRACE确定性Harness + 官方A/B/C工业模型 + 经验证的开源优化方法** `[D-035]`
-- 当前唯一任务：`FORMAL-RELEASE-001`（`BLOCKED_EXTERNAL`）；全部本地可执行项已完成。只等待正式SDK事件/挂载、比赛Base URL与凭据注入、评分公式及SwanLab比赛规范，不制造替代证据。
+- 当前唯一任务：`MAT-001`（`IN_PROGRESS`）；制作作品说明书、推送脱敏源码分支并执行`SWANLAB-FINAL-001`记录重跑。`FORMAL-RELEASE-001`的正式SDK/评分接口仍为`BLOCKED_EXTERNAL`。
 - 稳定边界：`BRACE-MSI-0.1.0rc1`与`0.2.0rc2`历史保持不变；当前候选为`BRACE-MSI-0.3.0rc3`，仍在`task/core-001`且不合并main。A3之后禁止继续LLM调参 `[D-043]`
 - 官方试运行：0次；不得用于基础调试
 
@@ -41,7 +41,7 @@
 - SwanLab比赛项目、必填字段及无公网同步责任待发布 `[H-004]`。
 - Docker宿主机阻塞已解除；RC3真实镜像、体积、禁入文件、非root身份、4核8GB断网双协议Smoke和可重载归档均有证据，见`results/RC3_CONTAINER_ACCEPTANCE.json`。
 
-这些缺口不阻塞PyTRiO SFT。L-AUTH-011允许在累计10元内自动继续；每次仍使用新目录、固定预注册语料和本地Token收据，费用接近上限时停止。
+这些缺口不阻塞已授权的提交材料与`SWANLAB-FINAL-001`最终记录。A3是最后一次SFT，D-043禁止继续微调或扩大LLM搜索；最终记录只复用冻结Sampler和参数，不用于再选型。
 
 ## 禁止事项
 

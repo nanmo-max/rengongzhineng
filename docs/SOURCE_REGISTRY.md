@@ -245,6 +245,12 @@
 - 事实：Python SDK支持`mode="offline"`本地记录、`on_online_error="offline"`降级、`public`可见性参数；官方CLI提供`swanlab sync`将本地日志同步到云端或私有部署。
 - 边界：比赛要求的字段、公开项目命名、认证注入和无公网评测后的正式同步流程仍属H-004，不由通用SwanLab文档解除。
 
+### O-SWANLAB-002 SwanLab新版记录器版本要求
+
+- 来源：用户2026-11-13提供的SwanLab工作区官方页面截图；页面地址`https://swanlab.cn/space/~`。
+- 事实：页面公告要求新实验使用SDK 0.10.0及以上版本；本机冻结环境为SwanLab 0.10.4并已登录工作区`nanmo-max`。
+- 边界：该公告只确认通用记录器版本，不确认比赛专用项目名称、必填字段、公开范围或无公网评测后的同步责任，H-004仍保留。
+
 ### O-PYTRIO-001 PyTRiO官方训练与推理接口
 
 - 来源：`https://docs.pytrio.com/docs`、`/docs/quick-start`、`/docs/guide/train`、`/docs/guide/sample`、`/docs/advanced/openai`与`/docs/advanced/configuration`；核验日期2026-11-12。
@@ -288,6 +294,12 @@
 - 来源：用户2026-11-12在获知A1失败、修复和预计成本后明确要求继续完成，自动规划和实验，不再逐次确认。
 - 事实：授权在原10元总预算内自主执行A2及必要的低成本修复重试、持久化Sampler验证、Harness接入和三任务受控对照；普通技术错误自行诊断、保留失败证据后继续。
 - 边界：累计PyTRiO费用不得超过10元；不得使用官方十次评测机会、扩大A/B/C公开验证调参、修改RC2历史或绕过SafetyGate。若余额/累计预算不足、需要平台提交或产生重大路线变化，才重新请求用户。
+
+### L-AUTH-012 提交材料、GitHub与SwanLab最终记录授权
+
+- 来源：用户2026-11-13明确要求继续完善、将仓库上传到`https://github.com/nanmo-max/rengongzhineng.git`并生成SwanLab记录。
+- 事实：授权在RC3与参数冻结不变的前提下，制作作品说明书、推送脱敏源码分支、执行一次最终工程训练记录并同步SwanLab。
+- 边界：不把API Key、完整Sampler路径、原始数据、模型权重、逐样本标签或可逆特征写入Git/SwanLab；本次重跑只用于记录，不能继续选型、调参或冒充隐藏评测；main是否合并仍需保持既有稳定边界。
 
 ### L-EVIDENCE-001 完整系统本地模拟证据
 
