@@ -48,6 +48,7 @@ class OfficialAgentHarnessConfig:
     max_total_output_tokens: int = 20_000
     allowed_epochs: tuple[int, ...] = (1, 2, 3, 5)
     allowed_learning_rate_multipliers: tuple[float, ...] = (0.25, 0.5, 1.0)
+    candidate_schedule: tuple[tuple[int, float], ...] = ()
 
     def __post_init__(self) -> None:
         if not 1 <= self.rounds <= 100:
@@ -72,6 +73,13 @@ class OfficialAgentHarnessConfig:
             value <= 0 for value in self.allowed_learning_rate_multipliers
         ):
             raise ValueError("learning-rate multipliers must be positive")
+        if len(self.candidate_schedule) > self.max_candidates:
+            raise ValueError("candidate_schedule exceeds max_candidates")
+        for epochs, multiplier in self.candidate_schedule:
+            if epochs not in self.allowed_epochs:
+                raise ValueError("candidate_schedule epoch is not allowed")
+            if multiplier not in self.allowed_learning_rate_multipliers:
+                raise ValueError("candidate_schedule multiplier is not allowed")
 
 
 @dataclass(frozen=True)
@@ -99,10 +107,21 @@ class ProposalProvider(Protocol):
 
 def official_agent_config_from_mapping(
     value: Mapping[str, Any],
+    *,
+    profile: str | None = None,
 ) -> OfficialAgentHarnessConfig:
     """Build the formal harness limits from a versioned runtime config."""
 
     max_candidates = int(value.get("max_candidates_per_policy", 3))
+    raw_schedule = (
+        value.get("deterministic_schedules", {}).get(profile, ())
+        if profile is not None
+        else ()
+    )
+    candidate_schedule = tuple(
+        (int(item["epochs"]), float(item["learning_rate_multiplier"]))
+        for item in raw_schedule
+    )
     return OfficialAgentHarnessConfig(
         rounds=int(value.get("rounds", 10)),
         max_candidates=max_candidates,
@@ -122,6 +141,7 @@ def official_agent_config_from_mapping(
             float(item)
             for item in value.get("allowed_learning_rate_multipliers", (0.25, 0.5, 1.0))
         ),
+        candidate_schedule=candidate_schedule,
     )
 
 
@@ -198,6 +218,15 @@ class HistoryReader:
                 "allowed_learning_rate_multipliers": list(
                     config.allowed_learning_rate_multipliers
                 ),
+                "candidate_schedule_remaining": [
+                    {
+                        "epochs": epochs,
+                        "learning_rate_multiplier": multiplier,
+                    }
+                    for epochs, multiplier in config.candidate_schedule[
+                        int(state["candidate_count"]) :
+                    ]
+                ],
             },
         )
 
@@ -360,7 +389,9 @@ def run_official_agent_harness(
                 outcome = safe_fallback.propose(context)
         validate_experiment_proposal(outcome.proposal)
         suggested_action = outcome.proposal.action
+        suggested_parameters = dict(outcome.proposal.parameters)
         guard_override_reason = None
+        parameter_schedule_applied = False
         if (
             outcome.proposal.action is Action.NOOP
             and int(state["candidate_count"]) < config.minimum_candidate_events
@@ -377,6 +408,41 @@ def run_official_agent_harness(
                 receipt=outcome.receipt,
             )
             guard_override_reason = "minimum_candidate_events"
+        candidate_index = int(state["candidate_count"])
+        if (
+            outcome.proposal.action is not Action.NOOP
+            and candidate_index < len(config.candidate_schedule)
+        ):
+            epochs, multiplier = config.candidate_schedule[candidate_index]
+            scheduled_action = (
+                Action.INCREMENTAL_UPDATE if epochs == 1 else Action.REPLAY_REFIT
+            )
+            parameters: dict[str, Any] = {
+                "epochs": epochs,
+                "learning_rate": package.base_learning_rate * multiplier,
+            }
+            if scheduled_action is Action.REPLAY_REFIT:
+                parameters["replay_fraction"] = 1.0
+            outcome = ProposalOutcome(
+                proposal=ExperimentProposal(
+                    schema_version=outcome.proposal.schema_version,
+                    action=scheduled_action,
+                    tool=(
+                        "train_incremental"
+                        if scheduled_action is Action.INCREMENTAL_UPDATE
+                        else "train_replay_refit"
+                    ),
+                    rationale=outcome.proposal.rationale,
+                    parameters=parameters,
+                    max_cpu_seconds=outcome.proposal.max_cpu_seconds,
+                    max_candidates=outcome.proposal.max_candidates,
+                    stop_conditions=outcome.proposal.stop_conditions,
+                ),
+                source=outcome.source,
+                receipt=outcome.receipt,
+            )
+            validate_experiment_proposal(outcome.proposal)
+            parameter_schedule_applied = True
         if outcome.receipt.input_tokens < 0 or outcome.receipt.output_tokens < 0:
             raise ValueError("agent token counts must be nonnegative")
         if outcome.source == "pytrio":
@@ -389,9 +455,13 @@ def run_official_agent_harness(
             "proposal_source": outcome.source,
             "agent_receipt": asdict(outcome.receipt),
         }
-        if guard_override_reason is not None:
+        if guard_override_reason is not None or parameter_schedule_applied:
             base_record["suggested_action"] = suggested_action.value
+            base_record["suggested_parameters"] = suggested_parameters
+        if guard_override_reason is not None:
             base_record["guard_override_reason"] = guard_override_reason
+        if parameter_schedule_applied:
+            base_record["parameter_schedule_applied"] = True
 
         token_budget_exceeded = (
             int(state["total_input_tokens"]) > config.max_total_input_tokens

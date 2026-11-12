@@ -137,6 +137,7 @@ def config(**updates) -> OfficialAgentHarnessConfig:
         "rounds": 3,
         "max_candidates": 3,
         "minimum_candidate_events": 0,
+        "candidate_schedule": (),
         "max_cpu_seconds": 30.0,
         "max_wall_seconds": 30.0,
         "max_peak_rss_bytes": 1024 * 1024,
@@ -174,6 +175,39 @@ def test_minimum_candidate_guard_overrides_agent_noop_and_keeps_receipt(
     assert result.rounds[0]["suggested_action"] == "noop"
     assert result.rounds[0]["guard_override_reason"] == "minimum_candidate_events"
     assert provider.contexts[0].evidence["minimum_candidate_events_remaining"] == 1
+
+
+def test_frozen_parameter_schedule_controls_training_parameters_not_agent_text(
+    tmp_path: Path, audit_a
+) -> None:
+    provider = StaticProvider(
+        [proposal(Action.INCREMENTAL_UPDATE, epochs=1)]
+    )
+    harness_config = config(
+        rounds=1,
+        max_candidates=1,
+        minimum_candidate_events=1,
+        allowed_epochs=(1, 5),
+        allowed_learning_rate_multipliers=(1.0, 3.0),
+        candidate_schedule=((5, 3.0),),
+    )
+
+    result = run_official_agent_harness(
+        audit_a,
+        tmp_path / "parameter-schedule",
+        harness_config,
+        FakeTrainer([0.72]),
+        provider,
+    )
+
+    row = result.rounds[0]
+    assert row["suggested_action"] == "incremental_update"
+    assert row["action"] == "replay_refit"
+    assert row["parameter_schedule_applied"] is True
+    assert row["config"]["epochs"] == 5
+    assert row["config"]["learning_rate"] == pytest.approx(
+        audit_a.base_learning_rate * 3.0
+    )
 
 
 def test_agent_rounds_train_gate_and_never_chain_rejected_candidate(tmp_path: Path, audit_a) -> None:
@@ -368,6 +402,26 @@ def test_runtime_config_mapping_keeps_agent_and_trainer_budgets_explicit() -> No
     assert parsed.max_cpu_seconds == 40
     assert parsed.max_agent_calls == 7
     assert parsed.max_total_output_tokens == 2000
+
+
+def test_runtime_mapping_loads_profile_specific_frozen_schedule() -> None:
+    parsed = official_agent_config_from_mapping(
+        {
+            "rounds": 10,
+            "max_candidates_per_policy": 3,
+            "allowed_epochs": [1, 5],
+            "allowed_learning_rate_multipliers": [0.3, 1.0, 3.0],
+            "deterministic_schedules": {
+                "B": [
+                    {"epochs": 5, "learning_rate_multiplier": 3.0},
+                    {"epochs": 1, "learning_rate_multiplier": 0.3},
+                ]
+            },
+        },
+        profile="B",
+    )
+
+    assert parsed.candidate_schedule == ((5, 3.0), (1, 0.3))
 
 
 def test_machine_validator_recomputes_parent_chain_gate_and_usage(tmp_path: Path, audit_a) -> None:

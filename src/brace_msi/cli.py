@@ -142,7 +142,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.command == "official-agent-run":
         raw_config = json.loads(args.config.read_text(encoding="utf-8"))
         package = audit_package_root(args.package_root, raw_config)[args.profile]
-        harness_config = official_agent_config_from_mapping(raw_config)
+        harness_config = official_agent_config_from_mapping(
+            raw_config, profile=args.profile
+        )
         if args.validate_only:
             print(
                 json.dumps(
