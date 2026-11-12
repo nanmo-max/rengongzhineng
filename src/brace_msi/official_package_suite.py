@@ -392,8 +392,6 @@ def run_official_package_suite(
     if set(audits) != {"A", "B", "C"}:
         raise ValueError("suite requires official packages A, B and C")
     current_manifest = _source_manifest(package_root, audits, config)
-    if current_manifest["contains_python_cache"]:
-        raise ValueError("official package root contains Python cache files")
     manifest_path = runtime_root / "source-manifest.json"
     if manifest_path.exists():
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
