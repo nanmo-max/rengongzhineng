@@ -9,7 +9,7 @@ import zipfile
 
 from .packaging import audit_docker_context
 
-RELEASE_ID = "BRACE-MSI-0.1.0rc1"
+RELEASE_ID = "BRACE-MSI-0.2.0rc2"
 
 _ROOT_FILES = frozenset(
     {
@@ -51,6 +51,8 @@ class ReleaseTreeAudit:
     a1_status: str
     a2_status: str
     synthetic_scope: str
+    regression_sprint_status: str
+    sprint_harness_status: str
     docker_context_under_2gb: bool
 
 
@@ -83,14 +85,16 @@ def audit_release_tree(root: Path, tracked_files: tuple[Path, ...]) -> ReleaseTr
         Path("scripts/build_release_candidate.py"),
         Path("docs/RELEASE_CANDIDATE.md"),
         Path("docs/results/LOCAL-FORMAL-SIM-001.md"),
+        Path("docs/results/REGRESSION-SPRINT-001.md"),
+        Path("docs/results/SPRINT-HARNESS-001.md"),
     )
     for path in required:
         if path not in included or not (root / path).is_file():
             findings.append(f"missing release file: {path.as_posix()}")
 
     pyproject = (root / "pyproject.toml").read_text(encoding="utf-8")
-    if 'version = "0.1.0rc1"' not in pyproject:
-        findings.append("pyproject version is not 0.1.0rc1")
+    if 'version = "0.2.0rc2"' not in pyproject:
+        findings.append("pyproject version is not 0.2.0rc2")
 
     evidence = (root / "docs/results/LOCAL-FORMAL-SIM-001.md").read_text(
         encoding="utf-8"
@@ -109,6 +113,31 @@ def audit_release_tree(root: Path, tracked_files: tuple[Path, ...]) -> ReleaseTr
     if synthetic_scope != "protocol_only":
         findings.append("synthetic bearing scope is not protocol_only")
 
+    regression_evidence = (root / "docs/results/REGRESSION-SPRINT-001.md").read_text(
+        encoding="utf-8"
+    )
+    regression_status = (
+        "SUCCEEDED"
+        if "Bearing B" in regression_evidence
+        and "Engine C" in regression_evidence
+        and "机器证据" in regression_evidence
+        else "UNKNOWN"
+    )
+    if regression_status != "SUCCEEDED":
+        findings.append("regression sprint evidence is missing")
+
+    harness_evidence = (root / "docs/results/SPRINT-HARNESS-001.md").read_text(
+        encoding="utf-8"
+    )
+    harness_status = (
+        "SUCCEEDED"
+        if "每任务均完整执行10轮" in harness_evidence
+        and "机器复算三任务均`valid=true`" in harness_evidence
+        else "UNKNOWN"
+    )
+    if harness_status != "SUCCEEDED":
+        findings.append("sprint Harness evidence is missing")
+
     context = audit_docker_context(root)
     under_limit = context.total_bytes < 2_000_000_000
     if not under_limit:
@@ -123,6 +152,8 @@ def audit_release_tree(root: Path, tracked_files: tuple[Path, ...]) -> ReleaseTr
         a1_status=a1_status,
         a2_status=a2_status,
         synthetic_scope=synthetic_scope,
+        regression_sprint_status=regression_status,
+        sprint_harness_status=harness_status,
         docker_context_under_2gb=under_limit,
     )
 

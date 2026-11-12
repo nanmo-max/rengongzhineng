@@ -8,6 +8,6 @@
 - 当前任务：[docs/TASKS.md](docs/TASKS.md)
 - 新会话恢复：[docs/SESSION_HANDOFF.md](docs/SESSION_HANDOFF.md)
 
-当前分支的发布标识为`BRACE-MSI-0.1.0rc1`。平台无关Harness、CPU模型池、恢复、审计、
+当前分支的冲刺候选发布标识为`BRACE-MSI-0.2.0rc2`；已冻结的`BRACE-MSI-0.1.0rc1`历史边界不改写。平台无关Harness、CPU模型池、恢复、审计、
 SwanLab离线接口和SDK插件边界已经实现；全部现有模型结果仍是代理数据或协议工程证据，
 不是官方成绩。当前发布状态和外部阻塞见 [Release Candidate审计](docs/RELEASE_CANDIDATE.md)。
