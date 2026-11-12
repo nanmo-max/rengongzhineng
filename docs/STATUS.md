@@ -3,7 +3,7 @@
 - 最近同步：2026-11-12（Asia/Shanghai）
 - 当前阶段：BRACE-MSI-0.2.0rc2本地Release与真实容器验收保持冻结；独立开展正式PyTRiO Sampler微调准备
 - 当前路线：**Qwen3.5-4B PyTRiO Agent + BRACE确定性Harness + 官方A/B/C工业模型 + 经验证的开源优化方法** `[D-035]`
-- 当前唯一任务：`PYTRIO-SFT-001`（`IN_PROGRESS`）；L-AUTH-011已授权在原10元总预算内自主执行A2、持久化Sampler验证、Harness接入和低成本三任务对照。A1失败证据保持锁定；A2使用全新目录。`FORMAL-RELEASE-001`仍为`BLOCKED_OFFICIAL_MATERIALS`，不修改已冻结RC2镜像。
+- 当前唯一任务：`PYTRIO-SFT-001`（`IN_PROGRESS`）；A2已生成持久化Sampler并完成修正复评，下一步是在不修改RC2的独立运行中接入Harness并完成低成本三任务对照。L-AUTH-011继续约束累计PyTRiO预算不超过10元。`FORMAL-RELEASE-001`仍为`BLOCKED_OFFICIAL_MATERIALS`。
 - 稳定边界：`BRACE-MSI-0.1.0rc1`历史标签保持不变；当前冲刺候选为`BRACE-MSI-0.2.0rc2`，仍在`task/core-001`且不合并main
 - 官方试运行：0次；不得用于基础调试
 
@@ -21,10 +21,11 @@
 10. 2026-11-12本机`trio login`成功；只读服务能力查询确认当前模型白名单为`Qwen/Qwen3.5-4B`与`Qwen/Qwen3.8-27B`。未读取、打印或提交真实API Key，用户粘贴的Key仅为官方示例占位内容。
 11. `PYTRIO-SFT-001`本地准备完成：24训练/12留出，训练和留出archetype不交叉；assistant-only loss、预算安全率、持久化收据、逐样本Token/哈希、失败保留和预注册SHA fail-closed均有自动测试。该条的“远程调用0次”只属于A1启动前的历史状态，已由下一条真实A1证据取代。
 12. `PYTRIO-SFT-001-A1`真实远程尝试失败并停止：基础模型12例严格schema有效率0，输入4,213 Token、输出2,425 Token；首个训练调用已返回，随后本地`TensorData`解析报`TypeError`，未生成Sampler。失败收据完整保留；已增加`TensorData.to_numpy()`兼容，专项20项及完整回归235项通过，A2未启动。
+13. `PYTRIO-SFT-001-A2`完成18/18远程优化步，最终监督Token损失0.009076，并返回持久化`trio://` Sampler。PyTRiO文本保留Qwen `<|im_end|>`导致原始严格解析误记全0；该原始文件不修改。仅剥离精确终止标记后，同一Sampler在冻结12例留出上schema与预算安全率100%、action/tool/policy匹配率66.67%；完整回归236项通过。基础模型五项均为0。费用按公开单价和本地Token收据保守估算仍低于0.25元，实际以平台用量页为准。
 
 ## 当前执行入口
 
-`SPRINT-HARNESS-001`与RC2本地发布均完成。最终Harness镜像归档为`D:/brace-msi-release/BRACE-MSI-0.2.0rc2/BRACE-MSI-0.2.0rc2-image-clean.tar`，SHA-256 `7b64490b...2e09327`；镜像保持冻结，不重训A/B/C。PyTRiO A1目录已失败并锁定，不得复用；当前按L-AUTH-011从全新`D:/brace-msi-pytrio/PYTRIO-SFT-001-A2/`执行，累计费用上限10元。
+`SPRINT-HARNESS-001`与RC2本地发布均完成。最终Harness镜像归档为`D:/brace-msi-release/BRACE-MSI-0.2.0rc2/BRACE-MSI-0.2.0rc2-image-clean.tar`，SHA-256 `7b64490b...2e09327`；镜像保持冻结，不重训A/B/C。PyTRiO A1/A2证据目录均已锁定；当前从A2的持久化Sampler进入独立Harness对照，模型路径只从本地收据/运行时配置读取，不写入公开配置。
 
 正式路线、已知能力与未知边界见[FORMAL_ROUTE.md](FORMAL_ROUTE.md)。实验必须遵守[EXPERIMENT_PROTOCOL.md](EXPERIMENT_PROTOCOL.md)。
 

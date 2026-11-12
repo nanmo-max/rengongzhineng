@@ -402,3 +402,10 @@
 - 根因是本地假客户端只返回NumPy数组，没有覆盖SDK真实强类型张量。修复为优先调用`TensorData.to_numpy()`、其次`tolist()`，再展平为数值数组；另区分远程已提交步与本地已记录loss步。
 - 新增真实`TensorData`形态及远程请求/完成计数分离的红绿回归测试；专项20项、完整回归`235 passed in 62.58s`。未启动A2；按照L-AUTH-010，A2需用户重新授权并使用全新目录。
 
+## 2026-11-12：PYTRIO-SFT-001-A2持久化Sampler
+
+- 按L-AUTH-011从新目录执行同一冻结语料和配置：Qwen3.5-4B、rank 8、3 epoch、batch 4、学习率1e-4。18/18远程优化步完成，最终监督Token损失0.009076，保存89,565,048字节持久化Sampler收据；不记录凭据或原始工业数据。
+- 原始训练后评测被本地解析器全部判为无效；单例诊断证明模型输出是完整JSON后附PyTRiO/Qwen的`<|im_end|>`。原始`result.json`与`tuned_evaluation.json`保持不变，作为误判证据。
+- 通过红绿测试只允许剥离精确终止标记，任意其他尾随文本仍拒绝。对同一Sampler和同一冻结12例重新采样，`tuned_evaluation_rescored.json`得到schema/budget 100%，action/tool/policy 66.67%；基础模型对应五项均为0。
+- 训练语料每epoch 10,097 Token、三轮30,291 Token；连同A1/A2采样和少量诊断，按公开单价保守估算累计低于0.25元，实际费用仍以平台用量页为准。官方十次评测机会使用0。专项20项、完整回归`236 passed in 63.40s`。
+

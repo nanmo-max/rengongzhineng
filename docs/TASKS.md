@@ -48,6 +48,7 @@ ROUTE-001(DONE)
 - 当前边界：官方Skill `pytrio-skill` v0.2.3已审计并安装；本地SDK为`pytrio 0.2.9`，实时白名单返回`Qwen/Qwen3.5-4B`和`Qwen/Qwen3.8-27B`。24条训练与12条archetype隔离留出语料已冻结。A1已产生真实采样和首个训练请求但失败；修复后完整回归235项通过，A2按L-AUTH-011从新目录继续。累计费用不得超过10元。
 - 本地证据：`src/brace_msi/pytrio_sft.py`、`scripts/run_pytrio_sft.py`、`tests/agent/test_pytrio_sft.py`、`D:/brace-msi-pytrio/PYTRIO-SFT-001/`；独立代码审查无剩余Critical/Important。
 - A1失败证据：`D:/brace-msi-pytrio/PYTRIO-SFT-001-A1/failure.json`；基础评测12/12完成，4,213输入Token、2,425输出Token，严格schema有效率0；远程首步已返回但在本地loss换算时因`TensorData`不能直接传给NumPy而中止，无持久化Sampler。已改为优先`to_numpy()`并新增真实SDK形态及远程请求/完成分离回归测试；专项20项、完整回归235项通过，未自动重试。
+- A2成功证据：`D:/brace-msi-pytrio/PYTRIO-SFT-001-A2/`；18/18远程步完成、最终loss 0.009076、持久化Sampler已保存。原始后评测因精确Qwen终止标记被严格JSON解析器误判且保留；修复后同Sampler复评schema/budget 100%、action/tool/policy 66.67%，完整回归236项通过。下一停止条件为三任务受控对照完成并确认确定性降级不变。
 
 ### OFFICIAL-HARNESS-002 官方训练器主Harness接入
 
