@@ -377,3 +377,11 @@
 - 已用Windows可选功能接口启用`Microsoft-Windows-Subsystem-Linux`与`VirtualMachinePlatform`，不执行自动重启；系统登记Component Based Servicing `RebootPending`。
 - 本轮未构建镜像、未生成`docker save`归档，也未把静态检查冒充容器验收。重启后只需验证引擎并执行Docker构建/断网Smoke/save，不重复模型训练、数据核验或完整回归。
 
+## 2026-11-12：BRACE-MSI-0.2.0rc2真实Docker验收
+
+- Windows重启后Docker Engine 28.5.1恢复为linux/amd64；原Docker Hub DNS错误解析导致官方`python:3.12-slim`不可达，因此改用可核验的Microsoft Azure Linux Python 3.12基础镜像，并固定摘要`sha256:379135d4...9266746`。
+- 首次官方PyPI线路下载因低速发生SciPy内容哈希不符，pip正确拒绝安装。未绕过校验；Dockerfile保留官方PyPI默认值并增加可审计`PIP_INDEX_URL`构建参数，本机构建显式使用清华PyPI镜像，核心与SwanLab依赖均成功安装。
+- 在干净提交`e28113c`上缓存重建`brace-msi:0.2.0rc2`：linux/amd64、170,356,869字节、非root用户`brace`/UID 10001、`pip check`无冲突，镜像内无数据、权重、Embedding、密钥或受禁目录。
+- 使用`--network=none --cpus=4 --memory=8g --pids-limit=256`运行`synthetic-smoke`，状态`completed`且`candidate_count=3`；这只证明协议/容器运行，不是正式数据性能实验。
+- 最终`docker save`归档为`D:/brace-msi-release/BRACE-MSI-0.2.0rc2/BRACE-MSI-0.2.0rc2-image-clean.tar`，170,378,752字节，SHA-256 `7b64490b0456c4b36bdc6189f34c9ce5e372894b911d76a3b40a6e8142e09327`；重新加载验证可读。发布相关定向测试`8 passed`，未重跑训练或完整回归。
+

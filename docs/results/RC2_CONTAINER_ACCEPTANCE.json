@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "release_id": "BRACE-MSI-0.2.0rc2",
+  "evidence_scope": "local_container_release_acceptance",
+  "official_score": false,
+  "source_commit": "e28113cc9a1c641fab9e24e32eafd29f2cdb2fb2",
+  "image": {
+    "tag": "brace-msi:0.2.0rc2",
+    "id": "sha256:70c76788a16bc652274573f9b8733d921ce0d5445d046ad7557cc1db68b3ce9d",
+    "config_digest": "sha256:659ff69a23ba5555c21174829bcdaf7e94ec5ee6f42e55b65e5fde95e2c51823",
+    "os": "linux",
+    "architecture": "amd64",
+    "size_bytes": 170356869,
+    "under_2gb": true,
+    "runtime_user": "brace",
+    "runtime_uid": 10001,
+    "forbidden_files": [],
+    "pip_check": "PASS"
+  },
+  "build": {
+    "engine": "Docker Engine 28.5.1",
+    "base_image": "mcr.microsoft.com/azurelinux/base/python:3.12",
+    "base_digest": "sha256:379135d4dbe66b12825a54d4ed7aef21aa61227533ff1b9151d70f95f9266746",
+    "pypi_default": "https://pypi.org/simple",
+    "local_index_override": "https://pypi.tuna.tsinghua.edu.cn/simple"
+  },
+  "runtime_acceptance": {
+    "network": "none",
+    "cpus": 4,
+    "memory_bytes": 8589934592,
+    "pids_limit": 256,
+    "command": "synthetic-smoke --output /outputs/smoke",
+    "status": "completed",
+    "candidate_count": 3,
+    "summary_path": "D:/brace-msi-release/docker-smoke-rc2-clean/smoke/summary.json",
+    "summary_sha256": "c787f15b50162a9747304805350f2f12480dc5bc3ed714cf8633db95b16f7a40"
+  },
+  "archive": {
+    "format": "docker save tar",
+    "path": "D:/brace-msi-release/BRACE-MSI-0.2.0rc2/BRACE-MSI-0.2.0rc2-image-clean.tar",
+    "size_bytes": 170378752,
+    "sha256": "7b64490b0456c4b36bdc6189f34c9ce5e372894b911d76a3b40a6e8142e09327",
+    "docker_load_verified": true
+  },
+  "targeted_tests": {
+    "status": "PASS",
+    "passed": 8,
+    "command": "python -m pytest tests/system/test_container_readiness_workflow.py tests/system/test_reporting_packaging.py tests/system/test_release_candidate.py -q"
+  },
+  "boundaries": [
+    "This is a Harness container acceptance, not an official competition score.",
+    "The smoke task is synthetic protocol-only evidence.",
+    "No official test opportunity, PyTRiO call, training rerun, or SwanLab sync was used."
+  ]
+}

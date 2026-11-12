@@ -91,13 +91,13 @@ ROUTE-001(DONE)
 
 ### FORMAL-RELEASE-001 正式环境与交付
 
-- 状态：`BLOCKED_EXTERNAL`（全部本地可执行项已完成）
-- 依赖：FORMAL-COMPARE-001、正式SDK/SwanLab规范、可用容器运行时
+- 状态：`BLOCKED_EXTERNAL`（全部本地可执行项已完成，仅等待官方材料）
+- 依赖：FORMAL-COMPARE-001、正式SDK/SwanLab规范
 - 优先级：P4
 - 完成标准：Docker构建、4核8GB断网、正式RuntimeAdapter、最终模型重训SwanLab记录、十轮无人值守、干净环境独立复现及交付审计全部通过
 - 停止条件：外部规范或容器环境缺失时明确`BLOCKED`，不得制造通过证据
-- 本地证据：RC2运行时代码/全新venv均`221 passed`，`pip check`、编译、静态上下文与确定性归档通过；交付包`D:/brace-msi-release/BRACE-MSI-0.2.0rc2/`，源归档SHA-256 `da9e4a4cc04596177ed960a119cc738869097972ef6db27e2311929afbd8b7ae`。
-- 外部剩余：实际Docker镜像与4核8GB断网验收、正式SDK事件映射、评分细则和比赛SwanLab规范；未满足前不得标记全量DONE。
+- 本地证据：RC2运行时代码/全新venv均`221 passed`，`pip check`、编译、静态上下文与确定性源码归档通过；实际镜像170,356,869字节，linux/amd64、UID 10001、无禁入文件，4核8GB断网Smoke完成3候选；最终`docker save`归档SHA-256为`7b64490b0456c4b36bdc6189f34c9ce5e372894b911d76a3b40a6e8142e09327`，证据见`docs/results/RC2_CONTAINER_ACCEPTANCE.json`。
+- 外部剩余：正式SDK事件映射、评分细则和比赛SwanLab规范；未满足前不得标记全量DONE。
 
 ```text
 DOC-001
@@ -245,7 +245,7 @@ SYS-005
 - 完成标准：Dockerfile、一键入口、锁定依赖、合规清单、接入说明和离线HTML报告齐全；构建上下文小于2GB且不含数据/权重/密钥
 - 停止条件：本机没有Docker时仅阻塞实际镜像构建，不阻塞文件与静态验收
 - 实施计划：`docs/plans/FORMAL-CANDIDATE-SYSTEM.md` Task 4
-- 证据：`Dockerfile`、`.dockerignore`、`requirements.lock`、`run.ps1`/`run.sh`、`src/brace_msi/reporting.py`、`packaging.py`、`docs/RUNBOOK.md`、`SDK_INTEGRATION.md`和`OPEN_SOURCE_COMPLIANCE.md`；静态上下文审计73文件/251,854字节、无禁入文件；PowerShell一键Smoke完成3次候选；完整测试`74 passed`。本机无Docker/Podman，实际镜像构建另列阻塞任务
+- 证据：`Dockerfile`、`.dockerignore`、`requirements.lock`、`run.ps1`/`run.sh`、`src/brace_msi/reporting.py`、`packaging.py`、`docs/RUNBOOK.md`、`SDK_INTEGRATION.md`和`OPEN_SOURCE_COMPLIANCE.md`；静态上下文审计73文件/251,854字节、无禁入文件；PowerShell一键Smoke完成3次候选；完整测试`74 passed`。该阶段当时没有容器运行时；后续真实镜像证据已由`PKG-RUNTIME-001`/`RR-001`补齐。
 
 ### SYS-005 三任务模拟正式评测与资源验收
 
@@ -259,22 +259,22 @@ SYS-005
 
 ### PKG-RUNTIME-001 实际Docker镜像构建与4核8GB容器验收
 
-- 状态：`BLOCKED`
+- 状态：`DONE`
 - 依赖：SYS-004、本机或可用环境提供Docker/Podman运行时
 - 优先级：P0，外部环境阻塞
 - 完成标准：实际构建镜像并测量小于2GB；`--network=none --cpus=4 --memory=8g`完整运行；镜像内无数据、权重和密钥
 - 停止条件：没有容器运行时，不得用静态上下文大小冒充镜像大小
-- 当前阻塞：2026-11-07检查PATH及常见Docker/Podman安装位置均未找到运行时
+- 证据：2026-11-12在Docker Desktop 28.5.1 / linux/amd64构建`brace-msi:0.2.0rc2`；镜像170,356,869字节，非root UID 10001，无数据/权重/密钥禁入文件；4核8GB、无网络Smoke完成3个真实协议候选；归档与哈希见`docs/results/RC2_CONTAINER_ACCEPTANCE.json`。
 
 ### RR-001 实际容器运行时验收
 
-- 状态：`BLOCKED`
+- 状态：`DONE`
 - 依赖：SYS-005、L-AUTH-003
 - 优先级：P0，Release Readiness
 - 完成标准：实际Linux镜像小于2GB；4核8GB、断网容器完成非密封Smoke；镜像内无数据、权重和密钥
 - 停止条件：本机无Docker/Podman/可用Linux容器运行时，或安装需要重启/管理员交互
 - 执行清单：`docs/plans/RELEASE-READINESS.md`任务1
-- 阻塞证据：2026-11-07检查确认Docker/Podman不存在；WSL、VirtualMachinePlatform、Hyper-V和Containers Windows功能均为`Disabled`，启用需系统级变更与重启。本轮未修改宿主机。
+- 证据：2026-11-12启用WSL/VMP并重启后，Docker Engine 28.5.1可用；干净提交`e28113c`上缓存重建、镜像审计、4核8GB断网Smoke、`docker save`及重新加载均通过。旧阻塞记录保留在研究进度，当前机器证据见`docs/results/RC2_CONTAINER_ACCEPTANCE.json`。
 
 ### RR-002 干净环境依赖与完整回归
 
@@ -314,7 +314,7 @@ SYS-005
 - 完成标准：生成版本清单、哈希、交付审计、完整测试证据和阻塞表；Git提交且不合并main
 - 停止条件：存在未登记的P0失败、证据与文档冲突或工作树不干净
 - 执行清单：`docs/plans/RELEASE-READINESS.md`任务5
-- 证据：`BRACE-MSI-0.1.0rc1`、确定性源码打包器及发布树测试；全新环境安装的wheel实际CLI完成两协议Smoke和SwanLab 0.10.4离线导出，完整回归`95 passed`、`pip check`通过、上下文124文件/487,662字节且无禁入文件。实际镜像与容器任务保持RR-001 BLOCKED。
+- 证据：`BRACE-MSI-0.1.0rc1`、确定性源码打包器及发布树测试；全新环境安装的wheel实际CLI完成两协议Smoke和SwanLab 0.10.4离线导出，完整回归`95 passed`、`pip check`通过、上下文124文件/487,662字节且无禁入文件。该任务完成时RR-001仍阻塞；当前RC2已在后续任务中补齐真实容器证据。
 
 ### CORE-003 模型能力声明与CPU模型适配
 
@@ -417,11 +417,12 @@ SYS-005
 
 ### PKG-001 受限Docker镜像
 
-- 状态：`BLOCKED`
+- 状态：`DONE`
 - 依赖：INT-001
 - 优先级：P0
 - 完成标准：Linux 4核8GB、无公网运行；镜像小于2GB；无模型权重、Embedding和密钥
 - 停止条件：镜像或运行时违反正式限制
+- 证据：`brace-msi:0.2.0rc2`为linux/amd64、170,356,869字节、非root、无打包数据/权重/Embedding/密钥；在`--network=none --cpus=4 --memory=8g --pids-limit=256`下完成Smoke，归档可由`docker load`重新加载。
 
 ### REPRO-001 独立复现
 

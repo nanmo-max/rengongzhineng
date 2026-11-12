@@ -1,9 +1,9 @@
 # 当前状态
 
 - 最近同步：2026-11-12（Asia/Shanghai）
-- 当前阶段：BRACE-MSI-0.2.0rc2本地Release完成，等待容器/官方平台接入
+- 当前阶段：BRACE-MSI-0.2.0rc2本地Release与真实容器验收完成，等待官方平台接入
 - 当前路线：**Qwen3.5-4B PyTRiO Agent + BRACE确定性Harness + 官方A/B/C工业模型 + 经验证的开源优化方法** `[D-035]`
-- 当前唯一任务：`FORMAL-RELEASE-001`（`BLOCKED_HOST_REBOOT`）；Docker Desktop 28.5.1已安装，WSL与VirtualMachinePlatform已启用，必须重启Windows后继续真实镜像构建与4核8GB断网验收
+- 当前唯一任务：`FORMAL-RELEASE-001`（`BLOCKED_OFFICIAL_MATERIALS`）；本地Docker镜像、4核8GB断网Smoke与`docker save`归档均已通过，只等待正式SDK事件映射、评分细则与比赛SwanLab规范
 - 稳定边界：`BRACE-MSI-0.1.0rc1`历史标签保持不变；当前冲刺候选为`BRACE-MSI-0.2.0rc2`，仍在`task/core-001`且不合并main
 - 官方试运行：0次；不得用于基础调试
 
@@ -21,7 +21,7 @@
 
 ## 当前执行入口
 
-`SPRINT-HARNESS-001`与RC2本地发布均完成。交付包位于`D:/brace-msi-release/BRACE-MSI-0.2.0rc2/`，源码归档SHA-256为`da9e4a4c...bd8b7ae`；代码环境和全新venv均`221 passed`。停止训练与算法扩展；真实容器与平台接入保持外部阻塞。
+`SPRINT-HARNESS-001`与RC2本地发布均完成。最终Harness镜像归档为`D:/brace-msi-release/BRACE-MSI-0.2.0rc2/BRACE-MSI-0.2.0rc2-image-clean.tar`，SHA-256 `7b64490b...2e09327`；镜像170,356,869字节，已在linux/amd64、非root、`--network=none --cpus=4 --memory=8g`下完成3候选协议Smoke。源码归档SHA-256仍为`da9e4a4c...bd8b7ae`，历史回归证据仍为`221 passed`；本次仅额外运行8项发布相关测试并通过。停止训练与算法扩展，只等待官方平台材料。
 
 正式路线、已知能力与未知边界见[FORMAL_ROUTE.md](FORMAL_ROUTE.md)。实验必须遵守[EXPERIMENT_PROTOCOL.md](EXPERIMENT_PROTOCOL.md)。
 
@@ -31,7 +31,7 @@
 - 比赛环境实际Base URL、凭据注入、模型白名单与Token计量待核验 `[H-002]`。
 - 完整评分公式与资源计量实现待发布 `[H-003]`。
 - SwanLab比赛项目、必填字段及无公网同步责任待发布 `[H-004]`。
-- Docker Desktop客户端与后台已安装；Linux引擎因Windows启用WSL组件后的`RebootPending`尚不可用。重启后先执行`docker version`，随后直接构建RC2，不重复测试或训练。
+- Docker宿主机阻塞已解除；真实镜像、体积、禁入文件、非root身份、4核8GB断网Smoke和可重载`docker save`归档均有证据，见`results/RC2_CONTAINER_ACCEPTANCE.json`。
 
 这些缺口不阻塞使用假客户端、官方训练包和本地公开开发数据完成P0/P1实现。
 

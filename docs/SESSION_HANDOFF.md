@@ -3,16 +3,16 @@
 ## 2026-11-12正式路线恢复入口（当前）
 
 1. 当前路线以`docs/FORMAL_ROUTE.md`、D-035至D-037为准：Qwen3.5-4B PyTRiO Agent + BRACE确定性Harness + 官方A/B/C工业模型 + 经验证开源方法。
-2. 当前唯一任务从`STATUS.md`读取；本次同步时`FORMAL-RELEASE-001`为`BLOCKED_HOST_REBOOT`。Docker Desktop已安装且WSL/VMP已启用，重启后直接验证Docker引擎、构建、断网Smoke和`docker save`；不得重跑模型训练、矩阵或完整回归。
+2. 当前唯一任务从`STATUS.md`读取；本次同步时`FORMAL-RELEASE-001`为`BLOCKED_OFFICIAL_MATERIALS`。实际Docker镜像、体积/禁入文件、4核8GB断网Smoke和`docker save`均已通过；不得重跑模型训练、矩阵或完整回归。
 3. A/B/C官方训练器入口位于`src/brace_msi/official_trainer.py`及`official_rounds.py`；新实现必须复用只读清单、隔离子进程和父检查点验证。
 4. PyTRiO边界已在`src/brace_msi/pytrio_agent.py`实现：配置注入、假客户端、严格JSON提案、秘密字段拒绝、Token/延迟收据和确定性降级；专项8项、全量189项测试通过。下一步不得绕过该边界直接调用SDK。
 5. 官方训练器主链位于`src/brace_msi/official_agent_harness.py`，入口`python -m brace_msi official-agent-run`；`FORMAL-AGENT-SMOKE-001`已完成且3/3复算有效。不要续跑该Smoke的剩余轮次或用其公开验证调参。
 6. 执行沙箱位于`src/brace_msi/action_sandbox.py`：工具注册表、参数、估算预算、隔离路径和插件哈希已测试。新动作必须先扩展注册表及测试，不能在Harness内临时分支执行。
 7. `BRACE-MSI-0.1.0rc1`历史标签不修改；当前冲刺候选为`BRACE-MSI-0.2.0rc2`。新代码仍在`task/core-001`，不合并main。
-8. 正式平台事件字段、比赛Base URL/凭据、评分公式、SwanLab规范和真实Docker运行仍是外部缺口；记录阻塞并继续本地不受影响任务。
+8. 正式平台事件字段、比赛Base URL/凭据、评分公式和SwanLab规范仍是外部缺口；Docker本地运行已解除阻塞。
 9. `PERF-A-REPLAY-001`的A1指纹失败和A2有效结果均已保留；A2的开发胜者为`current_only`，不将均匀/类平衡回放带入Gas主线。恢复时不重复核对已冻结哈希或重跑A2，除非相关文件确有更新。
 10. B/C冻结候选分别为5 epoch×3x LR与5 epoch×1x LR；十轮Harness最终C稳定RMSE进一步为51.635999。RC2代码与全新环境均221项测试通过；交付包位于`D:/brace-msi-release/BRACE-MSI-0.2.0rc2/`。无新外部材料或容器环境时保持冻结。
-11. 宿主机已登记重启等待。重启后恢复命令入口：先运行`docker version`；引擎正常后按`.github/workflows/container-readiness.yml`同等参数执行`docker build`、镜像大小/禁入文件检查、`--network=none --cpus=4 --memory=8g` Smoke，最后`docker save`到RC2交付目录。
+11. 最终上传镜像为`D:/brace-msi-release/BRACE-MSI-0.2.0rc2/BRACE-MSI-0.2.0rc2-image-clean.tar`，SHA-256 `7b64490b...2e09327`；验收记录见`docs/results/RC2_CONTAINER_ACCEPTANCE.json`。平台上传时选择该`docker save`归档，不上传源码ZIP冒充镜像。
 
 以下旧恢复入口保留历史上下文；若与本节冲突，以`STATUS.md`、`TASKS.md`和本节为准。
 
@@ -74,7 +74,7 @@
 - 平台无关TaskBootstrap：`src/brace_msi/bootstrap.py`；CPU模型池：`modeling.py`；原子注册与回滚：`registry.py`。
 - 统一Harness：`src/brace_msi/harness.py`；原子检查点：`checkpoint.py`；公开待同步队列：`recording.py`；非交互入口：`python -m brace_msi synthetic-smoke`。
 - 交付入口：根目录`run.ps1`/`run.sh`、`Dockerfile`和`docs/RUNBOOK.md`；静态报告由`python -m brace_msi render-report`生成。
-- 本机无Docker/Podman，`PKG-RUNTIME-001`保持阻塞；不得把`audit_package.py`的上下文大小写成镜像大小。
+- 历史静态上下文证据已由真实Docker验收替代；`PKG-RUNTIME-001`现为DONE，实际镜像大小和归档哈希见`docs/results/RC2_CONTAINER_ACCEPTANCE.json`。
 - 完整系统模拟：`results/LOCAL-FORMAL-SIM-001.md`；有效A2机器产物位于`artifacts/formal_simulation/LOCAL-FORMAL-SIM-001/run-7ef3829/`；A1`run-ce3e907`为INVALID负证据。
 - 模拟输出已通过`validate_simulation_output`：三任务、每任务至少3候选、动作覆盖、唯一批次提交、公开日志白名单和注册表加载均有效。
 - 旧密封段锁继续生效；完整系统开发与模拟评测不得打开或据其结果选型。
@@ -83,7 +83,7 @@
 
 - 当前版本：`BRACE-MSI-0.1.0rc1`；入口见`docs/RELEASE_CANDIDATE.md`。
 - RR-002至RR-005完成；全新安装包通过95项测试、两协议Smoke、SwanLab 0.10.4离线导出和静态交付审计。
-- RR-001保持`BLOCKED`：本机无Docker/Podman且所需Windows虚拟化功能未启用，实际镜像和4核8GB容器没有通过证据。
+- RR-001已完成：Docker Engine 28.5.1、linux/amd64镜像、非root/禁入文件检查、4核8GB断网Smoke及可重载归档均有证据。
 - 正式SDK插件入口：`src/brace_msi/official_sdk.py`和`python -m brace_msi sdk-contract-check`；未知字段不得写入核心。
 - SwanLab入口：`src/brace_msi/swanlab_adapter.py`与`docs/SWANLAB_INTEGRATION.md`；同步必须由人工显式执行。
 - 发布包生成：在干净工作树设置`PYTHONPATH=src`后运行`scripts/build_release_candidate.py`；机器清单必须保留BLOCKED门。
