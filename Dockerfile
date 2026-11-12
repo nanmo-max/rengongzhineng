@@ -13,9 +13,10 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 RUN tdnf install -y shadow-utils \
     && tdnf clean all
-COPY requirements.lock requirements-swanlab.lock pyproject.toml README.md ./
+COPY requirements.lock requirements-swanlab.lock requirements-pytrio.lock pyproject.toml README.md ./
 RUN python3 -m pip install --no-cache-dir --index-url "${PIP_INDEX_URL}" --only-binary=:all: -r requirements.lock
 RUN python3 -m pip install --no-cache-dir --index-url "${PIP_INDEX_URL}" -r requirements-swanlab.lock
+RUN python3 -m pip install --no-cache-dir --index-url "${PIP_INDEX_URL}" -r requirements-pytrio.lock
 COPY src ./src
 RUN python3 -m pip install --no-cache-dir --no-deps .
 

@@ -33,7 +33,7 @@ def test_release_verification_accepts_runtime_commit_with_docs_only_followups(tm
     evidence = tmp_path / "verification.json"
     evidence.write_text(
         '{"runtime_commit":"abc","pytest":{"status":"PASS","passed":221},'
-        '"clean_environment":{"status":"PASS","version":"0.2.0rc2"},'
+        '"clean_environment":{"status":"PASS","version":"0.3.0rc3"},'
         '"pip_check":{"status":"PASS"},"compileall":{"status":"PASS"}}',
         encoding="utf-8",
     )
@@ -52,7 +52,7 @@ def test_release_verification_rejects_runtime_source_change(tmp_path: Path) -> N
     evidence = tmp_path / "verification.json"
     evidence.write_text(
         '{"runtime_commit":"abc","pytest":{"status":"PASS","passed":221},'
-        '"clean_environment":{"status":"PASS","version":"0.2.0rc2"},'
+        '"clean_environment":{"status":"PASS","version":"0.3.0rc3"},'
         '"pip_check":{"status":"PASS"},"compileall":{"status":"PASS"}}',
         encoding="utf-8",
     )

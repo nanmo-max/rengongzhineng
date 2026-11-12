@@ -57,6 +57,10 @@ def test_python312_linux_release_uses_binary_compatible_psutil_and_no_source_bui
     assert "psutil==5.9.8" in requirements
     assert "--only-binary=:all:" in dockerfile
     assert "requirements-swanlab.lock" in dockerfile
+    assert "requirements-pytrio.lock" in dockerfile
+    assert "pytrio==0.2.9" in (root / "requirements-pytrio.lock").read_text(
+        encoding="utf-8"
+    )
     swanlab_install = next(
         line
         for line in dockerfile.splitlines()
