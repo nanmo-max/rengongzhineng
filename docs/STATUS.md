@@ -3,7 +3,7 @@
 - 最近同步：2026-11-12（Asia/Shanghai）
 - 当前阶段：BRACE-MSI-0.2.0rc2本地Release与真实容器验收保持冻结；独立开展正式PyTRiO Sampler微调准备
 - 当前路线：**Qwen3.5-4B PyTRiO Agent + BRACE确定性Harness + 官方A/B/C工业模型 + 经验证的开源优化方法** `[D-035]`
-- 当前唯一任务：`PYTRIO-SFT-001`（`IN_PROGRESS`）；A2已生成持久化Sampler并完成修正复评，下一步是在不修改RC2的独立运行中接入Harness并完成低成本三任务对照。L-AUTH-011继续约束累计PyTRiO预算不超过10元。`FORMAL-RELEASE-001`仍为`BLOCKED_OFFICIAL_MATERIALS`。
+- 当前唯一任务：`PYTRIO-SFT-001`（`IN_PROGRESS`）；A2 Sampler与三任务Harness公平对照已完成，但30/30建议noop、无额外性能价值。按D-042只执行一次有界合规语料SFT和新留出验证；失败即停止LLM调参。L-AUTH-011继续约束累计PyTRiO预算不超过10元。`FORMAL-RELEASE-001`仍为`BLOCKED_OFFICIAL_MATERIALS`。
 - 稳定边界：`BRACE-MSI-0.1.0rc1`历史标签保持不变；当前冲刺候选为`BRACE-MSI-0.2.0rc2`，仍在`task/core-001`且不合并main
 - 官方试运行：0次；不得用于基础调试
 
@@ -22,6 +22,7 @@
 11. `PYTRIO-SFT-001`本地准备完成：24训练/12留出，训练和留出archetype不交叉；assistant-only loss、预算安全率、持久化收据、逐样本Token/哈希、失败保留和预注册SHA fail-closed均有自动测试。该条的“远程调用0次”只属于A1启动前的历史状态，已由下一条真实A1证据取代。
 12. `PYTRIO-SFT-001-A1`真实远程尝试失败并停止：基础模型12例严格schema有效率0，输入4,213 Token、输出2,425 Token；首个训练调用已返回，随后本地`TensorData`解析报`TypeError`，未生成Sampler。失败收据完整保留；已增加`TensorData.to_numpy()`兼容，专项20项及完整回归235项通过，A2未启动。
 13. `PYTRIO-SFT-001-A2`完成18/18远程优化步，最终监督Token损失0.009076，并返回持久化`trio://` Sampler。PyTRiO文本保留Qwen `<|im_end|>`导致原始严格解析误记全0；该原始文件不修改。仅剥离精确终止标记后，同一Sampler在冻结12例留出上schema与预算安全率100%、action/tool/policy匹配率66.67%；完整回归236项通过。基础模型五项均为0。费用按公开单价和本地Token收据保守估算仍低于0.25元，实际以平台用量页为准。
+14. `PYTRIO-HARNESS-001-A2`完成确定性/PyTRiO两臂×A/B/C完整10轮对照，六运行均`valid=true`且各3个真实候选。最终指标逐项相同；Sampler 30/30建议noop，9次最低候选由守卫覆盖，增加20,072/1,961 Token而无性能增益。负结果见`results/PYTRIO-HARNESS-001-A2.md`。
 
 ## 当前执行入口
 

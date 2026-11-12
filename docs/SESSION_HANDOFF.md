@@ -3,7 +3,7 @@
 ## 2026-11-12正式路线恢复入口（当前）
 
 1. 当前路线以`docs/FORMAL_ROUTE.md`、D-035至D-037为准：Qwen3.5-4B PyTRiO Agent + BRACE确定性Harness + 官方A/B/C工业模型 + 经验证开源方法。
-2. 当前唯一任务从`STATUS.md`读取；本次同步时`PYTRIO-SFT-001`为`IN_PROGRESS`，A2持久化Sampler与修正留出复评已完成，下一步是独立三任务Harness对照；`FORMAL-RELEASE-001`仍为`BLOCKED_OFFICIAL_MATERIALS`。实际Docker镜像、体积/禁入文件、4核8GB断网Smoke和`docker save`均已通过；不得重跑既有A/B/C搜索矩阵。
+2. 当前唯一任务从`STATUS.md`读取；本次同步时`PYTRIO-SFT-001`为`IN_PROGRESS`。A2持久化Sampler及三任务对照均完成，但30/30建议noop、无额外性能价值；按D-042仅剩一次有界合规语料SFT。`FORMAL-RELEASE-001`仍为`BLOCKED_OFFICIAL_MATERIALS`；不得重跑既有A/B/C搜索矩阵。
 3. A/B/C官方训练器入口位于`src/brace_msi/official_trainer.py`及`official_rounds.py`；新实现必须复用只读清单、隔离子进程和父检查点验证。
 4. PyTRiO推理边界位于`src/brace_msi/pytrio_agent.py`；SFT语料、留出评测与远程训练边界位于`src/brace_msi/pytrio_sft.py`及`scripts/run_pytrio_sft.py`。当前完整回归236项通过。A2的`persistent_sampler.json`只在Git外本地证据目录，运行时读取路径，不写入公开配置。
 5. 官方训练器主链位于`src/brace_msi/official_agent_harness.py`，入口`python -m brace_msi official-agent-run`；`FORMAL-AGENT-SMOKE-001`已完成且3/3复算有效。不要续跑该Smoke的剩余轮次或用其公开验证调参。
