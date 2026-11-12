@@ -416,3 +416,23 @@
 - A2 Sampler共30次调用，原始建议30次均为noop；每任务前三次由守卫覆盖，合计输入20,072、输出1,961 Token，没有新增工业模型性能。结果按负证据保留，不声称Agent带来性能增益。
 - D-042只允许一次针对最低候选证据的有界SFT与新留出；若失败，停止LLM调参并以确定性BRACE为正式默认。
 
+## 2026-11-12：PYTRIO-SFT-001-A3合规Sampler
+
+- 使用冻结的48训练/12新留出合规语料执行D-042允许的唯一一次追加SFT；Qwen3.5-4B、rank8、3 epoch、batch4、学习率`1e-4`，36/36远程步骤完成，最终监督Token损失0.017709。
+- 基础模型在新留出上的schema/budget/action/tool/policy分别为83.33%/66.67%/50%/50%/50%；A3持久化Sampler五项均为100%。完整`trio://`路径只在Git外`result.json`收据，不写公开配置。
+- A/B/C真实首轮均由模型主动提出`incremental_update`，3/3候选通过门控且0最低候选守卫覆盖；满足预注册成功标准。按D-043停止全部后续LLM调参。
+
+## 2026-11-12：PYTRIO-COMPETITIVE-001-A1
+
+- A3 Sampler负责结构化动作意图，确定性BRACE只应用已经冻结的任务参数日程并保留预算、沙箱和SafetyGate；不新增工业模型参数搜索。
+- A/B/C各完成10轮和3个真实候选，逐任务`validate-only`均返回`valid=true`，0守卫覆盖、0服务回退。最终主指标为0.725695 Macro-F1、637.180224 RMSE和51.635999 RMSE；B/C MAE同步改善。
+- 总输入/输出Token为20,362/2,272；三任务CPU为2.516/4.812/33.750秒，峰值RSS均低于512MiB。A第8轮、C第10轮各一次预算耗尽后的额外训练建议在训练前被拒绝，没有资源消耗或父链污染。
+- 结论边界：Agent实现了自主合规动作选择，但工业模型性能来自冻结参数和门控，不把二者混写为LLM性能增益。公开验证历史暴露，官方试运行0次。
+
+## 2026-11-12：BRACE-MSI-0.3.0rc3本地发布验收
+
+- 源提交`66f1cae`构建`brace-msi:0.3.0rc3`，linux/amd64、240,579,085字节、非root UID10001；镜像内`brace-msi 0.3.0rc3`、`pytrio 0.2.9`、无Torch、无数据/模型权重/API密钥，`pip check`通过。
+- 在`--network=none --cpus=4 --memory=8g --pids-limit=256`下，两种内部协议Smoke均完成，候选数分别3与4。`docker save`归档240,602,112字节，SHA-256 `0daef2e0e66cd2d3bc809a5d836a03020d1f90d677df91830fedc4feeb6d325a`，`docker load`验证通过。
+- 打包前代码回归`243 passed in 66.60s`；发布工具增加证据强校验后最终全量回归`246 passed in 69.62s`。全新venv安装锁定依赖、PyTRiO和项目后`pip check`通过，回归`243 passed in 65.46s`。第一次项目构建隔离因本机配置镜像TLS证书链失败，未绕过TLS；在已安装锁定构建依赖后用`--no-build-isolation`成功，失败事实保留在RC3验证记录。
+- 发布工具新增真实容器证据和镜像归档哈希强校验，相关定向回归15项通过。该证据只证明本地Harness交付，不是官方隐藏评测成绩。
+

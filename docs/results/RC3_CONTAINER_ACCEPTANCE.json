@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "release_id": "BRACE-MSI-0.3.0rc3",
+  "evidence_scope": "local_pytrio_enabled_container_release_acceptance",
+  "official_score": false,
+  "source_commit": "66f1cae",
+  "image": {
+    "tag": "brace-msi:0.3.0rc3",
+    "id": "sha256:58251122bdd1ae223f0249766b77c4a79a002d60b6326b851299f6b9d8bd2c40",
+    "config_digest": "sha256:3ed60a42404cb93518c4cf629f46ee08440200afa5",
+    "os": "linux",
+    "architecture": "amd64",
+    "size_bytes": 240579085,
+    "under_2gb": true,
+    "runtime_user": "brace",
+    "runtime_uid": 10001,
+    "forbidden_files": [],
+    "torch_installed": false,
+    "brace_msi_version": "0.3.0rc3",
+    "pytrio_version": "0.2.9",
+    "pip_check": "PASS"
+  },
+  "build": {
+    "engine": "Docker Engine 28.5.1",
+    "base_image": "mcr.microsoft.com/azurelinux/base/python:3.12",
+    "base_digest": "sha256:379135d4dbe66b12825a54d4ed7aef21aa61227533ff1b9151d70f95f9266746",
+    "local_index_override": "https://pypi.tuna.tsinghua.edu.cn/simple"
+  },
+  "runtime_acceptance": {
+    "network": "none",
+    "cpus": 4,
+    "memory_bytes": 8589934592,
+    "pids_limit": 256,
+    "status": "completed",
+    "protocols": [
+      {
+        "name": "predict_then_feedback",
+        "candidate_count": 3,
+        "summary_sha256": "153656a6926b0e2abb74cacfa3a705fe7ec567543c4b9b228be7764e559aca3e"
+      },
+      {
+        "name": "labeled_train_then_predict",
+        "candidate_count": 4,
+        "summary_sha256": "606a91b0c141e8e0ded431833ac7376be487e894a8275203242a201cf3c464e4"
+      }
+    ]
+  },
+  "archive": {
+    "format": "docker save tar",
+    "path": "D:/brace-msi-release/BRACE-MSI-0.3.0rc3/BRACE-MSI-0.3.0rc3-image-clean.tar",
+    "size_bytes": 240602112,
+    "sha256": "0daef2e0e66cd2d3bc809a5d836a03020d1f90d677df91830fedc4feeb6d325a",
+    "docker_load_verified": true
+  },
+  "tests": {
+    "runtime_environment_before_release_tooling": "243 passed in 66.60s",
+    "final_source_environment": "246 passed in 69.62s",
+    "clean_environment": "243 passed in 65.46s",
+    "release_tooling": "15 passed in 13.52s",
+    "compileall": "PASS",
+    "pip_check": "PASS"
+  },
+  "boundaries": [
+    "This is local Harness container evidence, not an official competition score.",
+    "The container smoke inputs are synthetic protocol-only data.",
+    "The image includes the PyTRiO client but no API key, industrial model weight, raw dataset, embedding model or torch package.",
+    "No official test opportunity or SwanLab sync was used."
+  ]
+}

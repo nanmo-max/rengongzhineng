@@ -7,7 +7,7 @@
 ```text
 ROUTE-001(DONE)
   -> PYTRIO-001(DONE)
-  -> PYTRIO-SFT-001(IN_PROGRESS)
+  -> PYTRIO-SFT-001(DONE)
   -> OFFICIAL-HARNESS-002(DONE)
   -> ACTION-SANDBOX-001(DONE)
   -> PERF-A-001(DONE) -> PERF-B-001(DONE) -> PERF-C-001(DONE)
@@ -40,7 +40,7 @@ ROUTE-001(DONE)
 
 ### PYTRIO-SFT-001 BRACE结构化提案Sampler微调
 
-- 状态：`IN_PROGRESS`（L-AUTH-011已授权在10元总预算内自主执行A2及后续受控验证）
+- 状态：`DONE`（A3达到预注册门；按D-043永久停止继续LLM调参）
 - 依赖：PYTRIO-001、Qwen3.5-4B位于当前PyTRiO模型白名单、用户已完成本机`trio login`
 - 优先级：P0
 - 完成标准：生成不含原始样本/密钥的版本化训练与留出评测语料；普通生成式SFT只监督assistant JSON；训练前后比较严格schema有效率、允许动作匹配率和预算安全性；保存持久化Sampler路径；本地记录数据哈希、SDK版本、超参数、loss、Token/步骤与失败；Sampler异常仍由确定性Harness降级
@@ -50,6 +50,8 @@ ROUTE-001(DONE)
 - A1失败证据：`D:/brace-msi-pytrio/PYTRIO-SFT-001-A1/failure.json`；基础评测12/12完成，4,213输入Token、2,425输出Token，严格schema有效率0；远程首步已返回但在本地loss换算时因`TensorData`不能直接传给NumPy而中止，无持久化Sampler。已改为优先`to_numpy()`并新增真实SDK形态及远程请求/完成分离回归测试；专项20项、完整回归235项通过，未自动重试。
 - A2成功证据：`D:/brace-msi-pytrio/PYTRIO-SFT-001-A2/`；18/18远程步完成、最终loss 0.009076、持久化Sampler已保存。原始后评测因精确Qwen终止标记被严格JSON解析器误判且保留；修复后同Sampler复评schema/budget 100%、action/tool/policy 66.67%，完整回归236项通过。下一停止条件为三任务受控对照完成并确认确定性降级不变。
 - 三任务对照：`PYTRIO-HARNESS-001-A2`六运行均复算有效，PyTRiO与确定性最终指标完全相同；Sampler 30/30建议noop并由守卫完成最低候选，故任务尚不能以“Agent有额外价值”完成。按D-042只剩一次合规语料SFT及新留出，随后无论正负均停止LLM调参并确定正式默认。
+- A3完成证据：`D:/brace-msi-pytrio/PYTRIO-SFT-001-A3/`；36/36远程步骤、最终loss 0.017709，新留出五项100%，真实A/B/C首轮3/3主动更新且0守卫覆盖。完整Sampler路径仅在Git外收据。
+- 竞争候选证据：`D:/brace-msi-pytrio/PYTRIO-COMPETITIVE-001-A1/`；三任务各10轮/3候选，逐项复算`valid=true`，最终A/B/C为0.725695/637.180224/51.635999。两次预算耗尽后的额外建议被训练前沙箱拒绝。见`docs/results/PYTRIO-COMPETITIVE-001-A1.md`。
 
 ### OFFICIAL-HARNESS-002 官方训练器主Harness接入
 
@@ -105,12 +107,13 @@ ROUTE-001(DONE)
 
 ### FORMAL-RELEASE-001 正式环境与交付
 
-- 状态：`BLOCKED_EXTERNAL`（全部本地可执行项已完成，仅等待官方材料）
+- 状态：`BLOCKED_EXTERNAL`（RC3全部本地可执行项已完成，仅等待官方运行材料）
 - 依赖：FORMAL-COMPARE-001、正式SDK/SwanLab规范
 - 优先级：P4
 - 完成标准：Docker构建、4核8GB断网、正式RuntimeAdapter、最终模型重训SwanLab记录、十轮无人值守、干净环境独立复现及交付审计全部通过
 - 停止条件：外部规范或容器环境缺失时明确`BLOCKED`，不得制造通过证据
 - 本地证据：RC2运行时代码/全新venv均`221 passed`，`pip check`、编译、静态上下文与确定性源码归档通过；实际镜像170,356,869字节，linux/amd64、UID 10001、无禁入文件，4核8GB断网Smoke完成3候选；最终`docker save`归档SHA-256为`7b64490b0456c4b36bdc6189f34c9ce5e372894b911d76a3b40a6e8142e09327`，证据见`docs/results/RC2_CONTAINER_ACCEPTANCE.json`。
+- RC3本地证据：最终代码回归`246 passed`、打包前全新venv`243 passed`；PyTRiO0.2.9依赖无冲突；实际镜像240,579,085字节、linux/amd64、UID10001、无Torch/数据/权重/密钥；4核8GB断网双协议Smoke完成3/4候选；`docker save`归档SHA-256为`0daef2e0e66cd2d3bc809a5d836a03020d1f90d677df91830fedc4feeb6d325a`并已重载。证据见`docs/results/RC3_CONTAINER_ACCEPTANCE.json`。
 - 外部剩余：正式SDK事件映射、评分细则和比赛SwanLab规范；未满足前不得标记全量DONE。
 
 ```text

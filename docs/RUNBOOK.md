@@ -40,6 +40,15 @@ $env:PYTHONPATH='src'; python scripts/audit_package.py
 
 该静态检查不能替代实际镜像构建、离线安装和大小检查。
 
+当前已验收上传归档：
+
+```text
+D:/brace-msi-release/BRACE-MSI-0.3.0rc3/BRACE-MSI-0.3.0rc3-image-clean.tar
+SHA-256: 0daef2e0e66cd2d3bc809a5d836a03020d1f90d677df91830fedc4feeb6d325a
+```
+
+平台要求的是`docker save`归档，不是源码ZIP。上传后选择该Harness镜像。不要把A/B/C检查点、Sampler权重或API Key另行打入镜像。
+
 ## 干净环境回归
 
 运行依赖锁定在`requirements.lock`，测试工具锁定在`requirements-dev.lock`。在全新环境中：
@@ -79,8 +88,10 @@ D:\anaconda3\python.exe scripts\run_pytrio_sft.py `
   --execute
 ```
 
-`PYTRIO-SFT-001-A1`已是失败历史，不得复用。任何后续远程执行必须先获得新的付费授权并使用
-全新运行目录；脚本会拒绝复用已有目录，避免覆盖失败或负结果。
-只有`result.json`状态为`succeeded`、`sampler_model_path`以`trio://`开头且训练后留出门通过时，
-才可把该路径填入平台“持久化Sampler微调权重”。失败时使用基础模型或确定性降级，不删除
-`failure.json`。
+`PYTRIO-SFT-001-A1`是失败历史，A2是格式成功但三任务30/30 noop的负对照，均不得复用或覆盖。D-042允许的最后一次A3已经成功，路径位于Git外：
+
+```text
+D:/brace-msi-pytrio/PYTRIO-SFT-001-A3/result.json -> sampler_model_path
+```
+
+平台提交时复制该字段的完整`trio://`路径，不要自行拼接；基座选择`Qwen/Qwen3.5-4B`，API Key只填平台表单。按D-043不再运行新的SFT。服务异常时Harness回退确定性策略，不删除任何`failure.json`或负结果。

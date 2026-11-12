@@ -176,6 +176,71 @@ def load_release_verification(
     return evidence
 
 
+def load_container_acceptance(
+    evidence_path: Path, archive_path: Path
+) -> dict[str, object]:
+    """Validate that a recorded container acceptance matches the upload tar."""
+
+    try:
+        evidence = json.loads(Path(evidence_path).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise RuntimeError("container acceptance evidence is invalid") from exc
+    archive_path = Path(archive_path).resolve()
+    if not archive_path.is_file():
+        raise RuntimeError("container archive is missing")
+    image = evidence.get("image") if isinstance(evidence, dict) else None
+    runtime = evidence.get("runtime_acceptance") if isinstance(evidence, dict) else None
+    archive = evidence.get("archive") if isinstance(evidence, dict) else None
+    if evidence.get("release_id") != RELEASE_ID:
+        raise RuntimeError("container acceptance release ID does not match")
+    if not isinstance(image, dict) or not isinstance(runtime, dict) or not isinstance(archive, dict):
+        raise RuntimeError("container acceptance evidence schema is invalid")
+    if (
+        image.get("under_2gb") is not True
+        or image.get("runtime_uid") == 0
+        or image.get("forbidden_files") != []
+        or image.get("pip_check") != "PASS"
+    ):
+        raise RuntimeError("container image acceptance gates are not PASS")
+    if (
+        runtime.get("network") != "none"
+        or runtime.get("cpus") != 4
+        or runtime.get("memory_bytes") != 8 * 1024**3
+        or runtime.get("status") != "completed"
+    ):
+        raise RuntimeError("container runtime acceptance gates are not PASS")
+    if archive.get("docker_load_verified") is not True:
+        raise RuntimeError("container archive was not verified with docker load")
+    actual_size = archive_path.stat().st_size
+    if archive.get("size_bytes") != actual_size:
+        raise RuntimeError("container archive size does not match evidence")
+    actual_sha256 = _sha256(archive_path)
+    if archive.get("sha256") != actual_sha256:
+        raise RuntimeError("container archive SHA-256 does not match evidence")
+    return {
+        "source_path": str(archive_path),
+        "size_bytes": actual_size,
+        "sha256": actual_sha256,
+    }
+
+
+def container_manifest_fields(
+    metadata: dict[str, object], archive_name: str
+) -> dict[str, object]:
+    return {
+        "release_gates": {
+            "docker_image_build": "PASS",
+            "linux_4core_8gb_container": "PASS",
+        },
+        "image_artifact": {
+            "path": archive_name,
+            "size_bytes": metadata["size_bytes"],
+            "sha256": metadata["sha256"],
+            "format": "docker save tar",
+        },
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", type=Path, required=True)
@@ -184,6 +249,8 @@ def main() -> int:
         type=Path,
         help="reuse recorded PASS checks when only release docs/tooling changed afterward",
     )
+    parser.add_argument("--container-evidence", type=Path, required=True)
+    parser.add_argument("--image-archive", type=Path, required=True)
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
     output = args.output.resolve()
@@ -192,6 +259,10 @@ def main() -> int:
     status = _git(root, "status", "--porcelain", "--untracked-files=all")
     if status:
         raise RuntimeError("release source tree must be clean before packaging")
+
+    container = load_container_acceptance(
+        args.container_evidence.resolve(), args.image_archive.resolve()
+    )
 
     if args.verification_evidence:
         recorded = json.loads(args.verification_evidence.read_text(encoding="utf-8"))
@@ -219,11 +290,14 @@ def main() -> int:
     if audit.blocking_findings:
         raise RuntimeError(f"release tree audit failed: {audit.blocking_findings}")
     output.mkdir(parents=True)
+    image_name = f"{RELEASE_ID}-image-clean.tar"
+    shutil.copy2(Path(str(container["source_path"])), output / image_name)
     source_archive = output / f"{RELEASE_ID}-source.zip"
     source_sha256 = build_source_archive(
         root, source_archive, select_release_files(tracked)
     )
     evidence = _copy_public_evidence(root, output)
+    container_fields = container_manifest_fields(container, image_name)
     manifest = {
         "schema_version": 1,
         "release_id": RELEASE_ID,
@@ -246,15 +320,14 @@ def main() -> int:
             "source_tree_audit": "PASS",
             "clean_environment_regression": "PASS",
             "swanlab_generic_offline": "PASS",
-            "docker_image_build": "BLOCKED_NO_RUNTIME",
-            "linux_4core_8gb_container": "BLOCKED_NO_RUNTIME",
+            **container_fields["release_gates"],
             "official_sdk_mapping": "BLOCKED_OFFICIAL_SDK",
             "official_public_training_packages": "PASS",
             "official_runtime_data_mapping": "BLOCKED_OFFICIAL_SDK",
             "official_scoring_optimization": "BLOCKED_OFFICIAL_RULES",
             "competition_swanlab_sync": "BLOCKED_OFFICIAL_SPEC",
         },
-        "image_artifact": None,
+        "image_artifact": container_fields["image_artifact"],
     }
     manifest_path = output / "release-manifest.json"
     manifest_path.write_text(

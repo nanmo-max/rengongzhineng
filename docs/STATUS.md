@@ -1,10 +1,10 @@
 # 当前状态
 
 - 最近同步：2026-11-12（Asia/Shanghai）
-- 当前阶段：BRACE-MSI-0.2.0rc2本地Release与真实容器验收保持冻结；独立开展正式PyTRiO Sampler微调准备
+- 当前阶段：`BRACE-MSI-0.3.0rc3`本地正式候选已完成PyTRiO、三任务十轮、真实容器与干净环境验收；停止本地调参，等待官方运行接口
 - 当前路线：**Qwen3.5-4B PyTRiO Agent + BRACE确定性Harness + 官方A/B/C工业模型 + 经验证的开源优化方法** `[D-035]`
-- 当前唯一任务：`PYTRIO-SFT-001`（`IN_PROGRESS`）；A3一次性合规语料已冻结并预注册，下一步执行36步有界SFT、新留出和真实A/B/C首轮动作验证。无论正负均按D-042停止继续调参。L-AUTH-011继续约束累计PyTRiO预算不超过10元。`FORMAL-RELEASE-001`仍为`BLOCKED_OFFICIAL_MATERIALS`。
-- 稳定边界：`BRACE-MSI-0.1.0rc1`历史标签保持不变；当前冲刺候选为`BRACE-MSI-0.2.0rc2`，仍在`task/core-001`且不合并main
+- 当前唯一任务：`FORMAL-RELEASE-001`（`BLOCKED_EXTERNAL`）；全部本地可执行项已完成。只等待正式SDK事件/挂载、比赛Base URL与凭据注入、评分公式及SwanLab比赛规范，不制造替代证据。
+- 稳定边界：`BRACE-MSI-0.1.0rc1`与`0.2.0rc2`历史保持不变；当前候选为`BRACE-MSI-0.3.0rc3`，仍在`task/core-001`且不合并main。A3之后禁止继续LLM调参 `[D-043]`
 - 官方试运行：0次；不得用于基础调试
 
 ## 已确认
@@ -23,10 +23,13 @@
 12. `PYTRIO-SFT-001-A1`真实远程尝试失败并停止：基础模型12例严格schema有效率0，输入4,213 Token、输出2,425 Token；首个训练调用已返回，随后本地`TensorData`解析报`TypeError`，未生成Sampler。失败收据完整保留；已增加`TensorData.to_numpy()`兼容，专项20项及完整回归235项通过，A2未启动。
 13. `PYTRIO-SFT-001-A2`完成18/18远程优化步，最终监督Token损失0.009076，并返回持久化`trio://` Sampler。PyTRiO文本保留Qwen `<|im_end|>`导致原始严格解析误记全0；该原始文件不修改。仅剥离精确终止标记后，同一Sampler在冻结12例留出上schema与预算安全率100%、action/tool/policy匹配率66.67%；完整回归236项通过。基础模型五项均为0。费用按公开单价和本地Token收据保守估算仍低于0.25元，实际以平台用量页为准。
 14. `PYTRIO-HARNESS-001-A2`完成确定性/PyTRiO两臂×A/B/C完整10轮对照，六运行均`valid=true`且各3个真实候选。最终指标逐项相同；Sampler 30/30建议noop，9次最低候选由守卫覆盖，增加20,072/1,961 Token而无性能增益。负结果见`results/PYTRIO-HARNESS-001-A2.md`。
+15. `PYTRIO-SFT-001-A3`完成36/36远程步骤，最终loss 0.017709；新留出schema/action/tool/budget/policy均100%，A/B/C真实首轮3/3主动提出并执行更新，0守卫覆盖。持久化Sampler路径只保存在Git外收据。
+16. `PYTRIO-COMPETITIVE-001-A1`三任务各10轮/3候选，均`valid=true`、0守卫覆盖、0服务回退；A/B/C最终为0.725695 Macro-F1、637.180224 RMSE、51.635999 RMSE。性能来自冻结参数日程与门控，Agent贡献限于合规动作意图；2次预算耗尽后额外建议均在训练前拒绝。
+17. `BRACE-MSI-0.3.0rc3`真实镜像为linux/amd64、240,579,085字节、UID10001，含PyTRiO0.2.9但无Torch、数据、权重或密钥；4核8GB断网双协议Smoke、`pip check`和`docker load`通过；最终代码回归246项、打包前干净环境回归243项通过。证据见`results/RC3_CONTAINER_ACCEPTANCE.json`。
 
 ## 当前执行入口
 
-`SPRINT-HARNESS-001`与RC2本地发布均完成。最终Harness镜像归档为`D:/brace-msi-release/BRACE-MSI-0.2.0rc2/BRACE-MSI-0.2.0rc2-image-clean.tar`，SHA-256 `7b64490b...2e09327`；镜像保持冻结，不重训A/B/C。PyTRiO A1/A2证据目录均已锁定；当前从A2的持久化Sampler进入独立Harness对照，模型路径只从本地收据/运行时配置读取，不写入公开配置。
+本地当前上传入口为`D:/brace-msi-release/BRACE-MSI-0.3.0rc3/BRACE-MSI-0.3.0rc3-image-clean.tar`，SHA-256 `0daef2e0...6d325a`；完整A3 `trio://`路径从`D:/brace-msi-pytrio/PYTRIO-SFT-001-A3/result.json`读取并填入平台，不写入公开Git配置。A1失败、A2负对照、A3成功和RC2历史均不得覆盖。
 
 正式路线、已知能力与未知边界见[FORMAL_ROUTE.md](FORMAL_ROUTE.md)。实验必须遵守[EXPERIMENT_PROTOCOL.md](EXPERIMENT_PROTOCOL.md)。
 
@@ -36,7 +39,7 @@
 - 比赛环境实际Base URL、凭据注入、模型白名单与Token计量待核验 `[H-002]`。
 - 完整评分公式与资源计量实现待发布 `[H-003]`。
 - SwanLab比赛项目、必填字段及无公网同步责任待发布 `[H-004]`。
-- Docker宿主机阻塞已解除；真实镜像、体积、禁入文件、非root身份、4核8GB断网Smoke和可重载`docker save`归档均有证据，见`results/RC2_CONTAINER_ACCEPTANCE.json`。
+- Docker宿主机阻塞已解除；RC3真实镜像、体积、禁入文件、非root身份、4核8GB断网双协议Smoke和可重载归档均有证据，见`results/RC3_CONTAINER_ACCEPTANCE.json`。
 
 这些缺口不阻塞PyTRiO SFT。L-AUTH-011允许在累计10元内自动继续；每次仍使用新目录、固定预注册语料和本地Token收据，费用接近上限时停止。
 

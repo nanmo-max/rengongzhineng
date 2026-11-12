@@ -1,0 +1,40 @@
+{
+  "format": "brace-msi.release-verification.v1",
+  "release_id": "BRACE-MSI-0.3.0rc3",
+  "runtime_commit": "66f1cae",
+  "pytest": {
+    "status": "PASS",
+    "passed": 246,
+    "seconds": 69.62,
+    "command": "python -m pytest -q --tb=short"
+  },
+  "clean_environment": {
+    "status": "PASS",
+    "path": "D:/brace-msi-release/BRACE-MSI-0.3.0rc3/clean-venv",
+    "version": "0.3.0rc3",
+    "pytrio_version": "0.2.9",
+    "pytest_passed": 243,
+    "pytest_seconds": 65.46,
+    "initial_build_isolation_failure": "TLS certificate chain failure while re-fetching setuptools from the configured mirror",
+    "successful_install_mode": "--no-build-isolation after locked dependencies were installed"
+  },
+  "pip_check": {
+    "status": "PASS",
+    "summary": "No broken requirements found."
+  },
+  "compileall": {
+    "status": "PASS",
+    "targets": ["src", "tests", "scripts"]
+  },
+  "docker_context": {
+    "status": "PASS",
+    "included_file_count": 216,
+    "total_bytes": 1547005,
+    "under_2gb": true,
+    "forbidden_files": []
+  },
+  "container_runtime": {
+    "status": "PASS",
+    "evidence": "docs/results/RC3_CONTAINER_ACCEPTANCE.json"
+  }
+}

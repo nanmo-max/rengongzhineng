@@ -327,6 +327,21 @@
 - 事实：B/C有界矩阵均9/9成功并冻结；三任务各完成10轮、3次真实候选和7次no-op，机器复算有效。运行时代码与全新venv均221项测试通过，wheel版本0.2.0rc2，`pip check`与编译检查通过。
 - 边界：全部性能指标来自历史暴露公开开发/validation，不是隐藏测试或官方成绩；官方试运行、真实PyTRiO、SwanLab正式记录均为0。镜像仅有静态上下文证据，实际Docker/4核8GB仍BLOCKED。
 
+### L-EVIDENCE-006 A3 PyTRiO Sampler与三任务竞争候选
+
+- 来源：`PYTRIO-SFT-001-A3`与`PYTRIO-COMPETITIVE-001-A1`；执行提交分别基于`9db3035`/`6085c73`及`0b556c0`/`c078c5c`。
+- 本地路径：`D:/brace-msi-pytrio/PYTRIO-SFT-001-A3/`、`D:/brace-msi-pytrio/PYTRIO-COMPETITIVE-001-A1/`。
+- 事实：A3完成36/36远程步骤并生成持久化Sampler，新留出schema/action/tool/budget/policy均100%；A/B/C真实首轮3/3主动更新。竞争运行三任务各10轮/3候选并逐项`valid=true`，最终A/B/C为0.725695 Macro-F1、637.180224 RMSE和51.635999 RMSE。
+- 资源与安全：总输入/输出Token为20,362/2,272；0守卫覆盖、0服务回退；2次预算耗尽后的额外建议在训练前拒绝。A3之后按D-043停止LLM调参。
+- 边界：公开验证历史暴露，性能来自已冻结任务参数与门控，不能归因为LLM单独增益；完整Sampler路径和凭据不进入Git；官方试运行和SwanLab使用均0。
+
+### L-EVIDENCE-007 RC3真实容器与干净环境验收
+
+- 来源：`docs/results/RC3_CONTAINER_ACCEPTANCE.json`、`docs/results/RC3_VERIFICATION.json`。
+- 事实：`brace-msi:0.3.0rc3`为linux/amd64、240,579,085字节、UID10001；PyTRiO0.2.9可导入，Torch未安装，镜像无数据、模型权重或密钥。4核8GB断网双协议Smoke完成；`docker save`归档240,602,112字节且重载通过。
+- 回归：最终代码246项、打包前全新venv243项测试通过，`pip check`和编译通过；发布工具定向15项通过。
+- 边界：属于本地Harness交付证据，不是官方隐藏评测或SwanLab正式训练记录。
+
 ## 待核实假设与冲突
 
 ### H-001 正式批次协议
