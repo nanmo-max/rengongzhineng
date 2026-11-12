@@ -35,6 +35,10 @@ FROZEN_SEED = 20261112
 # Remote runs fail closed unless both values match the preregistered files.
 FROZEN_TRAIN_SHA256 = "1d6763854a307ccbd10f1b2b6c49a748d8272288ff2dcf9665d9f58f3b0717c3"
 FROZEN_EVALUATION_SHA256 = "5119947ed2f81b99bc32729d6e53aa7d4fa86472feb0bc4953aa8fff9c6bb824"
+COMPLIANCE_CORPUS_FORMAT = "brace-msi.pytrio-sft-compliance-corpus.v2"
+COMPLIANCE_SEED = 20261113
+COMPLIANCE_TRAIN_SHA256 = "c9802d49df370e5a61303edbd57b9dd1a59181ec7b07f651ad3ba9ee60935f69"
+COMPLIANCE_EVALUATION_SHA256 = "67b823d9006c797edd5e8f1e39d492553d68dae694d18a8f0cea058882161b12"
 EXECUTABLE_ACTIONS = (
     Action.NOOP.value,
     Action.INCREMENTAL_UPDATE.value,
@@ -74,6 +78,7 @@ class PyTrioSftRunConfig:
     seed: int = FROZEN_SEED
     max_eval_tokens: int = 512
     weight_name: str = "brace-msi-agent-sft-v1"
+    corpus_version: str = "v1"
 
     def __post_init__(self) -> None:
         if not self.base_model.strip():
@@ -90,6 +95,8 @@ class PyTrioSftRunConfig:
             raise ValueError("max_eval_tokens must be in [64, 4096]")
         if not self.weight_name.strip() or len(self.weight_name) > 80:
             raise ValueError("weight_name is invalid")
+        if self.corpus_version not in {"v1", "compliance_v2"}:
+            raise ValueError("unsupported corpus_version")
 
 
 def encode_sft_example(
@@ -189,6 +196,7 @@ def run_remote_pytrio_sft(
         "seed": config.seed,
         "max_eval_tokens": config.max_eval_tokens,
         "weight_name": config.weight_name,
+        "corpus_version": config.corpus_version,
         "persistent_sampler": True,
         "credentials": "pytrio_runtime_only",
         "pytrio_version": None,
@@ -207,14 +215,19 @@ def run_remote_pytrio_sft(
         if trio_module is None:
             import pytrio as trio_module  # type: ignore[no-redef]
         run_spec["pytrio_version"] = package_version("pytrio")
-        corpus_manifest = materialize_brace_sft_corpus(
-            root / "corpus", seed=config.seed
-        )
+        if config.corpus_version == "v1":
+            corpus = build_brace_sft_corpus(seed=config.seed)
+            corpus_manifest = materialize_brace_sft_corpus(
+                root / "corpus", seed=config.seed
+            )
+        else:
+            corpus = build_compliance_sft_corpus(seed=config.seed)
+            corpus_manifest = materialize_compliance_sft_corpus(
+                root / "corpus", seed=config.seed
+            )
         _validate_frozen_corpus(corpus_manifest, config)
         run_spec["corpus_manifest"] = corpus_manifest
         _write_json(root / "run_spec.json", run_spec)
-        corpus = build_brace_sft_corpus(seed=config.seed)
-
         stage = "service_capabilities"
         service = trio_module.ServiceClient()
         supported_models = list(service.get_supported_models())
@@ -491,11 +504,20 @@ def _numeric_array(value: Any) -> np.ndarray:
 def _validate_frozen_corpus(
     manifest: dict[str, Any], config: PyTrioSftRunConfig
 ) -> None:
-    if config.seed != FROZEN_SEED:
+    expected = {
+        "v1": (FROZEN_SEED, FROZEN_TRAIN_SHA256, FROZEN_EVALUATION_SHA256),
+        "compliance_v2": (
+            COMPLIANCE_SEED,
+            COMPLIANCE_TRAIN_SHA256,
+            COMPLIANCE_EVALUATION_SHA256,
+        ),
+    }[config.corpus_version]
+    seed, train_sha256, evaluation_sha256 = expected
+    if config.seed != seed:
         raise ValueError("remote SFT seed differs from the preregistered seed")
-    if manifest.get("train_sha256") != FROZEN_TRAIN_SHA256:
+    if manifest.get("train_sha256") != train_sha256:
         raise ValueError("training corpus hash differs from preregistration")
-    if manifest.get("evaluation_sha256") != FROZEN_EVALUATION_SHA256:
+    if manifest.get("evaluation_sha256") != evaluation_sha256:
         raise ValueError("evaluation corpus hash differs from preregistration")
 
 
@@ -580,15 +602,92 @@ def materialize_brace_sft_corpus(
 ) -> dict[str, Any]:
     """Write JSONL inputs and a hash manifest without remote side effects."""
 
+    return _materialize_sft_corpus(
+        output_dir,
+        build_brace_sft_corpus(seed=seed),
+        corpus_format=CORPUS_FORMAT,
+        seed=seed,
+    )
+
+
+def build_compliance_sft_corpus(*, seed: int = COMPLIANCE_SEED) -> SftCorpus:
+    """Build the single bounded compliance corpus authorized by D-042."""
+
+    train = list(build_brace_sft_corpus(seed=FROZEN_SEED).train)
+    evaluation: list[SftExample] = []
+    for task_kind in ("classification", "regression"):
+        for variant in range(4):
+            for archetype in (
+                "required_first_candidate",
+                "required_followup_candidate",
+            ):
+                train.append(
+                    _build_compliance_example(
+                        seed=seed,
+                        task_kind=task_kind,
+                        archetype=archetype,
+                        variant=variant,
+                    )
+                )
+        for variant in range(2):
+            for archetype in ("minimum_complete", "unsafe_required_window"):
+                train.append(
+                    _build_compliance_example(
+                        seed=seed,
+                        task_kind=task_kind,
+                        archetype=archetype,
+                        variant=variant,
+                    )
+                )
+        for index, archetype in enumerate(
+            (
+                "heldout_first_candidate",
+                "heldout_first_candidate_positive",
+                "heldout_followup_accepted",
+                "heldout_followup_rejected",
+                "heldout_minimum_complete",
+                "heldout_unsafe_window",
+            )
+        ):
+            evaluation.append(
+                _build_compliance_example(
+                    seed=seed,
+                    task_kind=task_kind,
+                    archetype=archetype,
+                    variant=10 + index,
+                )
+            )
+    return SftCorpus(tuple(train), tuple(evaluation))
+
+
+def materialize_compliance_sft_corpus(
+    output_dir: Path,
+    *,
+    seed: int = COMPLIANCE_SEED,
+) -> dict[str, Any]:
+    return _materialize_sft_corpus(
+        output_dir,
+        build_compliance_sft_corpus(seed=seed),
+        corpus_format=COMPLIANCE_CORPUS_FORMAT,
+        seed=seed,
+    )
+
+
+def _materialize_sft_corpus(
+    output_dir: Path,
+    corpus: SftCorpus,
+    *,
+    corpus_format: str,
+    seed: int,
+) -> dict[str, Any]:
     root = Path(output_dir)
     root.mkdir(parents=True, exist_ok=True)
-    corpus = build_brace_sft_corpus(seed=seed)
     train_path = root / "train.jsonl"
     eval_path = root / "evaluation.jsonl"
-    _write_jsonl(train_path, corpus.train)
-    _write_jsonl(eval_path, corpus.evaluation)
+    _write_jsonl(train_path, corpus.train, corpus_format=corpus_format)
+    _write_jsonl(eval_path, corpus.evaluation, corpus_format=corpus_format)
     manifest: dict[str, Any] = {
-        "format": CORPUS_FORMAT,
+        "format": corpus_format,
         "seed": seed,
         "data_classification": "synthetic_aggregate_policy_scenarios",
         "contains_raw_samples": False,
@@ -604,6 +703,145 @@ def materialize_brace_sft_corpus(
         encoding="utf-8",
     )
     return manifest
+
+
+def _build_compliance_example(
+    *, seed: int, task_kind: str, archetype: str, variant: int
+) -> SftExample:
+    higher_is_better = task_kind == "classification"
+    metric_name = "macro_f1" if higher_is_better else "rmse"
+    baseline = 0.61 + 0.007 * variant if higher_is_better else 80.0 + variant
+    relative_improvement = ((variant % 3) - 1) * 0.012
+    stable = (
+        baseline * (1.0 + relative_improvement)
+        if higher_is_better
+        else baseline * (1.0 - relative_improvement)
+    )
+    round_index = 4 + variant
+    minimum_remaining = 3
+    candidate_slots = 3
+    failed_candidates = 0
+    data_quality_ok = True
+    history: tuple[dict[str, Any], ...] = ()
+    action = Action.INCREMENTAL_UPDATE
+    parameters: dict[str, Any] = {"epochs": 1}
+    rationale = "minimum real candidate requirement remains; run one bounded low-cost update"
+    stop_conditions = ("budget_exhausted", "no_validation_gain")
+
+    if archetype in {
+        "required_followup_candidate",
+        "heldout_followup_accepted",
+        "heldout_followup_rejected",
+    }:
+        minimum_remaining = 1 + variant % 2
+        candidate_slots = minimum_remaining
+        rejected = archetype == "heldout_followup_rejected" or variant % 2 == 1
+        failed_candidates = int(rejected)
+        history = (
+            {
+                "round": max(1, round_index - 1),
+                "action": Action.INCREMENTAL_UPDATE.value,
+                "kind": "candidate",
+                "accepted": not rejected,
+                "reason": "no_validation_gain" if rejected else "improved",
+                "cpu_seconds": 2.0 + variant,
+            },
+        )
+        action = Action.REPLAY_REFIT
+        parameters = {"epochs": 1, "replay_fraction": 1.0}
+        rationale = "minimum real candidate requirement remains; run one bounded replay refit"
+    elif archetype in {"minimum_complete", "heldout_minimum_complete"}:
+        minimum_remaining = 0
+        candidate_slots = 0
+        action = Action.NOOP
+        parameters = {}
+        rationale = "minimum candidate requirement is complete and no further experiment is justified"
+        stop_conditions = ("minimum_candidates_complete",)
+    elif archetype in {"unsafe_required_window", "heldout_unsafe_window"}:
+        data_quality_ok = False
+        action = Action.NOOP
+        parameters = {}
+        rationale = "invalid evidence takes priority over the minimum candidate requirement"
+        stop_conditions = ("invalid_evidence",)
+    elif archetype == "heldout_first_candidate_positive":
+        relative_improvement = 0.025
+        stable = (
+            baseline * (1.0 + relative_improvement)
+            if higher_is_better
+            else baseline * (1.0 - relative_improvement)
+        )
+    elif archetype not in {"required_first_candidate", "heldout_first_candidate"}:
+        raise ValueError(f"unknown compliance archetype: {archetype}")
+
+    cpu_seconds = 120.0 + 7.0 * variant
+    context = AgentContext(
+        task_kind=task_kind,
+        metric_name=metric_name,
+        higher_is_better=higher_is_better,
+        round_index=round_index,
+        evidence={
+            "baseline_metric": baseline,
+            "stable_metric": stable,
+            "relative_improvement": relative_improvement,
+            "failed_candidates": failed_candidates,
+            "data_quality_ok": data_quality_ok,
+            "minimum_candidate_events_remaining": minimum_remaining,
+        },
+        history=history,
+        budget={
+            "candidate_slots_remaining": candidate_slots,
+            "cpu_seconds_remaining": cpu_seconds,
+            "wall_seconds_remaining": cpu_seconds,
+        },
+        capabilities={
+            "official_numpy_trainer": True,
+            "supports_resume": True,
+            "supports_partial_fit": False,
+            "allowed_actions": list(EXECUTABLE_ACTIONS),
+            "allowed_epochs": [1, 2, 3, 5],
+            "allowed_learning_rate_multipliers": [0.25, 0.5, 1.0],
+        },
+    )
+    proposal = ExperimentProposal(
+        schema_version=PROPOSAL_SCHEMA_VERSION,
+        action=action,
+        tool={
+            Action.NOOP: "noop",
+            Action.INCREMENTAL_UPDATE: "train_incremental",
+            Action.REPLAY_REFIT: "train_replay_refit",
+        }[action],
+        rationale=rationale,
+        parameters=parameters,
+        max_cpu_seconds=max(0.001, cpu_seconds),
+        max_candidates=1,
+        stop_conditions=stop_conditions,
+    )
+    validate_experiment_proposal(proposal)
+    completion = json.dumps(
+        {
+            "schema_version": proposal.schema_version,
+            "action": proposal.action.value,
+            "tool": proposal.tool,
+            "rationale": proposal.rationale,
+            "parameters": dict(proposal.parameters),
+            "max_cpu_seconds": proposal.max_cpu_seconds,
+            "max_candidates": proposal.max_candidates,
+            "stop_conditions": list(proposal.stop_conditions),
+        },
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+    return SftExample(
+        scenario_id=f"{seed}-{task_kind}-{archetype}-v{variant}",
+        archetype=archetype,
+        task_kind=task_kind,
+        prompt=build_agent_prompt(context.to_payload()),
+        completion=completion,
+        budget_cpu_seconds=cpu_seconds,
+        budget_candidate_slots=candidate_slots,
+        evidence_safe=data_quality_ok,
+    )
 
 
 def _build_example(
@@ -768,11 +1006,16 @@ def _build_example(
     )
 
 
-def _write_jsonl(path: Path, rows: tuple[SftExample, ...]) -> None:
+def _write_jsonl(
+    path: Path,
+    rows: tuple[SftExample, ...],
+    *,
+    corpus_format: str = CORPUS_FORMAT,
+) -> None:
     with path.open("w", encoding="utf-8", newline="\n") as handle:
         for row in rows:
             record = {
-                "format": CORPUS_FORMAT,
+                "format": corpus_format,
                 "scenario_id": row.scenario_id,
                 "archetype": row.archetype,
                 "task_kind": row.task_kind,

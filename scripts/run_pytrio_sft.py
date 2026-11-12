@@ -13,6 +13,7 @@ if str(SRC_ROOT) not in sys.path:
 from brace_msi.pytrio_sft import (
     PyTrioSftRunConfig,
     materialize_brace_sft_corpus,
+    materialize_compliance_sft_corpus,
     run_remote_pytrio_sft,
 )
 
@@ -33,6 +34,11 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--learning-rate", type=float, default=1e-4)
     parser.add_argument("--seed", type=int, default=20261112)
     parser.add_argument("--weight-name", default="brace-msi-agent-sft-v1")
+    parser.add_argument(
+        "--corpus-version",
+        choices=("v1", "compliance_v2"),
+        default="v1",
+    )
     return parser
 
 
@@ -45,6 +51,7 @@ def main() -> int:
         learning_rate=args.learning_rate,
         seed=args.seed,
         weight_name=args.weight_name,
+        corpus_version=args.corpus_version,
     )
     if args.execute:
         result = run_remote_pytrio_sft(args.output_dir, config)
@@ -60,9 +67,16 @@ def main() -> int:
                 "learning_rate": config.learning_rate,
                 "seed": config.seed,
                 "weight_name": config.weight_name,
+                "corpus_version": config.corpus_version,
             },
-            "corpus": materialize_brace_sft_corpus(
-                args.output_dir / "corpus", seed=config.seed
+            "corpus": (
+                materialize_brace_sft_corpus(
+                    args.output_dir / "corpus", seed=config.seed
+                )
+                if config.corpus_version == "v1"
+                else materialize_compliance_sft_corpus(
+                    args.output_dir / "corpus", seed=config.seed
+                )
             ),
         }
         (args.output_dir / "prepared.json").write_text(

@@ -8,12 +8,17 @@ import pytest
 
 from brace_msi.pytrio_agent import parse_experiment_proposal
 from brace_msi.pytrio_sft import (
+    COMPLIANCE_EVALUATION_SHA256,
+    COMPLIANCE_SEED,
+    COMPLIANCE_TRAIN_SHA256,
     FROZEN_EVALUATION_SHA256,
     FROZEN_TRAIN_SHA256,
     PyTrioSftRunConfig,
     build_brace_sft_corpus,
+    build_compliance_sft_corpus,
     encode_sft_example,
     materialize_brace_sft_corpus,
+    materialize_compliance_sft_corpus,
     run_remote_pytrio_sft,
     score_proposal_response,
     _weighted_loss,
@@ -58,6 +63,39 @@ def test_corpus_contains_safety_and_update_decisions_for_both_task_kinds() -> No
     assert actions == {"noop", "incremental_update", "replay_refit"}
     assert any(row.archetype == "budget_exhausted" for row in rows)
     assert any(row.archetype == "unsafe_evidence" for row in rows)
+
+
+def test_compliance_corpus_is_disjoint_and_contains_control_policy() -> None:
+    corpus = build_compliance_sft_corpus(seed=COMPLIANCE_SEED)
+
+    assert len(corpus.train) == 48
+    assert len(corpus.evaluation) == 12
+    assert {row.scenario_id for row in corpus.train}.isdisjoint(
+        row.scenario_id for row in corpus.evaluation
+    )
+    assert {row.archetype for row in corpus.train}.isdisjoint(
+        row.archetype for row in corpus.evaluation
+    )
+    compliance_rows = [
+        row for row in corpus.train if row.scenario_id.startswith(str(COMPLIANCE_SEED))
+    ]
+    assert compliance_rows
+    assert all("CONTROL_POLICY=" in row.prompt for row in compliance_rows)
+    assert all("dataset" not in row.prompt.lower() for row in compliance_rows)
+    assert {
+        parse_experiment_proposal(row.completion).action.value
+        for row in corpus.evaluation
+    } == {"noop", "incremental_update", "replay_refit"}
+
+
+def test_compliance_manifest_matches_preregistered_hashes(tmp_path: Path) -> None:
+    manifest = materialize_compliance_sft_corpus(
+        tmp_path, seed=COMPLIANCE_SEED
+    )
+
+    assert manifest["format"] == "brace-msi.pytrio-sft-compliance-corpus.v2"
+    assert manifest["train_sha256"] == COMPLIANCE_TRAIN_SHA256
+    assert manifest["evaluation_sha256"] == COMPLIANCE_EVALUATION_SHA256
 
 
 def test_materialized_corpus_has_hashes_and_no_raw_results(tmp_path: Path) -> None:
@@ -164,6 +202,11 @@ def test_remote_run_config_is_bounded() -> None:
     assert config.epochs <= 3
     assert config.batch_size <= 8
     assert config.weight_name == "brace-msi-agent-sft-v1"
+    assert PyTrioSftRunConfig(
+        seed=COMPLIANCE_SEED,
+        corpus_version="compliance_v2",
+        weight_name="brace-msi-agent-compliance-v2",
+    ).corpus_version == "compliance_v2"
 
 
 class _TensorData:
@@ -259,8 +302,8 @@ class _Trainer:
 
 
 class _Service:
-    def __init__(self, *, tuned_fail_after: int | None = None):
-        corpus = build_brace_sft_corpus()
+    def __init__(self, *, tuned_fail_after: int | None = None, corpus=None):
+        corpus = corpus or build_brace_sft_corpus()
         completions = [row.completion for row in corpus.evaluation]
         self.base_sampler = _Sampler(list(completions))
         self.tuned_sampler = _Sampler(
@@ -321,6 +364,26 @@ def test_remote_run_is_non_overwriting_and_persists_sampler(tmp_path: Path) -> N
 
     with pytest.raises(FileExistsError, match="new path"):
         run_remote_pytrio_sft(output, PyTrioSftRunConfig(), trio_module=trio)
+
+
+def test_compliance_remote_run_uses_frozen_v2_corpus(tmp_path: Path) -> None:
+    corpus = build_compliance_sft_corpus()
+    service = _Service(corpus=corpus)
+    output = tmp_path / "compliance-run"
+    config = PyTrioSftRunConfig(
+        seed=COMPLIANCE_SEED,
+        corpus_version="compliance_v2",
+        weight_name="brace-msi-agent-compliance-v2",
+    )
+
+    result = run_remote_pytrio_sft(
+        output, config, trio_module=_RemoteFakeTrio(service)
+    )
+
+    assert result["status"] == "succeeded"
+    assert result["corpus_version"] == "compliance_v2"
+    assert result["training_steps"] == 36
+    assert result["tuned_evaluation"]["policy_match_rate"] == 1.0
 
 
 def test_saved_sampler_path_survives_tuned_evaluation_failure(tmp_path: Path) -> None:
