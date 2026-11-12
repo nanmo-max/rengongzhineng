@@ -3,7 +3,7 @@
 - 最近同步：2026-11-12（Asia/Shanghai）
 - 当前阶段：24小时竞赛冲刺——B/C一次性有界矩阵与RC集成
 - 当前路线：**Qwen3.5-4B PyTRiO Agent + BRACE确定性Harness + 官方A/B/C工业模型 + 经验证的开源优化方法** `[D-035]`
-- 当前唯一任务：`PERF-B-001`（`IN_PROGRESS`）；执行`REGRESSION-SPRINT-001`的B矩阵，完成或停止后同一矩阵进入C
+- 当前唯一任务：`PERF-C-001`（`IN_PROGRESS`）；B矩阵已完成并停止搜索，现按同一冻结矩阵执行C
 - 稳定边界：`BRACE-MSI-0.1.0rc1`、原始训练包、既有实验和RC标签保持不变；新工作在`task/core-001`分支增量实现
 - 官方试运行：0次；不得用于基础调试
 
@@ -21,7 +21,7 @@
 
 ## 当前执行入口
 
-当前执行`REGRESSION-SPRINT-001`：B/C分别只运行一次`1/3/5 epoch × 0.3/1/3 LR`矩阵，按整设备训练/开发/确认；矩阵用尽即停止。Gas不重训，不使用官方十次机会，公开validation只作历史暴露门控。
+当前执行`REGRESSION-SPRINT-001`的C矩阵。B已冻结`e5-lr3p0`：公开门控RMSE 681.159833→637.180224（改善6.46%），MAE同步改善；不再追加B候选。Gas不重训，不使用官方十次机会。
 
 正式路线、已知能力与未知边界见[FORMAL_ROUTE.md](FORMAL_ROUTE.md)。实验必须遵守[EXPERIMENT_PROTOCOL.md](EXPERIMENT_PROTOCOL.md)。
 
