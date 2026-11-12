@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from dataclasses import asdict
 from pathlib import Path
 from typing import Sequence
@@ -11,6 +12,14 @@ from typing import Sequence
 from .budget import BudgetLimits
 from .harness import HarnessConfig, UnifiedHarness
 from .official_sdk import OfficialSdkSpec, load_official_adapter_factory
+from .official_agent_harness import (
+    DeterministicOfficialProposalProvider,
+    official_agent_config_from_mapping,
+    run_official_agent_harness,
+)
+from .official_package import audit_package_root
+from .official_trainer import OfficialTrainer
+from .pytrio_agent import PyTrioAgentClient, PyTrioAgentConfig
 from .protocol import ProtocolMode
 from .reporting import render_html_report
 from .safety import GateConfig
@@ -59,6 +68,21 @@ def _parser() -> argparse.ArgumentParser:
         help="validate an installed official SDK adapter plugin contract",
     )
     sdk_check.add_argument("--spec", type=Path, required=True)
+    official_agent = subparsers.add_parser(
+        "official-agent-run",
+        help="run or resume the guarded Agent workflow on one immutable A/B/C package",
+    )
+    official_agent.add_argument("--config", type=Path, required=True)
+    official_agent.add_argument("--package-root", type=Path, required=True)
+    official_agent.add_argument("--runtime-root", type=Path, required=True)
+    official_agent.add_argument("--profile", choices=("A", "B", "C"), required=True)
+    official_agent.add_argument(
+        "--provider", choices=("deterministic", "pytrio"), default="deterministic"
+    )
+    official_agent.add_argument("--model", default="Qwen/Qwen3.5-4B")
+    official_agent.add_argument("--model-path")
+    official_agent.add_argument("--max-rounds-this-call", type=int)
+    official_agent.add_argument("--timeout-seconds", type=float, default=600.0)
     return parser
 
 
@@ -109,6 +133,49 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "sdk_version": spec.sdk_version,
                     "protocol_modes": modes,
                 }
+            )
+        )
+        return 0
+    if args.command == "official-agent-run":
+        raw_config = json.loads(args.config.read_text(encoding="utf-8"))
+        package = audit_package_root(args.package_root, raw_config)[args.profile]
+        harness_config = official_agent_config_from_mapping(raw_config)
+        deterministic = DeterministicOfficialProposalProvider(
+            candidate_rounds=harness_config.max_candidates
+        )
+        if args.provider == "pytrio":
+            provider = PyTrioAgentClient(
+                PyTrioAgentConfig(model=args.model, model_path=args.model_path),
+                fallback=lambda context: deterministic.propose(context).proposal,
+            )
+        else:
+            provider = deterministic
+        result = run_official_agent_harness(
+            package,
+            args.runtime_root,
+            harness_config,
+            OfficialTrainer(
+                python_executable=Path(sys.executable),
+                timeout_seconds=args.timeout_seconds,
+            ),
+            provider,
+            fallback_provider=deterministic,
+            max_rounds_this_call=args.max_rounds_this_call,
+        )
+        print(
+            json.dumps(
+                {
+                    "status": "completed" if result.complete else "paused",
+                    "profile": result.profile,
+                    "round_count": result.round_count,
+                    "candidate_count": result.candidate_count,
+                    "accepted_count": result.accepted_count,
+                    "stable_metric": result.stable_metric,
+                    "agent_call_count": result.agent_call_count,
+                    "total_input_tokens": result.total_input_tokens,
+                    "total_output_tokens": result.total_output_tokens,
+                },
+                allow_nan=False,
             )
         )
         return 0

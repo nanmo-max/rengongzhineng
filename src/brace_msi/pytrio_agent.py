@@ -281,7 +281,7 @@ class PyTrioAgentClient:
         output_tokens: int = 0,
     ) -> ProposalOutcome:
         proposal = self.fallback(context)
-        _validate_proposal(proposal)
+        validate_experiment_proposal(proposal)
         return ProposalOutcome(
             proposal=proposal,
             source="deterministic_fallback",
@@ -343,11 +343,12 @@ def parse_experiment_proposal(raw: str) -> ExperimentProposal:
         max_candidates=value["max_candidates"],
         stop_conditions=tuple(conditions),
     )
-    _validate_proposal(proposal)
+    validate_experiment_proposal(proposal)
     return proposal
 
 
-def _validate_proposal(proposal: ExperimentProposal) -> None:
+def validate_experiment_proposal(proposal: ExperimentProposal) -> None:
+    """Validate a proposal again at the effectful harness boundary."""
     if proposal.schema_version != PROPOSAL_SCHEMA_VERSION:
         raise ValueError("unsupported proposal schema")
     if _ALLOWED_TOOLS.get(proposal.action) != proposal.tool:
