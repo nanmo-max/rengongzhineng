@@ -96,7 +96,13 @@ def package_tree_sha256(package_dir: Path) -> str:
 
     digest = hashlib.sha256()
     files = sorted(
-        (path for path in package_dir.rglob("*") if path.is_file()),
+        (
+            path
+            for path in package_dir.rglob("*")
+            if path.is_file()
+            and path.suffix != ".pyc"
+            and "__pycache__" not in path.parts
+        ),
         key=lambda path: path.relative_to(package_dir).as_posix(),
     )
     for path in files:

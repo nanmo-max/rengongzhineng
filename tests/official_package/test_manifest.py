@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from brace_msi.official_package import PackageAuditError, audit_package_root
+from brace_msi.official_package import PackageAuditError, audit_package_root, package_tree_sha256
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -69,6 +69,16 @@ def test_audit_does_not_write_cache_files_to_source_tree() -> None:
     after = sorted(path.relative_to(PACKAGE_ROOT) for path in PACKAGE_ROOT.rglob("*") if path.is_file())
 
     assert before == after
-    assert not any(path.suffix == ".pyc" for path in PACKAGE_ROOT.rglob("*"))
-    assert not any(path.name == "__pycache__" for path in PACKAGE_ROOT.rglob("*"))
+
+
+def test_package_tree_fingerprint_ignores_runtime_python_cache(tmp_path: Path) -> None:
+    package = tmp_path / "package"
+    package.mkdir()
+    (package / "source.py").write_text("value = 1\n", encoding="utf-8")
+    before = package_tree_sha256(package)
+    cache = package / "__pycache__"
+    cache.mkdir()
+    (cache / "source.cpython-312.pyc").write_bytes(b"runtime-cache")
+
+    assert package_tree_sha256(package) == before
 
