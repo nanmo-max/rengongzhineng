@@ -1,0 +1,80 @@
+name: container-readiness
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - Dockerfile
+      - .dockerignore
+      - requirements.lock
+      - requirements-swanlab.lock
+      - pyproject.toml
+      - src/**
+      - .github/workflows/container-readiness.yml
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-accept:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build release image
+        run: docker build --pull --tag brace-msi:candidate .
+
+      - name: Enforce image size below 2 GB
+        shell: bash
+        run: |
+          set -euo pipefail
+          size_bytes="$(docker image inspect brace-msi:candidate --format '{{.Size}}')"
+          printf '{"image":"brace-msi:candidate","size_bytes":%s,"under_2gb":%s}\n' \
+            "$size_bytes" "$([ "$size_bytes" -lt 2000000000 ] && echo true || echo false)" \
+            | tee container-image-audit.json
+          test "$size_bytes" -lt 2000000000
+
+      - name: Reject packaged data, weights, and secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          if docker run --rm --entrypoint sh brace-msi:candidate -c \
+            "find /app -type f | grep -E '\.(pkl|pickle|joblib|pt|pth|onnx|key|pem)$|/(dataji|artifacts|outputs|secrets)/'"; then
+            echo "Forbidden runtime artifact found in image" >&2
+            exit 1
+          fi
+
+      - name: Run offline under competition resource limits
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/docker-ci
+          docker run --rm \
+            --network=none \
+            --cpus=4 \
+            --memory=8g \
+            --pids-limit=256 \
+            -v "$PWD/artifacts/docker-ci:/outputs" \
+            brace-msi:candidate \
+            synthetic-smoke --output /outputs/smoke
+          test -f artifacts/docker-ci/smoke/summary.json
+
+      - name: Record runtime limits and output inventory
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            printf '{\n  "network": "none",\n  "cpus": 4,\n  "memory_bytes": 8589934592,\n  "files": [\n'
+            find artifacts/docker-ci -type f -printf '%P\n' | sort | awk '{printf "    \"%s\",\n", $0}'
+            printf '    \"container-image-audit.json\"\n  ]\n}\n'
+          } > artifacts/docker-ci/container-acceptance.json
+          cp container-image-audit.json artifacts/docker-ci/
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: brace-msi-container-readiness
+          path: artifacts/docker-ci/
+          if-no-files-found: error
+          retention-days: 14
