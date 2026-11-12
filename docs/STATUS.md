@@ -1,9 +1,9 @@
 # 当前状态
 
 - 最近同步：2026-11-12（Asia/Shanghai）
-- 当前阶段：24小时竞赛冲刺——三任务安全候选集成与十轮Harness
+- 当前阶段：24小时竞赛冲刺——Release与容器验收
 - 当前路线：**Qwen3.5-4B PyTRiO Agent + BRACE确定性Harness + 官方A/B/C工业模型 + 经验证的开源优化方法** `[D-035]`
-- 当前唯一任务：`LOOP-10-001`（`IN_PROGRESS`）；执行预注册`SPRINT-HARNESS-001`
+- 当前唯一任务：`FORMAL-RELEASE-001`（`IN_PROGRESS`，本地可完成部分）；真实SDK/SwanLab与容器运行时分别保留外部阻塞
 - 稳定边界：`BRACE-MSI-0.1.0rc1`、原始训练包、既有实验和RC标签保持不变；新工作在`task/core-001`分支增量实现
 - 官方试运行：0次；不得用于基础调试
 
@@ -21,7 +21,7 @@
 
 ## 当前执行入口
 
-`REGRESSION-SPRINT-001`已完成并停止：B冻结5 epoch×3x LR，C冻结5 epoch×1x LR，公开门控RMSE分别改善6.46%与0.95%，MAE均改善；Gas保持`current_only + SafetyGate`。下一步只做三候选十轮Harness集成，不继续算法搜索。
+`SPRINT-HARNESS-001`已在干净提交完成：A/B/C均10轮、3个真实候选、7个有理由no-op，机器复算有效；最终主指标为0.725695 Macro-F1、637.180224 RMSE、51.635999 RMSE。停止训练与算法扩展，进入Docker、干净环境、交付审计和一次最终回归。
 
 正式路线、已知能力与未知边界见[FORMAL_ROUTE.md](FORMAL_ROUTE.md)。实验必须遵守[EXPERIMENT_PROTOCOL.md](EXPERIMENT_PROTOCOL.md)。
 

@@ -77,21 +77,21 @@ ROUTE-001(DONE)
 
 ### LOOP-10-001 PyTRiO+BRACE十轮自主闭环
 
-- 状态：`IN_PROGRESS`
+- 状态：`DONE`（本地确定性闭环；真实PyTRiO效果仍属外部对照缺口）
 - 依赖：三项PERF任务完成最低可用候选；PAPER方法非强制依赖
 - 优先级：P2
 - 完成标准：每任务十轮历史读取、提案、检查、训练/跳过、评估、门控和记录；每任务至少三次真实候选；无意义训练允许跳过但必须记录；服务失败可完成确定性降级
 
 ### FORMAL-COMPARE-001 正式对照与消融
 
-- 状态：`BLOCKED`
+- 状态：`DEFERRED`（D-039冲刺不新增训练；已有静态/固定/BRACE与负结果证据，真实PyTRiO对照待平台）
 - 依赖：LOOP-10-001
 - 优先级：P3
 - 完成标准：官方静态、固定更新、BRACE无大模型、PyTRiO+BRACE及有效论文方法在同一可见性和预算下比较；报告主指标、最差阶段、恢复、CPU/RSS、Token/费用、接受/回滚；负结果保留
 
 ### FORMAL-RELEASE-001 正式环境与交付
 
-- 状态：`BLOCKED`
+- 状态：`IN_PROGRESS`（先完成不依赖外部材料的代码、干净环境、CI镜像与交付审计）
 - 依赖：FORMAL-COMPARE-001、正式SDK/SwanLab规范、可用容器运行时
 - 优先级：P4
 - 完成标准：Docker构建、4核8GB断网、正式RuntimeAdapter、最终模型重训SwanLab记录、十轮无人值守、干净环境独立复现及交付审计全部通过
