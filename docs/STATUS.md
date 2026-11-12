@@ -3,7 +3,7 @@
 - 最近同步：2026-11-12（Asia/Shanghai）
 - 当前阶段：BRACE-MSI-0.2.0rc2本地Release与真实容器验收保持冻结；独立开展正式PyTRiO Sampler微调准备
 - 当前路线：**Qwen3.5-4B PyTRiO Agent + BRACE确定性Harness + 官方A/B/C工业模型 + 经验证的开源优化方法** `[D-035]`
-- 当前唯一任务：`PYTRIO-SFT-001`（`IN_PROGRESS`）；A2 Sampler与三任务Harness公平对照已完成，但30/30建议noop、无额外性能价值。按D-042只执行一次有界合规语料SFT和新留出验证；失败即停止LLM调参。L-AUTH-011继续约束累计PyTRiO预算不超过10元。`FORMAL-RELEASE-001`仍为`BLOCKED_OFFICIAL_MATERIALS`。
+- 当前唯一任务：`PYTRIO-SFT-001`（`IN_PROGRESS`）；A3一次性合规语料已冻结并预注册，下一步执行36步有界SFT、新留出和真实A/B/C首轮动作验证。无论正负均按D-042停止继续调参。L-AUTH-011继续约束累计PyTRiO预算不超过10元。`FORMAL-RELEASE-001`仍为`BLOCKED_OFFICIAL_MATERIALS`。
 - 稳定边界：`BRACE-MSI-0.1.0rc1`历史标签保持不变；当前冲刺候选为`BRACE-MSI-0.2.0rc2`，仍在`task/core-001`且不合并main
 - 官方试运行：0次；不得用于基础调试
 
