@@ -451,12 +451,12 @@ SYS-005
 
 ### MAT-001 最低提交材料
 
-- 状态：`IN_PROGRESS`
+- 状态：`DONE`
 - 依赖：RC3本地容器与干净环境验收（已完成）；正式SDK不是作品材料生成的前置依赖
 - 优先级：P0
 - 完成标准：镜像、Harness/配置/依赖与复现说明、SwanLab最终聚合训练记录、设计论证、作品说明书、源码仓库和开源合规材料齐全；不泄露密钥/权重/原始数据
 - 停止条件：GitHub或SwanLab认证失效、公开记录出现敏感字段、或提交平台新增强制模板/字段
-- 当前证据：用户确认作品文档无模板、指导教师暂不填写；`docs/SUBMISSION_DOCUMENT.md`、`docs/SUBMISSION_CHECKLIST.md`和DOCX生成器已建立。等待最终记录同步、Git推送核验和材料包哈希。
+- 证据：`docs/SUBMISSION_DOCUMENT.md`、`docs/SUBMISSION_CHECKLIST.md`、`docs/results/SWANLAB-FINAL-001.md`；DOCX/PDF位于`D:/brace-msi-release/BRACE-MSI-0.3.0rc3-submission-materials/`；GitHub分支与RC3标签已推送；SwanLab公开项目3项实验均`FINISHED`。项目源码许可证仍由权利人决定，当前材料不虚构许可证。
 
 ## P1：企业赛竞争力
 

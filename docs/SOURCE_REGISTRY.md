@@ -354,6 +354,12 @@
 - 回归：最终代码246项、打包前全新venv243项测试通过，`pip check`和编译通过；发布工具定向15项通过。
 - 边界：属于本地Harness交付证据，不是官方隐藏评测或SwanLab正式训练记录。
 
+### L-EVIDENCE-008 最终SwanLab工程记录与GitHub发布
+
+- 来源：`docs/results/SWANLAB-FINAL-001.md`、SwanLab公开API、Git远端`https://github.com/nanmo-max/rengongzhineng.git`；核验日期2026-11-13。
+- 事实：A/B/C冻结工作流各完成10轮/3候选且`valid=true`；SwanLab公开项目`nanmo-max/brace-msi-final`包含3个`FINISHED`实验，每项10条聚合记录。`task/core-001`已推送到GitHub，RC3冻结提交标签`brace-msi-v0.3.0-rc3`已推送。
+- 边界：结果使用历史暴露公开验证，不是隐藏评测；远端main未合并；仓库尚未由权利人选择项目级许可证。
+
 ## 待核实假设与冲突
 
 ### H-001 正式批次协议

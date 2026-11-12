@@ -1,9 +1,9 @@
 # 当前状态
 
 - 最近同步：2026-11-13（Asia/Shanghai）
-- 当前阶段：`BRACE-MSI-0.3.0rc3`保持冻结；进入提交材料、GitHub脱敏发布与SwanLab最终工程记录阶段
+- 当前阶段：`BRACE-MSI-0.3.0rc3`保持冻结；本地提交材料、GitHub脱敏分支和SwanLab最终工程记录已完成
 - 当前路线：**Qwen3.5-4B PyTRiO Agent + BRACE确定性Harness + 官方A/B/C工业模型 + 经验证的开源优化方法** `[D-035]`
-- 当前唯一任务：`MAT-001`（`IN_PROGRESS`）；制作作品说明书、推送脱敏源码分支并执行`SWANLAB-FINAL-001`记录重跑。`FORMAL-RELEASE-001`的正式SDK/评分接口仍为`BLOCKED_EXTERNAL`。
+- 当前唯一任务：`FORMAL-RELEASE-001`（`BLOCKED_EXTERNAL`）；本地可执行提交项已完成，只等待正式SDK事件/挂载、比赛Base URL与凭据注入、完整评分公式及比赛专用SwanLab字段。
 - 稳定边界：`BRACE-MSI-0.1.0rc1`与`0.2.0rc2`历史保持不变；当前候选为`BRACE-MSI-0.3.0rc3`，仍在`task/core-001`且不合并main。A3之后禁止继续LLM调参 `[D-043]`
 - 官方试运行：0次；不得用于基础调试
 
@@ -26,12 +26,15 @@
 15. `PYTRIO-SFT-001-A3`完成36/36远程步骤，最终loss 0.017709；新留出schema/action/tool/budget/policy均100%，A/B/C真实首轮3/3主动提出并执行更新，0守卫覆盖。持久化Sampler路径只保存在Git外收据。
 16. `PYTRIO-COMPETITIVE-001-A1`三任务各10轮/3候选，均`valid=true`、0守卫覆盖、0服务回退；A/B/C最终为0.725695 Macro-F1、637.180224 RMSE、51.635999 RMSE。性能来自冻结参数日程与门控，Agent贡献限于合规动作意图；2次预算耗尽后额外建议均在训练前拒绝。
 17. `BRACE-MSI-0.3.0rc3`真实镜像为linux/amd64、240,579,085字节、UID10001，含PyTRiO0.2.9但无Torch、数据、权重或密钥；4核8GB断网双协议Smoke、`pip check`和`docker load`通过；最终代码回归246项、打包前干净环境回归243项通过。证据见`results/RC3_CONTAINER_ACCEPTANCE.json`。
+18. `SWANLAB-FINAL-001`完成A/B/C各10轮/3候选且机器复算`valid=true`；公开项目`https://swanlab.cn/@nanmo-max/brace-msi-final`含三个`FINISHED`实验。GitHub`task/core-001`分支和RC3标签已推送，作品说明书DOCX/PDF已生成。证据见`results/SWANLAB-FINAL-001.md`。
 
 ## 当前执行入口
 
 本地当前上传入口为`D:/brace-msi-release/BRACE-MSI-0.3.0rc3/BRACE-MSI-0.3.0rc3-image-clean.tar`，SHA-256 `0daef2e0...6d325a`；完整A3 `trio://`路径从`D:/brace-msi-pytrio/PYTRIO-SFT-001-A3/result.json`读取并填入平台，不写入公开Git配置。A1失败、A2负对照、A3成功和RC2历史均不得覆盖。
 
 正式路线、已知能力与未知边界见[FORMAL_ROUTE.md](FORMAL_ROUTE.md)。实验必须遵守[EXPERIMENT_PROTOCOL.md](EXPERIMENT_PROTOCOL.md)。
+
+提交材料入口见[SUBMISSION_CHECKLIST.md](SUBMISSION_CHECKLIST.md)。源码分支为`https://github.com/nanmo-max/rengongzhineng/tree/task/core-001`，SwanLab项目为`https://swanlab.cn/@nanmo-max/brace-msi-final`。
 
 ## 外部阻塞
 

@@ -11,7 +11,15 @@
 7. A/B/C官方训练器入口位于`src/brace_msi/official_trainer.py`和`official_agent_harness.py`；必须继续使用只读清单、隔离子进程、ActionSandbox、候选预算与SafetyGate，不得让模型文本直接执行代码。
 8. A第8轮和C第10轮各出现一次候选预算耗尽后的训练建议，均在训练前被拒绝。该负边界必须保留；不要扩大候选预算迎合模型。
 9. `BRACE-MSI-0.1.0rc1`、`0.2.0rc2`、A1失败、A2负对照和INVALID历史都不修改。新代码仍在`task/core-001`，不合并main。
-10. 无新官方材料时保持冻结：不重训Gas/FD001/Bearing，不重开公开验证，不运行SwanLab，不消耗官方十次试运行，不重复哈希核验。
+10. 无新官方材料时保持冻结：不重训Gas/FD001/Bearing，不重开公开验证；`SWANLAB-FINAL-001`已经完成，禁止重复同步或再生成替代记录；不消耗官方十次试运行，不重复哈希核验。
+
+## 2026-11-13提交材料恢复入口（当前补充）
+
+1. `MAT-001`已完成。作品说明书源为`docs/SUBMISSION_DOCUMENT.md`，平台字段清单为`docs/SUBMISSION_CHECKLIST.md`；DOCX/PDF位于`D:/brace-msi-release/BRACE-MSI-0.3.0rc3-submission-materials/`。
+2. `SWANLAB-FINAL-001`已完成且只作记录，不得用于再调参。公开项目为`https://swanlab.cn/@nanmo-max/brace-msi-final`，三个运行链接与恢复细节见`docs/results/SWANLAB-FINAL-001.md`。
+3. GitHub当前正式源码入口为`https://github.com/nanmo-max/rengongzhineng/tree/task/core-001`；远端main未覆盖，RC3标签为`brace-msi-v0.3.0-rc3`。
+4. 项目级许可证仍由队长决定。不要自动添加MIT/Apache许可证，也不要在材料中声称已获得未确认的项目源码许可。
+5. 当前唯一核心任务重新回到`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`。没有新官方SDK/评分/SwanLab比赛字段时保持冻结。
 
 以下旧恢复入口保留历史上下文；若与本节冲突，以`STATUS.md`、`TASKS.md`和本节为准。
 

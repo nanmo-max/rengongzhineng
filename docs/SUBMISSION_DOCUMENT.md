@@ -127,11 +127,11 @@ SwanLab只记录最终工程模型重新训练时产生的聚合指标、资源�
 
 ## 10. 创新点与实际价值
 
-1. **提案与执行解耦。** 大模型负责结构化意图，确定性Harness掌握预算、工具、训练和部署权。
-2. **训练前与训练后双重安全。** ActionSandbox避免无效或越权训练，SafetyGate避免性能退化模型上线。
-3. **按收益分配有限实验。** 三任务使用独立模型和冻结日程，但共享十轮闭环、预算原则和审计协议。
-4. **失败也可审计。** 非法提案、预算拒绝、候选退化、服务降级和历史负结果均进入证据链。
-5. **轻量工程落地。** 纯CPU工业训练器、240MB级镜像、非root和断网运行适合资源受限环境。
+- **提案与执行解耦。** 大模型负责结构化意图，确定性Harness掌握预算、工具、训练和部署权。
+- **训练前与训练后双重安全。** ActionSandbox避免无效或越权训练，SafetyGate避免性能退化模型上线。
+- **按收益分配有限实验。** 三任务使用独立模型和冻结日程，但共享十轮闭环、预算原则和审计协议。
+- **失败也可审计。** 非法提案、预算拒绝、候选退化、服务降级和历史负结果均进入证据链。
+- **轻量工程落地。** 纯CPU工业训练器、240MB级镜像、非root和断网运行适合资源受限环境。
 
 ## 11. 证据边界与待平台确认事项
 
@@ -150,4 +150,6 @@ SwanLab只记录最终工程模型重新训练时产生的聚合指标、资源�
 - 实验登记与负结果：`docs/EXPERIMENTS.md`、`docs/RESEARCH_PROGRESS.md`；
 - 开源与依赖：`docs/OPEN_SOURCE_COMPLIANCE.md`；
 - 运行说明：`docs/RUNBOOK.md`、`docs/SDK_INTEGRATION.md`、`docs/SWANLAB_INTEGRATION.md`。
+- 源码仓库：https://github.com/nanmo-max/rengongzhineng/tree/task/core-001；
+- 最终公开训练记录：https://swanlab.cn/@nanmo-max/brace-msi-final。
 

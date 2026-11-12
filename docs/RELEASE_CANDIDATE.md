@@ -55,3 +55,11 @@ python scripts/build_release_candidate.py `
 3. 在不改变预算、沙箱和SafetyGate的前提下运行平台校验；
 4. 最终工程模型冻结后按官方规范正式重训并生成SwanLab记录；
 5. 不重开公开验证调参，不消耗十次试运行做基础调试。
+
+## 提交材料
+
+- 作品说明书：`D:/brace-msi-release/BRACE-MSI-0.3.0rc3-submission-materials/BRACE-MSI-作品说明书.docx`；
+- GitHub源码分支：<https://github.com/nanmo-max/rengongzhineng/tree/task/core-001>；
+- RC3标签：`brace-msi-v0.3.0-rc3`，指向冻结提交`c528420`；
+- SwanLab最终记录：<https://swanlab.cn/@nanmo-max/brace-msi-final>；
+- 表单逐项填写见`docs/SUBMISSION_CHECKLIST.md`。

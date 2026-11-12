@@ -1,6 +1,6 @@
 # SwanLab离线记录与显式同步
 
-> 当前阶段边界：依据`D-023`，本文件中的导出和同步命令现在不执行。它们只在平台规范、正式协议和最终工程模型冻结后，用于最终工程模型正式重新训练记录。
+> 当前阶段边界：D-023的“最终工程模型冻结后再记录”条件已满足。`SWANLAB-FINAL-001`已按D-044执行并同步；后续禁止重复生成替代记录。比赛专用字段仍等待H-004。
 
 ## 证据边界
 
@@ -8,8 +8,8 @@
 实际`run-*`目录执行`swanlab sync [options] [logdir]`。当前固定SDK版本为`0.10.4`，因为
 官方说明离线日志格式与同步CLI版本必须匹配 `[O-SWANLAB-001]`。
 
-比赛专用字段、项目命名、公开要求、认证注入和无公网评测结束后的正式同步责任仍等待官方
-规范 `[H-004]`。因此本接口完成的是“同步准备”，不将`LOG-001`标记为正式完成。
+SwanLab页面要求新版记录使用SDK 0.10.0及以上，当前冻结版本0.10.4满足该条件 `[O-SWANLAB-002]`。
+比赛专用字段、认证注入和无公网评测结束后的正式同步责任仍等待官方规范 `[H-004]`。
 
 ## 安装
 
@@ -47,6 +47,17 @@ python -m brace_msi swanlab-sync-command `
 
 程序只打印命令，不执行同步，也不接受API Key参数。认证必须按官方机制从安全环境注入。正式
 同步前检查SDK/CLI版本均为`0.10.4`，并再次确认公开日志没有私有测试数据。
+
+Windows终端执行同步前应设置UTF-8，避免Rich输出emoji时被GBK编码中断：
+
+```powershell
+$env:PYTHONUTF8='1'
+$env:PYTHONIOENCODING='utf-8'
+swanlab sync outputs/run/swanlog/run-xxx --workspace nanmo-max --project brace-msi-final
+```
+
+已完成的正式记录项目为`https://swanlab.cn/@nanmo-max/brace-msi-final`，三个运行及失败恢复证据见
+`docs/results/SWANLAB-FINAL-001.md`。不得再次同步到新的项目来掩盖历史或制造重复记录。
 
 ## 失败降级
 

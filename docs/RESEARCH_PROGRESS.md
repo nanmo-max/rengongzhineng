@@ -436,3 +436,12 @@
 - 打包前代码回归`243 passed in 66.60s`；发布工具增加证据强校验后最终全量回归`246 passed in 69.62s`。全新venv安装锁定依赖、PyTRiO和项目后`pip check`通过，回归`243 passed in 65.46s`。第一次项目构建隔离因本机配置镜像TLS证书链失败，未绕过TLS；在已安装锁定构建依赖后用`--no-build-isolation`成功，失败事实保留在RC3验证记录。
 - 发布工具新增真实容器证据和镜像归档哈希强校验，相关定向回归15项通过。该证据只证明本地Harness交付，不是官方隐藏评测成绩。
 
+## 2026-11-13：提交材料与SWANLAB-FINAL-001
+
+- 生成正式作品说明书Markdown、DOCX和PDF；DOCX通过OOXML验证并经Word转PDF目视抽查10页。建立平台字段清单，明确Sampler路径、API Key和镜像的安全填写边界。
+- 新增最终记录脱敏转换器，先验证缺失模块测试失败，再实现部署链指标映射；专项6项通过。输出不包含检查点哈希、输出目录、Sampler路径或凭据。
+- 在提交`b64bf7f`上以冻结A3与参数运行A/B/C各10轮/3候选，三项`validate-only`均为`valid=true`；结果为0.725695424 Macro-F1、637.180224 RMSE、51.635998675 RMSE，不用于再选型。
+- SwanLab 0.10.4公开项目`nanmo-max/brace-msi-final`同步3个实验并由API确认全部`FINISHED`、各10条记录。Gas首次同步在远端创建后因Windows GBK无法输出emoji而中止，使用UTF-8和同一run ID幂等恢复，未产生重复实验。
+- GitHub远端已有独立main初始提交，按稳定边界未覆盖main；推送`task/core-001`分支及指向冻结提交`c528420`的`brace-msi-v0.3.0-rc3`标签。
+- 最终全量回归为`248 passed in 70.75s`；Markdown相对链接检查通过。作品说明书DOCX通过OOXML验证并生成10页PDF，DOCX/PDF SHA-256分别为`0822ae41...f132213`和`cc67c2c4...e63f292`。
+
