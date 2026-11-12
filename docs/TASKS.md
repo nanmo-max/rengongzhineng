@@ -6,10 +6,10 @@
 
 ```text
 ROUTE-001(DONE)
-  -> PYTRIO-001(IN_PROGRESS)
-  -> OFFICIAL-HARNESS-002
-  -> ACTION-SANDBOX-001
-  -> PERF-A-001 / PERF-B-001 / PERF-C-001
+  -> PYTRIO-001(DONE)
+  -> OFFICIAL-HARNESS-002(DONE)
+  -> ACTION-SANDBOX-001(DONE)
+  -> PERF-A-001(DONE) -> PERF-B-001(IN_PROGRESS) -> PERF-C-001(BLOCKED)
   -> PAPER-METHOD-001
   -> LOOP-10-001
   -> FORMAL-COMPARE-001
@@ -57,11 +57,13 @@ ROUTE-001(DONE)
 
 ### PERF-A-001 / PERF-B-001 / PERF-C-001 三任务独立性能优化
 
-- 状态：`IN_PROGRESS`（当前只执行`PERF-A-001`；B/C等待A完成或停止）
+- 状态：`PERF-A-001 DONE`；`PERF-B-001 IN_PROGRESS`；`PERF-C-001 BLOCKED`（等待B完成或停止）
 - 依赖：ACTION-SANDBOX-001；各任务新实验预注册
 - 优先级：P1
 - 完成标准：分别完成数据/误差/阶段/资源诊断，建立静态、固定更新和BRACE无大模型对照，运行有明确假设的低成本优化；不能仅凭训练集或已反复使用的单次验证指标宣布成功
 - 停止条件：独立确认数据未冻结、原始数据指纹变化、或连续候选无增益且作用机制不成立
+- `PERF-A-001`证据：`PERF-A-OVER-001`排除简单源域过采样；`PERF-A-REPLAY-001`在因果Batch 2—7流中比较静态、`current_only`与两种回放，15个候选和父链审计通过；复杂回放被简单当前批次更新支配，按D-016停止扩展。见`docs/results/PERF-A-REPLAY-001.md`。
+- `PERF-B-001`当前入口：先对官方B公开train/validation和初始检查点做只读误差/轨迹/目标缩放诊断，冻结新的训练内开发/确认切分后再预注册候选；不重用公开validation调参。
 
 ### PAPER-METHOD-001 高价值开源方法筛选与复现
 
