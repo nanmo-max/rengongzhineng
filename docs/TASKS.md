@@ -9,7 +9,7 @@ ROUTE-001(DONE)
   -> PYTRIO-001(DONE)
   -> OFFICIAL-HARNESS-002(DONE)
   -> ACTION-SANDBOX-001(DONE)
-  -> PERF-A-001(DONE) -> PERF-B-001(IN_PROGRESS) -> PERF-C-001(BLOCKED)
+  -> PERF-A-001(DONE) -> PERF-B-001(DONE) -> PERF-C-001(DONE)
   -> PAPER-METHOD-001
   -> LOOP-10-001
   -> FORMAL-COMPARE-001
@@ -57,7 +57,7 @@ ROUTE-001(DONE)
 
 ### PERF-A-001 / PERF-B-001 / PERF-C-001 三任务独立性能优化
 
-- 状态：`PERF-A-001 DONE`；`PERF-B-001 DONE`；`PERF-C-001 IN_PROGRESS`
+- 状态：`PERF-A-001 DONE`；`PERF-B-001 DONE`；`PERF-C-001 DONE`
 - 依赖：ACTION-SANDBOX-001；各任务新实验预注册
 - 优先级：P1
 - 完成标准：分别完成数据/误差/阶段/资源诊断，建立静态、固定更新和BRACE无大模型对照，运行有明确假设的低成本优化；不能仅凭训练集或已反复使用的单次验证指标宣布成功
@@ -65,10 +65,11 @@ ROUTE-001(DONE)
 - `PERF-A-001`证据：`PERF-A-OVER-001`排除简单源域过采样；`PERF-A-REPLAY-001`在因果Batch 2—7流中比较静态、`current_only`与两种回放，15个候选和父链审计通过；复杂回放被简单当前批次更新支配，按D-016停止扩展。见`docs/results/PERF-A-REPLAY-001.md`。
 - `PERF-B-001`证据：`REGRESSION-SPRINT-001` B矩阵9/9成功，整轴承确认门通过；冻结`e5-lr3p0`，公开门控RMSE 681.159833→637.180224、MAE 563.105841→540.456251，机器校验有效；按D-039停止搜索。
 - `PERF-C-001`入口：B完成或停止后复用同一矩阵执行C；按整发动机FD001+2/FD003/FD004训练/开发/确认，不新增算法模块。
+- `PERF-C-001`证据：同一矩阵9/9成功，整发动机确认门通过；冻结`e5-lr1p0`，公开门控RMSE 52.868573→52.367735、MAE 38.899830→38.322199，机器校验有效；按D-039停止搜索。
 
 ### PAPER-METHOD-001 高价值开源方法筛选与复现
 
-- 状态：`BLOCKED`
+- 状态：`DEFERRED`（D-039冲刺期暂停，不阻塞LOOP-10）
 - 依赖：至少一个PERF任务给出可测量瓶颈
 - 优先级：P1
 - 完成标准：论文贡献、官方代码、许可证、CPU/内存、官方模型兼容性审计通过；独立实验ID下完成基线、复现、消融和失败记录；只有实测有效方法进入主Harness
@@ -76,7 +77,7 @@ ROUTE-001(DONE)
 
 ### LOOP-10-001 PyTRiO+BRACE十轮自主闭环
 
-- 状态：`BLOCKED`
+- 状态：`READY`
 - 依赖：三项PERF任务完成最低可用候选；PAPER方法非强制依赖
 - 优先级：P2
 - 完成标准：每任务十轮历史读取、提案、检查、训练/跳过、评估、门控和记录；每任务至少三次真实候选；无意义训练允许跳过但必须记录；服务失败可完成确定性降级
