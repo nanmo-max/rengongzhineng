@@ -251,6 +251,13 @@
 - 事实：官方客户端可通过`pip install pytrio`安装；`ServiceClient`支持查询模型、创建Sampler与LoRA训练客户端；提供`sample`、`forward_backward`、`optim_step`及权重保存/恢复；支持`PYTRIO_API_KEY`、`PYTRIO_BASE_URL`和OpenAI兼容端点。快速开始当前示例列出`Qwen/Qwen3.6-27B`与`Qwen/Qwen3.5-4B`。
 - 边界：通用文档不确认比赛环境的Base URL、凭据注入、模型白名单、Token计量或十轮评测事件协议；正式实现必须运行时配置并核验，不写死公开端点或示例模型列表。
 
+### O-PAPER-001 不平衡在线持续学习与类平衡回放
+
+- 来源：Chrysakis & Moens, *Online Continual Learning from Imbalanced Data*, ICML 2020，PMLR 119:1952–1961；PMLR论文与补充材料，核验日期2026-11-12。
+- 事实：论文针对时间相关且类别不平衡的在线数据流，提出class-balancing reservoir sampling，并报告其在多数据集/架构上优于所比较的memory population方法。
+- 代码与许可证：论文/PMLR页面未给出作者官方代码仓库；当前检索亦未找到可核验官方实现。因此不满足D-037的官方开源代码复现准入，不能作为正式注册插件。
+- 本项目使用边界：`PERF-A-REPLAY-001`只独立实现一个确定性class-balanced replay强基线，用于验证问题机制，不声称复现论文数值或代码。
+
 ### B-PLATFORM-002 平台模型提交校验答复
 
 - 来源：用户于2026-11-12转述的参赛平台教师答复与已完成校验结果。

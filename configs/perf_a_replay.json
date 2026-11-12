@@ -1,0 +1,43 @@
+{
+  "format": "brace-msi.perf-a-replay.v1",
+  "experiment_id": "PERF-A-REPLAY-001",
+  "profile": "A",
+  "seed": 20261112,
+  "raw_data_root": "runtime_argument_only",
+  "development_batches": [2, 3, 4, 5],
+  "confirmation_batches": [6, 7],
+  "forbidden_batches": [8, 9, 10],
+  "current_holdout_fraction": 0.2,
+  "split_salt": "brace-msi-gas-current-holdout-v1",
+  "strategies": [
+    {"id": "current_only", "replay_mode": "none", "buffer_size": 0, "epochs": 1, "learning_rate_multiplier": 1.0},
+    {"id": "uniform_replay_600", "replay_mode": "uniform_hash", "buffer_size": 600, "epochs": 1, "learning_rate_multiplier": 1.0},
+    {"id": "class_balanced_replay_600", "replay_mode": "class_balanced_hash", "buffer_size": 600, "epochs": 1, "learning_rate_multiplier": 1.0}
+  ],
+  "safety_gate": {
+    "minimum_current_holdout_improvement": 0.0,
+    "maximum_anchor_macro_f1_degradation": 0.03
+  },
+  "selection": {
+    "primary": "development_mean_prequential_macro_f1",
+    "secondary": "development_worst_prequential_macro_f1",
+    "minimum_mean_gain_over_current_only": 0.005
+  },
+  "resource_limits": {
+    "max_total_candidates": 15,
+    "max_cpu_seconds": 300.0,
+    "max_wall_seconds": 480.0,
+    "max_peak_rss_bytes": 1073741824,
+    "official_test_opportunities": 0,
+    "pytrio_calls": 0
+  },
+  "confirmation_exposure": "historically_exposed_by_prior_proxy_work_but_not_used_for_this_experiment_selection",
+  "stop_conditions": [
+    "raw_batch_hash_mismatch",
+    "forbidden_batch_loaded",
+    "prediction_after_label_training",
+    "sample_identity_overlap_between_round_train_and_holdout",
+    "resource_limit_exceeded",
+    "no_strategy_beats_current_only_development_gate"
+  ]
+}

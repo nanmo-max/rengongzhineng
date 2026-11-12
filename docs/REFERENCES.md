@@ -11,6 +11,7 @@
 ## 本地数据资料
 
 - Gas Sensor Array Drift代理数据：`[L-DATA-001]`。
+- Chrysakis, A. & Moens, M. (2020). *Online Continual Learning from Imbalanced Data*. ICML/PMLR 119. 论文提出面向不平衡、时间相关在线流的class-balancing reservoir sampling；本项目只将其作为回放基线设计依据。未找到论文作者提供的官方代码，因此不满足D-037的“官方开源代码复现”准入条件，不能包装为正式论文代码复现。
 - NASA C-MAPSS代理数据：`[L-DATA-002]`。
 - 轴承退化代理数据：当前缺失，`[L-DATA-003]`。
 
