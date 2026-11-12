@@ -371,3 +371,9 @@
 - 发布校验记录固化于`results/RC2_VERIFICATION.json`；后续纯文档和发布工具变更不得改动运行时代码，否则必须重新完整回归。
 - 确定性交付包已由干净提交`5d13b78`生成：源码归档193个跟踪文件，SHA-256 `da9e4a4c...bd8b7ae`；发布清单同时保留A1 INVALID、A2 SUCCEEDED、回归矩阵和十轮Harness证据边界，`image_artifact=null`未伪造容器通过。
 
+## 2026-11-12：Docker运行时启用等待重启
+
+- 检测到Docker Desktop 28.5.1客户端和后台进程，但Linux Engine API返回500；`wsl --status`明确报告`WSL_E_WSL_OPTIONAL_COMPONENT_REQUIRED`。
+- 已用Windows可选功能接口启用`Microsoft-Windows-Subsystem-Linux`与`VirtualMachinePlatform`，不执行自动重启；系统登记Component Based Servicing `RebootPending`。
+- 本轮未构建镜像、未生成`docker save`归档，也未把静态检查冒充容器验收。重启后只需验证引擎并执行Docker构建/断网Smoke/save，不重复模型训练、数据核验或完整回归。
+

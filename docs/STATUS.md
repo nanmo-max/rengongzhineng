@@ -3,7 +3,7 @@
 - 最近同步：2026-11-12（Asia/Shanghai）
 - 当前阶段：BRACE-MSI-0.2.0rc2本地Release完成，等待容器/官方平台接入
 - 当前路线：**Qwen3.5-4B PyTRiO Agent + BRACE确定性Harness + 官方A/B/C工业模型 + 经验证的开源优化方法** `[D-035]`
-- 当前唯一任务：`FORMAL-RELEASE-001`（`BLOCKED_EXTERNAL`）；全部本地可执行项已完成，仅等待容器运行时、正式SDK/评分和SwanLab规范
+- 当前唯一任务：`FORMAL-RELEASE-001`（`BLOCKED_HOST_REBOOT`）；Docker Desktop 28.5.1已安装，WSL与VirtualMachinePlatform已启用，必须重启Windows后继续真实镜像构建与4核8GB断网验收
 - 稳定边界：`BRACE-MSI-0.1.0rc1`历史标签保持不变；当前冲刺候选为`BRACE-MSI-0.2.0rc2`，仍在`task/core-001`且不合并main
 - 官方试运行：0次；不得用于基础调试
 
@@ -31,7 +31,7 @@
 - 比赛环境实际Base URL、凭据注入、模型白名单与Token计量待核验 `[H-002]`。
 - 完整评分公式与资源计量实现待发布 `[H-003]`。
 - SwanLab比赛项目、必填字段及无公网同步责任待发布 `[H-004]`。
-- 本机无Docker/Podman，真实镜像构建及4核8GB Linux容器验收仍`BLOCKED`。
+- Docker Desktop客户端与后台已安装；Linux引擎因Windows启用WSL组件后的`RebootPending`尚不可用。重启后先执行`docker version`，随后直接构建RC2，不重复测试或训练。
 
 这些缺口不阻塞使用假客户端、官方训练包和本地公开开发数据完成P0/P1实现。
 
