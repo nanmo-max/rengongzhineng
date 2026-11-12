@@ -42,6 +42,7 @@
     "sha256": "7b64490b0456c4b36bdc6189f34c9ce5e372894b911d76a3b40a6e8142e09327",
     "docker_load_verified": true
   },
+  "release_manifest_sha256": "faedfbc11f4d95771ea860fcb8353d4a5c9543610696cf889cc5fd330b348135",
   "targeted_tests": {
     "status": "PASS",
     "passed": 8,

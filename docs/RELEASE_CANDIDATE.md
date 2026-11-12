@@ -57,8 +57,9 @@ SHA-256补充，不得用源码压缩包或Docker上下文大小替代。
 
 当前已生成交付包：`D:/brace-msi-release/BRACE-MSI-0.2.0rc2/`。发布源提交为
 `5d13b78f1efabc97fef93b2a2906b5195c3eaa9c`，源码归档SHA-256为
-`da9e4a4cc04596177ed960a119cc738869097972ef6db27e2311929afbd8b7ae`，发布清单SHA-256为
-`28e8a752ee2e5e2f9cdc9bc7463c3f2803ac3222c520e73ee120cbf7e3e71502`。
+`da9e4a4cc04596177ed960a119cc738869097972ef6db27e2311929afbd8b7ae`。源码阶段清单SHA-256为
+`28e8a752ee2e5e2f9cdc9bc7463c3f2803ac3222c520e73ee120cbf7e3e71502`；补入真实容器证据后的当前
+`release-manifest.json` SHA-256为`faedfbc11f4d95771ea860fcb8353d4a5c9543610696cf889cc5fd330b348135`。
 
 最终上传用Harness镜像归档为
 `D:/brace-msi-release/BRACE-MSI-0.2.0rc2/BRACE-MSI-0.2.0rc2-image-clean.tar`，来自干净提交
