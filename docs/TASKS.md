@@ -14,8 +14,8 @@ EVIDENCE-RSI-001(DONE)
   -> DUAL-MODEL-001(DONE)
   -> DUAL-INTEGRATION-001(DONE)
   -> DUAL-EXPERIMENT-001(DONE_MIXED)
-  -> GENERALIST-MODEL-001(READY)
-  -> DUAL-RC-001(BLOCKED_DEP)
+  -> GENERALIST-MODEL-001(DONE)
+  -> DUAL-RC-001(IN_PROGRESS)
 ```
 
 以上为D-052当前正式重构图；既有RC和下方历史任务图保持冻结，不因重构而改写。
@@ -95,15 +95,16 @@ EVIDENCE-RSI-001(DONE)
 
 ### GENERALIST-MODEL-001 父检查点增强的自建通用CPU候选
 
-- 状态：`READY`
+- 状态：`DONE`
 - 依赖：DUAL-EXPERIMENT-001
 - 优先级：P1
 - 完成标准：不读取数据集名称，仅按分类/回归和数值schema构建父模型集成候选；先在公开train内部组折验证，保存真实父哈希、模型与资源证据；独立预测一致且总产物不超过64 MiB；至少两个任务相对父模型有可复核改善且第三项不发生灾难性退化
 - 停止条件：训练内部组折未显示互补性、产物/CPU超限、无法证明实际使用父模型，或需要再次依据同一公开validation反复调参
+- 证据：`generalist_model.py`、`generalist_experiment.py`、`generalist-predict`及`tests/dual_loop/test_generalist_model.py`；B/C固定父模型集成分别将RMSE 681.159833降至675.010677、52.868573降至49.336020，A候选由门控拒绝保留父模型。三产物115,392/239,908/200,613字节；专项8项、完整回归328项通过。结果：`D:/brace-msi-generalist/GENERALIST-MODEL-001-A1/`。
 
 ### DUAL-RC-001 新候选回归与容器验收
 
-- 状态：`BLOCKED_DEP`
+- 状态：`IN_PROGRESS`
 - 依赖：GENERALIST-MODEL-001
 - 优先级：P1
 - 完成标准：Gas/Bearing/Engine超过静态，至少两项显著改善；零泄漏；完整回归；Docker小于2GB、4核8GB、无公网、无数据/权重/密钥；满足后才生成新RC

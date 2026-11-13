@@ -15,6 +15,12 @@
 - A1九运行完成但双闭环B/C劣于静态，保留为负结果。A2只针对该失败增加初始合法Replay、保守门控和负影子收益回滚；A/B/C双闭环分别为0.714552 Macro-F1、681.159833 RMSE、52.378784 RMSE，均不低于静态，Engine改善0.93%。
 - A2仍未达到新RC要求，按预注册停止继续使用同一公开validation调参；PyTRiO臂未通过确定性性能门而未启动。两轮均未调用SwanLab或官方试运行，结果明确`historically_exposed=true/formal_eligible=false`。
 
+## 2026-11-13：GENERALIST-MODEL-001-A1父模型通用集成
+
+- 实现身份盲数值表格加载、Group/Stratified折、共享Linear/HGB/ExtraTrees池、自包含父checkpoint集成NPZ、哈希后受控joblib加载、64 MiB门和独立JSONL预测入口；meta、id和answer均不作特征。
+- 三任务全部先完成train内部组折并冻结固定50/50混合，随后一次打开历史暴露validation。A候选被门控拒绝；B/C父集成RMSE为675.010677/49.336020，相对父模型改善0.90%/6.68%，MAE与NASA同步改善。
+- 三产物仅115,392/239,908/200,613字节，实际嵌入父checkpoint并验证父预测与官方预测器一致。专项8项、完整回归`328 passed in 92.10s`；官方试运行、Token和SwanLab使用均0。
+
 ## 2026-11-13：受控双闭环证据与规格锁定
 
 - 对仓库外13张智训引擎宣讲截图逐文件计算SHA-256并登记为`B-RSI-002`；明确其证据等级低于正式规则/SDK，未据此编造字段或平台权限。

@@ -14,6 +14,8 @@ import numpy as np
 from .budget import BudgetLimits
 from .controlled_harness import ControlledDualLoopHarness, ControlledHarnessConfig
 from .harness import HarnessConfig, UnifiedHarness
+from .generalist_experiment import run_generalist_experiment
+from .generalist_model import GeneralistCheckpoint
 from .model_gate import predict_checkpoint
 from .official_sdk import OfficialSdkSpec, load_official_adapter_factory
 from .official_agent_harness import (
@@ -110,6 +112,20 @@ def _parser() -> argparse.ArgumentParser:
     official_stream.add_argument("--package-root", type=Path, required=True)
     official_stream.add_argument("--output", type=Path, required=True)
     official_stream.add_argument("--timeout-seconds", type=float, default=600.0)
+    generalist = subparsers.add_parser(
+        "generalist-run",
+        help="fit identity-blind parent ensembles and open public validation once",
+    )
+    generalist.add_argument("--package-config", type=Path, required=True)
+    generalist.add_argument("--package-root", type=Path, required=True)
+    generalist.add_argument("--output", type=Path, required=True)
+    generalist_predict = subparsers.add_parser(
+        "generalist-predict",
+        help="run the independent parent-ensemble JSONL prediction entry",
+    )
+    generalist_predict.add_argument("--checkpoint", type=Path, required=True)
+    generalist_predict.add_argument("--input-jsonl", type=Path, required=True)
+    generalist_predict.add_argument("--output-jsonl", type=Path, required=True)
     paper_fusion = subparsers.add_parser(
         "paper-fusion-run",
         help="run/resume the bounded leakage-safe CPU paper-fusion trainer",
@@ -217,6 +233,72 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
         )
         return 0 if result["complete"] else 1
+    if args.command == "generalist-run":
+        result = run_generalist_experiment(
+            args.package_root,
+            args.package_config,
+            args.output,
+        )
+        print(
+            json.dumps(
+                {
+                    "status": "completed",
+                    "accepted_profiles": result["accepted_profiles"],
+                    "official_test_opportunities_used": 0,
+                },
+                allow_nan=False,
+            )
+        )
+        return 0
+    if args.command == "generalist-predict":
+        checkpoint = GeneralistCheckpoint.load(args.checkpoint)
+        requests = [
+            json.loads(line)
+            for line in args.input_jsonl.read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        ]
+        if any(
+            not isinstance(request, dict)
+            or set(request) - {"task", "inputs"}
+            or "inputs" not in request
+            or request.get("task", checkpoint.metadata["task"])
+            != checkpoint.metadata["task"]
+            for request in requests
+        ):
+            raise ValueError("prediction requests require only matching task and inputs")
+        prediction = checkpoint.predict_inputs([request["inputs"] for request in requests])
+        if checkpoint.metadata["task"] == "classification":
+            classes = tuple(str(value) for value in checkpoint.metadata["classes"])
+            payloads = [
+                {
+                    "outputs": [
+                        {"label": label, "score": float(score)}
+                        for label, score in zip(classes, row, strict=True)
+                    ]
+                }
+                for row in prediction.raw
+            ]
+        else:
+            payloads = [
+                {"outputs": {"value": float(value)}} for value in prediction.predictions
+            ]
+        args.output_jsonl.parent.mkdir(parents=True, exist_ok=True)
+        args.output_jsonl.write_text(
+            "".join(
+                json.dumps(payload, ensure_ascii=False, allow_nan=False, separators=(",", ":"))
+                + "\n"
+                for payload in payloads
+            ),
+            encoding="utf-8",
+            newline="\n",
+        )
+        print(
+            json.dumps(
+                {"status": "completed", "sample_count": len(payloads)},
+                allow_nan=False,
+            )
+        )
+        return 0
     if args.command == "paper-fusion-run":
         if args.validate_only:
             result = validate_paper_fusion_output(args.output)

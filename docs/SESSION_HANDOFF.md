@@ -3,9 +3,9 @@
 ## 2026-11-13受控双闭环重构恢复入口（当前）
 
 1. 当前路线以D-051/D-052及`docs/superpowers/specs/2026-11-13-controlled-dual-loop-design.md`为准；既有`0.4.1rc1`与历史实验冻结，不得改写。
-2. `DUAL-EXPERIMENT-001`已`DONE_MIXED`；A1负结果与A2安全改进均冻结在`D:/brace-msi-dual-loop/`。当前唯一任务为`GENERALIST-MODEL-001 (READY)`，只用公开train内部组折开发父模型增强候选，不再根据同一公开validation调阈值。
+2. `GENERALIST-MODEL-001`已`DONE`：A保留父模型，B/C冻结固定HGB父集成；结果在`D:/brace-msi-generalist/GENERALIST-MODEL-001-A1/`，禁止重开validation调权重。当前唯一任务为`DUAL-RC-001 (IN_PROGRESS)`。
 3. 宣讲截图证据登记见`B-RSI-002`和`source_notes/RSI_LECTURE_EVIDENCE_2026-11-13.md`；它们不提供正式SDK字段。
-4. 不消耗官方剩余9次试运行；A1/A2已经证明随包训练器可消费物化Update/Replay并真实继承父检查点。自建候选必须把父模型作为实际集成成员并通过独立预测、父哈希与64 MiB门，不能以“泛化研发”为由绕过D-053。
+4. 不消耗官方剩余9次试运行；自建候选已把父模型作为实际集成成员并通过独立预测、父哈希与64 MiB门。RC只集成冻结A/B/C选择，不再做公开validation选型；真实SDK字段仍等待H-001。
 5. 每完成一个任务运行专项与完整回归，更新SSOT并提交；外部SDK阻塞不得阻止平台无关核心实现。
 6. 新增`O-PLATFORM-007`/D-053：模型门必须验证真实父检查点续训、独立预测入口、`checkpoint.npz`和64 MiB总产物；RC归档必须由`docker save`生成并可重载。未知字段继续阻塞，不得猜测。
 

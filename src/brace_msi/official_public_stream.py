@@ -47,6 +47,8 @@ class PredictionReceipt:
     cpu_seconds: float
     peak_rss_bytes: int
     request_sha256: str
+    probabilities: np.ndarray | None = None
+    classes: tuple[str, ...] = ()
 
 
 class OfficialCheckpointPredictor:
@@ -188,6 +190,16 @@ class OfficialCheckpointPredictor:
             if len(outputs) != len(rows):
                 raise ValueError("prediction output count mismatch")
             if self.package.task == "classification":
+                classes = tuple(str(item["label"]) for item in outputs[0]["outputs"])
+                probabilities = np.asarray(
+                    [
+                        [float(item["score"]) for item in output["outputs"]]
+                        for output in outputs
+                    ],
+                    dtype=np.float64,
+                )
+                if probabilities.shape != (len(rows), len(classes)):
+                    raise ValueError("classification probability shape mismatch")
                 predictions = np.asarray(
                     [
                         max(output["outputs"], key=lambda item: float(item["score"]))["label"]
@@ -196,6 +208,8 @@ class OfficialCheckpointPredictor:
                     dtype=str,
                 )
             else:
+                classes = ()
+                probabilities = None
                 predictions = np.asarray(
                     [float(output["outputs"]["value"]) for output in outputs], dtype=np.float64
                 )
@@ -209,6 +223,8 @@ class OfficialCheckpointPredictor:
                 cpu_seconds=cpu_seconds,
                 peak_rss_bytes=peak_rss,
                 request_sha256=request_sha,
+                probabilities=probabilities,
+                classes=classes,
             )
         finally:
             for path in (stdin_path, stdout_path, stderr_path):
