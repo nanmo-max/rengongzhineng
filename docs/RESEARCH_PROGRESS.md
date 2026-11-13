@@ -7,6 +7,7 @@
 - 对仓库外13张智训引擎宣讲截图逐文件计算SHA-256并登记为`B-RSI-002`；明确其证据等级低于正式规则/SDK，未据此编造字段或平台权限。
 - D-051锁定十批即十次决策事务及0至2候选语义；D-052锁定四缓冲区物理隔离、ActionValueTable、影子配对收益、证据触发Qwen、受限插件和分层模型注册。
 - 正式设计与执行计划分别保存于`docs/superpowers/specs/2026-11-13-controlled-dual-loop-design.md`和`docs/superpowers/plans/2026-11-13-controlled-dual-loop.md`。既有RC、历史正负实验和公开验证暴露均保持不变；尚未运行新训练或产生新性能结果。
+- 用户转发新的官方镜像/续训公告后登记`O-PLATFORM-007`与D-053：后续模型门必须证明真实父检查点加载、独立预测入口、`checkpoint.npz`和64 MiB产物上限；镜像只接受`docker save`归档。未猜测公告未提供的SDK字段。
 
 ## 2026-11-13：DUAL-DATA-001四缓冲区与数据能力边界
 

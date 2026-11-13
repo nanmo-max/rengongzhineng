@@ -8,7 +8,7 @@
 EVIDENCE-RSI-001(DONE)
   -> DUAL-DATA-001(DONE)
   -> DUAL-TXN-001(DONE)
-  -> DUAL-VALUE-001(READY)
+  -> DUAL-VALUE-001(IN_PROGRESS)
   -> DUAL-QWEN-001(BLOCKED_DEP)
   -> DUAL-PLUGIN-001(BLOCKED_DEP)
   -> DUAL-MODEL-001(BLOCKED_DEP)
@@ -45,7 +45,7 @@ EVIDENCE-RSI-001(DONE)
 
 ### DUAL-VALUE-001 动作收益、Pareto与影子归因
 
-- 状态：`READY`
+- 状态：`IN_PROGRESS`
 - 依赖：DUAL-TXN-001
 - 优先级：P0
 - 完成标准：每任务ActionValueTable、性能—成本Pareto、同批影子配对收益和低置信度降级通过自动测试，影子资源全部计量
@@ -70,6 +70,7 @@ EVIDENCE-RSI-001(DONE)
 - 依赖：DUAL-PLUGIN-001
 - 优先级：P0
 - 完成标准：Tier0/1训练—保存—加载—同预测验证；增量能力不误报；Tier2仅在依赖体积、4核8GB和协议验收通过后启用
+- 新增官方门：实际加载平台父检查点并保留父链；提供独立预测入口；`checkpoint.npz`及全部模型产物不超过64 MiB；禁止从头训练伪装续训 `[O-PLATFORM-007]`
 
 ### DUAL-INTEGRATION-001 十批受控双闭环集成
 
@@ -91,6 +92,7 @@ EVIDENCE-RSI-001(DONE)
 - 依赖：DUAL-EXPERIMENT-001
 - 优先级：P1
 - 完成标准：Gas/Bearing/Engine超过静态，至少两项显著改善；零泄漏；完整回归；Docker小于2GB、4核8GB、无公网、无数据/权重/密钥；满足后才生成新RC
+- 上传验收：归档必须由`docker save`生成并可`docker load`；分别记录镜像可用、模型校验、续训协议和评测状态，不把上传完成冒充通过 `[O-PLATFORM-007]`
 
 ```text
 ROUTE-001(DONE)
