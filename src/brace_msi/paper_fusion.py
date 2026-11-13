@@ -361,11 +361,15 @@ def successive_halving(
         for spec in specs
     ]
     reverse = task_kind == "classification"
-    selected = sorted(
-        low,
-        key=lambda item: (item.primary_metric, item.spec.id),
-        reverse=reverse,
-    )[:finalist_count]
+    selected = (
+        low
+        if finalist_count == len(specs)
+        else sorted(
+            low,
+            key=lambda item: (item.primary_metric, item.spec.id),
+            reverse=reverse,
+        )[:finalist_count]
+    )
     finalists = tuple(
         _cross_validate(
             X,

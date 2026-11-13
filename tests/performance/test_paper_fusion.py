@@ -167,6 +167,33 @@ def test_successive_halving_keeps_only_requested_finalists() -> None:
     assert all(np.isfinite(item.primary_metric) for item in result.all_results)
 
 
+def test_all_surviving_specs_preserve_preregistered_fit_order() -> None:
+    X = np.asarray([[float(index)] for index in range(18)])
+    y = np.asarray([index % 2 for index in range(18)])
+    rows = [
+        type("Row", (), {"group": f"g{index // 2}", "target": y[index]})()
+        for index in range(18)
+    ]
+    folds = grouped_folds(rows, "A", seed=4, n_splits=3)
+    specs = [
+        TeacherSpec("linear", {"C": 1.0}),
+        TeacherSpec("extra_trees", {"n_estimators": 20, "min_samples_leaf": 1}),
+        TeacherSpec("linear", {"C": 0.1}),
+    ]
+
+    result = successive_halving(
+        X,
+        y,
+        folds,
+        specs,
+        task_kind="classification",
+        finalist_count=len(specs),
+        seed=3,
+    )
+
+    assert [item.spec.id for item in result.finalists] == [item.id for item in specs]
+
+
 def test_loader_fails_closed_on_duplicate_ids(tmp_path: Path) -> None:
     path = tmp_path / "duplicate.jsonl"
     row = {
