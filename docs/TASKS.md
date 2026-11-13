@@ -10,8 +10,8 @@ EVIDENCE-RSI-001(DONE)
   -> DUAL-TXN-001(DONE)
   -> DUAL-VALUE-001(DONE)
   -> DUAL-QWEN-001(DONE)
-  -> DUAL-PLUGIN-001(READY)
-  -> DUAL-MODEL-001(BLOCKED_DEP)
+  -> DUAL-PLUGIN-001(DONE)
+  -> DUAL-MODEL-001(READY)
   -> DUAL-INTEGRATION-001(BLOCKED_DEP)
   -> DUAL-EXPERIMENT-001(BLOCKED_DEP)
   -> DUAL-RC-001(BLOCKED_DEP)
@@ -61,14 +61,15 @@ EVIDENCE-RSI-001(DONE)
 
 ### DUAL-PLUGIN-001 受限纯函数补丁沙箱
 
-- 状态：`READY`
+- 状态：`DONE`
 - 依赖：DUAL-QWEN-001
 - 优先级：P0
 - 完成标准：AST、签名、子进程、CPU/RSS/超时、形状、有限值、确定性和差异测试齐全；文件、网络、反射、无限循环、OOM与越界输出失败关闭
+- 证据：`src/brace_msi/restricted_plugin.py`、`tests/dual_loop/test_restricted_plugin.py`；专项`13 passed`、agent+dual-loop`69 passed`、完整回归`307 passed`
 
 ### DUAL-MODEL-001 分层CPU模型注册门
 
-- 状态：`BLOCKED_DEP`
+- 状态：`READY`
 - 依赖：DUAL-PLUGIN-001
 - 优先级：P0
 - 完成标准：Tier0/1训练—保存—加载—同预测验证；增量能力不误报；Tier2仅在依赖体积、4核8GB和协议验收通过后启用

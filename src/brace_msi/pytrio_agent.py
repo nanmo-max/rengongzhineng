@@ -27,10 +27,12 @@ _SECRET_KEY_PATTERN = re.compile(
 )
 _ALLOWED_TOOLS: dict[Action, str] = {
     Action.NOOP: "noop",
+    Action.RECALIBRATE: "recalibrate",
     Action.INCREMENTAL_UPDATE: "train_incremental",
     Action.REPLAY_REFIT: "train_replay_refit",
     Action.FAMILY_SWITCH: "train_family_switch",
     Action.BOUNDED_HPO: "train_bounded_hpo",
+    Action.REGISTERED_PLUGIN: "registered_plugin",
     Action.ROLLBACK: "rollback",
 }
 _ALLOWED_PARAMETER_KEYS = {

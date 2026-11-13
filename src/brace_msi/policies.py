@@ -10,10 +10,12 @@ from .evidence import Evidence
 
 class Action(str, Enum):
     NOOP = "noop"
+    RECALIBRATE = "recalibrate"
     INCREMENTAL_UPDATE = "incremental_update"
     REPLAY_REFIT = "replay_refit"
     FAMILY_SWITCH = "family_switch"
     BOUNDED_HPO = "bounded_hpo"
+    REGISTERED_PLUGIN = "registered_plugin"
     ROLLBACK = "rollback"
 
 
