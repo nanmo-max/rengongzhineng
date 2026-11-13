@@ -133,6 +133,159 @@ class ProposalOutcome:
     receipt: AgentCallReceipt
 
 
+@dataclass(frozen=True)
+class AgentTrigger:
+    should_call: bool
+    reasons: tuple[str, ...]
+
+    @classmethod
+    def evaluate(
+        cls,
+        *,
+        performance_drop: float,
+        drift_complexity: float,
+        failure_streak: int,
+        action_uncertainty: float,
+        pareto_indistinguishable: bool,
+        severe_drop_threshold: float = 0.15,
+        complex_drift_threshold: float = 0.7,
+        uncertainty_threshold: float = 0.7,
+    ) -> "AgentTrigger":
+        reasons: list[str] = []
+        if performance_drop >= severe_drop_threshold:
+            reasons.append("severe_degradation")
+        if drift_complexity >= complex_drift_threshold:
+            reasons.append("complex_drift")
+        if failure_streak >= 2:
+            reasons.append("consecutive_failures")
+        if action_uncertainty >= uncertainty_threshold:
+            reasons.append("action_value_uncertainty")
+        if pareto_indistinguishable:
+            reasons.append("pareto_indistinguishable")
+        return cls(should_call=bool(reasons), reasons=tuple(reasons))
+
+
+@dataclass(frozen=True)
+class AdvisorReceipt:
+    status: str
+    triggered: bool
+    trigger_reasons: tuple[str, ...]
+    attempts: int
+    error_categories: tuple[str, ...]
+    total_input_tokens: int
+    total_output_tokens: int
+    total_latency_seconds: float
+
+
+@dataclass(frozen=True)
+class AdvisorOutcome:
+    proposal: ExperimentProposal | None
+    source: str
+    receipt: AdvisorReceipt
+
+
+class ProposalProvider(Protocol):
+    def propose(self, context: AgentContext) -> ProposalOutcome: ...
+
+
+class RetryingProposalAdvisor:
+    """Call Qwen only on evidence triggers and retry at most once.
+
+    The wrapped client should normally use ``allow_fallback=False`` so each
+    attempt represents a real service attempt.  For compatibility, a wrapped
+    client's deterministic fallback is treated as a failed attempt rather than
+    accepted as Qwen output.
+    """
+
+    def __init__(
+        self,
+        proposer: ProposalProvider,
+        *,
+        fallback: Callable[[AgentContext], ExperimentProposal],
+        max_attempts: int = 2,
+        clock: Callable[[], float] = time.perf_counter,
+    ) -> None:
+        if max_attempts != 2:
+            raise ValueError("formal advisor permits exactly one retry")
+        self.proposer = proposer
+        self.fallback = fallback
+        self.max_attempts = max_attempts
+        self.clock = clock
+
+    def advise(self, context: AgentContext, trigger: AgentTrigger) -> AdvisorOutcome:
+        if not trigger.should_call:
+            return AdvisorOutcome(
+                proposal=None,
+                source="not_triggered",
+                receipt=AdvisorReceipt(
+                    status="not_triggered",
+                    triggered=False,
+                    trigger_reasons=trigger.reasons,
+                    attempts=0,
+                    error_categories=(),
+                    total_input_tokens=0,
+                    total_output_tokens=0,
+                    total_latency_seconds=0.0,
+                ),
+            )
+
+        errors: list[str] = []
+        input_tokens = 0
+        output_tokens = 0
+        total_latency = 0.0
+        attempts = 0
+        for attempt in range(1, self.max_attempts + 1):
+            attempts = attempt
+            started = self.clock()
+            try:
+                outcome = self.proposer.propose(context)
+            except Exception as exc:  # service boundary is intentionally contained
+                total_latency += max(0.0, self.clock() - started)
+                errors.append(type(exc).__name__)
+                continue
+            total_latency += max(
+                max(0.0, self.clock() - started),
+                float(outcome.receipt.latency_seconds),
+            )
+            input_tokens += int(outcome.receipt.input_tokens)
+            output_tokens += int(outcome.receipt.output_tokens)
+            if outcome.source != "pytrio":
+                errors.append(outcome.receipt.error_category or outcome.source)
+                continue
+            validate_experiment_proposal(outcome.proposal)
+            return AdvisorOutcome(
+                proposal=outcome.proposal,
+                source="pytrio",
+                receipt=AdvisorReceipt(
+                    status="accepted" if attempt == 1 else "accepted_after_retry",
+                    triggered=True,
+                    trigger_reasons=trigger.reasons,
+                    attempts=attempts,
+                    error_categories=tuple(errors),
+                    total_input_tokens=input_tokens,
+                    total_output_tokens=output_tokens,
+                    total_latency_seconds=total_latency,
+                ),
+            )
+
+        proposal = self.fallback(context)
+        validate_experiment_proposal(proposal)
+        return AdvisorOutcome(
+            proposal=proposal,
+            source="deterministic_recovery",
+            receipt=AdvisorReceipt(
+                status="fallback_after_retry",
+                triggered=True,
+                trigger_reasons=trigger.reasons,
+                attempts=attempts,
+                error_categories=tuple(errors),
+                total_input_tokens=input_tokens,
+                total_output_tokens=output_tokens,
+                total_latency_seconds=total_latency,
+            ),
+        )
+
+
 class SamplingTransport(Protocol):
     def sample(
         self,

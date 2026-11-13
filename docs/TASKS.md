@@ -9,8 +9,8 @@ EVIDENCE-RSI-001(DONE)
   -> DUAL-DATA-001(DONE)
   -> DUAL-TXN-001(DONE)
   -> DUAL-VALUE-001(DONE)
-  -> DUAL-QWEN-001(READY)
-  -> DUAL-PLUGIN-001(BLOCKED_DEP)
+  -> DUAL-QWEN-001(DONE)
+  -> DUAL-PLUGIN-001(READY)
   -> DUAL-MODEL-001(BLOCKED_DEP)
   -> DUAL-INTEGRATION-001(BLOCKED_DEP)
   -> DUAL-EXPERIMENT-001(BLOCKED_DEP)
@@ -53,14 +53,15 @@ EVIDENCE-RSI-001(DONE)
 
 ### DUAL-QWEN-001 证据触发Qwen与确定性恢复
 
-- 状态：`READY`
+- 状态：`DONE`
 - 依赖：DUAL-VALUE-001
 - 优先级：P0
 - 完成标准：只在严重退化、复杂漂移、连续失败或动作不可区分时调用；限时重试一次；异常有收据并由确定性策略继续；不微调Qwen
+- 证据：`src/brace_msi/pytrio_agent.py`、`tests/dual_loop/test_agent_advisor.py`；专项`9 passed`，完整回归`294 passed`，真实服务调用0次
 
 ### DUAL-PLUGIN-001 受限纯函数补丁沙箱
 
-- 状态：`BLOCKED_DEP`
+- 状态：`READY`
 - 依赖：DUAL-QWEN-001
 - 优先级：P0
 - 完成标准：AST、签名、子进程、CPU/RSS/超时、形状、有限值、确定性和差异测试齐全；文件、网络、反射、无限循环、OOM与越界输出失败关闭
