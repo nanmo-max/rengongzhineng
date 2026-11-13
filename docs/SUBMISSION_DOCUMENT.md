@@ -1,7 +1,7 @@
 # BRACE-MSI：面向工业模型漂移的预算—风险约束自主迭代引擎
 
 > 智训引擎赛题作品说明书
-> 版本：BRACE-MSI-0.4.0rc1
+> 版本：BRACE-MSI-0.4.0rc2
 > 日期：2026年11月13日
 > 参赛团队：BRACE-MSI项目组
 > 指导教师：暂不填写
@@ -10,7 +10,7 @@
 
 工业传感器老化、设备磨损和工况变化会使模型输入与目标关系持续变化。BRACE-MSI面向这一问题，构建“PyTRiO大模型提出结构化动作意图、确定性Harness负责预算控制与安全执行、工业模型独立训练与评估”的无人干预闭环。系统覆盖Gas分类、Bearing寿命回归和Engine寿命回归三类官方公开训练任务，能够在十轮决策中完成历史读取、实验提案、候选训练、独立评估、上线或拒绝、回滚与审计。
 
-当前正式候选使用Qwen3.5-4B的持久化Sampler生成受限JSON提案。模型输出不能直接执行代码，也不能绕过工具白名单、训练前预算检查和训练后SafetyGate；模型服务异常时自动退回确定性策略。通过一次有界论文方法复现与门控，Gas和Bearing继续使用RC3安全候选，Engine采用因果历史特征与异构CPU模型融合。A/B/C公开验证主指标分别为0.725695 Macro-F1、637.180224 RMSE和42.330230 RMSE。以上数据来自已经历史暴露的公开验证集，只用于说明本地开发结果，不是隐藏测试或官方成绩。
+当前正式候选使用Qwen3.5-4B的持久化Sampler生成受限JSON提案。模型输出不能直接执行代码，也不能绕过工具白名单、训练前预算检查和训练后SafetyGate；正式Agent模式下，模型服务或结构化响应异常会失败关闭并保留证据，不允许零Token静默改走确定性路线。通过一次有界论文方法复现与门控，Gas和Bearing继续使用RC3安全候选，Engine采用因果历史特征与异构CPU模型融合。A/B/C公开验证主指标分别为0.725695 Macro-F1、637.180224 RMSE和42.330230 RMSE。以上数据来自已经历史暴露的公开验证集，只用于说明本地开发结果，不是隐藏测试或官方成绩。
 
 ## 1. 赛题理解与设计目标
 
@@ -19,7 +19,7 @@
 - 在有限CPU、内存、候选次数和模型调用预算内获得可复核的性能改善；
 - 支持分类、回归和不同特征维度，不依赖单一数据集格式；
 - 每个候选都经过隔离训练、资源核验、独立评估和安全门控；
-- 对服务失败、非法提案、预算耗尽和性能退化实现自动降级或回滚；
+- 对服务失败、非法提案、预算耗尽和性能退化实现失败关闭、拒绝或回滚；
 - 记录成功、失败、拒绝和跳过，不只保留正结果；
 - 不把原始数据、模型权重、API Key或逐样本私有信息打入镜像或公开日志。
 
@@ -118,15 +118,15 @@ SafetyGate分为三层：
 
 | 验收项 | 当前结果 |
 |---|---|
-| Harness镜像 | linux/amd64，240,701,023字节，小于2GB |
+| Harness镜像 | linux/amd64，240,662,563字节，小于2GB |
 | 运行身份 | 非root，UID 10001 |
 | 依赖 | PyTRiO 0.2.9；无PyTorch |
 | 禁入内容 | 镜像不含原始数据、工业模型权重、Sampler权重、Embedding或密钥 |
 | 资源验收 | 4核8GB、断网、256 PID限制下Engine冻结候选训练与机器校验通过 |
-| 自动测试 | 最终代码264项通过 |
-| 归档 | `docker save`归档240,723,968字节并通过`docker load`重载 |
+| 自动测试 | 最终代码271项通过 |
+| 归档 | `docker save`归档240,685,568字节并通过`docker load`重载 |
 
-正式镜像SHA-256为`97bb0a9fcfed688ba1b7feadadf09528e232fea578d06a1d782f2dccee306dfa`。正式平台仍需提供运行事件、挂载目录、Base URL/凭据注入、完整评分公式和比赛SwanLab字段；这些未知项只替换适配层，不改变预算、沙箱和SafetyGate。
+正式镜像SHA-256为`daf42786f73862214336154848782cffb9cb3468181959542d1687435e307d32`。断网负向验收中，不可达Sampler在12.726秒内以`transport_error`退出且未生成候选或运行状态，证明正式路径不会静默变为确定性流程。正式平台仍需提供运行事件、挂载目录、Base URL/凭据注入、完整评分公式和比赛SwanLab字段；这些未知项只替换适配层，不改变预算、沙箱和SafetyGate。
 
 ## 9. 实验记录与可复现性
 
@@ -145,7 +145,7 @@ SwanLab只记录最终工程模型重新训练时产生的聚合指标、资源�
 
 ## 11. 证据边界与待平台确认事项
 
-- 当前指标不是隐藏测试或官方成绩；官方试运行机会尚未用于基础调试；
+- 旧提交已使用1/10次官方试运行并暴露零Token与隐藏泛化问题；该运行不是本版RC2，RC2尚未上传或试运行；
 - 正式SDK事件和挂载字段未知，代码仅保留可替换适配器；
 - 完整评分公式和资源计量细节仍待平台发布；
 - SwanLab比赛项目命名、必填字段和无公网后的同步责任仍需以平台规范为准；
@@ -157,7 +157,7 @@ SwanLab只记录最终工程模型重新训练时产生的聚合指标、资源�
 - 正式路线与决策：`docs/FORMAL_ROUTE.md`、`docs/DECISION_LOG.md`；
 - PyTRiO与十轮结果：`docs/results/PYTRIO-COMPETITIVE-001-A1.md`；
 - 论文方法与消融：`docs/results/PAPER-FUSION-SPRINT-001.md`；
-- 容器与发布验收：`docs/results/RC4_CONTAINER_ACCEPTANCE.json`、`docs/results/RC4_VERIFICATION.json`；
+- 容器与发布验收：`docs/results/RC5_CONTAINER_ACCEPTANCE.json`、`docs/results/RC5_VERIFICATION.json`；
 - 实验登记与负结果：`docs/EXPERIMENTS.md`、`docs/RESEARCH_PROGRESS.md`；
 - 开源与依赖：`docs/OPEN_SOURCE_COMPLIANCE.md`；
 - 运行说明：`docs/RUNBOOK.md`、`docs/SDK_INTEGRATION.md`、`docs/SWANLAB_INTEGRATION.md`。
