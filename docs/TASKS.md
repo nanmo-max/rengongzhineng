@@ -83,13 +83,14 @@ ROUTE-001(DONE)
 - `PERF-C-001`入口：B完成或停止后复用同一矩阵执行C；按整发动机FD001+2/FD003/FD004训练/开发/确认，不新增算法模块。
 - `PERF-C-001`证据：同一矩阵9/9成功，整发动机确认门通过；冻结`e5-lr1p0`，公开门控RMSE 52.868573→52.367735、MAE 38.899830→38.322199，机器校验有效；按D-039停止搜索。
 
-### PAPER-METHOD-001 高价值开源方法筛选与复现
+### PAPER-METHOD-001 高价值开源方法筛选、复现与融合
 
-- 状态：`DEFERRED`（D-039冲刺期暂停，不阻塞LOOP-10）
+- 状态：`IN_PROGRESS`（独立`codex/paper-fusion-sprint`分支；D-045）
 - 依赖：至少一个PERF任务给出可测量瓶颈
 - 优先级：P1
 - 完成标准：论文贡献、官方代码、许可证、CPU/内存、官方模型兼容性审计通过；独立实验ID下完成基线、复现、消融和失败记录；只有实测有效方法进入主Harness
 - 停止条件：无明确瓶颈、许可证不清、依赖GPU/公网、或4核8GB预算不成立
+- 当前实现：`PAPER-FUSION-SPRINT-001`，最多三项来源、train内部组折选型、冻结后一次公开validation；设计与计划见`docs/superpowers/specs/2026-11-13-paper-fusion-sprint-design.md`和`docs/superpowers/plans/2026-11-13-paper-fusion-sprint.md`。
 
 ### LOOP-10-001 PyTRiO+BRACE十轮自主闭环
 

@@ -360,6 +360,26 @@
 - 事实：A/B/C冻结工作流各完成10轮/3候选且`valid=true`；SwanLab公开项目`nanmo-max/brace-msi-final`包含3个`FINISHED`实验，每项10条聚合记录。`task/core-001`已推送到GitHub，RC3冻结提交标签`brace-msi-v0.3.0-rc3`已推送。
 - 边界：结果使用历史暴露公开验证，不是隐藏评测；远端main未合并；仓库尚未由权利人选择项目级许可证。
 
+### P-PAPER-001 Gas漂移知识蒸馏
+
+- 论文：Lin, J.; Zhan, X. *Sensor-Drift Compensation in Electronic-Nose-Based Gas Recognition Using Knowledge Distillation*, Informatics 13(1), 2026, DOI `10.3390/informatics13010015`。
+- 作者代码：`https://github.com/abob7/gas-drift`，仓库声明MIT；论文正文明确链接该代码。
+- 已核实贡献：UCI Gas Sensor Array Drift上比较KD、DRCA与KD-DRCA，报告KD相对基线最高约15% F1改善。
+- 适配风险：仓库README声明在全部批次上拟合全局scaler，不符合本项目因果预处理；只能复现KD核心并改为历史/训练折拟合，不能把修改版冒充逐行原样复现。期刊分区尚无项目内权威JCR证据，不标记为一区。
+
+### P-PAPER-002 C-MAPSS可解释树模型集成
+
+- 论文：Özcan, H. *Interpretable Ensemble Remaining Useful Life Prediction Enables Dynamic Maintenance Scheduling for Aircraft Engines*, Scientific Reports 15, 39795, 2025, DOI `10.1038/s41598-025-23473-2`。
+- 作者代码：`https://github.com/hkmtcn/interpretable-rul-maintenance`；README声明代码MIT、图表/派生数据CC BY 4.0，但GitHub页面许可证徽标与README表述需要在复制代码前以实际`LICENSE`文件再次核对。
+- 已核实贡献：在C-MAPSS上组合LightGBM、CatBoost与Gradient Boosting，作者声明普通CPU足以运行。
+- 适配边界：论文RMSE与本比赛逐行公开validation协议不可直接比较；本轮只复现树模型互补集成思想，使用现有scikit-learn实现，不复制仓库代码。
+
+### P-PAPER-003 Hyperband资源分配
+
+- 论文：Li, L. et al. *Hyperband: A Novel Bandit-Based Approach to Hyperparameter Optimization*, JMLR 18(185), 2018。
+- 已核实贡献：以Successive Halving分配迭代/样本等资源并提前停止劣质配置，论文报告在多类问题上相对常见调参方法获得数量级加速。
+- 适配边界：本轮实现确定性有限Successive Halving，不复制第三方非作者实现，不扩展为BOHB。
+
 ## 待核实假设与冲突
 
 ### H-001 正式批次协议

@@ -1,9 +1,9 @@
 # 当前状态
 
 - 最近同步：2026-11-13（Asia/Shanghai）
-- 当前阶段：`BRACE-MSI-0.3.0rc3`保持冻结；本地提交材料、GitHub脱敏分支和SwanLab最终工程记录已完成
+- 当前阶段：`BRACE-MSI-0.3.0rc3`保持冻结；独立`codex/paper-fusion-sprint`分支执行当天论文融合性能冲刺 `[D-045]`
 - 当前路线：**Qwen3.5-4B PyTRiO Agent + BRACE确定性Harness + 官方A/B/C工业模型 + 经验证的开源优化方法** `[D-035]`
-- 当前唯一任务：`FORMAL-RELEASE-001`（`BLOCKED_EXTERNAL`）；本地可执行提交项已完成，只等待正式SDK事件/挂载、比赛Base URL与凭据注入、完整评分公式及比赛专用SwanLab字段。
+- 当前唯一任务：`PAPER-METHOD-001`（`IN_PROGRESS`）；以Gas知识蒸馏、CPU树模型集成和Successive Halving为最多三项来源，先完成train内部组折验证，再冻结并一次打开历史暴露公开validation。`FORMAL-RELEASE-001`继续`BLOCKED_EXTERNAL`。
 - 稳定边界：`BRACE-MSI-0.1.0rc1`与`0.2.0rc2`历史保持不变；当前候选为`BRACE-MSI-0.3.0rc3`，仍在`task/core-001`且不合并main。A3之后禁止继续LLM调参 `[D-043]`
 - 官方试运行：0次；不得用于基础调试
 

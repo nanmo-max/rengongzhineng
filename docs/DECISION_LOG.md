@@ -48,6 +48,7 @@
 | D-042 | 2026-11-12 | LOCKED | A2 Sampler在三任务静态包对照中30/30建议noop，性能完全来自最低候选守卫；不得表述为大模型带来性能增益。只允许再做一次包含身份无关最低候选证据的有界SFT与新留出验证；若主动候选率仍无改善，则停止LLM调参，正式默认使用确定性BRACE并保留Sampler为可选建议器。 | `PYTRIO-HARNESS-001-A2`六运行均机器复算有效；R-028停止原则 |
 | D-043 | 2026-11-12 | LOCKED | A3是D-042允许的最后一次LLM调参并已通过：新留出五项100%，真实A/B/C首轮3/3主动训练。正式候选冻结为“A3持久化Sampler负责结构化动作意图 + BRACE使用已冻结任务参数日程 + ActionSandbox/SafetyGate最终裁决”；此后不再扩充语料、epoch或LLM搜索。Agent没有单独创造工业模型性能，性能贡献归于已冻结参数与门控；候选预算耗尽后的建议必须在训练前拒绝并保留审计。 | `PYTRIO-SFT-001-A3`、`PYTRIO-COMPETITIVE-001-A1`、`docs/results/PYTRIO-COMPETITIVE-001-A1.md` |
 | D-044 | 2026-11-13 | LOCKED | RC3、A3和三任务参数保持冻结；允许执行一次`SWANLAB-FINAL-001`最终工程记录重跑并同步公开聚合指标。该运行只形成提交记录，不参与模型/策略选择；GitHub只推送脱敏源码与证据，镜像、数据、权重、凭据和完整Sampler路径不得进入仓库。 | L-AUTH-012、O-SWANLAB-002、D-023阶段条件已满足 |
+| D-045 | 2026-11-13 | LOCKED | 在独立`codex/paper-fusion-sprint`分支恢复`PAPER-METHOD-001`，以当天可提交为边界，仅研究Gas知识蒸馏、CPU树模型集成和Successive Halving三项来源；RC3/A3/历史结果保持冻结。模型选择只用train内部组折，公开validation在配置冻结后打开一次。30%为进取目标而非验收伪目标。D-039的论文暂停只对RC3冲刺历史有效，不阻止本独立研究候选。 | 用户2026-11-13高强度性能优化指令；`docs/superpowers/specs/2026-11-13-paper-fusion-sprint-design.md` |
 
 ## 已被替代的历史决策
 
