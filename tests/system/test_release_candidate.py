@@ -48,7 +48,7 @@ def test_repository_release_audit_preserves_evidence_boundaries() -> None:
 
     audit = audit_release_tree(root, _tracked_files(root))
 
-    assert audit.release_id == RELEASE_ID == "BRACE-MSI-0.4.1rc1"
+    assert audit.release_id == RELEASE_ID == "BRACE-MSI-0.5.0rc1"
     assert audit.blocking_findings == ()
     assert audit.a1_status == "INVALID"
     assert audit.a2_status == "SUCCEEDED"
@@ -56,6 +56,8 @@ def test_repository_release_audit_preserves_evidence_boundaries() -> None:
     assert audit.regression_sprint_status == "SUCCEEDED"
     assert audit.sprint_harness_status == "SUCCEEDED"
     assert audit.docker_context_under_2gb is True
+    assert Path("src/brace_msi/generalist_model.py") in audit.included_files
+    assert Path("src/brace_msi/generalist_experiment.py") in audit.included_files
 
 
 def test_source_archive_contains_only_selected_release_files(tmp_path: Path) -> None:

@@ -14,8 +14,8 @@ import numpy as np
 from .budget import BudgetLimits
 from .controlled_harness import ControlledDualLoopHarness, ControlledHarnessConfig
 from .harness import HarnessConfig, UnifiedHarness
-from .generalist_experiment import run_generalist_experiment
-from .generalist_model import GeneralistCheckpoint
+from .generalist_experiment import fit_generalist_package, run_generalist_experiment
+from .generalist_model import DEFAULT_SPECS, GeneralistCheckpoint
 from .model_gate import predict_checkpoint
 from .official_sdk import OfficialSdkSpec, load_official_adapter_factory
 from .official_agent_harness import (
@@ -119,6 +119,21 @@ def _parser() -> argparse.ArgumentParser:
     generalist.add_argument("--package-config", type=Path, required=True)
     generalist.add_argument("--package-root", type=Path, required=True)
     generalist.add_argument("--output", type=Path, required=True)
+    generalist_fit = subparsers.add_parser(
+        "generalist-fit",
+        help="fit one parent-linked candidate using train-internal evidence only",
+    )
+    generalist_fit.add_argument("--package-config", type=Path, required=True)
+    generalist_fit.add_argument("--package-root", type=Path, required=True)
+    generalist_fit.add_argument("--profile", choices=("A", "B", "C"), required=True)
+    generalist_fit.add_argument("--output", type=Path, required=True)
+    generalist_fit.add_argument(
+        "--family",
+        action="append",
+        choices=tuple(spec.family for spec in DEFAULT_SPECS),
+        help="limit the train-internal model pool; may be repeated",
+    )
+    generalist_fit.add_argument("--max-train-rows", type=int)
     generalist_predict = subparsers.add_parser(
         "generalist-predict",
         help="run the independent parent-ensemble JSONL prediction entry",
@@ -244,6 +259,34 @@ def main(argv: Sequence[str] | None = None) -> int:
                 {
                     "status": "completed",
                     "accepted_profiles": result["accepted_profiles"],
+                    "official_test_opportunities_used": 0,
+                },
+                allow_nan=False,
+            )
+        )
+        return 0
+    if args.command == "generalist-fit":
+        if args.max_train_rows is not None and args.max_train_rows < 30:
+            raise ValueError("--max-train-rows must be at least 30")
+        families = set(args.family or ())
+        specs = tuple(
+            spec for spec in DEFAULT_SPECS if not families or spec.family in families
+        )
+        result = fit_generalist_package(
+            args.package_root,
+            args.package_config,
+            args.profile,
+            args.output,
+            specs=specs,
+            max_train_rows=args.max_train_rows,
+        )
+        print(
+            json.dumps(
+                {
+                    "status": "completed",
+                    "task": result["task"],
+                    "selected_family": result["selected_spec"]["family"],
+                    "artifact_bytes": result["artifact_bytes"],
                     "official_test_opportunities_used": 0,
                 },
                 allow_nan=False,

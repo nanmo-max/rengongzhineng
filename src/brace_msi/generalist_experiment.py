@@ -97,6 +97,70 @@ def _atomic_json(path: Path, value: dict[str, Any]) -> None:
     os.replace(temporary, path)
 
 
+def fit_generalist_package(
+    package_root: Path,
+    package_config_path: Path,
+    profile: str,
+    output_root: Path,
+    *,
+    specs: Sequence[GeneralistSpec] = DEFAULT_SPECS,
+    max_train_rows: int | None = None,
+    seed: int = 20261113,
+) -> dict[str, Any]:
+    """Fit one parent-linked candidate without using validation metrics for selection.
+
+    The package audit still verifies the immutable public package, including the
+    validation-file hash and split metadata.  Candidate selection and fitting use
+    only ``public/train.jsonl``.  Formal SDK field mapping remains intentionally
+    outside this package-local entry point.
+    """
+
+    output_root = Path(output_root)
+    if output_root.exists() or output_root.is_symlink():
+        raise FileExistsError(f"generalist fit output already exists: {output_root}")
+    package_config = json.loads(Path(package_config_path).read_text(encoding="utf-8"))
+    audits = audit_package_root(Path(package_root), package_config)
+    try:
+        package = audits[profile]
+    except KeyError as exc:
+        raise ValueError(f"unknown package profile: {profile}") from exc
+
+    output_root.mkdir(parents=True)
+    artifact = output_root / "checkpoint.npz"
+    fit = fit_generalist_candidate(
+        package,
+        artifact,
+        specs=specs,
+        max_train_rows=max_train_rows,
+        seed=seed,
+    )
+    receipt = {
+        "format": "brace-msi.generalist-fit.v1",
+        "complete": True,
+        "formal_sdk_mapped": False,
+        "validation_used_for_selection": False,
+        "public_validation_integrity_audited": True,
+        "package_profile": profile,
+        "task": package.task,
+        "train_sha256": package.train_sha256,
+        "parent_sha256": fit.parent_sha256,
+        "artifact_sha256": fit.artifact_sha256,
+        "artifact_bytes": fit.artifact_bytes,
+        "selected_spec": asdict(fit.selected_spec),
+        "internal_primary_metric": fit.internal_primary_metric,
+        "candidate_metrics": dict(fit.candidate_metrics),
+        "training_rows": GeneralistCheckpoint.load(artifact).metadata["training_rows"],
+        "cpu_seconds": fit.cpu_seconds,
+        "wall_seconds": fit.wall_seconds,
+        "peak_rss_bytes": fit.peak_rss_bytes,
+        "official_test_opportunities_used": 0,
+        "pytrio_calls": 0,
+        "swanlab_calls": 0,
+    }
+    _atomic_json(output_root / "training-result.json", receipt)
+    return receipt
+
+
 def run_generalist_experiment(
     package_root: Path,
     package_config_path: Path,

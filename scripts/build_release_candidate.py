@@ -12,6 +12,7 @@ import sys
 
 from brace_msi.release_candidate import (
     RELEASE_ID,
+    RELEASE_VERSION,
     audit_release_tree,
     build_source_archive,
     select_release_files,
@@ -162,7 +163,7 @@ def load_release_verification(
             raise RuntimeError(f"release verification section is not PASS: {section}")
     if int(evidence["pytest"]["passed"]) < 1:
         raise RuntimeError("release verification contains no passing tests")
-    if evidence["clean_environment"]["version"] != "0.4.1rc1":
+    if evidence["clean_environment"]["version"] != RELEASE_VERSION:
         raise RuntimeError("clean environment installed the wrong release version")
     unsafe = [
         value

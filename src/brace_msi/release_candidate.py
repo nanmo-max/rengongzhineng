@@ -9,7 +9,8 @@ import zipfile
 
 from .packaging import audit_docker_context
 
-RELEASE_ID = "BRACE-MSI-0.4.1rc1"
+RELEASE_ID = "BRACE-MSI-0.5.0rc1"
+RELEASE_VERSION = "0.5.0rc1"
 
 _ROOT_FILES = frozenset(
     {
@@ -84,6 +85,8 @@ def audit_release_tree(root: Path, tracked_files: tuple[Path, ...]) -> ReleaseTr
         Path("src/brace_msi/official_sdk.py"),
         Path("src/brace_msi/release_candidate.py"),
         Path("src/brace_msi/swanlab_adapter.py"),
+        Path("src/brace_msi/generalist_model.py"),
+        Path("src/brace_msi/generalist_experiment.py"),
         Path("src/brace_msi/paper_fusion.py"),
         Path("src/brace_msi/paper_fusion_runner.py"),
         Path("src/brace_msi/paper_fusion_selection.py"),
@@ -99,8 +102,8 @@ def audit_release_tree(root: Path, tracked_files: tuple[Path, ...]) -> ReleaseTr
             findings.append(f"missing release file: {path.as_posix()}")
 
     pyproject = (root / "pyproject.toml").read_text(encoding="utf-8")
-    if 'version = "0.4.1rc1"' not in pyproject:
-        findings.append("pyproject version is not 0.4.1rc1")
+    if f'version = "{RELEASE_VERSION}"' not in pyproject:
+        findings.append(f"pyproject version is not {RELEASE_VERSION}")
 
     evidence = (root / "docs/results/LOCAL-FORMAL-SIM-001.md").read_text(
         encoding="utf-8"

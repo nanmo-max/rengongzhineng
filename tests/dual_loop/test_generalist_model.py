@@ -100,3 +100,40 @@ def test_numeric_loader_never_adds_meta_identity_or_target_features() -> None:
     assert all("meta" not in name.lower() for name in rows[0].feature_names)
     assert all("answer" not in name.lower() for name in rows[0].feature_names)
     assert all("id" not in name.lower() for name in rows[0].feature_names)
+
+
+def test_generalist_fit_cli_creates_parent_linked_checkpoint_without_validation(
+    tmp_path: Path,
+) -> None:
+    output = tmp_path / "fit"
+
+    assert main(
+        [
+            "generalist-fit",
+            "--package-config",
+            str(REPO_ROOT / "configs" / "official_package_dev.json"),
+            "--package-root",
+            str(PACKAGE_ROOT),
+            "--profile",
+            "A",
+            "--output",
+            str(output),
+            "--family",
+            "linear",
+            "--max-train-rows",
+            "300",
+        ]
+    ) == 0
+
+    artifact = output / "checkpoint.npz"
+    receipt = json.loads((output / "training-result.json").read_text(encoding="utf-8"))
+    package = _audit_a()
+    checkpoint = GeneralistCheckpoint.load(artifact)
+
+    assert receipt["format"] == "brace-msi.generalist-fit.v1"
+    assert receipt["validation_used_for_selection"] is False
+    assert receipt["formal_sdk_mapped"] is False
+    assert receipt["parent_sha256"] == package.checkpoint_sha256
+    assert receipt["artifact_bytes"] == artifact.stat().st_size
+    assert checkpoint.metadata["parent_sha256"] == package.checkpoint_sha256
+    assert checkpoint.metadata["selected_family"] == "linear"
