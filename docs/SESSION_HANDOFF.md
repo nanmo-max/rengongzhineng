@@ -4,9 +4,9 @@
 
 1. 官方平台已消耗1/10次试运行；旧提交v2的报告Token为0，A/B/C隐藏主指标分别为0.413368 Macro-F1、691.660970 RMSE、56.220512 RMSE。证据见O-PLATFORM-006和`docs/source_notes/PLATFORM_TRIAL_V1_2026-11-13.md`。
 2. 用户明确确认`BRACE-MSI-0.4.0rc1`尚未提交；不得把旧试运行归因于RC4，也不得再次上传旧镜像。
-3. 当前唯一任务为`RC5-FAILCLOSED-001`：正式CLI显式provider、PyTRiO客户端和Harness双层失败关闭已通过26项专项测试；仍需完整回归、版本化新镜像与4核8GB验收。
-4. RC4归档和哈希保持冻结历史；修复代码不在RC4镜像内。完成新候选前禁止平台上传、校验或试运行。
-5. A3持久化Sampler路径继续从Git外收据读取；新提交必须先验证Sampler、镜像和源码绑定，再确认非零Agent调用收据。
+3. `RC5-FAILCLOSED-001`已`DONE`：完整回归271项；linux/amd64镜像在4核8GB断网下通过Smoke，严格PyTRiO负向测试12.726秒失败关闭且运行文件0项。
+4. 下一上传入口为`D:/brace-msi-release/BRACE-MSI-0.4.0rc2/BRACE-MSI-0.4.0rc2-image-clean.tar`，SHA-256 `daf42786f73862214336154848782cffb9cb3468181959542d1687435e307d32`。RC4归档和哈希保持冻结历史。
+5. 当前唯一任务为`FORMAL-RELEASE-001 (BLOCKED)`，等待用户授权平台上传/校验。A3持久化Sampler路径继续从Git外收据读取；新提交必须先验证Sampler、镜像和源码绑定，再确认非零Agent调用收据。
 
 ## 2026-11-13论文融合RC4恢复入口（历史）
 

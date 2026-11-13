@@ -1,9 +1,9 @@
 # 当前状态
 
 - 最近同步：2026-11-13（Asia/Shanghai）
-- 当前阶段：旧提交首次官方试运行已完成并暴露零Token静默降级与隐藏泛化问题；`BRACE-MSI-0.4.0rc1`仍为未提交的冻结本地RC，正在基于O-PLATFORM-006形成失败关闭修复候选 `[D-047]` `[D-048]`
+- 当前阶段：旧提交首次官方试运行已完成并暴露零Token静默降级与隐藏泛化问题；失败关闭修复候选`BRACE-MSI-0.4.0rc2`已完成本地发布验收 `[D-048]` `[D-049]`
 - 当前路线：**Qwen3.5-4B PyTRiO Agent + BRACE确定性Harness + 官方A/B/C工业模型 + 经验证的开源优化方法** `[D-035]`
-- 当前唯一任务：`RC5-FAILCLOSED-001`（`IN_PROGRESS`）；完成完整回归和新镜像验收前不得提交RC4或用旧镜像再次试运行。
+- 当前唯一任务：`FORMAL-RELEASE-001`（`BLOCKED`）；本地候选已就绪，等待用户授权平台上传/校验。任何新试运行前必须先核对Sampler、镜像、源码和非零Agent调用门槛。
 - 稳定边界：`BRACE-MSI-0.1.0rc1`、`0.2.0rc2`、`0.3.0rc3`历史保持不变；当前候选为`BRACE-MSI-0.4.0rc1`，位于`codex/paper-fusion-sprint`且不合并main。A3之后禁止继续LLM调参 `[D-043]`
 - 官方试运行：已使用1/10次，剩余9/10次；该运行对应旧提交v2，不是RC4，正式评测仍为0/2 `[O-PLATFORM-006]`
 
@@ -30,10 +30,11 @@
 19. `PAPER-FUSION-SPRINT-001`完成并停止：Gas蒸馏与Bearing融合未超过RC3，SafetyGate拒绝；Engine异构CPU融合公开验证RMSE为42.330230，相对RC3改善18.02%、相对初始公开基线改善19.93%。该验证集历史暴露，结果标记`PASS_WITH_EXPOSURE`，不是隐藏测试或官方成绩。
 20. `BRACE-MSI-0.4.0rc1`镜像linux/amd64、240,701,023字节、UID10001；4核8GB断网Engine冻结候选训练、264项回归、`pip check`、禁入文件扫描和`docker load`通过。归档SHA-256为`97bb0a9fcfed688ba1b7feadadf09528e232fea578d06a1d782f2dccee306dfa`；证据见`results/RC4_CONTAINER_ACCEPTANCE.json`与`results/RC4_VERIFICATION.json`。
 21. 官方首次试运行旧提交三任务均完成10轮但Token为0，A/B/C隐藏主指标为0.413368 Macro-F1、691.660970 RMSE、56.220512 RMSE；旧代码存在CLI默认确定性、客户端回退及Harness二次回退三条零Token完成路径。RC4尚未提交，不能据此评价RC4 `[O-PLATFORM-006]`。
+22. `BRACE-MSI-0.4.0rc2`完成失败关闭修复：正式provider必须显式选择，PyTRiO正式模式要求持久化Sampler路径，传输/解析/Harness异常均失败关闭，SDK请求与重试受30秒默认预算约束。完整回归271项；4核8GB断网负向测试12.726秒退出且无运行文件；镜像归档SHA-256为`daf42786f73862214336154848782cffb9cb3468181959542d1687435e307d32`。
 
 ## 当前执行入口
 
-RC4归档`D:/brace-msi-release/BRACE-MSI-0.4.0rc1/BRACE-MSI-0.4.0rc1-image-clean.tar`及SHA-256 `97bb0a9f...306dfa`只保留为冻结历史，不再作为下一次上传入口。下一次上传入口必须由`RC5-FAILCLOSED-001`完整回归和容器验收后产生；完整A3 `trio://`路径仍只从Git外收据读取，不写公开配置。
+下一次上传入口为`D:/brace-msi-release/BRACE-MSI-0.4.0rc2/BRACE-MSI-0.4.0rc2-image-clean.tar`，SHA-256 `daf42786f73862214336154848782cffb9cb3468181959542d1687435e307d32`。RC4归档及`97bb0a9f...306dfa`只保留为冻结历史；完整A3 `trio://`路径仍只从Git外收据读取，不写公开配置。平台上传、校验和试运行尚未执行。
 
 正式路线、已知能力与未知边界见[FORMAL_ROUTE.md](FORMAL_ROUTE.md)。实验必须遵守[EXPERIMENT_PROTOCOL.md](EXPERIMENT_PROTOCOL.md)。
 

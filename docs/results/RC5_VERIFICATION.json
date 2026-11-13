@@ -1,0 +1,30 @@
+{
+  "format": "brace-msi.release-verification.v1",
+  "release_id": "BRACE-MSI-0.4.0rc2",
+  "runtime_commit": "51659532b8cc73428a74a1ebdb9db5f37ef22d13",
+  "pytest": {
+    "status": "PASS",
+    "passed": 271,
+    "seconds": 60.04,
+    "command": "python -m pytest -q --tb=short"
+  },
+  "clean_environment": {
+    "status": "PASS",
+    "path": "docker image brace-msi:0.4.0rc2",
+    "version": "0.4.0rc2",
+    "pytrio_version": "0.2.9",
+    "environment": "linux/amd64, non-root UID 10001, network none, 4 CPUs, 8 GiB"
+  },
+  "pip_check": {
+    "status": "PASS",
+    "summary": "No broken requirements found inside the release image."
+  },
+  "compileall": {
+    "status": "PASS",
+    "targets": ["src", "tests", "scripts"]
+  },
+  "container_runtime": {
+    "status": "PASS",
+    "evidence": "docs/results/RC5_CONTAINER_ACCEPTANCE.json"
+  }
+}

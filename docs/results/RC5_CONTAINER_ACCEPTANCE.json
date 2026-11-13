@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "release_id": "BRACE-MSI-0.4.0rc2",
+  "evidence_scope": "official_trial_fail_closed_patch_container_acceptance",
+  "official_score": false,
+  "source_commit": "51659532b8cc73428a74a1ebdb9db5f37ef22d13",
+  "image": {
+    "tag": "brace-msi:0.4.0rc2",
+    "id": "sha256:d161d804f0d81d50a4aa7586528a81bf1f8f532b529aef0ab90b2c89141e66b1",
+    "os": "linux",
+    "architecture": "amd64",
+    "size_bytes": 240662563,
+    "under_2gb": true,
+    "runtime_user": "brace",
+    "runtime_uid": 10001,
+    "forbidden_files": [],
+    "torch_installed": false,
+    "brace_msi_version": "0.4.0rc2",
+    "pytrio_version": "0.2.9",
+    "pip_check": "PASS"
+  },
+  "build": {
+    "engine": "Docker Engine 28.5.1",
+    "base_image": "mcr.microsoft.com/azurelinux/base/python:3.12",
+    "base_digest": "sha256:379135d4dbe66b12825a54d4ed7aef21aa61227533ff1b9151d70f95f9266746",
+    "index": "https://pypi.tuna.tsinghua.edu.cn/simple",
+    "note": "Two official-PyPI attempts failed safely because of a corrupted partial download and a read timeout. No hash was changed and TLS was not bypassed. The successful build used the Tsinghua PyPI mirror with the same frozen package versions."
+  },
+  "runtime_acceptance": {
+    "network": "none",
+    "cpus": 4,
+    "memory_bytes": 8589934592,
+    "pids_limit": 256,
+    "status": "completed",
+    "synthetic_smoke": {
+      "protocol": "predict_then_feedback",
+      "max_batches": 3,
+      "status": "paused",
+      "candidate_count": 2
+    },
+    "strict_agent_failure": {
+      "provider": "pytrio",
+      "sampler_path": "synthetic_unreachable_placeholder",
+      "agent_timeout_seconds": 5,
+      "exit_code": 1,
+      "wall_seconds": 12.726,
+      "error_category": "transport_error",
+      "runtime_files_created": 0,
+      "silent_deterministic_fallback": false
+    }
+  },
+  "archive": {
+    "format": "docker save tar",
+    "path": "D:/brace-msi-release/BRACE-MSI-0.4.0rc2/BRACE-MSI-0.4.0rc2-image-clean.tar",
+    "size_bytes": 240685568,
+    "sha256": "daf42786f73862214336154848782cffb9cb3468181959542d1687435e307d32",
+    "docker_load_verified": true
+  },
+  "tests": {
+    "final_source_environment": "271 passed in 60.04s",
+    "strict_boundary_focused": "29 passed in 2.03s",
+    "compileall": "PASS",
+    "container_pip_check": "PASS"
+  },
+  "boundaries": [
+    "This is local Harness and container evidence, not an official hidden-test score.",
+    "BRACE-MSI-0.4.0rc1 remains unchanged as historical evidence; this is a new patch candidate.",
+    "The image includes code but no industrial model weight, raw dataset, API key or persisted Sampler path.",
+    "The strict offline test intentionally used a non-secret unreachable placeholder and made no successful external call.",
+    "No official trial or formal evaluation opportunity was used during this acceptance."
+  ]
+}

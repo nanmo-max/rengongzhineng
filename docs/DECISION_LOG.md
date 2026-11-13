@@ -52,6 +52,7 @@
 | D-046 | 2026-11-13 | LOCKED | `PAPER-FUSION-SPRINT-001`只在Engine C通过相对RC3严格改善门：A/B继续使用RC3，C采用PaperFusion。Gas蒸馏和Bearing树集成负结果保留；不得再次打开本轮公开validation或根据其结果继续调参。新候选统一使用BRACE预算、记录和SafetyGate，但允许D-035定义的任务专属模型。 | 单次公开validation：A 0.687918 Macro-F1、B 644.113606 RMSE、C 42.330230 RMSE；`docs/results/PAPER-FUSION-SPRINT-001.md`；机器门控manifest |
 | D-047 | 2026-11-13 | LOCKED | 冻结`BRACE-MSI-0.4.0rc1`为当天可提交的本地Release Candidate：A/B沿用RC3安全候选，C使用D-046的PaperFusion；镜像不包含工业模型权重，运行时在挂载输出卷训练。该版本不移动RC3标签、不合并main、不再次打开公开validation；只有正式SDK映射、平台校验或隐藏评测新证据才能产生后续版本。 | `docs/results/RC4_CONTAINER_ACCEPTANCE.json`、`docs/results/RC4_VERIFICATION.json`、264项回归、可重载镜像归档SHA-256 `97bb0a9f...306dfa` |
 | D-048 | 2026-11-13 | LOCKED | 官方Agent运行必须显式选择provider；选择PyTRiO时，传输失败、非法结构化响应或Harness provider异常一律失败关闭，不得静默改走确定性路线。确定性降级仍可用于明确选择的本地/非正式模式，但不能伪装成有效Agent调用。下一次平台试运行前必须确认持久化Sampler校验通过、提交绑定的镜像/源码版本明确，并以非零Agent调用收据为准入门槛。 | O-PLATFORM-006；红绿测试`tests/agent/test_pytrio_agent.py`、`tests/official_package/test_agent_harness.py`、`tests/test_cli_provider_selection.py` |
+| D-049 | 2026-11-13 | LOCKED | 以`BRACE-MSI-0.4.0rc2`作为下一次平台提交候选，替代RC4的上传入口但不删除或改写RC4。RC5只修复正式Agent显式选择、持久化Sampler准入、PyTRiO失败关闭及SDK请求/重试超时；A/B/C冻结算法与历史性能结论不变。 | D-048；提交`5165953`；`docs/results/RC5_CONTAINER_ACCEPTANCE.json`、`RC5_VERIFICATION.json` |
 
 ## 已被替代的历史决策
 

@@ -35,6 +35,6 @@
 | R-031 | P1 | 公开源码仓库没有项目级许可证 | 评委要求明确源码再利用许可或开源声明 | 依赖许可证与源码许可证分开说明；由权利人选择MIT/Apache-2.0等项目许可证后再提交 | 队长 | OPEN：仓库已公开分支但未虚构许可证，需队长作法律选择 |
 | R-032 | P0 | 公开validation一次性门控后继续调参导致选择偏差 | 根据PAPER-FUSION结果重开validation或扩大候选 | 单次打开锁、结果SHA、D-046冻结混合门控；后续只在隐藏测试确认 | 技术负责人 | MITIGATED/OPEN：本轮只打开一次并停止；隐藏泛化仍未知 |
 | R-033 | P1 | PaperFusion模型产物过大或被错误打包进镜像 | C模型约456MB、运行中峰值约3.20GB | `.dockerignore`排除joblib；镜像只含代码；运行时挂载数据并在输出卷训练；4核8GB容器复验 | 技术负责人 | MITIGATED：RC4镜像240,701,023字节且无权重；4核8GB断网训练完成、峰值RSS 3,198,783,488字节，运行时模型只存在输出卷。证据`docs/results/RC4_CONTAINER_ACCEPTANCE.json` |
-| R-034 | P0 | 正式提交声明使用Agent但运行时静默退回确定性策略 | 平台报告Token为0且流程仍完成 | provider显式选择；PyTRiO模式双层失败关闭；提交前核对Sampler、镜像/源码绑定和非零调用收据 | 技术负责人 | REALIZED/MITIGATED_LOCAL：旧试运行已触发，见O-PLATFORM-006；本地红绿回归已阻止静默回退，平台新提交尚未发生，仍需下一次校验/试运行确认 |
+| R-034 | P0 | 正式提交声明使用Agent但运行时静默退回确定性策略 | 平台报告Token为0且流程仍完成 | provider显式选择；PyTRiO模式双层失败关闭；提交前核对Sampler、镜像/源码绑定和非零调用收据 | 技术负责人 | REALIZED/MITIGATED_LOCAL：旧试运行已触发，见O-PLATFORM-006；RC5完整回归及断网负向容器验收已阻止静默回退并限制SDK等待，见`RC5_CONTAINER_ACCEPTANCE.json`。平台新提交尚未发生，仍需下一次校验/试运行确认 |
 
 风险关闭必须在本表填写证据路径，不得仅写“已解决”。

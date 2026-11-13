@@ -9,7 +9,7 @@
 | 模型类型 | 持久化 Sampler 微调权重 | 已准备 | A3已生成持久化Sampler |
 | 完整Sampler权重路径 | 从Git外`D:/brace-msi-pytrio/PYTRIO-SFT-001-A3/result.json`读取`sampler_model_path` | 已准备 | 完整`trio://`路径不写入Git或作品文档；不要自行拼接 |
 | 训练记录链接 | `https://swanlab.cn/@nanmo-max/brace-msi-final` | 已同步并核验 | 公开项目含Gas/Bearing/Engine三个`FINISHED`实验，每项10条聚合记录 |
-| Harness镜像 | `BRACE-MSI-0.4.0rc1-image-clean.tar` | 已准备 | SHA-256：`97bb0a9fcfed688ba1b7feadadf09528e232fea578d06a1d782f2dccee306dfa` |
+| Harness镜像 | `BRACE-MSI-0.4.0rc2-image-clean.tar` | 已准备 | SHA-256：`daf42786f73862214336154848782cffb9cb3468181959542d1687435e307d32`；含正式Agent失败关闭修复 |
 | 源码仓库链接 | `https://github.com/nanmo-max/rengongzhineng/tree/codex/paper-fusion-sprint` | 已推送 | 当前分支含RC4源码、测试、正负实验与容器证据；未覆盖远端main或RC3标签 |
 | PyTRiO API Key | 由队长在平台字段中粘贴 | 人工填写 | 不通过聊天、Git、作品文档或日志传递 |
 | 作品文档 | `D:/brace-msi-release/BRACE-MSI-0.4.0rc1-submission-materials/BRACE-MSI-作品说明书.docx` | 已生成并校验 | 无官方模板；指导教师暂不填写；PDF预览为`BRACE-MSI-作品说明书-最终版.pdf` |

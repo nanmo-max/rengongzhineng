@@ -467,4 +467,6 @@
 - 原始报告SHA-256为`8B7B5CEC3C50775BD5621DCBEB8DE7337BC39F0F6123767B27E36E004BBA5368`。三任务均完成10轮并选择第1轮，但平台Token为0；隐藏主指标为A 0.413368 Macro-F1、B 691.660970 RMSE、C 56.220512 RMSE。
 - 代码审计定位三条可复现静默路径：CLI默认确定性、PyTRiO客户端传输/解析回退、Harness异常二次回退。无法仅凭平台报告区分实际触发层，也无法确认旧提交绑定的镜像编号。
 - TDD红阶段新增4项用例并得到4失败/22通过；实现显式provider和正式PyTRiO双层失败关闭后，专项`26 passed in 1.87s`。完整回归和新镜像验收由`RC5-FAILCLOSED-001`继续，RC4归档保持不变。
+- Docker断网负向验收进一步发现PyTRiO SDK初始化/控制请求不受`APIFuture.result(timeout=...)`单点约束；通过官方`pytrio.configure`统一限制请求、控制重试、采样重试、容量等待和流式采样超时，保留一次被人工终止的长等待作为失败证据。
+- `BRACE-MSI-0.4.0rc2`最终完整回归`271 passed in 60.04s`；镜像linux/amd64、240,662,563字节、UID10001、`pip check`通过且无Torch/权重/数据/密钥。严格断网PyTRiO测试在12.726秒以`transport_error`退出，运行文件0项；`docker save`归档240,685,568字节、SHA-256 `daf42786...307d32`并重载成功。
 

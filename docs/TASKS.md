@@ -15,7 +15,7 @@ ROUTE-001(DONE)
   -> LOOP-10-001
   -> FORMAL-COMPARE-001
   -> PLATFORM-TRIAL-DIAG-001(DONE)
-  -> RC5-FAILCLOSED-001(IN_PROGRESS)
+  -> RC5-FAILCLOSED-001(DONE)
   -> FORMAL-RELEASE-001
 ```
 
@@ -118,12 +118,12 @@ ROUTE-001(DONE)
 
 ### RC5-FAILCLOSED-001 Agent失败关闭修复候选
 
-- 状态：`IN_PROGRESS`
+- 状态：`DONE`
 - 依赖：PLATFORM-TRIAL-DIAG-001
 - 优先级：P0，唯一当前任务
 - 完成标准：正式CLI无隐式provider默认值；PyTRiO传输/解析失败与Harness provider异常不能静默回退；本地专项及完整回归通过；基于修复提交构建新的Linux镜像并保留RC4归档不变
 - 停止条件：正式平台要求与失败关闭冲突、完整回归失败无法修复、或容器验收失败；失败时保留RC4与本任务证据，不上传平台
-- 当前证据：红阶段4项失败，修复后专项`26 passed`；尚未完成完整回归与新镜像构建
+- 证据：红阶段先后复现静默回退和未受控SDK等待；修复后完整回归`271 passed`。linux/amd64镜像在4核8GB断网下完成Smoke，严格PyTRiO负向测试12.726秒退出、文件0项、未静默回退；归档SHA-256 `daf42786...307d32`并经`docker load`验证。详见`docs/results/RC5_CONTAINER_ACCEPTANCE.json`与`RC5_VERIFICATION.json`
 
 ### FORMAL-RELEASE-001 正式环境与交付
 
