@@ -1,0 +1,53 @@
+{
+  "format": "brace-msi.paper-fusion-sprint.v1",
+  "seed": 20261113,
+  "n_splits": 3,
+  "finalist_count": 4,
+  "distillation": {
+    "enabled": true,
+    "hard_label_weight": 0.5,
+    "max_iter": 180
+  },
+  "profiles": {
+    "A": {
+      "train": "C:/Users/Administrator/Desktop/人工智能创新大赛/训练包/cpu-a-guide-20261110-v1/public/train.jsonl",
+      "validation": "C:/Users/Administrator/Desktop/人工智能创新大赛/训练包/cpu-a-guide-20261110-v1/public/validation.jsonl",
+      "baseline": 0.7140297220788709,
+      "rc3": 0.7256954242474295
+    },
+    "B": {
+      "train": "C:/Users/Administrator/Desktop/人工智能创新大赛/训练包/cpu-b-rul-20261110-v1/public/train.jsonl",
+      "validation": "C:/Users/Administrator/Desktop/人工智能创新大赛/训练包/cpu-b-rul-20261110-v1/public/validation.jsonl",
+      "baseline": 681.1598326043113,
+      "rc3": 637.180224
+    },
+    "C": {
+      "train": "C:/Users/Administrator/Desktop/人工智能创新大赛/训练包/cpu-c-guide-20261110-v1/public/train.jsonl",
+      "validation": "C:/Users/Administrator/Desktop/人工智能创新大赛/训练包/cpu-c-guide-20261110-v1/public/validation.jsonl",
+      "baseline": 52.86857256611151,
+      "rc3": 51.635999
+    }
+  },
+  "teacher_specs": {
+    "classification": [
+      {"family": "linear", "params": {"C": 0.1}},
+      {"family": "linear", "params": {"C": 1.0}},
+      {"family": "hist_gradient_boosting", "params": {"max_iter": 100, "learning_rate": 0.05, "l2_regularization": 0.0}},
+      {"family": "hist_gradient_boosting", "params": {"max_iter": 180, "learning_rate": 0.1, "l2_regularization": 1.0}},
+      {"family": "extra_trees", "params": {"n_estimators": 160, "min_samples_leaf": 1, "max_features": 0.7}},
+      {"family": "extra_trees", "params": {"n_estimators": 240, "min_samples_leaf": 2, "max_features": 1.0}},
+      {"family": "mlp", "params": {"hidden_layer_sizes": [64], "max_iter": 140, "alpha": 0.0001}},
+      {"family": "mlp", "params": {"hidden_layer_sizes": [128, 32], "max_iter": 180, "alpha": 0.001}}
+    ],
+    "regression": [
+      {"family": "linear", "params": {"alpha": 0.1}},
+      {"family": "linear", "params": {"alpha": 10.0}},
+      {"family": "hist_gradient_boosting", "params": {"max_iter": 100, "learning_rate": 0.05, "l2_regularization": 0.0, "max_leaf_nodes": 15}},
+      {"family": "hist_gradient_boosting", "params": {"max_iter": 180, "learning_rate": 0.1, "l2_regularization": 1.0, "max_leaf_nodes": 31}},
+      {"family": "extra_trees", "params": {"n_estimators": 160, "min_samples_leaf": 1, "max_features": 0.7}},
+      {"family": "extra_trees", "params": {"n_estimators": 240, "min_samples_leaf": 3, "max_features": 1.0}},
+      {"family": "mlp", "params": {"hidden_layer_sizes": [64], "max_iter": 140, "alpha": 0.0001}},
+      {"family": "mlp", "params": {"hidden_layer_sizes": [128, 32], "max_iter": 180, "alpha": 0.001}}
+    ]
+  }
+}
