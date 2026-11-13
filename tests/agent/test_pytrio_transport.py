@@ -9,7 +9,8 @@ class FakeFuture:
     def __init__(self, value: object) -> None:
         self.value = value
 
-    def result(self) -> object:
+    def result(self, timeout: float | None = None) -> object:
+        self.timeout = timeout
         return self.value
 
 
@@ -36,13 +37,17 @@ class FakeSequence:
 class FakeSamplingClient:
     def __init__(self) -> None:
         self.kwargs = None
+        self.future = None
 
     def get_tokenizer(self) -> FakeTokenizer:
         return FakeTokenizer()
 
     def sample(self, **kwargs):
         self.kwargs = kwargs
-        return FakeFuture(type("Response", (), {"sequences": [FakeSequence("{}", [1, 2, 3])]})())
+        self.future = FakeFuture(
+            type("Response", (), {"sequences": [FakeSequence("{}", [1, 2, 3])]})()
+        )
+        return self.future
 
 
 class FakeServiceClient:
@@ -84,6 +89,7 @@ def test_transport_uses_documented_sampler_api_and_reports_token_counts() -> Non
         max_tokens=128,
         temperature=0.0,
         seed=20261106,
+        timeout_seconds=7.5,
     )
 
     assert service.created == {
@@ -94,3 +100,4 @@ def test_transport_uses_documented_sampler_api_and_reports_token_counts() -> Non
     assert result.input_tokens == 4
     assert result.output_tokens == 3
     assert sampling.kwargs["num_samples"] == 1
+    assert sampling.future.timeout == 7.5

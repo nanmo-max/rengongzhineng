@@ -88,6 +88,7 @@ def _parser() -> argparse.ArgumentParser:
     official_agent.add_argument("--model", default="Qwen/Qwen3.5-4B")
     official_agent.add_argument("--model-path")
     official_agent.add_argument("--max-rounds-this-call", type=int)
+    official_agent.add_argument("--agent-timeout-seconds", type=float, default=30.0)
     official_agent.add_argument("--timeout-seconds", type=float, default=600.0)
     official_agent.add_argument("--validate-only", action="store_true")
     paper_fusion = subparsers.add_parser(
@@ -216,6 +217,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 PyTrioAgentConfig(
                     model=args.model,
                     model_path=args.model_path,
+                    timeout_seconds=args.agent_timeout_seconds,
                     allow_fallback=False,
                 ),
                 fallback=lambda context: deterministic.propose(context).proposal,

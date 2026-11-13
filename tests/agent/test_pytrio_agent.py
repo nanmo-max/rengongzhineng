@@ -101,6 +101,7 @@ def test_valid_structured_proposal_records_only_hashes_and_usage() -> None:
     assert not hasattr(outcome.receipt, "raw_response")
     assert transport.calls[0]["model"] == "Qwen/Qwen3.5-4B"
     assert transport.calls[0]["model_path"] == "trio://persisted"
+    assert transport.calls[0]["timeout_seconds"] == 30.0
 
 
 @pytest.mark.parametrize(
@@ -198,6 +199,11 @@ def test_config_contains_no_credentials_and_defaults_to_confirmed_model() -> Non
     assert config.model == "Qwen/Qwen3.5-4B"
     assert "key" not in repr(config).lower()
     assert "credential" not in repr(config).lower()
+
+
+def test_config_rejects_nonpositive_transport_timeout() -> None:
+    with pytest.raises(ValueError, match="timeout_seconds"):
+        PyTrioAgentConfig(timeout_seconds=0)
 
 
 def test_prompt_only_advertises_runtime_executable_actions() -> None:

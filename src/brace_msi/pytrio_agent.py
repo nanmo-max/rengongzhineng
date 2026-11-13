@@ -53,6 +53,7 @@ class PyTrioAgentConfig:
     max_tokens: int = 768
     temperature: float = 0.0
     seed: int = 20261106
+    timeout_seconds: float = 30.0
     allow_fallback: bool = True
 
     def __post_init__(self) -> None:
@@ -62,6 +63,8 @@ class PyTrioAgentConfig:
             raise ValueError("max_tokens must be in [1, 4096]")
         if not 0.0 <= self.temperature <= 2.0:
             raise ValueError("temperature must be in [0, 2]")
+        if self.timeout_seconds <= 0:
+            raise ValueError("timeout_seconds must be positive")
 
 
 @dataclass(frozen=True)
@@ -140,6 +143,7 @@ class SamplingTransport(Protocol):
         max_tokens: int,
         temperature: float,
         seed: int,
+        timeout_seconds: float,
     ) -> SamplingResult: ...
 
 
@@ -168,6 +172,7 @@ class PyTrioSamplingTransport:
         max_tokens: int,
         temperature: float,
         seed: int,
+        timeout_seconds: float,
     ) -> SamplingResult:
         trio = self._pytrio()
         service = trio.ServiceClient()
@@ -192,7 +197,7 @@ class PyTrioSamplingTransport:
             prompt=trio.ModelInput.from_ints(input_ids),
             num_samples=1,
             sampling_params=params,
-        ).result()
+        ).result(timeout=timeout_seconds)
         if not response.sequences:
             raise ValueError("PyTRiO returned no sequences")
         sequence = response.sequences[0]
@@ -230,6 +235,7 @@ class PyTrioAgentClient:
                 max_tokens=self.config.max_tokens,
                 temperature=self.config.temperature,
                 seed=self.config.seed,
+                timeout_seconds=self.config.timeout_seconds,
             )
         except Exception as exc:  # transport failures are an expected boundary
             if not self.config.allow_fallback:
