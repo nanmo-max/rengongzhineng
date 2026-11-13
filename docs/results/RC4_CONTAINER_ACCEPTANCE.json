@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "release_id": "BRACE-MSI-0.4.0rc1",
+  "evidence_scope": "local_paper_fusion_container_release_acceptance",
+  "official_score": false,
+  "source_commit": "2dd7fbc2ce316ab1385aa7fbe1f0e15c10174b4d",
+  "image": {
+    "tag": "brace-msi:0.4.0rc1",
+    "id": "sha256:ca599ab3ef2f0829a1fbae8f7eda5877ffbf760647951d12d5f3ec7c58449c77",
+    "os": "linux",
+    "architecture": "amd64",
+    "size_bytes": 240701023,
+    "under_2gb": true,
+    "runtime_user": "brace",
+    "runtime_uid": 10001,
+    "forbidden_files": [],
+    "torch_installed": false,
+    "brace_msi_version": "0.4.0rc1",
+    "pytrio_version": "0.2.9",
+    "pip_check": "PASS"
+  },
+  "build": {
+    "engine": "Docker Engine 28.5.1",
+    "base_image": "mcr.microsoft.com/azurelinux/base/python:3.12",
+    "base_digest": "sha256:379135d4dbe66b12825a54d4ed7aef21aa61227533ff1b9151d70f95f9266746",
+    "note": "The first full build completed. A later cached rebuild returned a local snapshot-unpack error after publishing the updated image tag; direct source inspection, container execution, docker save and docker load all succeeded for the recorded image ID."
+  },
+  "runtime_acceptance": {
+    "network": "none",
+    "cpus": 4,
+    "memory_bytes": 8589934592,
+    "pids_limit": 256,
+    "status": "completed",
+    "profile": "C",
+    "stage": "candidate_frozen",
+    "validation_open_count": 0,
+    "machine_validation": {
+      "valid": true,
+      "errors": []
+    },
+    "internal_metrics": {
+      "rmse": 47.41773295845639,
+      "mae": 32.21379472236168
+    },
+    "resources": {
+      "cpu_seconds": 843.8777118,
+      "wall_seconds": 501.847711146,
+      "peak_rss_bytes": 3198783488
+    },
+    "development_sha256": "e0502d28b2a4773da90e1371ce796ea58739fb20747b3af31e6fce3bc1c3102e",
+    "frozen_sha256": "d21ee2c7af13c7a312f9f5272c00bd193e6e9b28906ab6f009d505dc9d37aa29",
+    "runtime_model": {
+      "size_bytes": 456539130,
+      "sha256": "d386240c488d2e86bce8000a3c8924a9e05ee876d25387fd9a640dff18bc7110",
+      "included_in_image": false
+    }
+  },
+  "archive": {
+    "format": "docker save tar",
+    "path": "D:/brace-msi-release/BRACE-MSI-0.4.0rc1/BRACE-MSI-0.4.0rc1-image-clean.tar",
+    "size_bytes": 240723968,
+    "sha256": "97bb0a9fcfed688ba1b7feadadf09528e232fea578d06a1d782f2dccee306dfa",
+    "docker_load_verified": true
+  },
+  "tests": {
+    "final_source_environment": "264 passed in 54.96s",
+    "paper_fusion_focused": "16 passed in 0.93s",
+    "compileall": "PASS",
+    "pip_check": "PASS"
+  },
+  "boundaries": [
+    "This is local Harness and container evidence, not an official hidden-test score.",
+    "The public validation was not mounted or opened during container acceptance.",
+    "The image includes code but no model weight, raw dataset, API key, Sampler path or torch package.",
+    "The 456MB runtime model was generated in the mounted output directory and is not part of the image archive.",
+    "No official test opportunity or additional SwanLab sync was used."
+  ]
+}

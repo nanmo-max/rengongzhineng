@@ -66,3 +66,4 @@
 - 混合门控：`D:/brace-msi-paper-fusion/PAPER-FUSION-SPRINT-001/hybrid-candidate.json`
 - 验证命令：`python scripts/run_paper_fusion_sprint.py --config configs/paper_fusion_sprint.json --output D:/brace-msi-paper-fusion/PAPER-FUSION-SPRINT-001 --validate-only`
 - 验证结果：`{"valid": true, "stage": "completed", "errors": []}`
+- 容器复现：固定Engine四组件后，在linux/amd64、4核8GB、断网、UID10001环境完成训练，validation保持关闭；内部RMSE 47.417733、峰值RSS 3,198,783,488字节，机器验证`valid=true`。详见`RC4_CONTAINER_ACCEPTANCE.json`。
