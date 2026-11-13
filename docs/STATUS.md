@@ -53,7 +53,7 @@
 
 正式路线、已知能力与未知边界见[FORMAL_ROUTE.md](FORMAL_ROUTE.md)。实验必须遵守[EXPERIMENT_PROTOCOL.md](EXPERIMENT_PROTOCOL.md)。
 
-提交材料入口见[SUBMISSION_CHECKLIST.md](SUBMISSION_CHECKLIST.md)。源码分支为`https://github.com/nanmo-max/rengongzhineng/tree/codex/paper-fusion-sprint`，SwanLab项目仍是RC3最终工程记录`https://swanlab.cn/@nanmo-max/brace-msi-final`；RC4的C融合容器证据保留在本地与Git聚合记录中，未冒充已同步SwanLab运行。
+提交材料入口见[SUBMISSION_CHECKLIST.md](SUBMISSION_CHECKLIST.md)。源码分支已推送至`https://github.com/nanmo-max/rengongzhineng/tree/codex/generalist-q1-sprint`；SwanLab项目仍是RC3最终工程记录`https://swanlab.cn/@nanmo-max/brace-msi-final`，0.5.0rc1尚未生成或同步新的比赛记录。
 
 ## 外部阻塞
 
@@ -61,7 +61,7 @@
 - 比赛环境实际Base URL、凭据注入、模型白名单与Token计量待核验 `[H-002]`。
 - 完整评分公式与资源计量实现待发布 `[H-003]`。
 - SwanLab比赛项目、必填字段及无公网同步责任待发布 `[H-004]`。
-- Docker宿主机阻塞已解除；RC4真实镜像、体积、禁入文件、非root身份、4核8GB断网冻结候选训练和可重载归档均有证据，见`results/RC4_CONTAINER_ACCEPTANCE.json`。
+- Docker宿主机阻塞已解除；0.5.0rc1真实镜像、体积、禁入文件、非root身份、4核8GB断网训练/预测和可重载归档均有证据，见`results/DUAL_RC_CONTAINER_ACCEPTANCE.json`。
 
 这些缺口不阻塞已授权的提交材料与`SWANLAB-FINAL-001`最终记录。A3是最后一次SFT，D-043禁止继续微调或扩大LLM搜索；最终记录只复用冻结Sampler和参数，不用于再选型。
 

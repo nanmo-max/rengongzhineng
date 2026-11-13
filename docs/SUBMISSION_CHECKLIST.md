@@ -10,7 +10,7 @@
 | 完整Sampler权重路径 | 不适用 | 不填写 | 不把历史A3路径用于本版本 |
 | 训练记录链接 | `https://swanlab.cn/@nanmo-max/brace-msi-final` | 已同步并核验 | 公开项目含Gas/Bearing/Engine三个`FINISHED`实验，每项10条聚合记录 |
 | Harness镜像 | `BRACE-MSI-0.5.0rc1-image-clean.tar` | 本地已准备，平台未校验 | SHA-256：`e3cc5f1c3c2a879344632e083623001864c8dac380c6ebb87239ac5de9799747`；上传后必须等待“镜像可用”并另做模型/续训校验 |
-| 源码仓库链接 | `https://github.com/nanmo-max/rengongzhineng/tree/codex/generalist-q1-sprint` | 本地分支，待推送 | 不覆盖远端main或历史RC标签；推送后再填表 |
+| 源码仓库链接 | `https://github.com/nanmo-max/rengongzhineng/tree/codex/generalist-q1-sprint` | 已推送 | 未覆盖远端main或历史RC标签；当前源码提交`fe4d399` |
 | PyTRiO API Key | 由队长在平台字段中粘贴 | 人工填写 | 不通过聊天、Git、作品文档或日志传递 |
 | 作品文档 | `D:/brace-msi-release/BRACE-MSI-0.4.0rc1-submission-materials/BRACE-MSI-作品说明书.docx` | 已生成并校验 | 无官方模板；指导教师暂不填写；PDF预览为`BRACE-MSI-作品说明书-最终版.pdf` |
 
