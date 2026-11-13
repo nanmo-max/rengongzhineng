@@ -175,6 +175,17 @@ class PyTrioSamplingTransport:
         timeout_seconds: float,
     ) -> SamplingResult:
         trio = self._pytrio()
+        bounded_seconds = max(1, math.ceil(timeout_seconds))
+        trio.configure(
+            request_timeout_seconds=bounded_seconds,
+            retry_max_attempts=1,
+            control_retry_timeout_seconds=timeout_seconds,
+            sampling_retry_timeout_seconds=timeout_seconds,
+            actor_capacity_wait_timeout_seconds=timeout_seconds,
+            sampling_timeout_seconds=bounded_seconds,
+            sampling_first_chunk_timeout_seconds=timeout_seconds,
+            sampling_chunk_idle_timeout_seconds=timeout_seconds,
+        )
         service = trio.ServiceClient()
         client_kwargs: dict[str, Any] = {"base_model": model}
         if model_path:

@@ -72,6 +72,10 @@ class FakePyTrio:
 
     def __init__(self, service: FakeServiceClient) -> None:
         self.service = service
+        self.configured = None
+
+    def configure(self, **kwargs):
+        self.configured = kwargs
 
     def ServiceClient(self):
         return self.service
@@ -80,7 +84,8 @@ class FakePyTrio:
 def test_transport_uses_documented_sampler_api_and_reports_token_counts() -> None:
     sampling = FakeSamplingClient()
     service = FakeServiceClient(sampling)
-    transport = PyTrioSamplingTransport(pytrio_module=FakePyTrio(service))
+    module = FakePyTrio(service)
+    transport = PyTrioSamplingTransport(pytrio_module=module)
 
     result = transport.sample(
         "one two three four",
@@ -101,3 +106,13 @@ def test_transport_uses_documented_sampler_api_and_reports_token_counts() -> Non
     assert result.output_tokens == 3
     assert sampling.kwargs["num_samples"] == 1
     assert sampling.future.timeout == 7.5
+    assert module.configured == {
+        "request_timeout_seconds": 8,
+        "retry_max_attempts": 1,
+        "control_retry_timeout_seconds": 7.5,
+        "sampling_retry_timeout_seconds": 7.5,
+        "actor_capacity_wait_timeout_seconds": 7.5,
+        "sampling_timeout_seconds": 8,
+        "sampling_first_chunk_timeout_seconds": 7.5,
+        "sampling_chunk_idle_timeout_seconds": 7.5,
+    }
