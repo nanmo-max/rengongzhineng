@@ -38,7 +38,7 @@ def test_release_verification_accepts_runtime_commit_with_docs_only_followups(tm
     evidence = tmp_path / "verification.json"
     evidence.write_text(
         '{"runtime_commit":"abc","pytest":{"status":"PASS","passed":221},'
-        '"clean_environment":{"status":"PASS","version":"0.4.0rc2"},'
+        '"clean_environment":{"status":"PASS","version":"0.4.1rc1"},'
         '"pip_check":{"status":"PASS"},"compileall":{"status":"PASS"}}',
         encoding="utf-8",
     )
@@ -59,7 +59,7 @@ def test_release_verification_accepts_submission_document_generator_followup(
     evidence = tmp_path / "verification.json"
     evidence.write_text(
         '{"runtime_commit":"abc","pytest":{"status":"PASS","passed":264},'
-        '"clean_environment":{"status":"PASS","version":"0.4.0rc2"},'
+        '"clean_environment":{"status":"PASS","version":"0.4.1rc1"},'
         '"pip_check":{"status":"PASS"},"compileall":{"status":"PASS"}}',
         encoding="utf-8",
     )
@@ -78,7 +78,7 @@ def test_release_verification_rejects_runtime_source_change(tmp_path: Path) -> N
     evidence = tmp_path / "verification.json"
     evidence.write_text(
         '{"runtime_commit":"abc","pytest":{"status":"PASS","passed":221},'
-        '"clean_environment":{"status":"PASS","version":"0.4.0rc2"},'
+        '"clean_environment":{"status":"PASS","version":"0.4.1rc1"},'
         '"pip_check":{"status":"PASS"},"compileall":{"status":"PASS"}}',
         encoding="utf-8",
     )
@@ -97,7 +97,7 @@ def test_container_acceptance_requires_matching_archive_hash(tmp_path: Path) -> 
     archive.write_bytes(b"verified image archive")
     evidence = tmp_path / "container.json"
     evidence.write_text(
-        '{"release_id":"BRACE-MSI-0.4.0rc2",'
+        '{"release_id":"BRACE-MSI-0.4.1rc1",'
         '"image":{"under_2gb":true,"runtime_uid":10001,"forbidden_files":[],"pip_check":"PASS"},'
         '"runtime_acceptance":{"network":"none","cpus":4,"memory_bytes":8589934592,"status":"completed"},'
         '"archive":{"size_bytes":22,"sha256":"not-the-real-hash","docker_load_verified":true}}',
@@ -113,7 +113,7 @@ def test_container_acceptance_returns_verified_upload_metadata(tmp_path: Path) -
     archive.write_bytes(b"verified image archive")
     evidence = tmp_path / "container.json"
     evidence.write_text(
-        '{"release_id":"BRACE-MSI-0.4.0rc2",'
+        '{"release_id":"BRACE-MSI-0.4.1rc1",'
         '"image":{"under_2gb":true,"runtime_uid":10001,"forbidden_files":[],"pip_check":"PASS"},'
         '"runtime_acceptance":{"network":"none","cpus":4,"memory_bytes":8589934592,"status":"completed"},'
         '"archive":{"size_bytes":22,"sha256":"08d1e8fcc548b3ddeda461474b03d0ca3091277c9314429bf69d6cc205f52695",'

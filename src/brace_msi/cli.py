@@ -107,11 +107,6 @@ def _validate_official_agent_selection(
 ) -> None:
     if provider is None:
         raise ValueError("--provider is required unless --validate-only is used")
-    if provider == "pytrio" and not model_path:
-        raise ValueError(
-            "--model-path is required for formal PyTRiO runs; use the full "
-            "persisted trio:// Sampler path"
-        )
 
 
 def main(argv: Sequence[str] | None = None) -> int:

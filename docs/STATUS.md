@@ -1,9 +1,9 @@
 # 当前状态
 
 - 最近同步：2026-11-13（Asia/Shanghai）
-- 当前阶段：旧提交首次官方试运行已完成并暴露零Token静默降级与隐藏泛化问题；失败关闭修复候选`BRACE-MSI-0.4.0rc2`已完成本地发布验收 `[D-048]` `[D-049]`
+- 当前阶段：持久化Sampler重复平台校验失败后，按`D-050`切换为平台已接受的Qwen3.5-4B基础模型；`BRACE-MSI-0.4.1rc1`本地候选正在构建，旧RC与证据保持冻结
 - 当前路线：**Qwen3.5-4B PyTRiO Agent + BRACE确定性Harness + 官方A/B/C工业模型 + 经验证的开源优化方法** `[D-035]`
-- 当前唯一任务：`FORMAL-RELEASE-001`（`BLOCKED`）；本地候选已就绪，等待用户授权平台上传/校验。任何新试运行前必须先核对Sampler、镜像、源码和非零Agent调用门槛。
+- 当前唯一任务：`FORMAL-RELEASE-001`（`IN_PROGRESS`）；完成基础模型兼容镜像与容器验收后，平台上传/试运行仍需用户执行。任何新试运行前必须核对基础模型、镜像、源码和非零Agent调用门槛。
 - 稳定边界：`BRACE-MSI-0.1.0rc1`、`0.2.0rc2`、`0.3.0rc3`历史保持不变；当前候选为`BRACE-MSI-0.4.0rc1`，位于`codex/paper-fusion-sprint`且不合并main。A3之后禁止继续LLM调参 `[D-043]`
 - 官方试运行：已使用1/10次，剩余9/10次；该运行对应旧提交v2，不是RC4，正式评测仍为0/2 `[O-PLATFORM-006]`
 
@@ -11,7 +11,7 @@
 
 1. A/B/C官方训练包、真实初始检查点、公开切分、训练器和主指标已完成只读审计与本地续训验证 `[O-PLATFORM-005]`。
 2. PyTRiO官方客户端支持Sampler推理、LoRA训练/持久化、环境变量鉴权和OpenAI兼容接口 `[O-PYTRIO-001]`。
-3. 平台已校验通过Qwen3.5-4B基础模型；持久化Sampler先前失败源于权重未持久化，现已解决 `[B-PLATFORM-002]`。
+3. 平台已校验通过Qwen3.5-4B基础模型；持久化Sampler在用户再次校验时仍失败，平台未给出足以定位具体根因的错误，当前正式路线使用基础模型 `[B-PLATFORM-003]` `[D-050]`。
 4. 防泄漏状态机、预算、候选隔离、SafetyGate、回滚、恢复、本地审计及官方训练器子进程边界已有自动测试。
 5. 统一策略开发搜索81/81已结束：复杂共享策略被简单触发策略支配。该负结果保留，但D-032/D-034已由D-035替代为历史路线，不执行其末期测试。
 6. `PYTRIO-001`已完成：Qwen3.5-4B配置化Sampler、严格提案schema、秘密字段拒绝、Token/延迟收据和确定性降级通过8项专项测试；完整回归`189 passed`，未调用真实服务。
@@ -31,10 +31,11 @@
 20. `BRACE-MSI-0.4.0rc1`镜像linux/amd64、240,701,023字节、UID10001；4核8GB断网Engine冻结候选训练、264项回归、`pip check`、禁入文件扫描和`docker load`通过。归档SHA-256为`97bb0a9fcfed688ba1b7feadadf09528e232fea578d06a1d782f2dccee306dfa`；证据见`results/RC4_CONTAINER_ACCEPTANCE.json`与`results/RC4_VERIFICATION.json`。
 21. 官方首次试运行旧提交三任务均完成10轮但Token为0，A/B/C隐藏主指标为0.413368 Macro-F1、691.660970 RMSE、56.220512 RMSE；旧代码存在CLI默认确定性、客户端回退及Harness二次回退三条零Token完成路径。RC4尚未提交，不能据此评价RC4 `[O-PLATFORM-006]`。
 22. `BRACE-MSI-0.4.0rc2`完成失败关闭修复：正式provider必须显式选择，PyTRiO正式模式要求持久化Sampler路径，传输/解析/Harness异常均失败关闭，SDK请求与重试受30秒默认预算约束。完整回归271项；4核8GB断网负向测试12.726秒退出且无运行文件；镜像归档SHA-256为`daf42786f73862214336154848782cffb9cb3468181959542d1687435e307d32`。
+23. 基础模型兼容源代码已允许`provider=pytrio`且`model_path=None`，仍禁止provider隐式默认与正式静默回退；专项27项、完整回归271项通过。`PYTRIO-BASE-SMOKE-001`本机唯一在线调用约90秒无可核验响应后终止，无Token/响应收据，不能声称基础模型调用已在本机通过；镜像验收待完成。
 
 ## 当前执行入口
 
-下一次上传入口为`D:/brace-msi-release/BRACE-MSI-0.4.0rc2/BRACE-MSI-0.4.0rc2-image-clean.tar`，SHA-256 `daf42786f73862214336154848782cffb9cb3468181959542d1687435e307d32`。RC4归档及`97bb0a9f...306dfa`只保留为冻结历史；完整A3 `trio://`路径仍只从Git外收据读取，不写公开配置。平台上传、校验和试运行尚未执行。
+基础模型路线的新上传入口尚未生成；在`BRACE-MSI-0.4.1rc1`镜像完成验收前，不要把只接受Sampler路径的`0.4.0rc2`用于基础模型提交。RC4/RC5归档与哈希保持冻结历史。平台上传、校验和试运行尚未执行。
 
 正式路线、已知能力与未知边界见[FORMAL_ROUTE.md](FORMAL_ROUTE.md)。实验必须遵守[EXPERIMENT_PROTOCOL.md](EXPERIMENT_PROTOCOL.md)。
 

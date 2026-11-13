@@ -53,6 +53,7 @@
 | D-047 | 2026-11-13 | LOCKED | 冻结`BRACE-MSI-0.4.0rc1`为当天可提交的本地Release Candidate：A/B沿用RC3安全候选，C使用D-046的PaperFusion；镜像不包含工业模型权重，运行时在挂载输出卷训练。该版本不移动RC3标签、不合并main、不再次打开公开validation；只有正式SDK映射、平台校验或隐藏评测新证据才能产生后续版本。 | `docs/results/RC4_CONTAINER_ACCEPTANCE.json`、`docs/results/RC4_VERIFICATION.json`、264项回归、可重载镜像归档SHA-256 `97bb0a9f...306dfa` |
 | D-048 | 2026-11-13 | LOCKED | 官方Agent运行必须显式选择provider；选择PyTRiO时，传输失败、非法结构化响应或Harness provider异常一律失败关闭，不得静默改走确定性路线。确定性降级仍可用于明确选择的本地/非正式模式，但不能伪装成有效Agent调用。下一次平台试运行前必须确认持久化Sampler校验通过、提交绑定的镜像/源码版本明确，并以非零Agent调用收据为准入门槛。 | O-PLATFORM-006；红绿测试`tests/agent/test_pytrio_agent.py`、`tests/official_package/test_agent_harness.py`、`tests/test_cli_provider_selection.py` |
 | D-049 | 2026-11-13 | LOCKED | 以`BRACE-MSI-0.4.0rc2`作为下一次平台提交候选，替代RC4的上传入口但不删除或改写RC4；在正式提交模型来源上，以已持久化并通过校验的Sampler替代D-036“基础模型默认”，基础模型仅保留为历史/明确对照。RC5只修复正式Agent显式选择、持久化Sampler准入、PyTRiO失败关闭及SDK请求/重试超时；A/B/C冻结算法与历史性能结论不变。 | D-048；提交`5165953`；`docs/results/RC5_CONTAINER_ACCEPTANCE.json`、`RC5_VERIFICATION.json` |
+| D-050 | 2026-11-13 | LOCKED | 由于持久化Sampler在平台重复校验失败而Qwen3.5-4B基础模型校验通过，正式提交模型来源恢复为基础模型；该决定只替代D-049的模型来源与“必须提供Sampler路径”准入，不撤销D-048的显式provider、非零调用、超时和失败关闭要求，也不改变A/B/C冻结算法。A3 Sampler及其正负证据继续保留，不伪称基础模型具有A3的结构化准确率。 | B-PLATFORM-003、D-036、D-048、用户2026-11-13指令 |
 
 ## 已被替代的历史决策
 

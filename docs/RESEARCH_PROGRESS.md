@@ -470,3 +470,9 @@
 - Docker断网负向验收进一步发现PyTRiO SDK初始化/控制请求不受`APIFuture.result(timeout=...)`单点约束；通过官方`pytrio.configure`统一限制请求、控制重试、采样重试、容量等待和流式采样超时，保留一次被人工终止的长等待作为失败证据。
 - `BRACE-MSI-0.4.0rc2`最终完整回归`271 passed in 60.04s`；镜像linux/amd64、240,662,563字节、UID10001、`pip check`通过且无Torch/权重/数据/密钥。严格断网PyTRiO测试在12.726秒以`transport_error`退出，运行文件0项；`docker save`归档240,685,568字节、SHA-256 `daf42786...307d32`并重载成功。
 
+## 2026-11-13：Qwen3.5-4B基础模型提交路线
+
+- 平台重复拒绝持久化Sampler而基础模型校验通过，登记B-PLATFORM-003与D-050；不猜测平台Sampler失败的具体根因。
+- TDD先将“无Sampler路径的PyTRiO正式选择”改为预期行为并观察1项失败，再以最小改动移除Sampler强制路径；显式provider、严格schema、超时配置与Harness失败关闭保持不变。版本独立推进为`0.4.1rc1`，不覆盖`0.4.0rc2`。
+- `PYTRIO-BASE-SMOKE-001`唯一远程尝试在本机约90秒内无可核验响应后被终止，无proposal、Token或响应哈希收据；按预注册停止且不自动重试。专项27项、完整回归271项通过；容器构建与验收继续由同一任务完成。
+

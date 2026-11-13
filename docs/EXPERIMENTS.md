@@ -181,3 +181,15 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 - 选择结果：三任务均保留第1轮；后续轮次未改善。
 - 原始证据：`docs/source_notes/PLATFORM_TRIAL_V1_2026-11-13.md`；附件SHA-256 `8B7B5CEC3C50775BD5621DCBEB8DE7337BC39F0F6123767B27E36E004BBA5368`。
 - 失败边界：无法从平台报告区分CLI默认、客户端回退或Harness回退；无法确认旧提交绑定的具体镜像编号。失败与未知均保留，不反推RC4表现。
+
+## PYTRIO-BASE-SMOKE-001预注册
+
+- 状态：`FAILED_LOCAL_TIMEOUT_NO_RECEIPT`。
+- 类型：基础模型正式入口的单次低成本连通性与结构化响应Smoke；不是工业模型训练、平台试运行或正式成绩。
+- 模型：`Qwen/Qwen3.5-4B`基础模型；`model_path=None`；不使用持久化Sampler，不修改A/B/C模型或冻结参数。
+- 输入：仅使用一个合成、聚合且不含样本/标签/密钥的BRACE决策上下文。
+- 调用预算：最多1次Sampler调用，`temperature=0`、固定种子、最多384输出Token；不训练、不保存权重、不自动重试。
+- 成功标准：来源为`pytrio`，严格proposal schema通过，输入/输出Token均大于0，`model_path_configured=false`，无fallback。
+- 停止条件：传输失败、超时、非法JSON/schema或Token为0时立即保留失败证据并停止；不得因此放宽schema或恢复静默降级。
+- 记录边界：只保存状态、动作/工具、Token、延迟和请求/响应哈希，不保存原始响应、API Key或服务凭据。
+- 实际结果：首次启动因临时进程未设置`PYTHONPATH=src`在导入阶段退出，远程调用0；修正后发起唯一一次Sampler调用，但本机进程在约90秒内没有返回可核验响应，随后被终止。没有proposal、Token或哈希收据，因此不计为成功，也无法确认服务端是否已接受/计费该请求；按预注册停止，不重试。
