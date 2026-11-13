@@ -7,8 +7,8 @@
 ```text
 EVIDENCE-RSI-001(DONE)
   -> DUAL-DATA-001(DONE)
-  -> DUAL-TXN-001(READY)
-  -> DUAL-VALUE-001(BLOCKED_DEP)
+  -> DUAL-TXN-001(DONE)
+  -> DUAL-VALUE-001(READY)
   -> DUAL-QWEN-001(BLOCKED_DEP)
   -> DUAL-PLUGIN-001(BLOCKED_DEP)
   -> DUAL-MODEL-001(BLOCKED_DEP)
@@ -37,14 +37,15 @@ EVIDENCE-RSI-001(DONE)
 
 ### DUAL-TXN-001 每批单决策事务与恢复
 
-- 状态：`READY`
+- 状态：`DONE`
 - 依赖：DUAL-DATA-001
 - 优先级：P0
 - 完成标准：每批恰好一次决策；0至2候选；第二候选只能由首候选结果、新证据和预算触发；原子提交、崩溃恢复和重复事件幂等
+- 证据：`src/brace_msi/dual_loop.py`、`tests/dual_loop/test_dual_loop.py`；专项`5 passed`，完整回归`280 passed`
 
 ### DUAL-VALUE-001 动作收益、Pareto与影子归因
 
-- 状态：`BLOCKED_DEP`
+- 状态：`READY`
 - 依赖：DUAL-TXN-001
 - 优先级：P0
 - 完成标准：每任务ActionValueTable、性能—成本Pareto、同批影子配对收益和低置信度降级通过自动测试，影子资源全部计量
