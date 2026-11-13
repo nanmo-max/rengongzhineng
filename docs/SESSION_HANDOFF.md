@@ -2,10 +2,10 @@
 
 ## 2026-11-13受控双闭环重构恢复入口（当前）
 
-1. 当前路线以D-051/D-052及`docs/superpowers/specs/2026-11-13-controlled-dual-loop-design.md`为准；既有`0.4.1rc1`与历史实验冻结，不得改写。
-2. `GENERALIST-MODEL-001`已`DONE`：A保留父模型，B/C冻结固定HGB父集成；结果在`D:/brace-msi-generalist/GENERALIST-MODEL-001-A1/`，禁止重开validation调权重。当前唯一任务为`DUAL-RC-001 (IN_PROGRESS)`。
+1. 当前路线以D-051/D-052/D-057及`docs/superpowers/specs/2026-11-13-controlled-dual-loop-design.md`为准；既有`0.4.1rc1`与历史实验冻结，不得改写。
+2. `GENERALIST-MODEL-001`与`DUAL-RC-001`已`DONE`：A保留父模型，B/C冻结固定HGB父集成；禁止重开validation调权重。当前唯一任务为`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`。
 3. 宣讲截图证据登记见`B-RSI-002`和`source_notes/RSI_LECTURE_EVIDENCE_2026-11-13.md`；它们不提供正式SDK字段。
-4. 不消耗官方剩余9次试运行；自建候选已把父模型作为实际集成成员并通过独立预测、父哈希与64 MiB门。RC只集成冻结A/B/C选择，不再做公开validation选型；真实SDK字段仍等待H-001。
+4. 不消耗官方剩余9次试运行；`BRACE-MSI-0.5.0rc1`归档位于`D:/brace-msi-release/BRACE-MSI-0.5.0rc1/BRACE-MSI-0.5.0rc1-image-clean.tar`，SHA-256为`e3cc5f1c3c2a879344632e083623001864c8dac380c6ebb87239ac5de9799747`。本地Docker通过不等于平台镜像/模型/续训/评测通过；真实SDK字段仍等待H-001。
 5. 每完成一个任务运行专项与完整回归，更新SSOT并提交；外部SDK阻塞不得阻止平台无关核心实现。
 6. 新增`O-PLATFORM-007`/D-053：模型门必须验证真实父检查点续训、独立预测入口、`checkpoint.npz`和64 MiB总产物；RC归档必须由`docker save`生成并可重载。未知字段继续阻塞，不得猜测。
 

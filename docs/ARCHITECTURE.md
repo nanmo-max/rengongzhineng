@@ -65,6 +65,14 @@ OfficialRuntimeAdapter
 
 候选模型池在正式数据确认前只作为研究决策：SGD、Logistic/Ridge、HistGradientBoosting、ExtraTrees `[D-009]`。
 
+### GeneralistParentEnsemble
+
+- `generalist-fit`只从任务类型、有限数值schema、合法训练数据和父`checkpoint.npz`构建候选；数据集名称不进入模型选择特征。
+- 训练内部共享`linear / HistGradientBoosting / ExtraTrees`模型池与3折选择原则；分类和回归只切换估计器及指标方向。
+- 最终单文件`checkpoint.npz`同时保存父checkpoint字节、父哈希、候选模型和固定混合元数据；`generalist-predict`独立加载并输出。
+- D-056/D-057冻结A保留父模型、B/C采用固定50/50父模型集成。该A/B/C选择属于开发证据和SafetyGate结果，不写入未知任务的名称分支；隐藏任务必须由同一训练内部证据和运行时门控决定。
+- 正式SDK的父路径、批次事件和提交字段只由`OfficialRuntimeAdapter`映射；当前本地格式通过不等于平台续训协议通过。
+
 ### EvidenceRouter与DiagnosisEngine
 
 输入包括数据质量、协变量漂移、目标/类别分布变化、性能退化、历史遗忘、预算和动作历史。漂移不是训练的唯一触发器；性能证据可独立触发低成本候选 `[D-010]`。

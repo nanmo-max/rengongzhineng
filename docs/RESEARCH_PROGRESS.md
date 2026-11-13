@@ -540,3 +540,12 @@
 - `PYTRIO-BASE-SMOKE-001`唯一远程尝试在本机约90秒内无可核验响应后被终止，无proposal、Token或响应哈希收据；按预注册停止且不自动重试。专项27项、完整回归271项通过；容器构建与验收继续由同一任务完成。
 - `BRACE-MSI-0.4.1rc1`真实镜像验收完成：linux/amd64、240,662,396字节、UID10001、无Torch/权重/数据/密钥；4核8GB断网Smoke完成，基础模型无Sampler路径入口8.696秒以`transport_error`失败关闭且运行文件0项。`docker save`归档240,685,056字节，SHA-256 `63fff363...54e48e`并重载成功。
 
+## 2026-11-13：DUAL-RC-001
+
+- TDD新增`generalist-fit`单包入口：只用train内部证据选择模型，生成实际嵌入父checkpoint的单个`checkpoint.npz`；`generalist-predict`继续作为独立预测入口。专项与发布测试14项通过。
+- `BRACE-MSI-0.5.0rc1`在Docker Desktop Linux引擎真实构建。镜像为linux/amd64、241,051,292字节、UID10001；容器版本0.5.0rc1、`pip check`与`compileall`通过，禁入文件扫描为空。
+- 在`--network=none --cpus=4 --memory=8g --pids-limit=256`下完成十轮受控闭环Smoke；B/C从只读官方包全量训练并分别生成239,914/200,616字节父集成产物，独立预测成功。运行时产物只在挂载输出卷，未进入镜像。
+- 由于Linux/Windows序列化哈希不同，按冻结门仅做一次跨平台等价性验收；B/C预测指标与D-056完全一致并通过原安全门，未修改算法或参数。
+- 完整回归`329 passed in 93.98s`。主机全局Anaconda仍有历史无关依赖冲突，未冒充干净环境；发布容器本身`pip check`通过。
+- `docker save`归档为241,074,176字节，SHA-256 `e3cc5f1c3c2a879344632e083623001864c8dac380c6ebb87239ac5de9799747`；删除本地镜像标签后`docker load`成功。A仍保留父模型，没有虚构严格提升；平台状态仍全部待验证。
+

@@ -1,4 +1,24 @@
-# BRACE-MSI 0.3.0rc3 Release Candidate
+# BRACE-MSI Release Candidate
+
+## 当前本地候选：0.5.0rc1
+
+`BRACE-MSI-0.5.0rc1`是受控双闭环重构后的本地候选，不覆盖或删除既有RC。它增加四缓冲区、单轮事务、动作价值与影子收益、受限插件、分层模型门，以及身份盲的父模型集成训练/独立预测入口。
+
+冻结工业模型选择为：A保留官方父模型；B/C在运行时从官方父checkpoint训练有界HGB，并与父模型固定50/50集成。核心训练逻辑不读取数据集名称选择动作。公开validation已经历史暴露；B/C改善是开发门控证据，不是隐藏测试或官方成绩。A没有严格超过父模型，因此不宣称三任务全部提升。
+
+| 项目 | 状态 | 证据或边界 |
+|---|---|---|
+| 完整代码回归 | PASS | 329项通过 |
+| 4核8GB断网 | PASS | 十轮Smoke、B/C全量训练和独立预测通过 |
+| 父checkpoint与产物 | PASS_LOCAL | B/C产物实际嵌入父checkpoint，239,914/200,616字节 |
+| Docker镜像 | PASS | linux/amd64，241,051,292字节，UID10001，无数据/权重/密钥 |
+| `docker save/load` | PASS | 241,074,176字节，SHA-256 `e3cc5f1c...9799747` |
+| 平台镜像/模型/续训校验 | BLOCKED_EXTERNAL | 尚未上传，正式SDK字段和挂载未知 |
+| 正式评测 | NOT_RUN | 本任务未消耗官方试运行 |
+
+当前归档：`D:/brace-msi-release/BRACE-MSI-0.5.0rc1/BRACE-MSI-0.5.0rc1-image-clean.tar`。详细证据见[DUAL-RC-001.md](results/DUAL-RC-001.md)。
+
+## 历史候选：0.3.0rc3
 
 ## 结论
 

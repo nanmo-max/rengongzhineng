@@ -6,11 +6,11 @@
 
 | 平台字段 | 应填写内容 | 当前状态 | 证据/注意事项 |
 |---|---|---|---|
-| 模型类型 | 持久化 Sampler 微调权重 | 已准备 | A3已生成持久化Sampler |
-| 完整Sampler权重路径 | 从Git外`D:/brace-msi-pytrio/PYTRIO-SFT-001-A3/result.json`读取`sampler_model_path` | 已准备 | 完整`trio://`路径不写入Git或作品文档；不要自行拼接 |
+| 模型类型 | 基础模型 `Qwen/Qwen3.5-4B` | 已通过历史平台校验 | 持久化Sampler此前未通过平台校验；按D-050使用基础模型，不填写Sampler路径 |
+| 完整Sampler权重路径 | 不适用 | 不填写 | 不把历史A3路径用于本版本 |
 | 训练记录链接 | `https://swanlab.cn/@nanmo-max/brace-msi-final` | 已同步并核验 | 公开项目含Gas/Bearing/Engine三个`FINISHED`实验，每项10条聚合记录 |
-| Harness镜像 | `BRACE-MSI-0.4.1rc1-image-clean.tar` | 已准备 | SHA-256：`63fff3634c9eacbe258a60e2847e585b4d5114238c5de98d8ee6dfed8454e48e`；支持平台已校验的Qwen3.5-4B基础模型且保留正式Agent失败关闭 |
-| 源码仓库链接 | `https://github.com/nanmo-max/rengongzhineng/tree/codex/paper-fusion-sprint` | 已推送 | 当前分支含RC4源码、测试、正负实验与容器证据；未覆盖远端main或RC3标签 |
+| Harness镜像 | `BRACE-MSI-0.5.0rc1-image-clean.tar` | 本地已准备，平台未校验 | SHA-256：`e3cc5f1c3c2a879344632e083623001864c8dac380c6ebb87239ac5de9799747`；上传后必须等待“镜像可用”并另做模型/续训校验 |
+| 源码仓库链接 | `https://github.com/nanmo-max/rengongzhineng/tree/codex/generalist-q1-sprint` | 本地分支，待推送 | 不覆盖远端main或历史RC标签；推送后再填表 |
 | PyTRiO API Key | 由队长在平台字段中粘贴 | 人工填写 | 不通过聊天、Git、作品文档或日志传递 |
 | 作品文档 | `D:/brace-msi-release/BRACE-MSI-0.4.0rc1-submission-materials/BRACE-MSI-作品说明书.docx` | 已生成并校验 | 无官方模板；指导教师暂不填写；PDF预览为`BRACE-MSI-作品说明书-最终版.pdf` |
 
@@ -19,7 +19,7 @@
 ## 镜像上传核对
 
 - 上传的是`docker save`生成的`.tar`，不是源码ZIP或Docker构建上下文；
-- 本地文件大小为240,685,568字节；镜像内部大小为240,662,563字节；
+- 本地文件大小为241,074,176字节；镜像内部大小为241,051,292字节；
 - 镜像平台为linux/amd64，默认用户UID 10001；
 - 镜像不含原始数据、A/B/C检查点、Sampler权重、Embedding或密钥；
 - 平台选择镜像后再执行“校验并保存新版本”；
@@ -29,8 +29,8 @@
 
 - 只推送源码、配置、测试和脱敏聚合证据；
 - 不推送`D:/brace-msi-*`运行目录、官方训练包、模型检查点、镜像tar、API Key或逐样本日志；
-- RC3分支和标签保持不变；RC4只推送独立`codex/paper-fusion-sprint`分支；
-- 不覆盖main，不移动`brace-msi-v0.3.0-rc3`标签；RC4是否另建标签由队长在最终平台校验后决定；
+- 历史RC分支和标签保持不变；新候选只推送独立`codex/generalist-q1-sprint`分支；
+- 不覆盖main，不移动任何历史标签；0.5.0rc1是否另建标签由队长在平台校验后决定；
 - 公布仓库前必须由权利人选择项目源码许可证。没有许可证时不得写“本项目已按某许可证开源”。
 
 ## SwanLab核对
@@ -45,10 +45,10 @@
 ## 最终人工操作
 
 1. 在平台选择已经上传并校验的Harness镜像；
-2. 从本机Git外收据复制完整Sampler路径；
+2. 模型类型选择基础模型`Qwen/Qwen3.5-4B`，不填写Sampler路径；
 3. 在平台直接填写PyTRiO API Key；
 4. 粘贴SwanLab项目链接`https://swanlab.cn/@nanmo-max/brace-msi-final`；
-5. 粘贴GitHub分支链接`https://github.com/nanmo-max/rengongzhineng/tree/codex/paper-fusion-sprint`；
+5. 分支推送后粘贴`https://github.com/nanmo-max/rengongzhineng/tree/codex/generalist-q1-sprint`；
 6. 上传作品说明书；
 7. 指导教师字段按当前要求留空；
 8. 截图保存平台校验成功页面和版本号。

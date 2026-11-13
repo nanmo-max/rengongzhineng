@@ -1,10 +1,10 @@
 # 当前状态
 
 - 最近同步：2026-11-13（Asia/Shanghai）
-- 当前阶段：受控双闭环重构；既有`BRACE-MSI-0.4.1rc1`与全部历史实验冻结，重构在独立分支推进，不替换RC
+- 当前阶段：受控双闭环本地Release Candidate已冻结；既有`BRACE-MSI-0.4.1rc1`与全部历史实验继续保留，新候选`BRACE-MSI-0.5.0rc1`位于独立分支且尚未通过平台校验
 - 当前路线：**Qwen3.5-4B基础模型受控建议 + BRACE确定性双闭环 + 四缓冲区物理隔离 + 官方A/B/C工业模型** `[D-050]` `[D-052]`
-- 当前唯一任务：`DUAL-RC-001`（`IN_PROGRESS`）；将已通过门控的B/C父模型集成接入可训练/预测入口，执行完整回归、Docker小于2GB、4核8GB、断网、禁入文件、`docker save/load`和64 MiB产物验收；A保持官方父模型。`FORMAL-RELEASE-001`的真实SDK字段仍保持`BLOCKED_EXTERNAL`。
-- 稳定边界：`BRACE-MSI-0.1.0rc1`、`0.2.0rc2`、`0.3.0rc3`历史保持不变；当前候选为`BRACE-MSI-0.4.0rc1`，位于`codex/paper-fusion-sprint`且不合并main。A3之后禁止继续LLM调参 `[D-043]`
+- 当前唯一任务：`FORMAL-RELEASE-001`（`BLOCKED_EXTERNAL`）；等待正式SDK字段、平台挂载/输出契约和平台校验。`DUAL-RC-001`已`DONE`：A安全保留父模型，B/C父模型集成、本地训练/预测、完整回归和容器验收完成。
+- 稳定边界：`BRACE-MSI-0.1.0rc1`、`0.2.0rc2`、`0.3.0rc3`、`0.4.0rc1/rc2`与`0.4.1rc1`历史保持不变；新本地候选为`BRACE-MSI-0.5.0rc1`，位于`codex/generalist-q1-sprint`且不合并main。A3之后禁止继续LLM调参 `[D-043]`
 - 官方试运行：已使用1/10次，剩余9/10次；该运行对应旧提交v2，不是RC4，正式评测仍为0/2 `[O-PLATFORM-006]`
 
 ## 已确认
@@ -45,10 +45,11 @@
 22. `BRACE-MSI-0.4.0rc2`完成失败关闭修复：正式provider必须显式选择，PyTRiO正式模式要求持久化Sampler路径，传输/解析/Harness异常均失败关闭，SDK请求与重试受30秒默认预算约束。完整回归271项；4核8GB断网负向测试12.726秒退出且无运行文件；镜像归档SHA-256为`daf42786f73862214336154848782cffb9cb3468181959542d1687435e307d32`。
 23. 基础模型兼容源代码已允许`provider=pytrio`且`model_path=None`，仍禁止provider隐式默认与正式静默回退；专项27项、完整回归271项通过。`PYTRIO-BASE-SMOKE-001`本机唯一在线调用约90秒无可核验响应后终止，无Token/响应收据，不能声称基础模型调用已在本机通过。
 24. `BRACE-MSI-0.4.1rc1`镜像为linux/amd64、240,662,396字节、UID10001；4核8GB断网Smoke、`pip check`、禁入文件扫描、基础模型无Sampler路径失败关闭与`docker load`均通过。归档SHA-256为`63fff3634c9eacbe258a60e2847e585b4d5114238c5de98d8ee6dfed8454e48e`。
+25. `BRACE-MSI-0.5.0rc1`本地验收完成：新增单包train-only通用训练入口和独立预测入口；329项回归通过；linux/amd64镜像241,051,292字节、UID10001、无数据/权重/密钥；4核8GB断网十轮Smoke、B/C完整训练与独立预测通过。运行时B/C产物239,914/200,616字节并实际嵌入父checkpoint；归档由`docker save`生成、删除标签后`docker load`成功，SHA-256为`e3cc5f1c3c2a879344632e083623001864c8dac380c6ebb87239ac5de9799747`。A保持父模型，未声称严格提升；平台各状态均未验证。
 
 ## 当前执行入口
 
-下一次基础模型上传入口为`D:/brace-msi-release/BRACE-MSI-0.4.1rc1/BRACE-MSI-0.4.1rc1-image-clean.tar`，SHA-256 `63fff3634c9eacbe258a60e2847e585b4d5114238c5de98d8ee6dfed8454e48e`。不要把只接受Sampler路径的`0.4.0rc2`用于基础模型提交。RC4/RC5归档与哈希保持冻结历史；平台上传、校验和试运行尚未执行。
+新本地候选归档为`D:/brace-msi-release/BRACE-MSI-0.5.0rc1/BRACE-MSI-0.5.0rc1-image-clean.tar`，SHA-256 `e3cc5f1c3c2a879344632e083623001864c8dac380c6ebb87239ac5de9799747`。它尚未上传且未通过平台镜像、模型、续训或评测校验；原`0.4.1rc1`入口继续作为历史稳定归档，不被覆盖。机器证据见`docs/results/DUAL-RC-001.md`。
 
 正式路线、已知能力与未知边界见[FORMAL_ROUTE.md](FORMAL_ROUTE.md)。实验必须遵守[EXPERIMENT_PROTOCOL.md](EXPERIMENT_PROTOCOL.md)。
 

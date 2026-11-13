@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "release_id": "BRACE-MSI-0.5.0rc1",
+  "runtime_commit": "5daf6f78b1f7b982447d53bb98cb510843fda3b2",
+  "pytest": {
+    "status": "PASS",
+    "passed": 329,
+    "command": "D:/anaconda3/python.exe -m pytest -q --tb=short",
+    "duration_seconds": 93.98
+  },
+  "focused_tests": {
+    "status": "PASS",
+    "passed": 14,
+    "scope": "generalist model plus release packaging"
+  },
+  "clean_environment": {
+    "status": "PASS",
+    "kind": "linux_container",
+    "version": "0.5.0rc1",
+    "uid": 10001
+  },
+  "pip_check": {
+    "status": "PASS",
+    "scope": "release container"
+  },
+  "compileall": {
+    "status": "PASS",
+    "scope": "/app/src in release container"
+  },
+  "host_environment_note": "The global Anaconda environment retains unrelated dependency conflicts; it is not the release environment and is not reported as clean.",
+  "official_test_opportunities_used": 0
+}

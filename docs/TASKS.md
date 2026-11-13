@@ -15,7 +15,8 @@ EVIDENCE-RSI-001(DONE)
   -> DUAL-INTEGRATION-001(DONE)
   -> DUAL-EXPERIMENT-001(DONE_MIXED)
   -> GENERALIST-MODEL-001(DONE)
-  -> DUAL-RC-001(IN_PROGRESS)
+  -> DUAL-RC-001(DONE)
+  -> FORMAL-RELEASE-001(BLOCKED_EXTERNAL)
 ```
 
 以上为D-052当前正式重构图；既有RC和下方历史任务图保持冻结，不因重构而改写。
@@ -104,11 +105,13 @@ EVIDENCE-RSI-001(DONE)
 
 ### DUAL-RC-001 新候选回归与容器验收
 
-- 状态：`IN_PROGRESS`
+- 状态：`DONE`
 - 依赖：GENERALIST-MODEL-001
 - 优先级：P1
 - 完成标准：Gas/Bearing/Engine超过静态，至少两项显著改善；零泄漏；完整回归；Docker小于2GB、4核8GB、无公网、无数据/权重/密钥；满足后才生成新RC
 - 上传验收：归档必须由`docker save`生成并可`docker load`；分别记录镜像可用、模型校验、续训协议和评测状态，不把上传完成冒充通过 `[O-PLATFORM-007]`
+- 修订门：D-057在D-056负证据后将本地冻结标准修订为A不低于父模型、至少B/C两项改善；不再要求用不安全候选强行提高A，也不把A写成提升
+- 实际：`BRACE-MSI-0.5.0rc1`已生成；329项回归通过，linux/amd64镜像241,051,292字节，4核8GB断网十轮Smoke、B/C完整训练、B/C独立预测、禁入扫描、`pip check`、`compileall`与`docker save/load`均通过。A按D-056保留父模型，因此没有满足“Gas严格超过静态”；B/C公开历史暴露验证分别由RMSE 681.159833/52.868573改善至675.010677/49.336020。该局限不隐瞒，不再重开validation调参。证据：`docs/results/DUAL-RC-001.md`。
 
 ```text
 ROUTE-001(DONE)
@@ -234,7 +237,7 @@ ROUTE-001(DONE)
 ### FORMAL-RELEASE-001 正式环境与交付
 
 - 状态：`BLOCKED_EXTERNAL`（基础模型兼容候选本地完成；平台上传/试运行仍由用户控制）
-- 依赖：FORMAL-COMPARE-001、正式SDK/SwanLab规范
+- 依赖：DUAL-RC-001、正式SDK/SwanLab规范
 - 优先级：P4
 - 完成标准：Docker构建、4核8GB断网、正式RuntimeAdapter、最终模型重训SwanLab记录、十轮无人值守、干净环境独立复现及交付审计全部通过
 - 停止条件：外部规范或容器环境缺失时明确`BLOCKED`，不得制造通过证据
@@ -243,6 +246,7 @@ ROUTE-001(DONE)
 - RC4本地证据：最终代码回归`264 passed`；实际镜像240,701,023字节、linux/amd64、UID10001、无Torch/数据/权重/密钥；4核8GB断网完成Engine冻结候选训练，峰值RSS 3,198,783,488字节；`docker save`归档240,723,968字节，SHA-256为`97bb0a9fcfed688ba1b7feadadf09528e232fea578d06a1d782f2dccee306dfa`并已重载。证据见`docs/results/RC4_CONTAINER_ACCEPTANCE.json`与`docs/results/RC4_VERIFICATION.json`。
 - 基础模型兼容进度：平台重复拒绝持久化Sampler而接受Qwen3.5-4B基础模型后，`0.4.1rc1`已通过TDD专项27项与完整回归271项；CLI允许`provider=pytrio/model_path=None`，仍保留显式provider、失败关闭和非零调用要求。单次本机在线Smoke无响应且无收据，已按预注册停止，不写成通过；本地镜像验收见下一条。
 - RC6本地证据：`0.4.1rc1`镜像linux/amd64、240,662,396字节、UID10001、无Torch/数据/权重/密钥；4核8GB断网Synthetic Smoke完成。基础模型入口无Sampler路径时在断网环境8.696秒明确失败关闭且运行文件0项；归档240,685,056字节，SHA-256 `63fff363...54e48e`并经`docker load`验证。见`RC6_CONTAINER_ACCEPTANCE.json`与`RC6_VERIFICATION.json`。
+- RC7本地证据：`0.5.0rc1`完整回归329项；镜像241,051,292字节、linux/amd64、UID10001、无数据/权重/密钥；4核8GB断网十轮Smoke、B/C通用父集成训练与独立预测通过；归档241,074,176字节，SHA-256 `e3cc5f1c...9799747`并经`docker load`验证。A按SafetyGate保留父模型。见`DUAL_RC_CONTAINER_ACCEPTANCE.json`、`DUAL_RC_VERIFICATION.json`与`DUAL-RC-001.md`。
 - 外部剩余：正式SDK事件映射、评分细则和比赛SwanLab规范；平台上传、校验和试运行属于用户控制的外部写操作。未满足前不得标记全量DONE。
 
 ```text

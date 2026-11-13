@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "release_id": "BRACE-MSI-0.5.0rc1",
+  "runtime_commit": "5daf6f78b1f7b982447d53bb98cb510843fda3b2",
+  "image": {
+    "tag": "brace-msi:0.5.0rc1",
+    "id": "sha256:3bff3b3e72d7a5cb8e3358dcbe4d7ef03dee68cd7114ff3c91f7c3ccc761a653",
+    "platform": "linux/amd64",
+    "size_bytes": 241051292,
+    "under_2gb": true,
+    "runtime_uid": 10001,
+    "brace_msi_version": "0.5.0rc1",
+    "pip_check": "PASS",
+    "compileall": "PASS",
+    "forbidden_files": [],
+    "contains_training_data": false,
+    "contains_model_weights": false,
+    "contains_credentials": false
+  },
+  "runtime_acceptance": {
+    "network": "none",
+    "cpus": 4,
+    "memory_bytes": 8589934592,
+    "pids_limit": 256,
+    "status": "completed",
+    "controlled_smoke_rounds": 10,
+    "controlled_smoke_candidates": 8,
+    "generalist_fit_profiles": ["B", "C"],
+    "independent_prediction_profiles": ["B", "C"]
+  },
+  "runtime_model_artifacts": {
+    "A": {
+      "selection": "official_parent",
+      "reason": "frozen SafetyGate rejection of the generalist candidate"
+    },
+    "B": {
+      "selection": "parent_generalist_blend",
+      "selected_family": "hist_gradient_boosting",
+      "parent_sha256": "c7d819fcee9d25459c583b5ffdb35593d4a47b524ed152d0226bf81a283314b4",
+      "artifact_sha256": "e8d042337d0b0ea82c683b8a4c141c5c121b3b8f840f2b1487c5d2206482c1e8",
+      "artifact_bytes": 239914,
+      "training_cpu_seconds": 11.7577459,
+      "training_wall_seconds": 4.340222332,
+      "training_peak_rss_bytes": 220864512,
+      "validation_gate": "PASS_WITH_HISTORICAL_EXPOSURE"
+    },
+    "C": {
+      "selection": "parent_generalist_blend",
+      "selected_family": "hist_gradient_boosting",
+      "parent_sha256": "98ec6e30e38aee56ca15b7d624a8f412226d46fe97b170667a567601c700bc4e",
+      "artifact_sha256": "1cc4a301b45b4ce271df4f94b09528f9878d105382519691c13b12c0c65302f0",
+      "artifact_bytes": 200616,
+      "training_cpu_seconds": 33.0548088,
+      "training_wall_seconds": 17.462600974,
+      "training_peak_rss_bytes": 763875328,
+      "validation_gate": "PASS_WITH_HISTORICAL_EXPOSURE"
+    }
+  },
+  "frozen_public_validation": {
+    "formal_eligible": false,
+    "historically_exposed": true,
+    "A": {
+      "selected_model": "official_parent",
+      "macro_f1": 0.7140297220788709,
+      "accuracy": 0.8786173633440515
+    },
+    "B": {
+      "selected_model": "parent_generalist_blend",
+      "rmse": 675.0106765753281,
+      "mae": 544.8862497236064,
+      "nasa_score": 3.527838059520636e24
+    },
+    "C": {
+      "selected_model": "parent_generalist_blend",
+      "rmse": 49.336019557708255,
+      "mae": 35.4230699368128,
+      "nasa_score": 2403837700.5436153
+    }
+  },
+  "archive": {
+    "path": "D:/brace-msi-release/BRACE-MSI-0.5.0rc1/BRACE-MSI-0.5.0rc1-image-clean.tar",
+    "format": "docker save tar",
+    "size_bytes": 241074176,
+    "sha256": "e3cc5f1c3c2a879344632e083623001864c8dac380c6ebb87239ac5de9799747",
+    "docker_load_verified": true
+  },
+  "official_platform_status": {
+    "image_upload": "NOT_PERFORMED",
+    "image_available": "NOT_VERIFIED",
+    "model_validation": "NOT_VERIFIED",
+    "continuation_protocol": "BLOCKED_EXTERNAL_SDK_MAPPING",
+    "formal_evaluation": "NOT_PERFORMED"
+  },
+  "official_test_opportunities_used": 0,
+  "pytrio_calls": 0,
+  "swanlab_calls": 0
+}

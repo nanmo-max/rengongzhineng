@@ -1,6 +1,6 @@
 # BRACE-MSI 正式实施计划
 
-> 当前执行基线为[D-035](DECISION_LOG.md)：Qwen3.5-4B PyTRiO Agent + BRACE确定性Harness + 官方A/B/C工业模型 + 经验证的开源优化方法。下方早期Gate内容保留历史背景；若与本节冲突，以本节和[TASKS.md](TASKS.md)为准。
+> 当前执行基线为[D-052](DECISION_LOG.md)与[D-057](DECISION_LOG.md)：Qwen3.5-4B基础模型受控建议 + BRACE确定性双闭环 + 四缓冲区物理隔离 + 父checkpoint增强的身份盲CPU候选。`BRACE-MSI-0.5.0rc1`已完成本地验收；当前只等待正式平台映射与校验。下方早期Gate内容保留历史背景；若与本节冲突，以本节和[TASKS.md](TASKS.md)为准。
 
 ## 当前P0—P4实施顺序
 
@@ -25,7 +25,7 @@ Gas、Bearing、Engine分别进行误差诊断、低成本超参数/训练策略
 
 ### P4：环境与交付
 
-实际Docker构建、4核8GB断网运行、正式SDK适配、最终模型正式重训的SwanLab记录、十轮无人值守和干净环境复现。外部条件不具备时明确阻塞，不制造验收证据。
+实际Docker构建、4核8GB断网运行、十轮无人值守、父集成训练/独立预测和干净容器复现已由0.5.0rc1完成。正式SDK适配、平台镜像/模型/续训校验及最终模型SwanLab记录仍为外部阻塞；不得以本地验收替代平台证据。
 
 ## 目标
 

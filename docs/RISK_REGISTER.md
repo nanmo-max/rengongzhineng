@@ -6,13 +6,13 @@
 | R-037 | P0 | Gate/Anchor误入训练或Replay未完成隔离 | 预处理器在非候选训练集合拟合 | 四用途类型、候选集合构造器、样本生命周期审计和专项测试 | 技术负责人 | MITIGATED_LOCAL：A1/A2使用官方父检查点，当前Gate仅作baseline训练器验证参数和SafetyGate，固定Anchor从公开train隔离且不进入候选；Replay只含公开train或完成隔离的历史Gate。正式SDK仍需复验 |
 | R-038 | P1 | 下一批自然难度被误归因于上一轮动作 | 只比较跨批绝对指标 | 保留直接前任一轮影子预测并做同样本配对差；不可用时降级为低置信度 | 技术负责人 | MITIGATED_LOCAL：A1记录负延迟收益，A2在同一样本上运行前任影子并对负配对收益执行回滚；额外推理CPU/RSS已计量。正式SDK是否允许影子仍待确认 |
 | R-039 | P0 | Qwen补丁突破安全核心或资源边界 | 补丁访问文件/网络/反射/无限循环/OOM | 仅纯函数槽、AST+签名+隔离子进程+资源限制+形状/有限值/确定性/差异门 | 技术负责人 | MITIGATED_CORE：13项攻击/输出契约测试与完整回归通过；正式容器cgroup和只读挂载仍待DUAL-RC-001复验 |
-| R-040 | P0 | 新候选不符合父检查点续训或64 MiB产物约束 | 从头训练、父链未实际使用、模型产物过大或缺独立预测入口 | 模型注册门验证父哈希/实际加载、checkpoint.npz、独立预测和`<=64*1024*1024`字节；不兼容版本禁止试运行 | 技术负责人 | PARTIAL：A1/A2真实加载随包父checkpoint，延续权重/Adam/标准化/epoch/step并经独立预测；全部候选低于64 MiB。自建候选与正式字段/挂载仍须GENERALIST-MODEL-001和H-001验收 |
+| R-040 | P0 | 新候选不符合父检查点续训或64 MiB产物约束 | 从头训练、父链未实际使用、模型产物过大或缺独立预测入口 | 模型注册门验证父哈希/实际加载、checkpoint.npz、独立预测和`<=64*1024*1024`字节；不兼容版本禁止试运行 | 技术负责人 | MITIGATED_LOCAL/BLOCKED_EXTERNAL：0.5.0rc1在Linux断网容器中从B/C真实父checkpoint训练并生成239,914/200,616字节的单文件产物，父哈希、独立预测和保存加载已验证；A保留父模型。正式checkpoint字段和父挂载仍待H-001，不能把本地产物格式冒充平台协议通过 |
 | R-001 | P0 | 正式SDK事件顺序与预设状态机冲突 | SDK无法映射内部事件 | 事件适配层；SDK-001当天核验 | 技术负责人 | PARTIAL：插件清单、动态加载、两模式契约和fail-closed检查已完成；实际事件/数据映射仍等待SDK |
 | R-002 | P0 | B包首批无合法初始模型 | 无初训数据/模型且要求预测 | TaskBootstrap；只走官方默认/弃权路径 | 技术负责人 | PARTIAL：本地未知任务TaskBootstrap和兼容性守卫已测试；官方默认/弃权路径仍待SDK |
 | R-003 | P0 | 三次迭代计数不合规 | 被拒候选不计数或要求部署 | 以正式定义配置计数；准备三个真实候选 | 技术负责人 | PARTIAL：SPRINT-HARNESS-001中每任务均完成3次真实候选且父链可复算；官方是否计拒绝候选仍待H-003 |
 | R-004 | P0 | 标签可见性错误造成泄漏 | 同样本先训练后预测 | 事件级样本身份检查；非法顺序测试 | 技术负责人 | MITIGATED：`src/brace_msi/protocol/__init__.py`与`tests/protocol/test_state_machine.py`，13项测试通过；正式SDK映射后仍需复验 |
 | R-005 | P0 | SwanLab公开与B包保密冲突 | 日志包含逐样本私有信息 | 公开/私有双日志；字段白名单；只在最终工程模型正式重训时生成云端记录 | 队员B | MITIGATED/PARTIAL：`SWANLAB-FINAL-001`只同步聚合指标，敏感字段扫描无命中，公开项目3项均`FINISHED`；比赛专用字段与无公网评测同步责任仍等待H-004 |
-| R-006 | P0 | 镜像超过2GB或依赖GPU | 引入PyTorch/权重/重依赖 | 轻量CPU栈；持续体积检查 | 队员A | MITIGATED：RC3实际linux/amd64镜像240,579,085字节；非root UID10001、`pip check`通过、PyTRiO0.2.9可导入、无Torch/数据/权重/密钥，并在4核8GB、断网、256 PID限制下完成双协议Smoke。归档及哈希见`docs/results/RC3_CONTAINER_ACCEPTANCE.json` |
+| R-006 | P0 | 镜像超过2GB或依赖GPU | 引入PyTorch/权重/重依赖 | 轻量CPU栈；持续体积检查 | 队员A | MITIGATED：0.5.0rc1实际linux/amd64镜像241,051,292字节；非root UID10001、`pip check`通过、无数据/权重/密钥，并在4核8GB、断网、256 PID限制下完成十轮Smoke及B/C完整训练/预测。`docker save/load`证据见`docs/results/DUAL_RC_CONTAINER_ACCEPTANCE.json` |
 | R-007 | P0 | 截止日期认知错误 | 学校通知晚于内部假设 | 按11月13日准备；专人核实书面通知 | 团队通知负责人 | OPEN |
 | R-008 | P1 | BRACE复杂策略被简单更新支配 | EXP-002全面落后 | 停止扩展，回到动作选择/预算策略 | 技术负责人 | REALIZED/MITIGATED：`UNIFIED-POLICY-OPT-001-DEV-A1`中复杂BRACE在3/3任务级留出fold相对简单触发策略无优势且资源更高；已按D-034停止复杂扩展并冻结简单统一候选，证据见`docs/results/UNIFIED-POLICY-OPT-001.md` |
 | R-009 | P1 | 公开数据过拟合，B包失效 | 跨任务/密封段性能崩溃 | 通用接口、验证暴露记账、每轮单候选、禁止验证参与训练/预处理；最终以隐藏评测确认 | 技术负责人 | CONTROLLED/OPEN：`OFFICIAL-PACKAGE-DEV-001`记录15次成功训练器加载、15次预检哈希、12次套件审计读取和33次候选指标计算；D-031冻结同流继续调参。反复公开验证的选择偏差无法由本地消除，仍需隐藏评测确认 |
