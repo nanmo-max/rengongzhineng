@@ -3,7 +3,7 @@
 ## 2026-11-13受控双闭环重构恢复入口（当前）
 
 1. 当前路线以D-051/D-052及`docs/superpowers/specs/2026-11-13-controlled-dual-loop-design.md`为准；既有`0.4.1rc1`与历史实验冻结，不得改写。
-2. `EVIDENCE-RSI-001`及`DUAL-DATA/TXN/VALUE/QWEN/PLUGIN-001`已完成；当前唯一任务为`DUAL-MODEL-001 (READY)`。受限补丁见`restricted_plugin.py`，完整回归307项通过。
+2. `EVIDENCE-RSI-001`及`DUAL-DATA/TXN/VALUE/QWEN/PLUGIN/MODEL-001`已完成；当前唯一任务为`DUAL-INTEGRATION-001 (READY)`。模型与64 MiB门见`model_gate.py`，完整回归316项通过。
 3. 宣讲截图证据登记见`B-RSI-002`和`source_notes/RSI_LECTURE_EVIDENCE_2026-11-13.md`；它们不提供正式SDK字段。
 4. 不启动新正式训练、不消耗官方剩余9次试运行；只有`DUAL-EXPERIMENT-001`预注册后才可运行A/B/C对照。
 5. 每完成一个任务运行专项与完整回归，更新SSOT并提交；外部SDK阻塞不得阻止平台无关核心实现。

@@ -11,8 +11,8 @@ EVIDENCE-RSI-001(DONE)
   -> DUAL-VALUE-001(DONE)
   -> DUAL-QWEN-001(DONE)
   -> DUAL-PLUGIN-001(DONE)
-  -> DUAL-MODEL-001(READY)
-  -> DUAL-INTEGRATION-001(BLOCKED_DEP)
+  -> DUAL-MODEL-001(DONE)
+  -> DUAL-INTEGRATION-001(READY)
   -> DUAL-EXPERIMENT-001(BLOCKED_DEP)
   -> DUAL-RC-001(BLOCKED_DEP)
 ```
@@ -69,15 +69,16 @@ EVIDENCE-RSI-001(DONE)
 
 ### DUAL-MODEL-001 分层CPU模型注册门
 
-- 状态：`READY`
+- 状态：`DONE`
 - 依赖：DUAL-PLUGIN-001
 - 优先级：P0
 - 完成标准：Tier0/1训练—保存—加载—同预测验证；增量能力不误报；Tier2仅在依赖体积、4核8GB和协议验收通过后启用
 - 新增官方门：实际加载平台父检查点并保留父链；提供独立预测入口；`checkpoint.npz`及全部模型产物不超过64 MiB；禁止从头训练伪装续训 `[O-PLATFORM-007]`
+- 证据：`src/brace_msi/model_gate.py`、`python -m brace_msi checkpoint-predict`、`tests/dual_loop/test_model_gate.py`；专项`9 passed`，完整回归`316 passed`
 
 ### DUAL-INTEGRATION-001 十批受控双闭环集成
 
-- 状态：`BLOCKED_DEP`
+- 状态：`READY`
 - 依赖：DUAL-MODEL-001
 - 优先级：P0
 - 完成标准：统一CLI、RuntimeAdapter、证据路由、候选执行、门控、影子、审计和恢复贯通；任务重命名不改变决策

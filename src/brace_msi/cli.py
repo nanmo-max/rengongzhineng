@@ -9,8 +9,11 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Sequence
 
+import numpy as np
+
 from .budget import BudgetLimits
 from .harness import HarnessConfig, UnifiedHarness
+from .model_gate import predict_checkpoint
 from .official_sdk import OfficialSdkSpec, load_official_adapter_factory
 from .official_agent_harness import (
     DeterministicOfficialProposalProvider,
@@ -99,6 +102,13 @@ def _parser() -> argparse.ArgumentParser:
     paper_fusion.add_argument("--output", type=Path, required=True)
     paper_fusion.add_argument("--open-validation", action="store_true")
     paper_fusion.add_argument("--validate-only", action="store_true")
+    checkpoint_predict = subparsers.add_parser(
+        "checkpoint-predict",
+        help="run the independent NumPy checkpoint prediction entry",
+    )
+    checkpoint_predict.add_argument("--checkpoint", type=Path, required=True)
+    checkpoint_predict.add_argument("--input-npy", type=Path, required=True)
+    checkpoint_predict.add_argument("--output-npy", type=Path, required=True)
     return parser
 
 
@@ -111,6 +121,22 @@ def _validate_official_agent_selection(
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parser().parse_args(argv)
+    if args.command == "checkpoint-predict":
+        inputs = np.load(args.input_npy, allow_pickle=False)
+        predictions = predict_checkpoint(args.checkpoint, inputs)
+        args.output_npy.parent.mkdir(parents=True, exist_ok=True)
+        np.save(args.output_npy, predictions, allow_pickle=False)
+        print(
+            json.dumps(
+                {
+                    "status": "completed",
+                    "sample_count": int(len(predictions)),
+                    "output": str(args.output_npy),
+                },
+                allow_nan=False,
+            )
+        )
+        return 0
     if args.command == "paper-fusion-run":
         if args.validate_only:
             result = validate_paper_fusion_output(args.output)

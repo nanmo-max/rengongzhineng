@@ -3,7 +3,7 @@
 - 最近同步：2026-11-13（Asia/Shanghai）
 - 当前阶段：受控双闭环重构；既有`BRACE-MSI-0.4.1rc1`与全部历史实验冻结，重构在独立分支推进，不替换RC
 - 当前路线：**Qwen3.5-4B基础模型受控建议 + BRACE确定性双闭环 + 四缓冲区物理隔离 + 官方A/B/C工业模型** `[D-050]` `[D-052]`
-- 当前唯一任务：`DUAL-MODEL-001`（`READY`）；实现分层CPU模型注册、能力声明、父检查点续训证明、独立预测入口及64 MiB产物门。`FORMAL-RELEASE-001`保持`BLOCKED_EXTERNAL`，不阻塞本地重构。
+- 当前唯一任务：`DUAL-INTEGRATION-001`（`READY`）；贯通十批RuntimeAdapter、四缓冲区、决策事务、动作值、候选执行、门控、影子、审计与恢复。`FORMAL-RELEASE-001`保持`BLOCKED_EXTERNAL`，不阻塞本地重构。
 - 稳定边界：`BRACE-MSI-0.1.0rc1`、`0.2.0rc2`、`0.3.0rc3`历史保持不变；当前候选为`BRACE-MSI-0.4.0rc1`，位于`codex/paper-fusion-sprint`且不合并main。A3之后禁止继续LLM调参 `[D-043]`
 - 官方试运行：已使用1/10次，剩余9/10次；该运行对应旧提交v2，不是RC4，正式评测仍为0/2 `[O-PLATFORM-006]`
 
@@ -16,6 +16,7 @@
 3. `DUAL-VALUE-001`已完成：每任务隔离统计、身份无关证据画像、弱先验、延迟收益专用更新和性能—CPU/RSS/Token/模型体积Pareto前沿通过5项专项测试；完整回归`285 passed`。
 4. `DUAL-QWEN-001`已完成：五类证据触发、稳定轮零调用、一次重试、非法/异常收据和确定性恢复通过9项专项测试；完整回归`294 passed`，未调用真实服务。
 5. `DUAL-PLUGIN-001`已完成：固定纯函数槽、AST白名单、独立子进程、CPU/RSS/超时、形状/有限值、重复确定性及差异测试通过13项攻击/契约测试；完整回归`307 passed`。
+6. `DUAL-MODEL-001`已完成：Tier0/1能力门、四类CPU模型训练—保存—加载同预测、Tier2全条件准入、真实父检查点/父链、独立预测CLI和64 MiB产物门通过9项专项测试；完整回归`316 passed`。正式checkpoint字段仍待SDK映射。
 
 1. A/B/C官方训练包、真实初始检查点、公开切分、训练器和主指标已完成只读审计与本地续训验证 `[O-PLATFORM-005]`。
 2. PyTRiO官方客户端支持Sampler推理、LoRA训练/持久化、环境变量鉴权和OpenAI兼容接口 `[O-PYTRIO-001]`。

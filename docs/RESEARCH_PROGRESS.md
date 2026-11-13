@@ -39,6 +39,13 @@
 - 每次执行在spawn子进程和临时只读工作区完成，尽可能设置CPU/地址空间/core限制，并强制墙钟超时与输出字节上限；同一输入执行两次验证确定性，再检查类型、行数/形状、权重、NaN/Inf和相对identity差异。
 - 文件/网络/反射、无限循环、明显OOM、硬超时、5倍特征、负权重、非有限输出和非确定结果均失败关闭。专项`13 passed`，agent+dual-loop`69 passed`，完整回归`307 passed in 63.21s`。
 
+## 2026-11-13：DUAL-MODEL-001分层模型与正式产物门
+
+- Tier0登记官方初始模型、SGD与Linear；Tier1登记HistGradientBoosting与ExtraTrees；MLP未进入新正式池。四类CPU适配器均在小型分类探针上完成训练—pickle保存—加载—逐项同预测，且能力声明不把Linear/树模型误报为增量。
+- Tier2只能在依赖体积、4核8GB、输入、预算、保存加载、预测协议和产物兼容全部通过后登记；当前未启用CatBoost或新增依赖。
+- `FormalArtifactGate`验证父文件实际哈希、加载哈希、子哈希、epoch/step连续、继承元数据、`checkpoint.npz`可安全加载、模型文件总量不超过64 MiB和独立预测探针。新增平台无关`checkpoint-predict` NPY入口，避免猜测正式SDK字段。
+- 专项`9 passed`，完整回归`316 passed in 63.48s`；正式平台的checkpoint字段与挂载命令仍由H-001阻塞。
+
 ## 2026-11-11：官方训练包只读审计与接入设计
 
 - 用户提供A/B/C三个官方训练包，共64文件、60,328,967字节；测试后复核原目录无新增缓存或文件，关键数据和检查点哈希保持不变。
