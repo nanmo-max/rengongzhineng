@@ -6,8 +6,8 @@
 
 ```text
 EVIDENCE-RSI-001(DONE)
-  -> DUAL-DATA-001(READY)
-  -> DUAL-TXN-001(BLOCKED_DEP)
+  -> DUAL-DATA-001(DONE)
+  -> DUAL-TXN-001(READY)
   -> DUAL-VALUE-001(BLOCKED_DEP)
   -> DUAL-QWEN-001(BLOCKED_DEP)
   -> DUAL-PLUGIN-001(BLOCKED_DEP)
@@ -28,15 +28,16 @@ EVIDENCE-RSI-001(DONE)
 
 ### DUAL-DATA-001 四缓冲区与物理数据能力边界
 
-- 状态：`READY`
+- 状态：`DONE`
 - 依赖：EVIDENCE-RSI-001
 - 优先级：P0
 - 完成标准：Anchor/Update/Gate/Replay用途与隔离期可审计；候选训练集合只含Update或Update+eligible Replay；RoundDataManifest不暴露源根；未来批次诱饵无法被训练器或插件发现；专项和完整回归通过
 - 停止条件：实现必须猜测正式SDK字段；此时仅保留平台无关的数据能力接口和模拟测试
+- 证据：`src/brace_msi/online_data.py`、`tests/dual_loop/test_online_data.py`；专项`4 passed`，完整回归`275 passed`
 
 ### DUAL-TXN-001 每批单决策事务与恢复
 
-- 状态：`BLOCKED_DEP`
+- 状态：`READY`
 - 依赖：DUAL-DATA-001
 - 优先级：P0
 - 完成标准：每批恰好一次决策；0至2候选；第二候选只能由首候选结果、新证据和预算触发；原子提交、崩溃恢复和重复事件幂等

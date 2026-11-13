@@ -8,6 +8,12 @@
 - D-051锁定十批即十次决策事务及0至2候选语义；D-052锁定四缓冲区物理隔离、ActionValueTable、影子配对收益、证据触发Qwen、受限插件和分层模型注册。
 - 正式设计与执行计划分别保存于`docs/superpowers/specs/2026-11-13-controlled-dual-loop-design.md`和`docs/superpowers/plans/2026-11-13-controlled-dual-loop.md`。既有RC、历史正负实验和公开验证暴露均保持不变；尚未运行新训练或产生新性能结果。
 
+## 2026-11-13：DUAL-DATA-001四缓冲区与数据能力边界
+
+- 测试先行新增`online_data.py`：Anchor/Update/Gate/Replay为显式类型，数组只读；Gate在创建轮之后隔离完整一轮，达到`round+2`才能晋升Replay。
+- 候选训练集合构造器只允许Update或Update+eligible Replay，拒绝Anchor/Gate和未到期Replay；训练、评估物化到两个独立目录，manifest只保存相对路径、批次、用途、样本摘要与文件哈希。
+- 未来批次诱饵位于物化目录外，训练句柄既不记录源根也拒绝`..`越界解析。专项`4 passed`，完整回归`275 passed in 61.94s`；未运行训练或平台调用。
+
 ## 2026-11-11：官方训练包只读审计与接入设计
 
 - 用户提供A/B/C三个官方训练包，共64文件、60,328,967字节；测试后复核原目录无新增缓存或文件，关键数据和检查点哈希保持不变。
