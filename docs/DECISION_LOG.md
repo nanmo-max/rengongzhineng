@@ -54,6 +54,8 @@
 | D-048 | 2026-11-13 | LOCKED | 官方Agent运行必须显式选择provider；选择PyTRiO时，传输失败、非法结构化响应或Harness provider异常一律失败关闭，不得静默改走确定性路线。确定性降级仍可用于明确选择的本地/非正式模式，但不能伪装成有效Agent调用。下一次平台试运行前必须确认持久化Sampler校验通过、提交绑定的镜像/源码版本明确，并以非零Agent调用收据为准入门槛。 | O-PLATFORM-006；红绿测试`tests/agent/test_pytrio_agent.py`、`tests/official_package/test_agent_harness.py`、`tests/test_cli_provider_selection.py` |
 | D-049 | 2026-11-13 | LOCKED | 以`BRACE-MSI-0.4.0rc2`作为下一次平台提交候选，替代RC4的上传入口但不删除或改写RC4；在正式提交模型来源上，以已持久化并通过校验的Sampler替代D-036“基础模型默认”，基础模型仅保留为历史/明确对照。RC5只修复正式Agent显式选择、持久化Sampler准入、PyTRiO失败关闭及SDK请求/重试超时；A/B/C冻结算法与历史性能结论不变。 | D-048；提交`5165953`；`docs/results/RC5_CONTAINER_ACCEPTANCE.json`、`RC5_VERIFICATION.json` |
 | D-050 | 2026-11-13 | LOCKED | 由于持久化Sampler在平台重复校验失败而Qwen3.5-4B基础模型校验通过，正式提交模型来源恢复为基础模型；该决定只替代D-049的模型来源与“必须提供Sampler路径”准入，不撤销D-048的显式provider、非零调用、超时和失败关闭要求，也不改变A/B/C冻结算法。A3 Sampler及其正负证据继续保留，不伪称基础模型具有A3的结构化准确率。 | B-PLATFORM-003、D-036、D-048、用户2026-11-13指令 |
+| D-051 | 2026-11-13 | LOCKED | 将官方十个数据批次解释为十次决策层事务；每轮必须先由稳定模型预测并提交，再在标签合法开放后分析、决策、执行0至2个候选、门控并原子提交历史。执行候选不是固定菜单；第二候选只能由首候选失败或收益不足、新证据和剩余预算共同触发。至少三次真实“历史→假设→实验→评估→决策”，NOOP不计入。 | B-RSI-002、用户批准的受控双闭环计划；正式SDK字段仍由H-001约束 |
+| D-052 | 2026-11-13 | LOCKED | 当前正式研发方向为受控双闭环：四缓冲区与物理未来隔离、身份无关证据路由、每任务ActionValueTable、影子前任配对收益、证据触发Qwen3.5-4B基础模型、确定性预算和SafetyGate、受限纯函数插件以及分层CPU模型注册。该决定细化并替代D-035中未定义的轮事务、数据生命周期和策略学习语义，但不改写既有RC、公开验证暴露、负结果或D-050模型来源。 | `superpowers/specs/2026-11-13-controlled-dual-loop-design.md`、B-RSI-002、用户批准计划 |
 
 ## 已被替代的历史决策
 

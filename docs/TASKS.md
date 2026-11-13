@@ -5,6 +5,92 @@
 ## 当前任务图
 
 ```text
+EVIDENCE-RSI-001(DONE)
+  -> DUAL-DATA-001(READY)
+  -> DUAL-TXN-001(BLOCKED_DEP)
+  -> DUAL-VALUE-001(BLOCKED_DEP)
+  -> DUAL-QWEN-001(BLOCKED_DEP)
+  -> DUAL-PLUGIN-001(BLOCKED_DEP)
+  -> DUAL-MODEL-001(BLOCKED_DEP)
+  -> DUAL-INTEGRATION-001(BLOCKED_DEP)
+  -> DUAL-EXPERIMENT-001(BLOCKED_DEP)
+  -> DUAL-RC-001(BLOCKED_DEP)
+```
+
+以上为D-052当前正式重构图；既有RC和下方历史任务图保持冻结，不因重构而改写。
+
+### EVIDENCE-RSI-001 宣讲证据与双闭环语义
+
+- 状态：`DONE`
+- 优先级：P0
+- 完成标准：13张截图的哈希、证据等级和边界登记；追加十轮与两层迭代决策；正式设计和实施计划可恢复
+- 证据：`source_notes/RSI_LECTURE_EVIDENCE_2026-11-13.md`、`B-RSI-002`、`D-051`、`D-052`、`superpowers/specs/2026-11-13-controlled-dual-loop-design.md`、`superpowers/plans/2026-11-13-controlled-dual-loop.md`
+
+### DUAL-DATA-001 四缓冲区与物理数据能力边界
+
+- 状态：`READY`
+- 依赖：EVIDENCE-RSI-001
+- 优先级：P0
+- 完成标准：Anchor/Update/Gate/Replay用途与隔离期可审计；候选训练集合只含Update或Update+eligible Replay；RoundDataManifest不暴露源根；未来批次诱饵无法被训练器或插件发现；专项和完整回归通过
+- 停止条件：实现必须猜测正式SDK字段；此时仅保留平台无关的数据能力接口和模拟测试
+
+### DUAL-TXN-001 每批单决策事务与恢复
+
+- 状态：`BLOCKED_DEP`
+- 依赖：DUAL-DATA-001
+- 优先级：P0
+- 完成标准：每批恰好一次决策；0至2候选；第二候选只能由首候选结果、新证据和预算触发；原子提交、崩溃恢复和重复事件幂等
+
+### DUAL-VALUE-001 动作收益、Pareto与影子归因
+
+- 状态：`BLOCKED_DEP`
+- 依赖：DUAL-TXN-001
+- 优先级：P0
+- 完成标准：每任务ActionValueTable、性能—成本Pareto、同批影子配对收益和低置信度降级通过自动测试，影子资源全部计量
+
+### DUAL-QWEN-001 证据触发Qwen与确定性恢复
+
+- 状态：`BLOCKED_DEP`
+- 依赖：DUAL-VALUE-001
+- 优先级：P0
+- 完成标准：只在严重退化、复杂漂移、连续失败或动作不可区分时调用；限时重试一次；异常有收据并由确定性策略继续；不微调Qwen
+
+### DUAL-PLUGIN-001 受限纯函数补丁沙箱
+
+- 状态：`BLOCKED_DEP`
+- 依赖：DUAL-QWEN-001
+- 优先级：P0
+- 完成标准：AST、签名、子进程、CPU/RSS/超时、形状、有限值、确定性和差异测试齐全；文件、网络、反射、无限循环、OOM与越界输出失败关闭
+
+### DUAL-MODEL-001 分层CPU模型注册门
+
+- 状态：`BLOCKED_DEP`
+- 依赖：DUAL-PLUGIN-001
+- 优先级：P0
+- 完成标准：Tier0/1训练—保存—加载—同预测验证；增量能力不误报；Tier2仅在依赖体积、4核8GB和协议验收通过后启用
+
+### DUAL-INTEGRATION-001 十批受控双闭环集成
+
+- 状态：`BLOCKED_DEP`
+- 依赖：DUAL-MODEL-001
+- 优先级：P0
+- 完成标准：统一CLI、RuntimeAdapter、证据路由、候选执行、门控、影子、审计和恢复贯通；任务重命名不改变决策
+
+### DUAL-EXPERIMENT-001 A/B/C合法顺序对照
+
+- 状态：`BLOCKED_DEP`
+- 依赖：DUAL-INTEGRATION-001；实验预注册
+- 优先级：P1
+- 完成标准：静态、固定更新、确定性双闭环和PyTRiO受控双闭环公平比较；十轮、至少三次真实实验链、资源和失败齐全；不消耗官方试运行
+
+### DUAL-RC-001 新候选回归与容器验收
+
+- 状态：`BLOCKED_DEP`
+- 依赖：DUAL-EXPERIMENT-001
+- 优先级：P1
+- 完成标准：Gas/Bearing/Engine超过静态，至少两项显著改善；零泄漏；完整回归；Docker小于2GB、4核8GB、无公网、无数据/权重/密钥；满足后才生成新RC
+
+```text
 ROUTE-001(DONE)
   -> PYTRIO-001(DONE)
   -> PYTRIO-SFT-001(DONE)

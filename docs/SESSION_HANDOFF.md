@@ -1,5 +1,13 @@
 # 新会话恢复与交接
 
+## 2026-11-13受控双闭环重构恢复入口（当前）
+
+1. 当前路线以D-051/D-052及`docs/superpowers/specs/2026-11-13-controlled-dual-loop-design.md`为准；既有`0.4.1rc1`与历史实验冻结，不得改写。
+2. `EVIDENCE-RSI-001`已完成；当前唯一任务为`DUAL-DATA-001 (READY)`。先读实施计划Task 2，用测试先行实现四缓冲区、RoundDataManifest、不可反向解析句柄和未来诱饵测试。
+3. 宣讲截图证据登记见`B-RSI-002`和`source_notes/RSI_LECTURE_EVIDENCE_2026-11-13.md`；它们不提供正式SDK字段。
+4. 不启动新正式训练、不消耗官方剩余9次试运行；只有`DUAL-EXPERIMENT-001`预注册后才可运行A/B/C对照。
+5. 每完成一个任务运行专项与完整回归，更新SSOT并提交；外部SDK阻塞不得阻止平台无关核心实现。
+
 ## 2026-11-13首次平台试运行诊断与修复恢复入口（当前）
 
 0. 最新变更：平台持久化Sampler再次校验失败而基础模型通过，D-050将正式模型来源切回`Qwen/Qwen3.5-4B`基础模型。`0.4.1rc1`专项27项、全量271项和容器验收通过；上传入口为`D:/brace-msi-release/BRACE-MSI-0.4.1rc1/BRACE-MSI-0.4.1rc1-image-clean.tar`，SHA-256 `63fff3634c9eacbe258a60e2847e585b4d5114238c5de98d8ee6dfed8454e48e`。

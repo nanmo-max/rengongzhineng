@@ -1,5 +1,13 @@
 # BRACE-MSI 技术架构
 
+## 0. 当前正式增量：受控双闭环（D-052）
+
+详细规格以 [`superpowers/specs/2026-11-13-controlled-dual-loop-design.md`](superpowers/specs/2026-11-13-controlled-dual-loop-design.md) 为准。十个批次是十次决策事务；执行层候选和策略层收益学习相互分离。每轮固定为稳定预测提交、合法反馈、证据分析、0至2候选、门控、原子历史提交，第二候选不能预先排队。
+
+数据面采用四种互斥用途：Anchor只评估，Update供当前训练，Gate供当前候选门控且本轮永不训练，Replay只包含已完成一轮隔离的历史合法训练样本。预处理器必须拟合候选真实训练集合Update或Update+Replay。RuntimeAdapter是唯一外部数据入口，训练子进程只获得manifest列出的物化文件，不获得官方源根或未来批次。
+
+控制面新增每任务`ActionValueTable`、性能—成本Pareto排序和一轮影子前任配对收益。Qwen只在证据触发时提出结构化动作或受限纯函数插件；预算、数据能力、SafetyGate、部署和回滚始终由确定性核心裁决。
+
 ## 1. 设计目标
 
 系统处理的是“如何让Agent提出有价值的任务专属实验，并由确定性Harness判断该实验是否安全、值得执行和部署”。BRACE-MSI统一实验生命周期、工具边界、预算、安全、审计和回滚；Gas、Bearing、Engine允许独立模型、参数、动作和历史，不按数据集名称在共享代码中硬编码捷径 `[D-035]`。
