@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "release_id": "BRACE-MSI-0.4.1rc1",
+  "evidence_scope": "base_model_submission_compatibility_container_acceptance",
+  "official_score": false,
+  "source_commit": "cb067acecaa7d19bb6ed888901e095f77cf970b1",
+  "image": {
+    "tag": "brace-msi:0.4.1rc1",
+    "id": "sha256:289f80b72d806e98529d3385f197f42216e8f11d0f346cf627d5aa517170eea5",
+    "os": "linux",
+    "architecture": "amd64",
+    "size_bytes": 240662396,
+    "under_2gb": true,
+    "runtime_user": "brace",
+    "runtime_uid": 10001,
+    "forbidden_files": [],
+    "torch_installed": false,
+    "brace_msi_version": "0.4.1rc1",
+    "pytrio_version": "0.2.9",
+    "pip_check": "PASS"
+  },
+  "build": {
+    "engine": "Docker Engine 28.5.1",
+    "base_image": "mcr.microsoft.com/azurelinux/base/python:3.12",
+    "base_digest": "sha256:379135d4dbe66b12825a54d4ed7aef21aa61227533ff1b9151d70f95f9266746",
+    "index": "https://pypi.tuna.tsinghua.edu.cn/simple"
+  },
+  "runtime_acceptance": {
+    "network": "none",
+    "cpus": 4,
+    "memory_bytes": 8589934592,
+    "pids_limit": 256,
+    "status": "completed",
+    "synthetic_smoke": {
+      "protocol": "predict_then_feedback",
+      "max_batches": 3,
+      "status": "paused",
+      "candidate_count": 2
+    },
+    "strict_agent_failure": {
+      "provider": "pytrio",
+      "model": "Qwen/Qwen3.5-4B",
+      "model_path_configured": false,
+      "agent_timeout_seconds": 5,
+      "exit_code": 1,
+      "wall_seconds": 8.696,
+      "error_category": "transport_error",
+      "runtime_files_created": 0,
+      "silent_deterministic_fallback": false
+    }
+  },
+  "archive": {
+    "format": "docker save tar",
+    "path": "D:/brace-msi-release/BRACE-MSI-0.4.1rc1/BRACE-MSI-0.4.1rc1-image-clean.tar",
+    "size_bytes": 240685056,
+    "sha256": "63fff3634c9eacbe258a60e2847e585b4d5114238c5de98d8ee6dfed8454e48e",
+    "docker_load_verified": true
+  },
+  "tests": {
+    "final_source_environment": "271 passed in 61.09s",
+    "base_model_and_release_focused": "27 passed in 7.20s",
+    "compileall": "PASS",
+    "container_pip_check": "PASS"
+  },
+  "boundaries": [
+    "This is local Harness and container evidence, not an official hidden-test score.",
+    "BRACE-MSI-0.4.0rc2 and earlier archives remain unchanged as historical evidence.",
+    "The image includes code but no industrial model weight, raw dataset, API key or persisted Sampler path.",
+    "The strict offline test selected the Qwen3.5-4B base-model route without a model path and made no successful external call.",
+    "PYTRIO-BASE-SMOKE-001 produced no receipt and is not claimed as a successful online model call.",
+    "No official trial or formal evaluation opportunity was used during this acceptance."
+  ]
+}

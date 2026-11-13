@@ -127,7 +127,7 @@ ROUTE-001(DONE)
 
 ### FORMAL-RELEASE-001 正式环境与交付
 
-- 状态：`IN_PROGRESS`（基础模型兼容候选本地构建中；平台上传/试运行仍由用户控制）
+- 状态：`BLOCKED_EXTERNAL`（基础模型兼容候选本地完成；平台上传/试运行仍由用户控制）
 - 依赖：FORMAL-COMPARE-001、正式SDK/SwanLab规范
 - 优先级：P4
 - 完成标准：Docker构建、4核8GB断网、正式RuntimeAdapter、最终模型重训SwanLab记录、十轮无人值守、干净环境独立复现及交付审计全部通过
@@ -135,7 +135,8 @@ ROUTE-001(DONE)
 - 本地证据：RC2运行时代码/全新venv均`221 passed`，`pip check`、编译、静态上下文与确定性源码归档通过；实际镜像170,356,869字节，linux/amd64、UID 10001、无禁入文件，4核8GB断网Smoke完成3候选；最终`docker save`归档SHA-256为`7b64490b0456c4b36bdc6189f34c9ce5e372894b911d76a3b40a6e8142e09327`，证据见`docs/results/RC2_CONTAINER_ACCEPTANCE.json`。
 - RC3本地证据：最终代码回归`246 passed`、打包前全新venv`243 passed`；PyTRiO0.2.9依赖无冲突；实际镜像240,579,085字节、linux/amd64、UID10001、无Torch/数据/权重/密钥；4核8GB断网双协议Smoke完成3/4候选；`docker save`归档SHA-256为`0daef2e0e66cd2d3bc809a5d836a03020d1f90d677df91830fedc4feeb6d325a`并已重载。证据见`docs/results/RC3_CONTAINER_ACCEPTANCE.json`。
 - RC4本地证据：最终代码回归`264 passed`；实际镜像240,701,023字节、linux/amd64、UID10001、无Torch/数据/权重/密钥；4核8GB断网完成Engine冻结候选训练，峰值RSS 3,198,783,488字节；`docker save`归档240,723,968字节，SHA-256为`97bb0a9fcfed688ba1b7feadadf09528e232fea578d06a1d782f2dccee306dfa`并已重载。证据见`docs/results/RC4_CONTAINER_ACCEPTANCE.json`与`docs/results/RC4_VERIFICATION.json`。
-- 基础模型兼容进度：平台重复拒绝持久化Sampler而接受Qwen3.5-4B基础模型后，`0.4.1rc1`已通过TDD专项27项与完整回归271项；CLI允许`provider=pytrio/model_path=None`，仍保留显式provider、失败关闭和非零调用要求。单次本机在线Smoke无响应且无收据，已按预注册停止，不写成通过；镜像验收尚未完成。
+- 基础模型兼容进度：平台重复拒绝持久化Sampler而接受Qwen3.5-4B基础模型后，`0.4.1rc1`已通过TDD专项27项与完整回归271项；CLI允许`provider=pytrio/model_path=None`，仍保留显式provider、失败关闭和非零调用要求。单次本机在线Smoke无响应且无收据，已按预注册停止，不写成通过；本地镜像验收见下一条。
+- RC6本地证据：`0.4.1rc1`镜像linux/amd64、240,662,396字节、UID10001、无Torch/数据/权重/密钥；4核8GB断网Synthetic Smoke完成。基础模型入口无Sampler路径时在断网环境8.696秒明确失败关闭且运行文件0项；归档240,685,056字节，SHA-256 `63fff363...54e48e`并经`docker load`验证。见`RC6_CONTAINER_ACCEPTANCE.json`与`RC6_VERIFICATION.json`。
 - 外部剩余：正式SDK事件映射、评分细则和比赛SwanLab规范；平台上传、校验和试运行属于用户控制的外部写操作。未满足前不得标记全量DONE。
 
 ```text

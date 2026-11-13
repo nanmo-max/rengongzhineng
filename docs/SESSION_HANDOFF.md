@@ -2,12 +2,12 @@
 
 ## 2026-11-13首次平台试运行诊断与修复恢复入口（当前）
 
-0. 最新变更：平台持久化Sampler再次校验失败而基础模型通过，D-050将正式模型来源切回`Qwen/Qwen3.5-4B`基础模型。`0.4.1rc1`源代码专项27项、全量271项通过，镜像尚在构建；完成前不要用要求Sampler路径的`0.4.0rc2`提交基础模型。
+0. 最新变更：平台持久化Sampler再次校验失败而基础模型通过，D-050将正式模型来源切回`Qwen/Qwen3.5-4B`基础模型。`0.4.1rc1`专项27项、全量271项和容器验收通过；上传入口为`D:/brace-msi-release/BRACE-MSI-0.4.1rc1/BRACE-MSI-0.4.1rc1-image-clean.tar`，SHA-256 `63fff3634c9eacbe258a60e2847e585b4d5114238c5de98d8ee6dfed8454e48e`。
 1. 官方平台已消耗1/10次试运行；旧提交v2的报告Token为0，A/B/C隐藏主指标分别为0.413368 Macro-F1、691.660970 RMSE、56.220512 RMSE。证据见O-PLATFORM-006和`docs/source_notes/PLATFORM_TRIAL_V1_2026-11-13.md`。
 2. 用户明确确认`BRACE-MSI-0.4.0rc1`尚未提交；不得把旧试运行归因于RC4，也不得再次上传旧镜像。
 3. `RC5-FAILCLOSED-001`已`DONE`：完整回归271项；linux/amd64镜像在4核8GB断网下通过Smoke，严格PyTRiO负向测试12.726秒失败关闭且运行文件0项。
 4. 下一上传入口为`D:/brace-msi-release/BRACE-MSI-0.4.0rc2/BRACE-MSI-0.4.0rc2-image-clean.tar`，SHA-256 `daf42786f73862214336154848782cffb9cb3468181959542d1687435e307d32`。RC4归档和哈希保持冻结历史。
-5. 当前唯一任务为`FORMAL-RELEASE-001 (IN_PROGRESS)`；先完成`0.4.1rc1`基础模型镜像，再由用户执行平台上传/校验。`PYTRIO-BASE-SMOKE-001`唯一在线尝试约90秒无收据后已停止；不得写成成功。新试运行必须确认基础模型、镜像和源码绑定，并以非零Agent调用收据为准入门槛。
+5. 当前唯一任务为`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`；本地基础模型镜像已完成，由用户执行平台上传/校验。`PYTRIO-BASE-SMOKE-001`唯一在线尝试约90秒无收据后已停止；不得写成成功。新试运行必须确认基础模型、镜像和源码绑定，并以非零Agent调用收据为准入门槛。
 
 ## 2026-11-13论文融合RC4恢复入口（历史）
 

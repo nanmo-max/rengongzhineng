@@ -475,4 +475,5 @@
 - 平台重复拒绝持久化Sampler而基础模型校验通过，登记B-PLATFORM-003与D-050；不猜测平台Sampler失败的具体根因。
 - TDD先将“无Sampler路径的PyTRiO正式选择”改为预期行为并观察1项失败，再以最小改动移除Sampler强制路径；显式provider、严格schema、超时配置与Harness失败关闭保持不变。版本独立推进为`0.4.1rc1`，不覆盖`0.4.0rc2`。
 - `PYTRIO-BASE-SMOKE-001`唯一远程尝试在本机约90秒内无可核验响应后被终止，无proposal、Token或响应哈希收据；按预注册停止且不自动重试。专项27项、完整回归271项通过；容器构建与验收继续由同一任务完成。
+- `BRACE-MSI-0.4.1rc1`真实镜像验收完成：linux/amd64、240,662,396字节、UID10001、无Torch/权重/数据/密钥；4核8GB断网Smoke完成，基础模型无Sampler路径入口8.696秒以`transport_error`失败关闭且运行文件0项。`docker save`归档240,685,056字节，SHA-256 `63fff363...54e48e`并重载成功。
 
