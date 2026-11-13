@@ -3,7 +3,7 @@
 - 最近同步：2026-11-13（Asia/Shanghai）
 - 当前阶段：受控双闭环重构；既有`BRACE-MSI-0.4.1rc1`与全部历史实验冻结，重构在独立分支推进，不替换RC
 - 当前路线：**Qwen3.5-4B基础模型受控建议 + BRACE确定性双闭环 + 四缓冲区物理隔离 + 官方A/B/C工业模型** `[D-050]` `[D-052]`
-- 当前唯一任务：`DUAL-VALUE-001`（`IN_PROGRESS`）；实现每任务动作收益统计、性能—成本Pareto排序和延迟收益更新。`FORMAL-RELEASE-001`保持`BLOCKED_EXTERNAL`，不阻塞本地重构。
+- 当前唯一任务：`DUAL-QWEN-001`（`READY`）；实现证据触发Qwen、一次限时重试、完整收据和确定性恢复。`FORMAL-RELEASE-001`保持`BLOCKED_EXTERNAL`，不阻塞本地重构。
 - 稳定边界：`BRACE-MSI-0.1.0rc1`、`0.2.0rc2`、`0.3.0rc3`历史保持不变；当前候选为`BRACE-MSI-0.4.0rc1`，位于`codex/paper-fusion-sprint`且不合并main。A3之后禁止继续LLM调参 `[D-043]`
 - 官方试运行：已使用1/10次，剩余9/10次；该运行对应旧提交v2，不是RC4，正式评测仍为0/2 `[O-PLATFORM-006]`
 
@@ -13,6 +13,7 @@
 0a. 官方公告`O-PLATFORM-007`新增硬门：`docker save`归档、真实父检查点续训、独立预测入口、`checkpoint.npz`及模型产物总量不超过64 MiB；内部字段与挂载路径仍未知，不猜测。
 1. `DUAL-DATA-001`已完成：四缓冲区、Gate一轮隔离、Update+Replay候选集合、只读manifest、训练/评估分离句柄和未来诱饵阻断通过4项专项测试；完整回归`275 passed`。
 2. `DUAL-TXN-001`已完成：每批单决策、0至2候选、首候选结果触发升级、十批前缀、原子提交/恢复及影子配对收益通过5项专项测试；完整回归`280 passed`。
+3. `DUAL-VALUE-001`已完成：每任务隔离统计、身份无关证据画像、弱先验、延迟收益专用更新和性能—CPU/RSS/Token/模型体积Pareto前沿通过5项专项测试；完整回归`285 passed`。
 
 1. A/B/C官方训练包、真实初始检查点、公开切分、训练器和主指标已完成只读审计与本地续训验证 `[O-PLATFORM-005]`。
 2. PyTRiO官方客户端支持Sampler推理、LoRA训练/持久化、环境变量鉴权和OpenAI兼容接口 `[O-PYTRIO-001]`。

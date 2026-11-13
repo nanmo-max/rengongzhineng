@@ -21,6 +21,12 @@
 - pending状态、round commit和派生PolicyState均落盘；round commit带SHA-256并先原子写入，重启可从pending继续或从commit前缀恢复，重复批次和跳轮失败关闭。
 - 影子收益在相同样本上计算分类Macro-F1/Accuracy或回归RMSE/MAE配对差并提供固定种子bootstrap区间；无影子时只接受显式历史基线并标记`historical_low`。专项`5 passed`，完整回归`280 passed in 63.27s`。
 
+## 2026-11-13：DUAL-VALUE-001轻量动作收益与Pareto
+
+- 新增每任务隔离、可持久化`ActionValueTable`；任务ID只作存储命名空间，证据画像只含任务类型和归一化退化/漂移/失败/预算/不确定性字段，重命名任务不会改变算法排序。
+- 只有`delayed_shadow`或显式`historical_fallback`更新动作收益；即时Gate证据只更新尝试、成功和资源统计。配对收益权重1，低置信历史归因权重0.25；弱先验伪计数被限制在0至0.5并可被一次真实观测覆盖。
+- 排序保留性能增益、CPU、峰值内存、Token和模型体积的非支配集合，不构造官方综合分。专项`5 passed`，完整回归`285 passed in 62.32s`。
+
 ## 2026-11-11：官方训练包只读审计与接入设计
 
 - 用户提供A/B/C三个官方训练包，共64文件、60,328,967字节；测试后复核原目录无新增缓存或文件，关键数据和检查点哈希保持不变。

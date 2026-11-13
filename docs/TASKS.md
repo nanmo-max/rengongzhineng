@@ -8,8 +8,8 @@
 EVIDENCE-RSI-001(DONE)
   -> DUAL-DATA-001(DONE)
   -> DUAL-TXN-001(DONE)
-  -> DUAL-VALUE-001(IN_PROGRESS)
-  -> DUAL-QWEN-001(BLOCKED_DEP)
+  -> DUAL-VALUE-001(DONE)
+  -> DUAL-QWEN-001(READY)
   -> DUAL-PLUGIN-001(BLOCKED_DEP)
   -> DUAL-MODEL-001(BLOCKED_DEP)
   -> DUAL-INTEGRATION-001(BLOCKED_DEP)
@@ -45,14 +45,15 @@ EVIDENCE-RSI-001(DONE)
 
 ### DUAL-VALUE-001 动作收益、Pareto与影子归因
 
-- 状态：`IN_PROGRESS`
+- 状态：`DONE`
 - 依赖：DUAL-TXN-001
 - 优先级：P0
 - 完成标准：每任务ActionValueTable、性能—成本Pareto、同批影子配对收益和低置信度降级通过自动测试，影子资源全部计量
+- 证据：`src/brace_msi/policy_learning.py`、`tests/dual_loop/test_policy_learning.py`；专项`5 passed`，完整回归`285 passed`
 
 ### DUAL-QWEN-001 证据触发Qwen与确定性恢复
 
-- 状态：`BLOCKED_DEP`
+- 状态：`READY`
 - 依赖：DUAL-VALUE-001
 - 优先级：P0
 - 完成标准：只在严重退化、复杂漂移、连续失败或动作不可区分时调用；限时重试一次；异常有收据并由确定性策略继续；不微调Qwen
