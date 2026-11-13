@@ -85,12 +85,12 @@ ROUTE-001(DONE)
 
 ### PAPER-METHOD-001 高价值开源方法筛选、复现与融合
 
-- 状态：`IN_PROGRESS`（独立`codex/paper-fusion-sprint`分支；D-045）
+- 状态：`DONE`（独立`codex/paper-fusion-sprint`分支；D-045至D-047）
 - 依赖：至少一个PERF任务给出可测量瓶颈
 - 优先级：P1
 - 完成标准：论文贡献、官方代码、许可证、CPU/内存、官方模型兼容性审计通过；独立实验ID下完成基线、复现、消融和失败记录；只有实测有效方法进入主Harness
 - 停止条件：无明确瓶颈、许可证不清、依赖GPU/公网、或4核8GB预算不成立
-- 当前实现：`PAPER-FUSION-SPRINT-001`，最多三项来源、train内部组折选型、冻结后一次公开validation；设计与计划见`docs/superpowers/specs/2026-11-13-paper-fusion-sprint-design.md`和`docs/superpowers/plans/2026-11-13-paper-fusion-sprint.md`。
+- 完成证据：`PAPER-FUSION-SPRINT-001`完成最多三项来源、train内部组折选型和冻结后一次公开validation；A/B负结果保留，C融合RMSE 42.330230通过相对RC3严格改善门。机器验证`valid=true`；RC4容器与归档证据见`docs/results/RC4_CONTAINER_ACCEPTANCE.json`、`docs/results/RC4_VERIFICATION.json`，完整结论见`docs/results/PAPER-FUSION-SPRINT-001.md`。
 
 ### LOOP-10-001 PyTRiO+BRACE十轮自主闭环
 
@@ -108,13 +108,14 @@ ROUTE-001(DONE)
 
 ### FORMAL-RELEASE-001 正式环境与交付
 
-- 状态：`BLOCKED_EXTERNAL`（RC3全部本地可执行项已完成，仅等待官方运行材料）
+- 状态：`BLOCKED_EXTERNAL`（RC4全部本地可执行项已完成，仅等待官方运行材料）
 - 依赖：FORMAL-COMPARE-001、正式SDK/SwanLab规范
 - 优先级：P4
 - 完成标准：Docker构建、4核8GB断网、正式RuntimeAdapter、最终模型重训SwanLab记录、十轮无人值守、干净环境独立复现及交付审计全部通过
 - 停止条件：外部规范或容器环境缺失时明确`BLOCKED`，不得制造通过证据
 - 本地证据：RC2运行时代码/全新venv均`221 passed`，`pip check`、编译、静态上下文与确定性源码归档通过；实际镜像170,356,869字节，linux/amd64、UID 10001、无禁入文件，4核8GB断网Smoke完成3候选；最终`docker save`归档SHA-256为`7b64490b0456c4b36bdc6189f34c9ce5e372894b911d76a3b40a6e8142e09327`，证据见`docs/results/RC2_CONTAINER_ACCEPTANCE.json`。
 - RC3本地证据：最终代码回归`246 passed`、打包前全新venv`243 passed`；PyTRiO0.2.9依赖无冲突；实际镜像240,579,085字节、linux/amd64、UID10001、无Torch/数据/权重/密钥；4核8GB断网双协议Smoke完成3/4候选；`docker save`归档SHA-256为`0daef2e0e66cd2d3bc809a5d836a03020d1f90d677df91830fedc4feeb6d325a`并已重载。证据见`docs/results/RC3_CONTAINER_ACCEPTANCE.json`。
+- RC4本地证据：最终代码回归`264 passed`；实际镜像240,701,023字节、linux/amd64、UID10001、无Torch/数据/权重/密钥；4核8GB断网完成Engine冻结候选训练，峰值RSS 3,198,783,488字节；`docker save`归档240,723,968字节，SHA-256为`97bb0a9fcfed688ba1b7feadadf09528e232fea578d06a1d782f2dccee306dfa`并已重载。证据见`docs/results/RC4_CONTAINER_ACCEPTANCE.json`与`docs/results/RC4_VERIFICATION.json`。
 - 外部剩余：正式SDK事件映射、评分细则和比赛SwanLab规范；未满足前不得标记全量DONE。
 
 ```text

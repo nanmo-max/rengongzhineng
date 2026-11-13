@@ -1,16 +1,16 @@
 # BRACE-MSI：面向工业模型漂移的预算—风险约束自主迭代引擎
 
-> 智训引擎赛题作品说明书  
-> 版本：BRACE-MSI-0.3.0rc3  
-> 日期：2026年11月13日  
-> 参赛团队：BRACE-MSI项目组  
+> 智训引擎赛题作品说明书
+> 版本：BRACE-MSI-0.4.0rc1
+> 日期：2026年11月13日
+> 参赛团队：BRACE-MSI项目组
 > 指导教师：暂不填写
 
 ## 摘要
 
 工业传感器老化、设备磨损和工况变化会使模型输入与目标关系持续变化。BRACE-MSI面向这一问题，构建“PyTRiO大模型提出结构化动作意图、确定性Harness负责预算控制与安全执行、工业模型独立训练与评估”的无人干预闭环。系统覆盖Gas分类、Bearing寿命回归和Engine寿命回归三类官方公开训练任务，能够在十轮决策中完成历史读取、实验提案、候选训练、独立评估、上线或拒绝、回滚与审计。
 
-当前正式候选使用Qwen3.5-4B的持久化Sampler生成受限JSON提案。模型输出不能直接执行代码，也不能绕过工具白名单、训练前预算检查和训练后SafetyGate；模型服务异常时自动退回确定性策略。A/B/C公开验证上的最终主指标分别为0.725695 Macro-F1、637.180224 RMSE和51.635999 RMSE。以上数据来自已经历史暴露的公开验证集，只用于说明本地开发结果，不是隐藏测试或官方成绩。
+当前正式候选使用Qwen3.5-4B的持久化Sampler生成受限JSON提案。模型输出不能直接执行代码，也不能绕过工具白名单、训练前预算检查和训练后SafetyGate；模型服务异常时自动退回确定性策略。通过一次有界论文方法复现与门控，Gas和Bearing继续使用RC3安全候选，Engine采用因果历史特征与异构CPU模型融合。A/B/C公开验证主指标分别为0.725695 Macro-F1、637.180224 RMSE和42.330230 RMSE。以上数据来自已经历史暴露的公开验证集，只用于说明本地开发结果，不是隐藏测试或官方成绩。
 
 ## 1. 赛题理解与设计目标
 
@@ -79,9 +79,17 @@ PyTRiO Agent只负责将当前聚合状态转化为`brace-msi.experiment-proposa
 |---|---|---:|---:|---:|---:|
 | A Gas | 分类，Macro-F1 ↑ | 0.714030 | 0.725695 | 3 | 1 |
 | B Bearing | 回归，RMSE ↓ | 681.159833 | 637.180224 | 3 | 1 |
-| C Engine | 回归，RMSE ↓ | 52.868573 | 51.635999 | 3 | 2 |
+| C Engine | 回归，RMSE ↓ | 52.868573 | 42.330230 | 8个有界候选 | 1个融合候选 |
 
-回归任务同时检查MAE，防止只优化RMSE而牺牲整体误差。B任务MAE从563.105841下降到540.456251；C任务MAE从38.899830下降到37.758009。所有候选都使用官方训练包随附的NumPy训练器、真实初始检查点和隔离输出目录，原始训练包保持只读 `[O-PLATFORM-005]`。
+回归任务同时检查MAE，防止只优化RMSE而牺牲整体误差。B任务MAE从563.105841下降到540.456251；C的PaperFusion候选MAE为29.809007。A/B继续使用官方训练包随附的NumPy训练器与真实初始检查点；C在同一只读公开训练包上增加当前cycle、历史差分和截至当前时刻的扩展均值，并通过HistGradientBoosting、ExtraTrees与MLP的异构集成训练运行时候选。模型权重写入隔离输出卷，不进入镜像。
+
+### 5.1 论文方法来源与门控
+
+- Gas知识蒸馏参考Lin与Zhan 2026年的公开方法和MIT代码仓库，但将其全批次标准化改为训练折内拟合以避免泄漏；蒸馏学生未超过教师与RC3，拒绝上线。
+- Engine集成参考Özcan 2025年C-MAPSS树模型组合思想，使用项目已有scikit-learn独立实现；不复制许可证仍待核对的仓库代码。
+- 候选资源分配采用Li等人在JMLR发表的Successive Halving思想，只对低预算表现较好的候选进行全量组折验证。
+
+三项来源均保留独立结果。PaperFusion在Gas上Macro-F1为0.687918、Bearing上RMSE为644.113606，均未超过RC3；只有Engine的RMSE 42.330230通过相对RC3严格改善门。该选择证明SafetyGate会拒绝“有论文来源但实际无增益”的模块。
 
 以上验证集在开发阶段已经多次使用，存在选择偏差。因此本项目明确将它们标记为`PASS_WITH_EXPOSURE`，仅用来冻结工程候选和验证执行正确性；最终泛化能力必须由平台隐藏评测确认。
 
@@ -91,7 +99,8 @@ PyTRiO Agent只负责将当前聚合状态转化为`brace-msi.experiment-proposa
 |---|---:|---:|---:|
 | A Gas | 2.516 | 54,358,016 B | 6,809 / 773 |
 | B Bearing | 4.812 | 67,272,704 B | 6,765 / 745 |
-| C Engine | 33.750 | 258,281,472 B | 6,788 / 754 |
+| C Engine Agent闭环 | 33.750 | 258,281,472 B | 6,788 / 754 |
+| C PaperFusion | 843.878 | 3,198,783,488 B | 0 / 0 |
 
 三任务各完成十轮和三个真实候选，0次模型服务回退。A第8轮和C第10轮各出现一次候选预算耗尽后的额外训练建议，均在训练前被拒绝。该边界证明预算控制位于大模型之外，并且对模型建议具有最终否决权。
 
@@ -109,15 +118,15 @@ SafetyGate分为三层：
 
 | 验收项 | 当前结果 |
 |---|---|
-| Harness镜像 | linux/amd64，240,579,085字节，小于2GB |
+| Harness镜像 | linux/amd64，240,701,023字节，小于2GB |
 | 运行身份 | 非root，UID 10001 |
 | 依赖 | PyTRiO 0.2.9；无PyTorch |
 | 禁入内容 | 镜像不含原始数据、工业模型权重、Sampler权重、Embedding或密钥 |
-| 资源验收 | 4核8GB、断网、256 PID限制下双协议Smoke通过 |
-| 自动测试 | 最终代码246项；打包前干净环境243项通过 |
-| 归档 | `docker save`归档240,602,112字节并通过`docker load`重载 |
+| 资源验收 | 4核8GB、断网、256 PID限制下Engine冻结候选训练与机器校验通过 |
+| 自动测试 | 最终代码264项通过 |
+| 归档 | `docker save`归档240,723,968字节并通过`docker load`重载 |
 
-正式镜像SHA-256为`0daef2e0e66cd2d3bc809a5d836a03020d1f90d677df91830fedc4feeb6d325a`。正式平台仍需提供运行事件、挂载目录、Base URL/凭据注入、完整评分公式和比赛SwanLab字段；这些未知项只替换适配层，不改变预算、沙箱和SafetyGate。
+正式镜像SHA-256为`97bb0a9fcfed688ba1b7feadadf09528e232fea578d06a1d782f2dccee306dfa`。正式平台仍需提供运行事件、挂载目录、Base URL/凭据注入、完整评分公式和比赛SwanLab字段；这些未知项只替换适配层，不改变预算、沙箱和SafetyGate。
 
 ## 9. 实验记录与可复现性
 
@@ -129,7 +138,8 @@ SwanLab只记录最终工程模型重新训练时产生的聚合指标、资源�
 
 - **提案与执行解耦。** 大模型负责结构化意图，确定性Harness掌握预算、工具、训练和部署权。
 - **训练前与训练后双重安全。** ActionSandbox避免无效或越权训练，SafetyGate避免性能退化模型上线。
-- **按收益分配有限实验。** 三任务使用独立模型和冻结日程，但共享十轮闭环、预算原则和审计协议。
+- **按收益分配有限实验。** Successive Halving先淘汰低价值候选；三个任务可用独立模型，但共享十轮闭环、预算原则和审计协议。
+- **论文模块必须经过实证门控。** Gas蒸馏与Bearing融合未越过RC3即拒绝，只有Engine异构融合进入发布候选。
 - **失败也可审计。** 非法提案、预算拒绝、候选退化、服务降级和历史负结果均进入证据链。
 - **轻量工程落地。** 纯CPU工业训练器、240MB级镜像、非root和断网运行适合资源受限环境。
 
@@ -146,10 +156,10 @@ SwanLab只记录最终工程模型重新训练时产生的聚合指标、资源�
 
 - 正式路线与决策：`docs/FORMAL_ROUTE.md`、`docs/DECISION_LOG.md`；
 - PyTRiO与十轮结果：`docs/results/PYTRIO-COMPETITIVE-001-A1.md`；
-- 容器与发布验收：`docs/results/RC3_CONTAINER_ACCEPTANCE.json`、`docs/results/RC3_VERIFICATION.json`；
+- 论文方法与消融：`docs/results/PAPER-FUSION-SPRINT-001.md`；
+- 容器与发布验收：`docs/results/RC4_CONTAINER_ACCEPTANCE.json`、`docs/results/RC4_VERIFICATION.json`；
 - 实验登记与负结果：`docs/EXPERIMENTS.md`、`docs/RESEARCH_PROGRESS.md`；
 - 开源与依赖：`docs/OPEN_SOURCE_COMPLIANCE.md`；
 - 运行说明：`docs/RUNBOOK.md`、`docs/SDK_INTEGRATION.md`、`docs/SWANLAB_INTEGRATION.md`。
-- 源码仓库：https://github.com/nanmo-max/rengongzhineng/tree/task/core-001；
-- 最终公开训练记录：https://swanlab.cn/@nanmo-max/brace-msi-final。
+- 提交入口：源码分支 `https://github.com/nanmo-max/rengongzhineng/tree/codex/paper-fusion-sprint`；公开训练记录 `https://swanlab.cn/@nanmo-max/brace-msi-final`。
 

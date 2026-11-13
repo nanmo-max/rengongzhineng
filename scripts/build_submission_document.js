@@ -87,6 +87,7 @@ function makeTable(rows) {
       (row, rowIndex) =>
         new TableRow({
           tableHeader: rowIndex === 0,
+          cantSplit: true,
           children: widths.map(
             (width, columnIndex) =>
               new TableCell({
@@ -252,7 +253,7 @@ const cover = [
   new Paragraph({
     alignment: AlignmentType.CENTER,
     spacing: { after: 900 },
-    children: [new TextRun({ text: "BRACE-MSI-0.3.0rc3", size: 22, color: "52677B" })],
+    children: [new TextRun({ text: "BRACE-MSI-0.4.0rc1", size: 22, color: "52677B" })],
   }),
   new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun("参赛团队：BRACE-MSI项目组")] }),
   new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun("指导教师：暂不填写")] }),

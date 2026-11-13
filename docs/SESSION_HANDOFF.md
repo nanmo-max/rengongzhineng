@@ -1,12 +1,13 @@
 # 新会话恢复与交接
 
-## 2026-11-13论文融合冲刺恢复入口（当前）
+## 2026-11-13论文融合RC4恢复入口（当前）
 
-1. 当前分支为`codex/paper-fusion-sprint`，RC3标签、`task/core-001`和main均未改写。当前唯一任务仍是`PAPER-METHOD-001`，完成容器验收与新候选审计后再标记DONE。
+1. 当前分支为`codex/paper-fusion-sprint`，RC3标签、`task/core-001`和main均未改写。`PAPER-METHOD-001`已`DONE`；唯一任务为`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`。
 2. 完整实验位于`D:/brace-msi-paper-fusion/PAPER-FUSION-SPRINT-001/`；`summary.json`已单次打开公开validation，禁止再次调用`--open-validation`。机器`--validate-only`结果为`valid=true/stage=completed`。
-3. D-046冻结混合选择：A/B使用RC3；C使用PaperFusion（RMSE 42.330230）。Gas蒸馏和Bearing融合均为负结果，不得删除或包装为提升。
-4. 实现入口为`python -m brace_msi paper-fusion-run`；本地容器C-only配置为`configs/paper_fusion_c_container.json`。模型权重必须写到运行时输出卷，禁止进入Git或镜像。
-5. 下一步只做专项/全量回归、4核8GB断网容器训练Smoke、镜像归档和提交材料更新；不重新训练本轮A/B/C本地完整矩阵，不消耗官方十次试运行。
+3. D-046/D-047冻结混合选择：A/B使用RC3；C使用PaperFusion（公开验证RMSE 42.330230）。Gas蒸馏和Bearing融合均为负结果，不得删除或包装为提升；所有公开指标均有历史暴露，不是官方成绩。
+4. 当前上传镜像为`D:/brace-msi-release/BRACE-MSI-0.4.0rc1/BRACE-MSI-0.4.0rc1-image-clean.tar`，SHA-256 `97bb0a9fcfed688ba1b7feadadf09528e232fea578d06a1d782f2dccee306dfa`。4核8GB断网冻结训练、264项回归和`docker load`证据见RC4结果JSON。
+5. 作品说明书与提交清单位于`D:/brace-msi-release/BRACE-MSI-0.4.0rc1-submission-materials/`和`docs/SUBMISSION_CHECKLIST.md`。SwanLab公开项目仍是RC3最终工程记录；不得把RC4 C融合写成已经同步的SwanLab实验。
+6. 后续只接入正式SDK/挂载字段、评分规则与平台验证；不重训本轮A/B/C矩阵、不重开公开validation、不继续论文扩展或LLM调参、不消耗官方十次试运行。
 
 ## 2026-11-12正式路线恢复入口（当前）
 
@@ -21,7 +22,7 @@
 9. `BRACE-MSI-0.1.0rc1`、`0.2.0rc2`、A1失败、A2负对照和INVALID历史都不修改。新代码仍在`task/core-001`，不合并main。
 10. 无新官方材料时保持冻结：不重训Gas/FD001/Bearing，不重开公开验证；`SWANLAB-FINAL-001`已经完成，禁止重复同步或再生成替代记录；不消耗官方十次试运行，不重复哈希核验。
 
-## 2026-11-13提交材料恢复入口（当前补充）
+## 2026-11-13提交材料恢复入口（历史RC3）
 
 1. `MAT-001`已完成。作品说明书源为`docs/SUBMISSION_DOCUMENT.md`，平台字段清单为`docs/SUBMISSION_CHECKLIST.md`；DOCX/PDF位于`D:/brace-msi-release/BRACE-MSI-0.3.0rc3-submission-materials/`。
 2. `SWANLAB-FINAL-001`已完成且只作记录，不得用于再调参。公开项目为`https://swanlab.cn/@nanmo-max/brace-msi-final`，三个运行链接与恢复细节见`docs/results/SWANLAB-FINAL-001.md`。

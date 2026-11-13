@@ -1,10 +1,10 @@
 # 当前状态
 
 - 最近同步：2026-11-13（Asia/Shanghai）
-- 当前阶段：`BRACE-MSI-0.3.0rc3`保持冻结；独立`codex/paper-fusion-sprint`分支执行当天论文融合性能冲刺 `[D-045]`
+- 当前阶段：`BRACE-MSI-0.4.0rc1`本地Release Candidate已冻结；独立`codex/paper-fusion-sprint`分支保留RC3历史并完成论文融合性能冲刺 `[D-045]` `[D-047]`
 - 当前路线：**Qwen3.5-4B PyTRiO Agent + BRACE确定性Harness + 官方A/B/C工业模型 + 经验证的开源优化方法** `[D-035]`
-- 当前唯一任务：`PAPER-METHOD-001`（`IN_PROGRESS`）；以Gas知识蒸馏、CPU树模型集成和Successive Halving为最多三项来源，先完成train内部组折验证，再冻结并一次打开历史暴露公开validation。`FORMAL-RELEASE-001`继续`BLOCKED_EXTERNAL`。
-- 稳定边界：`BRACE-MSI-0.1.0rc1`与`0.2.0rc2`历史保持不变；当前候选为`BRACE-MSI-0.3.0rc3`，仍在`task/core-001`且不合并main。A3之后禁止继续LLM调参 `[D-043]`
+- 当前唯一任务：`FORMAL-RELEASE-001`（`BLOCKED_EXTERNAL`）；`PAPER-METHOD-001`已`DONE`，本地代码、实验、容器、归档和作品材料均已形成证据，只等待正式SDK、评分字段和平台隐藏评测。
+- 稳定边界：`BRACE-MSI-0.1.0rc1`、`0.2.0rc2`、`0.3.0rc3`历史保持不变；当前候选为`BRACE-MSI-0.4.0rc1`，位于`codex/paper-fusion-sprint`且不合并main。A3之后禁止继续LLM调参 `[D-043]`
 - 官方试运行：0次；不得用于基础调试
 
 ## 已确认
@@ -27,14 +27,16 @@
 16. `PYTRIO-COMPETITIVE-001-A1`三任务各10轮/3候选，均`valid=true`、0守卫覆盖、0服务回退；A/B/C最终为0.725695 Macro-F1、637.180224 RMSE、51.635999 RMSE。性能来自冻结参数日程与门控，Agent贡献限于合规动作意图；2次预算耗尽后额外建议均在训练前拒绝。
 17. `BRACE-MSI-0.3.0rc3`真实镜像为linux/amd64、240,579,085字节、UID10001，含PyTRiO0.2.9但无Torch、数据、权重或密钥；4核8GB断网双协议Smoke、`pip check`和`docker load`通过；最终代码回归246项、打包前干净环境回归243项通过。证据见`results/RC3_CONTAINER_ACCEPTANCE.json`。
 18. `SWANLAB-FINAL-001`完成A/B/C各10轮/3候选且机器复算`valid=true`；公开项目`https://swanlab.cn/@nanmo-max/brace-msi-final`含三个`FINISHED`实验。GitHub`task/core-001`分支和RC3标签已推送，作品说明书DOCX/PDF已生成。证据见`results/SWANLAB-FINAL-001.md`。
+19. `PAPER-FUSION-SPRINT-001`完成并停止：Gas蒸馏与Bearing融合未超过RC3，SafetyGate拒绝；Engine异构CPU融合公开验证RMSE为42.330230，相对RC3改善18.02%、相对初始公开基线改善19.93%。该验证集历史暴露，结果标记`PASS_WITH_EXPOSURE`，不是隐藏测试或官方成绩。
+20. `BRACE-MSI-0.4.0rc1`镜像linux/amd64、240,701,023字节、UID10001；4核8GB断网Engine冻结候选训练、264项回归、`pip check`、禁入文件扫描和`docker load`通过。归档SHA-256为`97bb0a9fcfed688ba1b7feadadf09528e232fea578d06a1d782f2dccee306dfa`；证据见`results/RC4_CONTAINER_ACCEPTANCE.json`与`results/RC4_VERIFICATION.json`。
 
 ## 当前执行入口
 
-本地当前上传入口为`D:/brace-msi-release/BRACE-MSI-0.3.0rc3/BRACE-MSI-0.3.0rc3-image-clean.tar`，SHA-256 `0daef2e0...6d325a`；完整A3 `trio://`路径从`D:/brace-msi-pytrio/PYTRIO-SFT-001-A3/result.json`读取并填入平台，不写入公开Git配置。A1失败、A2负对照、A3成功和RC2历史均不得覆盖。
+本地当前上传入口为`D:/brace-msi-release/BRACE-MSI-0.4.0rc1/BRACE-MSI-0.4.0rc1-image-clean.tar`，SHA-256 `97bb0a9fcfed688ba1b7feadadf09528e232fea578d06a1d782f2dccee306dfa`；完整A3 `trio://`路径从`D:/brace-msi-pytrio/PYTRIO-SFT-001-A3/result.json`读取并填入平台，不写入公开Git配置。A1失败、A2负对照、A3成功、RC2与RC3历史均不得覆盖。
 
 正式路线、已知能力与未知边界见[FORMAL_ROUTE.md](FORMAL_ROUTE.md)。实验必须遵守[EXPERIMENT_PROTOCOL.md](EXPERIMENT_PROTOCOL.md)。
 
-提交材料入口见[SUBMISSION_CHECKLIST.md](SUBMISSION_CHECKLIST.md)。源码分支为`https://github.com/nanmo-max/rengongzhineng/tree/task/core-001`，SwanLab项目为`https://swanlab.cn/@nanmo-max/brace-msi-final`。
+提交材料入口见[SUBMISSION_CHECKLIST.md](SUBMISSION_CHECKLIST.md)。源码分支为`https://github.com/nanmo-max/rengongzhineng/tree/codex/paper-fusion-sprint`，SwanLab项目仍是RC3最终工程记录`https://swanlab.cn/@nanmo-max/brace-msi-final`；RC4的C融合容器证据保留在本地与Git聚合记录中，未冒充已同步SwanLab运行。
 
 ## 外部阻塞
 
@@ -42,7 +44,7 @@
 - 比赛环境实际Base URL、凭据注入、模型白名单与Token计量待核验 `[H-002]`。
 - 完整评分公式与资源计量实现待发布 `[H-003]`。
 - SwanLab比赛项目、必填字段及无公网同步责任待发布 `[H-004]`。
-- Docker宿主机阻塞已解除；RC3真实镜像、体积、禁入文件、非root身份、4核8GB断网双协议Smoke和可重载归档均有证据，见`results/RC3_CONTAINER_ACCEPTANCE.json`。
+- Docker宿主机阻塞已解除；RC4真实镜像、体积、禁入文件、非root身份、4核8GB断网冻结候选训练和可重载归档均有证据，见`results/RC4_CONTAINER_ACCEPTANCE.json`。
 
 这些缺口不阻塞已授权的提交材料与`SWANLAB-FINAL-001`最终记录。A3是最后一次SFT，D-043禁止继续微调或扩大LLM搜索；最终记录只复用冻结Sampler和参数，不用于再选型。
 

@@ -452,3 +452,10 @@
 - 冻结后公开validation只打开一次：A 0.687918 Macro-F1、B 644.113606 RMSE、C 42.330230 RMSE。只C相对RC3改善18.02%，相对静态改善19.93%；A/B由门控保留RC3。
 - `validate-only`返回`valid=true/stage=completed`；结果和负证据见`docs/results/PAPER-FUSION-SPRINT-001.md`。公开validation历史暴露，不是隐藏测试或官方成绩；官方试运行仍为0。
 
+## 2026-11-13：BRACE-MSI-0.4.0rc1发布收口
+
+- 冻结A/B沿用RC3、C采用PaperFusion的混合候选；未再打开公开validation，也未消耗官方十次试运行。完整回归`264 passed`。
+- 构建linux/amd64镜像`brace-msi:0.4.0rc1`，镜像内部240,701,023字节、非root UID10001、含PyTRiO 0.2.9且无PyTorch/数据/权重/密钥。4核8GB、断网、256 PID限制下完成C冻结候选训练，峰值RSS 3,198,783,488字节。
+- `docker save`归档位于`D:/brace-msi-release/BRACE-MSI-0.4.0rc1/BRACE-MSI-0.4.0rc1-image-clean.tar`，240,723,968字节，SHA-256 `97bb0a9fcfed688ba1b7feadadf09528e232fea578d06a1d782f2dccee306dfa`，`docker load`验证通过。
+- 作品说明书DOCX/PDF完成10页逐页渲染检查；最终表格行禁止跨页，未发现截断、重叠或缺失字形。材料只报告公开暴露验证和本地容器证据，不表述为隐藏测试或官方成绩。
+
