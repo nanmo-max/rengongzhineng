@@ -394,14 +394,30 @@ def validate_paper_fusion_output(output_root: Path) -> dict[str, Any]:
     errors: list[str] = []
     try:
         manifest = json.loads((output_root / "manifest.json").read_text(encoding="utf-8"))
-        summary = json.loads((output_root / "summary.json").read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
         return {"valid": False, "errors": [str(exc)]}
+    summary_path = output_root / "summary.json"
+    frozen_path = output_root / "frozen.json"
+    try:
+        result = json.loads(
+            (summary_path if summary_path.is_file() else frozen_path).read_text(
+                encoding="utf-8"
+            )
+        )
+    except (OSError, json.JSONDecodeError) as exc:
+        return {"valid": False, "errors": [str(exc)]}
+    stage = str(result.get("status", ""))
     if manifest.get("format") != "brace-msi.paper-fusion-manifest.v1":
         errors.append("invalid manifest format")
-    if summary.get("status") != "completed" or summary.get("validation_open_count") != 1:
-        errors.append("run is not a single-open completed result")
-    if set(summary.get("profiles", {})) != {"A", "B", "C"}:
+    if stage == "completed":
+        if result.get("validation_open_count") != 1:
+            errors.append("completed result is not single-open")
+    elif stage == "candidate_frozen":
+        if result.get("validation_open_count") != 0 or (output_root / "validation-open.lock").exists():
+            errors.append("frozen candidate has validation exposure")
+    else:
+        errors.append("unknown run stage")
+    if set(result.get("profiles", {})) != {"A", "B", "C"}:
         errors.append("A/B/C profile set is incomplete")
     for profile in ("A", "B", "C"):
         try:
@@ -411,9 +427,13 @@ def validate_paper_fusion_output(output_root: Path) -> dict[str, Any]:
             model_path = output_root / profile / "model.joblib"
             if _sha256(model_path) != development["model_sha256"]:
                 errors.append(f"{profile} model hash mismatch")
-            metrics = summary["profiles"][profile]["metrics"]
+            metrics = (
+                result["profiles"][profile]["metrics"]
+                if stage == "completed"
+                else development["ensemble_internal_metrics"]
+            )
             if not metrics or not all(math.isfinite(float(value)) for value in metrics.values()):
                 errors.append(f"{profile} metrics are not finite")
         except (OSError, KeyError, TypeError, ValueError, json.JSONDecodeError) as exc:
             errors.append(f"{profile} validation failed: {exc}")
-    return {"valid": not errors, "errors": errors}
+    return {"valid": not errors, "stage": stage, "errors": errors}

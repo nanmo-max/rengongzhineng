@@ -103,10 +103,13 @@ def test_development_freezes_candidates_without_opening_validation(tmp_path: Pat
 
     first = run_paper_fusion_sprint(config, output, open_validation=False)
     resumed = run_paper_fusion_sprint(config, output, open_validation=False)
+    validation = validate_paper_fusion_output(output)
 
     assert first == resumed
     assert first["status"] == "candidate_frozen"
     assert first["validation_open_count"] == 0
+    assert validation["valid"] is True
+    assert validation["stage"] == "candidate_frozen"
     assert not (output / "validation-open.lock").exists()
     assert all((output / profile / "model.joblib").is_file() for profile in ("A", "B", "C"))
 
