@@ -12,6 +12,7 @@ from brace_msi.paper_fusion_runner import (
 
 
 def _write_rows(path: Path, profile: str, *, validation: bool = False) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
     rows = []
     if profile == "A":
         for index in range(24):
@@ -140,3 +141,33 @@ def test_changed_config_cannot_resume_frozen_run(tmp_path: Path) -> None:
 
     with pytest.raises(ValueError, match="configuration changed"):
         run_paper_fusion_sprint(config, output, open_validation=False)
+
+
+def test_active_profile_subset_trains_and_validates_only_selected_task(
+    tmp_path: Path,
+) -> None:
+    config = _config(tmp_path)
+    payload = json.loads(config.read_text())
+    payload["active_profiles"] = ["C"]
+    config.write_text(json.dumps(payload), encoding="utf-8")
+    output = tmp_path / "run"
+
+    frozen = run_paper_fusion_sprint(config, output, open_validation=False)
+    validation = validate_paper_fusion_output(output)
+
+    assert set(frozen["profiles"]) == {"C"}
+    assert validation == {"valid": True, "stage": "candidate_frozen", "errors": []}
+    assert not (output / "A").exists()
+    assert not (output / "B").exists()
+    assert (output / "C" / "model.joblib").is_file()
+
+
+def test_active_profiles_reject_unknown_or_duplicate_values(tmp_path: Path) -> None:
+    for values in (["D"], ["C", "C"], []):
+        config = _config(tmp_path / str(len(values)) / "-".join(values or ["empty"]))
+        payload = json.loads(config.read_text())
+        payload["active_profiles"] = values
+        config.write_text(json.dumps(payload), encoding="utf-8")
+
+        with pytest.raises(ValueError, match="active_profiles"):
+            run_paper_fusion_sprint(config, tmp_path / f"run-{values}", open_validation=False)

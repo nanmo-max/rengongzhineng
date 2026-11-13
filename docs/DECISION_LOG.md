@@ -49,6 +49,7 @@
 | D-043 | 2026-11-12 | LOCKED | A3是D-042允许的最后一次LLM调参并已通过：新留出五项100%，真实A/B/C首轮3/3主动训练。正式候选冻结为“A3持久化Sampler负责结构化动作意图 + BRACE使用已冻结任务参数日程 + ActionSandbox/SafetyGate最终裁决”；此后不再扩充语料、epoch或LLM搜索。Agent没有单独创造工业模型性能，性能贡献归于已冻结参数与门控；候选预算耗尽后的建议必须在训练前拒绝并保留审计。 | `PYTRIO-SFT-001-A3`、`PYTRIO-COMPETITIVE-001-A1`、`docs/results/PYTRIO-COMPETITIVE-001-A1.md` |
 | D-044 | 2026-11-13 | LOCKED | RC3、A3和三任务参数保持冻结；允许执行一次`SWANLAB-FINAL-001`最终工程记录重跑并同步公开聚合指标。该运行只形成提交记录，不参与模型/策略选择；GitHub只推送脱敏源码与证据，镜像、数据、权重、凭据和完整Sampler路径不得进入仓库。 | L-AUTH-012、O-SWANLAB-002、D-023阶段条件已满足 |
 | D-045 | 2026-11-13 | LOCKED | 在独立`codex/paper-fusion-sprint`分支恢复`PAPER-METHOD-001`，以当天可提交为边界，仅研究Gas知识蒸馏、CPU树模型集成和Successive Halving三项来源；RC3/A3/历史结果保持冻结。模型选择只用train内部组折，公开validation在配置冻结后打开一次。30%为进取目标而非验收伪目标。D-039的论文暂停只对RC3冲刺历史有效，不阻止本独立研究候选。 | 用户2026-11-13高强度性能优化指令；`docs/superpowers/specs/2026-11-13-paper-fusion-sprint-design.md` |
+| D-046 | 2026-11-13 | LOCKED | `PAPER-FUSION-SPRINT-001`只在Engine C通过相对RC3严格改善门：A/B继续使用RC3，C采用PaperFusion。Gas蒸馏和Bearing树集成负结果保留；不得再次打开本轮公开validation或根据其结果继续调参。新候选统一使用BRACE预算、记录和SafetyGate，但允许D-035定义的任务专属模型。 | 单次公开validation：A 0.687918 Macro-F1、B 644.113606 RMSE、C 42.330230 RMSE；`docs/results/PAPER-FUSION-SPRINT-001.md`；机器门控manifest |
 
 ## 已被替代的历史决策
 

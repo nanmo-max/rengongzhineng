@@ -1,0 +1,27 @@
+{
+  "format": "brace-msi.paper-fusion-sprint.v1",
+  "seed": 20261113,
+  "n_splits": 3,
+  "finalist_count": 4,
+  "active_profiles": ["C"],
+  "profiles": {
+    "C": {
+      "train": "/data/cpu-c-guide-20261110-v1/public/train.jsonl",
+      "validation": "/data/cpu-c-guide-20261110-v1/public/validation.jsonl",
+      "baseline": 52.86857256611151,
+      "rc3": 51.635999
+    }
+  },
+  "teacher_specs": {
+    "regression": [
+      {"family": "linear", "params": {"alpha": 0.1}},
+      {"family": "linear", "params": {"alpha": 10.0}},
+      {"family": "hist_gradient_boosting", "params": {"max_iter": 100, "learning_rate": 0.05, "l2_regularization": 0.0, "max_leaf_nodes": 15}},
+      {"family": "hist_gradient_boosting", "params": {"max_iter": 180, "learning_rate": 0.1, "l2_regularization": 1.0, "max_leaf_nodes": 31}},
+      {"family": "extra_trees", "params": {"n_estimators": 160, "min_samples_leaf": 1, "max_features": 0.7}},
+      {"family": "extra_trees", "params": {"n_estimators": 240, "min_samples_leaf": 3, "max_features": 1.0}},
+      {"family": "mlp", "params": {"hidden_layer_sizes": [64], "max_iter": 140, "alpha": 0.0001}},
+      {"family": "mlp", "params": {"hidden_layer_sizes": [128, 32], "max_iter": 180, "alpha": 0.001}}
+    ]
+  }
+}

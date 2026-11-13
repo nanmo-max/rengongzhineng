@@ -1,5 +1,13 @@
 # 新会话恢复与交接
 
+## 2026-11-13论文融合冲刺恢复入口（当前）
+
+1. 当前分支为`codex/paper-fusion-sprint`，RC3标签、`task/core-001`和main均未改写。当前唯一任务仍是`PAPER-METHOD-001`，完成容器验收与新候选审计后再标记DONE。
+2. 完整实验位于`D:/brace-msi-paper-fusion/PAPER-FUSION-SPRINT-001/`；`summary.json`已单次打开公开validation，禁止再次调用`--open-validation`。机器`--validate-only`结果为`valid=true/stage=completed`。
+3. D-046冻结混合选择：A/B使用RC3；C使用PaperFusion（RMSE 42.330230）。Gas蒸馏和Bearing融合均为负结果，不得删除或包装为提升。
+4. 实现入口为`python -m brace_msi paper-fusion-run`；本地容器C-only配置为`configs/paper_fusion_c_container.json`。模型权重必须写到运行时输出卷，禁止进入Git或镜像。
+5. 下一步只做专项/全量回归、4核8GB断网容器训练Smoke、镜像归档和提交材料更新；不重新训练本轮A/B/C本地完整矩阵，不消耗官方十次试运行。
+
 ## 2026-11-12正式路线恢复入口（当前）
 
 1. 当前路线以`docs/FORMAL_ROUTE.md`和D-043为准：A3 Qwen3.5-4B PyTRiO Agent + BRACE确定性Harness + 官方A/B/C训练器 + 冻结安全参数日程。

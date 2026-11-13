@@ -445,3 +445,10 @@
 - GitHub远端已有独立main初始提交，按稳定边界未覆盖main；推送`task/core-001`分支及指向冻结提交`c528420`的`brace-msi-v0.3.0-rc3`标签。
 - 最终全量回归为`248 passed in 70.75s`；Markdown相对链接检查通过。作品说明书DOCX通过OOXML验证并生成10页PDF，DOCX/PDF SHA-256分别为`0822ae41...f132213`和`cc67c2c4...e63f292`。
 
+## 2026-11-13：PAPER-FUSION-SPRINT-001
+
+- 在独立`codex/paper-fusion-sprint`分支实现因果特征、组折验证、8候选Successive Halving、异构CPU集成、Gas蒸馏候选、原子恢复和单次validation锁；新增`paper-fusion-run` CLI及C-only容器配置。
+- 内部开发：A教师集成Macro-F1 0.978493、蒸馏学生0.869930；B组折RMSE 1546.212091；C组折RMSE 47.298452。完整候选训练峰值RSS为3,019,251,712字节。
+- 冻结后公开validation只打开一次：A 0.687918 Macro-F1、B 644.113606 RMSE、C 42.330230 RMSE。只C相对RC3改善18.02%，相对静态改善19.93%；A/B由门控保留RC3。
+- `validate-only`返回`valid=true/stage=completed`；结果和负证据见`docs/results/PAPER-FUSION-SPRINT-001.md`。公开validation历史暴露，不是隐藏测试或官方成绩；官方试运行仍为0。
+

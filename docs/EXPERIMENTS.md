@@ -154,3 +154,19 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 - 成功标准：三任务均无人干预完成；每任务候选不少于3；合成故障被拒且稳定注册表可加载；协议/日志验证通过；CPU亲和性不超过4；观测RSS低于8GB；生成汇总JSON和离线HTML。
 - 停止条件：数据哈希变化、开发/密封身份交叉、任何已消费密封段进入输出、非有限指标、日志出现受禁字段、候选/时间/样本预算超限或恢复后重复提交批次。
 - 结论边界：本实验只证明工程完整性和代理开发流行为；不更新`LOCAL-EXP-001`密封结论，不用于模型选型，不宣称官方性能、跨种子稳定或真实轴承泛化。
+
+## PAPER-FUSION-SPRINT-001
+
+- 状态：`SUCCEEDED_MIXED`（按协议完成；A/B负、C正）。
+- 研究问题：三个官方任务能否通过Gas知识蒸馏、CPU异构集成和Successive Halving获得显著且4核8GB可承受的性能提升？
+- 数据：官方公开train作内部组折开发；历史暴露公开validation仅在冻结后打开一次。未访问隐藏测试，官方试运行0次。
+- 配置与代码：`configs/paper_fusion_sprint.json`；`src/brace_msi/paper_fusion.py`、`paper_fusion_runner.py`、`paper_fusion_selection.py`；分支`codex/paper-fusion-sprint`。
+- 结果：PaperFusion A Macro-F1 0.687918（拒绝）、B RMSE 644.113606（相对静态改善5.44%但落后RC3，拒绝）、C RMSE 42.330230（相对静态改善19.93%、相对RC3改善18.02%，接受）。
+- 资源：A/B/C CPU 9.72/64.56/979.44秒；峰值RSS 120MB/387MB/3.02GB。
+- 产物：`D:/brace-msi-paper-fusion/PAPER-FUSION-SPRINT-001/`；聚合报告`docs/results/PAPER-FUSION-SPRINT-001.md`；机器验证`valid=true`。
+
+## PAPER-FUSION-SMOKE-001
+
+- 状态：`SUCCEEDED`（仅链路证据，未打开公开validation）。
+- 结果：A/B/C均生成冻结模型、资源收据和哈希，机器验证`valid=true/stage=candidate_frozen`；不作性能结论。
+- 产物：`D:/brace-msi-paper-fusion/PAPER-FUSION-SMOKE-001/`。

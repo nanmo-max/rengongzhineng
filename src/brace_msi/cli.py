@@ -23,6 +23,10 @@ from .official_package import audit_package_root
 from .official_trainer import OfficialTrainer
 from .pytrio_agent import PyTrioAgentClient, PyTrioAgentConfig
 from .protocol import ProtocolMode
+from .paper_fusion_runner import (
+    run_paper_fusion_sprint,
+    validate_paper_fusion_output,
+)
 from .reporting import render_html_report
 from .safety import GateConfig
 from .simulation import synthetic_bearing_stream
@@ -86,11 +90,42 @@ def _parser() -> argparse.ArgumentParser:
     official_agent.add_argument("--max-rounds-this-call", type=int)
     official_agent.add_argument("--timeout-seconds", type=float, default=600.0)
     official_agent.add_argument("--validate-only", action="store_true")
+    paper_fusion = subparsers.add_parser(
+        "paper-fusion-run",
+        help="run/resume the bounded leakage-safe CPU paper-fusion trainer",
+    )
+    paper_fusion.add_argument("--config", type=Path)
+    paper_fusion.add_argument("--output", type=Path, required=True)
+    paper_fusion.add_argument("--open-validation", action="store_true")
+    paper_fusion.add_argument("--validate-only", action="store_true")
     return parser
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parser().parse_args(argv)
+    if args.command == "paper-fusion-run":
+        if args.validate_only:
+            result = validate_paper_fusion_output(args.output)
+            print(json.dumps(result, allow_nan=False))
+            return 0 if result["valid"] else 1
+        if args.config is None:
+            raise ValueError("--config is required unless --validate-only is used")
+        result = run_paper_fusion_sprint(
+            args.config,
+            args.output,
+            open_validation=args.open_validation,
+        )
+        print(
+            json.dumps(
+                {
+                    "status": result["status"],
+                    "profiles": sorted(result["profiles"]),
+                    "validation_open_count": result["validation_open_count"],
+                },
+                allow_nan=False,
+            )
+        )
+        return 0
     if args.command == "render-report":
         payload = json.loads(args.input.read_text(encoding="utf-8"))
         args.output.parent.mkdir(parents=True, exist_ok=True)

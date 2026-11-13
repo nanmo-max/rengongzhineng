@@ -84,6 +84,23 @@ def _specs(config: Mapping[str, Any], profile: str) -> list[TeacherSpec]:
     return specs
 
 
+def _active_profiles(config: Mapping[str, Any]) -> tuple[str, ...]:
+    raw = config.get("active_profiles", ("A", "B", "C"))
+    if not isinstance(raw, list | tuple):
+        raise ValueError("active_profiles must be a list")
+    profiles = tuple(str(value) for value in raw)
+    if (
+        not profiles
+        or len(set(profiles)) != len(profiles)
+        or any(value not in {"A", "B", "C"} for value in profiles)
+    ):
+        raise ValueError("active_profiles must be a unique nonempty subset of A/B/C")
+    configured = config.get("profiles", {})
+    if any(profile not in configured for profile in profiles):
+        raise ValueError("active_profiles is missing a profile configuration")
+    return profiles
+
+
 def _ensemble_prediction(
     profile: str,
     predictions: Mapping[str, np.ndarray],
@@ -296,7 +313,8 @@ def _finalize(config: Mapping[str, Any], output_root: Path) -> dict[str, Any]:
         encoding="utf-8",
     )
     profiles: dict[str, Any] = {}
-    for profile, profile_config in sorted(config["profiles"].items()):
+    for profile in _active_profiles(config):
+        profile_config = config["profiles"][profile]
         profile_dir = output_root / profile
         development = json.loads(
             (profile_dir / "development.json").read_text(encoding="utf-8")
@@ -345,6 +363,7 @@ def run_paper_fusion_sprint(
     config = json.loads(config_path.read_text(encoding="utf-8"))
     if config.get("format") != "brace-msi.paper-fusion-sprint.v1":
         raise ValueError("unsupported paper-fusion configuration")
+    active_profiles = _active_profiles(config)
     config_sha = _canonical_sha256(config)
     manifest_path = output_root / "manifest.json"
     if manifest_path.is_file():
@@ -361,6 +380,7 @@ def run_paper_fusion_sprint(
             "config_sha256": config_sha,
             "branch": "codex/paper-fusion-sprint",
             "validation_exposure": "historically_exposed_open_once_after_freeze",
+            "active_profiles": list(active_profiles),
         }
         _atomic_json(manifest_path, manifest)
 
@@ -369,11 +389,11 @@ def run_paper_fusion_sprint(
         profiles = {
             profile: _develop_profile(
                 profile,
-                profile_config,
+                config["profiles"][profile],
                 config,
                 output_root / profile,
             )
-            for profile, profile_config in sorted(config["profiles"].items())
+            for profile in active_profiles
         }
         frozen = {
             "format": "brace-msi.paper-fusion-frozen.v1",
@@ -417,9 +437,19 @@ def validate_paper_fusion_output(output_root: Path) -> dict[str, Any]:
             errors.append("frozen candidate has validation exposure")
     else:
         errors.append("unknown run stage")
-    if set(result.get("profiles", {})) != {"A", "B", "C"}:
-        errors.append("A/B/C profile set is incomplete")
-    for profile in ("A", "B", "C"):
+    raw_profiles = manifest.get("active_profiles", ["A", "B", "C"])
+    if (
+        not isinstance(raw_profiles, list)
+        or not raw_profiles
+        or len(set(raw_profiles)) != len(raw_profiles)
+        or any(profile not in {"A", "B", "C"} for profile in raw_profiles)
+    ):
+        errors.append("manifest active_profiles is invalid")
+        raw_profiles = []
+    expected_profiles = set(raw_profiles)
+    if set(result.get("profiles", {})) != expected_profiles:
+        errors.append("result profile set differs from manifest")
+    for profile in raw_profiles:
         try:
             development = json.loads(
                 (output_root / profile / "development.json").read_text(encoding="utf-8")
