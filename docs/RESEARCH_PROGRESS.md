@@ -9,6 +9,12 @@
 - 专项命令`python -m pytest tests/dual_loop/test_controlled_harness.py -q`为`4 passed in 9.57s`；完整命令`python -m pytest -q`为`320 passed in 73.31s`。
 - 该实现使用本地`TaskStream`和本地SGD初始化，只证明平台无关核心集成；CLI写入`synthetic=true`和`formal_eligible=false`。本任务未运行A/B/C、未调用PyTRiO、未使用SwanLab、未消耗官方试运行，也未生成可提交`checkpoint.npz`。
 
+## 2026-11-13：DUAL-EXPERIMENT-001 A1/A2父检查点顺序流
+
+- 新增公开validation十批冻结器、输入专用隔离预测worker及官方父checkpoint逐轮续训适配；真实延续权重、Adam、标准化、epoch和step，worker代码根不包含`public/`。专项6项、完整回归`326 passed in 88.07s`。
+- A1九运行完成但双闭环B/C劣于静态，保留为负结果。A2只针对该失败增加初始合法Replay、保守门控和负影子收益回滚；A/B/C双闭环分别为0.714552 Macro-F1、681.159833 RMSE、52.378784 RMSE，均不低于静态，Engine改善0.93%。
+- A2仍未达到新RC要求，按预注册停止继续使用同一公开validation调参；PyTRiO臂未通过确定性性能门而未启动。两轮均未调用SwanLab或官方试运行，结果明确`historically_exposed=true/formal_eligible=false`。
+
 ## 2026-11-13：受控双闭环证据与规格锁定
 
 - 对仓库外13张智训引擎宣讲截图逐文件计算SHA-256并登记为`B-RSI-002`；明确其证据等级低于正式规则/SDK，未据此编造字段或平台权限。

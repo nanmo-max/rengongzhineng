@@ -24,6 +24,7 @@ from .official_agent_harness import (
     validate_official_agent_harness,
 )
 from .official_package import audit_package_root
+from .official_stream_experiment import run_official_stream_matrix
 from .official_trainer import OfficialTrainer
 from .pytrio_agent import PyTrioAgentClient, PyTrioAgentConfig
 from .protocol import ProtocolMode
@@ -101,6 +102,14 @@ def _parser() -> argparse.ArgumentParser:
     official_agent.add_argument("--agent-timeout-seconds", type=float, default=30.0)
     official_agent.add_argument("--timeout-seconds", type=float, default=600.0)
     official_agent.add_argument("--validate-only", action="store_true")
+    official_stream = subparsers.add_parser(
+        "official-stream-compare",
+        help="run/resume the exposed A/B/C parent-checkpoint comparison matrix",
+    )
+    official_stream.add_argument("--experiment-config", type=Path, required=True)
+    official_stream.add_argument("--package-root", type=Path, required=True)
+    official_stream.add_argument("--output", type=Path, required=True)
+    official_stream.add_argument("--timeout-seconds", type=float, default=600.0)
     paper_fusion = subparsers.add_parser(
         "paper-fusion-run",
         help="run/resume the bounded leakage-safe CPU paper-fusion trainer",
@@ -184,6 +193,30 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
         )
         return 0
+    if args.command == "official-stream-compare":
+        experiment = json.loads(args.experiment_config.read_text(encoding="utf-8"))
+        package_config = Path(str(experiment["package_manifest"]))
+        result = run_official_stream_matrix(
+            args.package_root,
+            package_config,
+            args.output,
+            policies=tuple(experiment["policies"]),
+            experiment_id=str(experiment["experiment_id"]),
+            max_total_candidates=int(experiment["max_total_candidates"]),
+            timeout_seconds=args.timeout_seconds,
+        )
+        print(
+            json.dumps(
+                {
+                    "status": "completed" if result["complete"] else "partial",
+                    "profiles": sorted(result["results"]),
+                    "policies": result["policies"],
+                    "official_test_opportunities_used": 0,
+                },
+                allow_nan=False,
+            )
+        )
+        return 0 if result["complete"] else 1
     if args.command == "paper-fusion-run":
         if args.validate_only:
             result = validate_paper_fusion_output(args.output)

@@ -1,0 +1,13 @@
+{
+  "format": "brace-msi.dual-experiment.v1",
+  "experiment_id": "DUAL-EXPERIMENT-001-A1",
+  "package_manifest": "configs/official_package_dev.json",
+  "rounds": 10,
+  "policies": ["static", "fixed_update", "deterministic_dual_loop"],
+  "max_total_candidates": 8,
+  "strategy_revision": "current_update_first_without_delayed_rollback",
+  "historically_exposed": true,
+  "formal_eligible": false,
+  "official_test_opportunities_used": 0,
+  "pytrio_arm": "deferred_until_deterministic_matrix_passes"
+}

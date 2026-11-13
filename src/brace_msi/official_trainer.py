@@ -7,9 +7,10 @@ import json
 import math
 import os
 import re
+import shutil
 import subprocess
 import time
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 from typing import Any
 
@@ -306,6 +307,100 @@ class OfficialTrainer:
                 "official_package": True,
                 "official_scoring_ready": False,
             },
+        )
+
+    @staticmethod
+    def _materialized_ids(path: Path) -> frozenset[str]:
+        path = Path(path).resolve()
+        if not path.is_file() or path.is_symlink():
+            raise ValueError("stream dataset must be a regular file")
+        identifiers: list[str] = []
+        try:
+            for line_number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+                if not line.strip():
+                    continue
+                row = json.loads(line)
+                identity = row.get("id") if isinstance(row, dict) else None
+                if not isinstance(identity, str) or not identity:
+                    raise ValueError(f"stream dataset line {line_number} has no valid ID")
+                identifiers.append(identity)
+        except json.JSONDecodeError as exc:
+            raise ValueError("stream dataset is not valid JSONL") from exc
+        if not identifiers or len(set(identifiers)) != len(identifiers):
+            raise ValueError("stream dataset IDs must be nonempty and unique")
+        return frozenset(identifiers)
+
+    def run_stream_candidate(
+        self,
+        package: PackageAudit,
+        parent: Path,
+        train_path: Path,
+        gate_path: Path,
+        output_dir: Path,
+        config: CandidateConfig,
+        stage_id: str,
+        *,
+        allowed_train_ids: frozenset[str],
+        allowed_gate_ids: frozenset[str],
+    ) -> CandidateReceipt:
+        """Continue an official parent on manifest-bound public stream slices.
+
+        This local-development adapter never treats a new model as an initial model.  It
+        reuses the immutable official trainer and changes only the explicit train/gate
+        JSONL arguments.  Training may use immutable public-train replay plus already
+        opened public-validation Update/Replay rows; Gate must be public-validation only.
+        Hidden or future roots are never accepted here.
+        """
+
+        train_path = Path(train_path).resolve()
+        gate_path = Path(gate_path).resolve()
+        package_root = package.package_dir.resolve()
+        for path in (train_path, gate_path):
+            if path == package_root or path.is_relative_to(package_root):
+                raise ValueError("materialized stream files must be outside the immutable package")
+        actual_train_ids = self._materialized_ids(train_path)
+        actual_gate_ids = self._materialized_ids(gate_path)
+        if actual_train_ids != frozenset(allowed_train_ids) or actual_gate_ids != frozenset(
+            allowed_gate_ids
+        ):
+            raise ValueError("stream dataset does not match manifest IDs")
+        if actual_train_ids & actual_gate_ids:
+            raise ValueError("stream train and Gate IDs overlap")
+        if not actual_train_ids <= (package.train_ids | package.validation_ids):
+            raise ValueError("stream training contains IDs outside public train/validation")
+        if not actual_gate_ids <= package.validation_ids:
+            raise ValueError("stream Gate contains IDs outside public validation")
+
+        worker_root = Path(output_dir).resolve().parent / f".{stage_id}.worker"
+        if worker_root.exists() or worker_root.is_symlink():
+            raise FileExistsError(f"isolated worker directory already exists: {worker_root}")
+        worker_root.mkdir(parents=True)
+        shutil.copytree(
+            package.package_dir / "baselines",
+            worker_root / "baselines",
+            ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
+        )
+        stream_package = replace(
+            package,
+            package_dir=worker_root,
+            package_tree_sha256=package_tree_sha256(worker_root),
+            train_rows=len(actual_train_ids),
+            validation_rows=len(actual_gate_ids),
+            train_ids=actual_train_ids,
+            validation_ids=actual_gate_ids,
+            train_groups=frozenset(),
+            validation_groups=frozenset(),
+            train_sha256=_sha256(train_path),
+            validation_sha256=_sha256(gate_path),
+            train_path=train_path,
+            validation_path=gate_path,
+        )
+        return self.run_candidate(
+            stream_package,
+            parent,
+            output_dir,
+            config,
+            stage_id,
         )
 
     def run_candidate(

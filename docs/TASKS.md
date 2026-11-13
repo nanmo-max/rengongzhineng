@@ -13,7 +13,8 @@ EVIDENCE-RSI-001(DONE)
   -> DUAL-PLUGIN-001(DONE)
   -> DUAL-MODEL-001(DONE)
   -> DUAL-INTEGRATION-001(DONE)
-  -> DUAL-EXPERIMENT-001(READY)
+  -> DUAL-EXPERIMENT-001(DONE_MIXED)
+  -> GENERALIST-MODEL-001(READY)
   -> DUAL-RC-001(BLOCKED_DEP)
 ```
 
@@ -86,15 +87,24 @@ EVIDENCE-RSI-001(DONE)
 
 ### DUAL-EXPERIMENT-001 A/B/C合法顺序对照
 
-- 状态：`READY`
+- 状态：`DONE_MIXED`
 - 依赖：DUAL-INTEGRATION-001；实验预注册
 - 优先级：P1
 - 完成标准：静态、固定更新、确定性双闭环和PyTRiO受控双闭环公平比较；十轮、至少三次真实实验链、资源和失败齐全；不消耗官方试运行
+- 实际：A1/A2共18个确定性运行完成，均为官方父检查点真实续训、十批、官方试运行0次。A1暴露跨批遗忘；A2三任务均不低于静态，A/C改善、B保持静态，但改善幅度不足RC门。PyTRiO臂因确定性性能门未满足而按预注册未启动，避免无性能依据的Token消耗。证据：`D:/brace-msi-dual-loop/DUAL-EXPERIMENT-001-A1/`、`A2/`，专项`6 passed`、完整回归`326 passed`。
+
+### GENERALIST-MODEL-001 父检查点增强的自建通用CPU候选
+
+- 状态：`READY`
+- 依赖：DUAL-EXPERIMENT-001
+- 优先级：P1
+- 完成标准：不读取数据集名称，仅按分类/回归和数值schema构建父模型集成候选；先在公开train内部组折验证，保存真实父哈希、模型与资源证据；独立预测一致且总产物不超过64 MiB；至少两个任务相对父模型有可复核改善且第三项不发生灾难性退化
+- 停止条件：训练内部组折未显示互补性、产物/CPU超限、无法证明实际使用父模型，或需要再次依据同一公开validation反复调参
 
 ### DUAL-RC-001 新候选回归与容器验收
 
 - 状态：`BLOCKED_DEP`
-- 依赖：DUAL-EXPERIMENT-001
+- 依赖：GENERALIST-MODEL-001
 - 优先级：P1
 - 完成标准：Gas/Bearing/Engine超过静态，至少两项显著改善；零泄漏；完整回归；Docker小于2GB、4核8GB、无公网、无数据/权重/密钥；满足后才生成新RC
 - 上传验收：归档必须由`docker save`生成并可`docker load`；分别记录镜像可用、模型校验、续训协议和评测状态，不把上传完成冒充通过 `[O-PLATFORM-007]`
