@@ -53,6 +53,27 @@ def test_release_verification_accepts_runtime_commit_with_docs_only_followups(tm
     assert result["pytest"]["passed"] == 221
 
 
+def test_release_verification_accepts_submission_document_generator_followup(
+    tmp_path: Path,
+) -> None:
+    evidence = tmp_path / "verification.json"
+    evidence.write_text(
+        '{"runtime_commit":"abc","pytest":{"status":"PASS","passed":264},'
+        '"clean_environment":{"status":"PASS","version":"0.4.0rc1"},'
+        '"pip_check":{"status":"PASS"},"compileall":{"status":"PASS"}}',
+        encoding="utf-8",
+    )
+
+    result = load_release_verification(
+        evidence,
+        current_commit="def",
+        changed_paths=("scripts/build_submission_document.js",),
+        is_ancestor=True,
+    )
+
+    assert result["pytest"]["passed"] == 264
+
+
 def test_release_verification_rejects_runtime_source_change(tmp_path: Path) -> None:
     evidence = tmp_path / "verification.json"
     evidence.write_text(

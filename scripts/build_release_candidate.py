@@ -30,6 +30,7 @@ _PUBLIC_FORBIDDEN_KEYS = {
 _POST_VERIFICATION_PATHS = (
     "docs/",
     "scripts/build_release_candidate.py",
+    "scripts/build_submission_document.js",
     "tests/system/test_release_builder.py",
 )
 

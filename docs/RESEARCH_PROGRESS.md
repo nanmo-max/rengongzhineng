@@ -458,4 +458,5 @@
 - 构建linux/amd64镜像`brace-msi:0.4.0rc1`，镜像内部240,701,023字节、非root UID10001、含PyTRiO 0.2.9且无PyTorch/数据/权重/密钥。4核8GB、断网、256 PID限制下完成C冻结候选训练，峰值RSS 3,198,783,488字节。
 - `docker save`归档位于`D:/brace-msi-release/BRACE-MSI-0.4.0rc1/BRACE-MSI-0.4.0rc1-image-clean.tar`，240,723,968字节，SHA-256 `97bb0a9fcfed688ba1b7feadadf09528e232fea578d06a1d782f2dccee306dfa`，`docker load`验证通过。
 - 作品说明书DOCX/PDF完成10页逐页渲染检查；最终表格行禁止跨页，未发现截断、重叠或缺失字形。材料只报告公开暴露验证和本地容器证据，不表述为隐藏测试或官方成绩。
+- 发布包重建曾因材料生成脚本被误判为运行时代码而失败；新增红绿回归测试后，仅将`scripts/build_submission_document.js`加入发布后非运行时白名单，核心运行时变更仍会失败关闭。
 
