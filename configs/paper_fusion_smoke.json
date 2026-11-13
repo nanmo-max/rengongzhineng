@@ -1,0 +1,31 @@
+{
+  "format": "brace-msi.paper-fusion-sprint.v1",
+  "seed": 20261113,
+  "n_splits": 3,
+  "finalist_count": 1,
+  "distillation": {"enabled": false},
+  "profiles": {
+    "A": {
+      "train": "C:/Users/Administrator/Desktop/人工智能创新大赛/训练包/cpu-a-guide-20261110-v1/public/train.jsonl",
+      "validation": "C:/Users/Administrator/Desktop/人工智能创新大赛/训练包/cpu-a-guide-20261110-v1/public/validation.jsonl",
+      "baseline": 0.7140297220788709,
+      "rc3": 0.7256954242474295
+    },
+    "B": {
+      "train": "C:/Users/Administrator/Desktop/人工智能创新大赛/训练包/cpu-b-rul-20261110-v1/public/train.jsonl",
+      "validation": "C:/Users/Administrator/Desktop/人工智能创新大赛/训练包/cpu-b-rul-20261110-v1/public/validation.jsonl",
+      "baseline": 681.1598326043113,
+      "rc3": 637.180224
+    },
+    "C": {
+      "train": "C:/Users/Administrator/Desktop/人工智能创新大赛/训练包/cpu-c-guide-20261110-v1/public/train.jsonl",
+      "validation": "C:/Users/Administrator/Desktop/人工智能创新大赛/训练包/cpu-c-guide-20261110-v1/public/validation.jsonl",
+      "baseline": 52.86857256611151,
+      "rc3": 51.635999
+    }
+  },
+  "teacher_specs": {
+    "classification": [{"family": "linear", "params": {"C": 1.0}}],
+    "regression": [{"family": "linear", "params": {"alpha": 1.0}}]
+  }
+}
