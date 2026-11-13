@@ -14,6 +14,8 @@ ROUTE-001(DONE)
   -> PAPER-METHOD-001
   -> LOOP-10-001
   -> FORMAL-COMPARE-001
+  -> PLATFORM-TRIAL-DIAG-001(DONE)
+  -> RC5-FAILCLOSED-001(IN_PROGRESS)
   -> FORMAL-RELEASE-001
 ```
 
@@ -106,9 +108,26 @@ ROUTE-001(DONE)
 - 优先级：P3
 - 完成标准：官方静态、固定更新、BRACE无大模型、PyTRiO+BRACE及有效论文方法在同一可见性和预算下比较；报告主指标、最差阶段、恢复、CPU/RSS、Token/费用、接受/回滚；负结果保留
 
+### PLATFORM-TRIAL-DIAG-001 首次官方试运行根因与证据固化
+
+- 状态：`DONE`
+- 依赖：O-PLATFORM-006、用户确认RC4尚未提交
+- 优先级：P0
+- 完成标准：区分旧提交与RC4；登记Token、隐藏指标和次数；定位可复现的零Token完成路径；不得猜测镜像绑定
+- 证据：`docs/source_notes/PLATFORM_TRIAL_V1_2026-11-13.md`、`PLATFORM-TRIAL-V1`实验条目、D-048、R-034；附件SHA-256 `8B7B5CEC...BBA5368`
+
+### RC5-FAILCLOSED-001 Agent失败关闭修复候选
+
+- 状态：`IN_PROGRESS`
+- 依赖：PLATFORM-TRIAL-DIAG-001
+- 优先级：P0，唯一当前任务
+- 完成标准：正式CLI无隐式provider默认值；PyTRiO传输/解析失败与Harness provider异常不能静默回退；本地专项及完整回归通过；基于修复提交构建新的Linux镜像并保留RC4归档不变
+- 停止条件：正式平台要求与失败关闭冲突、完整回归失败无法修复、或容器验收失败；失败时保留RC4与本任务证据，不上传平台
+- 当前证据：红阶段4项失败，修复后专项`26 passed`；尚未完成完整回归与新镜像构建
+
 ### FORMAL-RELEASE-001 正式环境与交付
 
-- 状态：`BLOCKED_EXTERNAL`（RC4全部本地可执行项已完成，仅等待官方运行材料）
+- 状态：`BLOCKED`（等待RC5-FAILCLOSED-001完成及用户授权平台写操作）
 - 依赖：FORMAL-COMPARE-001、正式SDK/SwanLab规范
 - 优先级：P4
 - 完成标准：Docker构建、4核8GB断网、正式RuntimeAdapter、最终模型重训SwanLab记录、十轮无人值守、干净环境独立复现及交付审计全部通过
@@ -116,7 +135,7 @@ ROUTE-001(DONE)
 - 本地证据：RC2运行时代码/全新venv均`221 passed`，`pip check`、编译、静态上下文与确定性源码归档通过；实际镜像170,356,869字节，linux/amd64、UID 10001、无禁入文件，4核8GB断网Smoke完成3候选；最终`docker save`归档SHA-256为`7b64490b0456c4b36bdc6189f34c9ce5e372894b911d76a3b40a6e8142e09327`，证据见`docs/results/RC2_CONTAINER_ACCEPTANCE.json`。
 - RC3本地证据：最终代码回归`246 passed`、打包前全新venv`243 passed`；PyTRiO0.2.9依赖无冲突；实际镜像240,579,085字节、linux/amd64、UID10001、无Torch/数据/权重/密钥；4核8GB断网双协议Smoke完成3/4候选；`docker save`归档SHA-256为`0daef2e0e66cd2d3bc809a5d836a03020d1f90d677df91830fedc4feeb6d325a`并已重载。证据见`docs/results/RC3_CONTAINER_ACCEPTANCE.json`。
 - RC4本地证据：最终代码回归`264 passed`；实际镜像240,701,023字节、linux/amd64、UID10001、无Torch/数据/权重/密钥；4核8GB断网完成Engine冻结候选训练，峰值RSS 3,198,783,488字节；`docker save`归档240,723,968字节，SHA-256为`97bb0a9fcfed688ba1b7feadadf09528e232fea578d06a1d782f2dccee306dfa`并已重载。证据见`docs/results/RC4_CONTAINER_ACCEPTANCE.json`与`docs/results/RC4_VERIFICATION.json`。
-- 外部剩余：正式SDK事件映射、评分细则和比赛SwanLab规范；未满足前不得标记全量DONE。
+- 外部剩余：正式SDK事件映射、评分细则和比赛SwanLab规范；平台上传、校验和试运行属于用户控制的外部写操作。未满足前不得标记全量DONE。
 
 ```text
 DOC-001

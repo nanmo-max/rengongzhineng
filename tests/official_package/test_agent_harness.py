@@ -62,6 +62,11 @@ class StaticProvider:
         )
 
 
+class FailingProvider:
+    def propose(self, context: AgentContext) -> ProposalOutcome:
+        raise RuntimeError("provider unavailable")
+
+
 class FakeTrainer:
     def __init__(self, metrics: list[float | dict[str, float]]) -> None:
         self.metrics = iter(metrics)
@@ -175,6 +180,23 @@ def test_minimum_candidate_guard_overrides_agent_noop_and_keeps_receipt(
     assert result.rounds[0]["suggested_action"] == "noop"
     assert result.rounds[0]["guard_override_reason"] == "minimum_candidate_events"
     assert provider.contexts[0].evidence["minimum_candidate_events_remaining"] == 1
+
+
+def test_strict_provider_failure_is_not_silently_downgraded(
+    tmp_path: Path, audit_a
+) -> None:
+    with pytest.raises(RuntimeError, match="provider unavailable"):
+        run_official_agent_harness(
+            audit_a,
+            tmp_path / "strict-provider",
+            config(rounds=1),
+            FakeTrainer([0.72]),
+            FailingProvider(),
+            fallback_provider=DeterministicOfficialProposalProvider(candidate_rounds=1),
+            allow_provider_fallback=False,
+        )
+
+    assert not (tmp_path / "strict-provider" / "state.json").exists()
 
 
 def test_frozen_parameter_schedule_controls_training_parameters_not_agent_text(

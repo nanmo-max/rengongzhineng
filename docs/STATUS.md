@@ -1,11 +1,11 @@
 # 当前状态
 
 - 最近同步：2026-11-13（Asia/Shanghai）
-- 当前阶段：`BRACE-MSI-0.4.0rc1`本地Release Candidate已冻结；独立`codex/paper-fusion-sprint`分支保留RC3历史并完成论文融合性能冲刺 `[D-045]` `[D-047]`
+- 当前阶段：旧提交首次官方试运行已完成并暴露零Token静默降级与隐藏泛化问题；`BRACE-MSI-0.4.0rc1`仍为未提交的冻结本地RC，正在基于O-PLATFORM-006形成失败关闭修复候选 `[D-047]` `[D-048]`
 - 当前路线：**Qwen3.5-4B PyTRiO Agent + BRACE确定性Harness + 官方A/B/C工业模型 + 经验证的开源优化方法** `[D-035]`
-- 当前唯一任务：`FORMAL-RELEASE-001`（`BLOCKED_EXTERNAL`）；`PAPER-METHOD-001`已`DONE`，本地代码、实验、容器、归档和作品材料均已形成证据，只等待正式SDK、评分字段和平台隐藏评测。
+- 当前唯一任务：`RC5-FAILCLOSED-001`（`IN_PROGRESS`）；完成完整回归和新镜像验收前不得提交RC4或用旧镜像再次试运行。
 - 稳定边界：`BRACE-MSI-0.1.0rc1`、`0.2.0rc2`、`0.3.0rc3`历史保持不变；当前候选为`BRACE-MSI-0.4.0rc1`，位于`codex/paper-fusion-sprint`且不合并main。A3之后禁止继续LLM调参 `[D-043]`
-- 官方试运行：0次；不得用于基础调试
+- 官方试运行：已使用1/10次，剩余9/10次；该运行对应旧提交v2，不是RC4，正式评测仍为0/2 `[O-PLATFORM-006]`
 
 ## 已确认
 
@@ -29,10 +29,11 @@
 18. `SWANLAB-FINAL-001`完成A/B/C各10轮/3候选且机器复算`valid=true`；公开项目`https://swanlab.cn/@nanmo-max/brace-msi-final`含三个`FINISHED`实验。GitHub`task/core-001`分支和RC3标签已推送，作品说明书DOCX/PDF已生成。证据见`results/SWANLAB-FINAL-001.md`。
 19. `PAPER-FUSION-SPRINT-001`完成并停止：Gas蒸馏与Bearing融合未超过RC3，SafetyGate拒绝；Engine异构CPU融合公开验证RMSE为42.330230，相对RC3改善18.02%、相对初始公开基线改善19.93%。该验证集历史暴露，结果标记`PASS_WITH_EXPOSURE`，不是隐藏测试或官方成绩。
 20. `BRACE-MSI-0.4.0rc1`镜像linux/amd64、240,701,023字节、UID10001；4核8GB断网Engine冻结候选训练、264项回归、`pip check`、禁入文件扫描和`docker load`通过。归档SHA-256为`97bb0a9fcfed688ba1b7feadadf09528e232fea578d06a1d782f2dccee306dfa`；证据见`results/RC4_CONTAINER_ACCEPTANCE.json`与`results/RC4_VERIFICATION.json`。
+21. 官方首次试运行旧提交三任务均完成10轮但Token为0，A/B/C隐藏主指标为0.413368 Macro-F1、691.660970 RMSE、56.220512 RMSE；旧代码存在CLI默认确定性、客户端回退及Harness二次回退三条零Token完成路径。RC4尚未提交，不能据此评价RC4 `[O-PLATFORM-006]`。
 
 ## 当前执行入口
 
-本地当前上传入口为`D:/brace-msi-release/BRACE-MSI-0.4.0rc1/BRACE-MSI-0.4.0rc1-image-clean.tar`，SHA-256 `97bb0a9fcfed688ba1b7feadadf09528e232fea578d06a1d782f2dccee306dfa`；完整A3 `trio://`路径从`D:/brace-msi-pytrio/PYTRIO-SFT-001-A3/result.json`读取并填入平台，不写入公开Git配置。A1失败、A2负对照、A3成功、RC2与RC3历史均不得覆盖。
+RC4归档`D:/brace-msi-release/BRACE-MSI-0.4.0rc1/BRACE-MSI-0.4.0rc1-image-clean.tar`及SHA-256 `97bb0a9f...306dfa`只保留为冻结历史，不再作为下一次上传入口。下一次上传入口必须由`RC5-FAILCLOSED-001`完整回归和容器验收后产生；完整A3 `trio://`路径仍只从Git外收据读取，不写公开配置。
 
 正式路线、已知能力与未知边界见[FORMAL_ROUTE.md](FORMAL_ROUTE.md)。实验必须遵守[EXPERIMENT_PROTOCOL.md](EXPERIMENT_PROTOCOL.md)。
 

@@ -151,6 +151,28 @@ def test_transport_failure_falls_back_and_is_auditable() -> None:
     assert outcome.receipt.error_detail == "TimeoutError"
 
 
+def test_strict_transport_failure_aborts_instead_of_silent_fallback() -> None:
+    client = PyTrioAgentClient(
+        PyTrioAgentConfig(allow_fallback=False),
+        transport=FakeTransport(TimeoutError("secret service detail")),
+        fallback=fallback,
+    )
+
+    with pytest.raises(RuntimeError, match="transport_error"):
+        client.propose(context())
+
+
+def test_strict_invalid_response_aborts_instead_of_silent_fallback() -> None:
+    client = PyTrioAgentClient(
+        PyTrioAgentConfig(allow_fallback=False),
+        transport=FakeTransport(SamplingResult("not-json", 10, 10)),
+        fallback=fallback,
+    )
+
+    with pytest.raises(RuntimeError, match="invalid_response"):
+        client.propose(context())
+
+
 def test_secret_bearing_context_is_rejected_before_transport() -> None:
     transport = FakeTransport(SamplingResult(valid_response(), 1, 1))
     client = PyTrioAgentClient(

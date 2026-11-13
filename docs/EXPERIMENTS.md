@@ -170,3 +170,14 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 - 状态：`SUCCEEDED`（仅链路证据，未打开公开validation）。
 - 结果：A/B/C均生成冻结模型、资源收据和哈希，机器验证`valid=true/stage=candidate_frozen`；不作性能结论。
 - 产物：`D:/brace-msi-paper-fusion/PAPER-FUSION-SMOKE-001/`。
+
+## PLATFORM-TRIAL-V1
+
+- 状态：`OBSERVED_OFFICIAL_TRIAL_FAILED_AGENT_AND_GENERALIZATION`
+- 类型：官方平台试运行，不计正式成绩；不是RC4实验。
+- 使用次数：1/10，剩余9/10；正式评测0/2。
+- Agent证据：平台输入/输出Token均为0，无法证明任何有效PyTRiO调用；按D-048判定不满足Agent路线准入门槛。
+- 隐藏结果：A Macro-F1 0.413368；B RMSE 691.660970；C RMSE 56.220512、NASA 48,596,667,177.965034。
+- 选择结果：三任务均保留第1轮；后续轮次未改善。
+- 原始证据：`docs/source_notes/PLATFORM_TRIAL_V1_2026-11-13.md`；附件SHA-256 `8B7B5CEC3C50775BD5621DCBEB8DE7337BC39F0F6123767B27E36E004BBA5368`。
+- 失败边界：无法从平台报告区分CLI默认、客户端回退或Harness回退；无法确认旧提交绑定的具体镜像编号。失败与未知均保留，不反推RC4表现。

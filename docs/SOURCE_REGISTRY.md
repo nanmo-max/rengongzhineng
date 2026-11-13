@@ -79,6 +79,14 @@
 - 上游测试：A、C各9/9通过；B核心10项通过，另2项因未分发` scripts.package_baselines`报`ModuleNotFoundError`，属于包自包含性缺口，不影响已验证的续训入口。
 - 边界：随包报告标记`purpose=development_reference`、`official_scoring_ready=false`；本地续训不是平台隐藏测试或正式成绩。原包保持只读，不将数据或检查点提交到Git/镜像。
 
+### O-PLATFORM-006 官方首次试运行报告与提交状态
+
+- 来源：2026-11-13登录后的官方平台提交/运行页面及用户导出的试运行报告；完整证据见`docs/source_notes/PLATFORM_TRIAL_V1_2026-11-13.md`。
+- 已确认：试运行已使用1/10次、剩余9/10次；被运行的是旧提交v2，三任务均完成10轮且最终采用第1轮；平台结算输入/输出Token均为0。
+- 隐藏指标：A Macro-F1 `0.413368`；B RMSE `691.660970`；C RMSE `56.220512`、NASA `48596667177.965034`。
+- 用户确认：`BRACE-MSI-0.4.0rc1`尚未提交，不得把本次结果归因于RC4。
+- 未确认：v2绑定的具体镜像编号、零Token由三层可回退路径中的哪一层触发；在新证据出现前保持未知。
+
 ### O-WEB-001 官方赛题页
 
 - URL：https://bjcsaiic.zsyqkj.com/topics/2026/9
@@ -385,7 +393,6 @@
 ### H-001 正式批次协议
 
 `predict_then_feedback`、`labeled_train_then_predict`、标签直接提供和标签受限等表述并存。必须由正式SDK解决。
-
 ### H-002 平台与模型名称
 
 PyTRiO通用接口、Qwen3.5-4B基础模型平台校验和持久化Sampler路线已确认，模型服务不再构成架构设计阻塞。正式比赛Base URL、凭据注入、运行时白名单与Token计量仍待平台环境确认；实现必须配置化并在启动时核验。

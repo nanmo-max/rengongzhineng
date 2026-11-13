@@ -1,6 +1,14 @@
 # 新会话恢复与交接
 
-## 2026-11-13论文融合RC4恢复入口（当前）
+## 2026-11-13首次平台试运行诊断与修复恢复入口（当前）
+
+1. 官方平台已消耗1/10次试运行；旧提交v2的报告Token为0，A/B/C隐藏主指标分别为0.413368 Macro-F1、691.660970 RMSE、56.220512 RMSE。证据见O-PLATFORM-006和`docs/source_notes/PLATFORM_TRIAL_V1_2026-11-13.md`。
+2. 用户明确确认`BRACE-MSI-0.4.0rc1`尚未提交；不得把旧试运行归因于RC4，也不得再次上传旧镜像。
+3. 当前唯一任务为`RC5-FAILCLOSED-001`：正式CLI显式provider、PyTRiO客户端和Harness双层失败关闭已通过26项专项测试；仍需完整回归、版本化新镜像与4核8GB验收。
+4. RC4归档和哈希保持冻结历史；修复代码不在RC4镜像内。完成新候选前禁止平台上传、校验或试运行。
+5. A3持久化Sampler路径继续从Git外收据读取；新提交必须先验证Sampler、镜像和源码绑定，再确认非零Agent调用收据。
+
+## 2026-11-13论文融合RC4恢复入口（历史）
 
 1. 当前分支为`codex/paper-fusion-sprint`，RC3标签、`task/core-001`和main均未改写。`PAPER-METHOD-001`已`DONE`；唯一任务为`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`。
 2. 完整实验位于`D:/brace-msi-paper-fusion/PAPER-FUSION-SPRINT-001/`；`summary.json`已单次打开公开validation，禁止再次调用`--open-validation`。机器`--validate-only`结果为`valid=true/stage=completed`。

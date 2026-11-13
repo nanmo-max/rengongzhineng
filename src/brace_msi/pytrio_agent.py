@@ -53,6 +53,7 @@ class PyTrioAgentConfig:
     max_tokens: int = 768
     temperature: float = 0.0
     seed: int = 20261106
+    allow_fallback: bool = True
 
     def __post_init__(self) -> None:
         if not self.model.strip():
@@ -231,6 +232,10 @@ class PyTrioAgentClient:
                 seed=self.config.seed,
             )
         except Exception as exc:  # transport failures are an expected boundary
+            if not self.config.allow_fallback:
+                raise RuntimeError(
+                    "PyTRiO proposal failed: transport_error"
+                ) from None
             return self._fallback_outcome(
                 context,
                 prompt_hash=prompt_hash,
@@ -243,6 +248,10 @@ class PyTrioAgentClient:
         try:
             proposal = parse_experiment_proposal(sampled.text)
         except (ValueError, TypeError, json.JSONDecodeError):
+            if not self.config.allow_fallback:
+                raise RuntimeError(
+                    "PyTRiO proposal failed: invalid_response"
+                ) from None
             return self._fallback_outcome(
                 context,
                 prompt_hash=prompt_hash,

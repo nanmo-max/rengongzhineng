@@ -162,7 +162,7 @@ def load_release_verification(
             raise RuntimeError(f"release verification section is not PASS: {section}")
     if int(evidence["pytest"]["passed"]) < 1:
         raise RuntimeError("release verification contains no passing tests")
-    if evidence["clean_environment"]["version"] != "0.4.0rc1":
+    if evidence["clean_environment"]["version"] != "0.4.0rc2":
         raise RuntimeError("clean environment installed the wrong release version")
     unsafe = [
         value

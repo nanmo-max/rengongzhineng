@@ -362,6 +362,7 @@ def run_official_agent_harness(
     provider: ProposalProvider,
     *,
     fallback_provider: ProposalProvider | None = None,
+    allow_provider_fallback: bool = True,
     max_rounds_this_call: int | None = None,
 ) -> OfficialAgentHarnessResult:
     runtime_dir = Path(runtime_dir)
@@ -381,11 +382,15 @@ def run_official_agent_harness(
             candidate_rounds=config.max_candidates
         )
         if int(state["agent_call_count"]) >= config.max_agent_calls:
+            if not allow_provider_fallback:
+                raise RuntimeError("agent call budget exhausted before workflow completion")
             outcome = safe_fallback.propose(context)
         else:
             try:
                 outcome = provider.propose(context)
             except Exception:
+                if not allow_provider_fallback:
+                    raise
                 outcome = safe_fallback.propose(context)
         validate_experiment_proposal(outcome.proposal)
         suggested_action = outcome.proposal.action

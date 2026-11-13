@@ -48,7 +48,7 @@ def test_repository_release_audit_preserves_evidence_boundaries() -> None:
 
     audit = audit_release_tree(root, _tracked_files(root))
 
-    assert audit.release_id == RELEASE_ID == "BRACE-MSI-0.4.0rc1"
+    assert audit.release_id == RELEASE_ID == "BRACE-MSI-0.4.0rc2"
     assert audit.blocking_findings == ()
     assert audit.a1_status == "INVALID"
     assert audit.a2_status == "SUCCEEDED"

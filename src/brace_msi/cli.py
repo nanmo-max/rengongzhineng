@@ -83,7 +83,7 @@ def _parser() -> argparse.ArgumentParser:
     official_agent.add_argument("--runtime-root", type=Path, required=True)
     official_agent.add_argument("--profile", choices=("A", "B", "C"), required=True)
     official_agent.add_argument(
-        "--provider", choices=("deterministic", "pytrio"), default="deterministic"
+        "--provider", choices=("deterministic", "pytrio")
     )
     official_agent.add_argument("--model", default="Qwen/Qwen3.5-4B")
     official_agent.add_argument("--model-path")
@@ -99,6 +99,18 @@ def _parser() -> argparse.ArgumentParser:
     paper_fusion.add_argument("--open-validation", action="store_true")
     paper_fusion.add_argument("--validate-only", action="store_true")
     return parser
+
+
+def _validate_official_agent_selection(
+    provider: str | None, model_path: str | None
+) -> None:
+    if provider is None:
+        raise ValueError("--provider is required unless --validate-only is used")
+    if provider == "pytrio" and not model_path:
+        raise ValueError(
+            "--model-path is required for formal PyTRiO runs; use the full "
+            "persisted trio:// Sampler path"
+        )
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -190,6 +202,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 )
             )
             return 0
+        _validate_official_agent_selection(args.provider, args.model_path)
         schedule = raw_config.get("deterministic_schedules", {}).get(args.profile)
         deterministic = (
             FrozenScheduleOfficialProposalProvider(package, tuple(schedule))
@@ -200,7 +213,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
         if args.provider == "pytrio":
             provider = PyTrioAgentClient(
-                PyTrioAgentConfig(model=args.model, model_path=args.model_path),
+                PyTrioAgentConfig(
+                    model=args.model,
+                    model_path=args.model_path,
+                    allow_fallback=False,
+                ),
                 fallback=lambda context: deterministic.propose(context).proposal,
             )
         else:
@@ -218,6 +235,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             ),
             provider,
             fallback_provider=deterministic,
+            allow_provider_fallback=args.provider != "pytrio",
             max_rounds_this_call=args.max_rounds_this_call,
         )
         print(
