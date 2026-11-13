@@ -459,4 +459,5 @@
 - `docker save`归档位于`D:/brace-msi-release/BRACE-MSI-0.4.0rc1/BRACE-MSI-0.4.0rc1-image-clean.tar`，240,723,968字节，SHA-256 `97bb0a9fcfed688ba1b7feadadf09528e232fea578d06a1d782f2dccee306dfa`，`docker load`验证通过。
 - 作品说明书DOCX/PDF完成10页逐页渲染检查；最终表格行禁止跨页，未发现截断、重叠或缺失字形。材料只报告公开暴露验证和本地容器证据，不表述为隐藏测试或官方成绩。
 - 发布包重建曾因材料生成脚本被误判为运行时代码而失败；新增红绿回归测试后，仅将`scripts/build_submission_document.js`加入发布后非运行时白名单，核心运行时变更仍会失败关闭。
+- 独立分支`codex/paper-fusion-sprint`已推送至GitHub；未合并main、未移动`brace-msi-v0.3.0-rc3`标签。最新发布包源码归档SHA-256为`fb5d66966f764c280c7563e1c5895fc3fa9e9ea5ca863f7999c2fc551fd74d23`。
 
