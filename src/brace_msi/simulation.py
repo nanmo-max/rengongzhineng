@@ -7,7 +7,9 @@ import numpy as np
 from .data.types import BatchData, TaskStream
 
 
-def synthetic_bearing_stream(*, seed: int = 20261107) -> TaskStream:
+def synthetic_bearing_stream(
+    *, seed: int = 20261107, development_batches: int = 4
+) -> TaskStream:
     """Build a deterministic drift stream; it is not real bearing evidence."""
 
     rng = np.random.default_rng(seed)
@@ -33,7 +35,7 @@ def synthetic_bearing_stream(*, seed: int = 20261107) -> TaskStream:
         initial=make_batch("initial", 0.0, 80),
         development=tuple(
             make_batch(f"development-{index}", index * 0.35, 48)
-            for index in range(4)
+            for index in range(development_batches)
         ),
         sealed=(),
         metadata={"synthetic": True, "evidence_scope": "protocol_only"},

@@ -2,6 +2,13 @@
 
 本文件按时间追加，不回写历史记录。当前状态仍以 [STATUS.md](STATUS.md) 为准。
 
+## 2026-11-13：DUAL-INTEGRATION-001平台无关十轮集成
+
+- 新增`ControlledDualLoopHarness`与`controlled-loop-smoke`入口，贯通十批预测后反馈、四缓冲区生命周期、身份无关证据、动作值排序、0至2候选、SafetyGate、前任影子收益、原子控制器提交、本地审计和干净中断续跑。
+- 分类与回归均覆盖十轮；同一数据仅更改任务名称时动作、决策和指标完全一致；回归在第4轮暂停后恢复至第10轮且无重复批次。
+- 专项命令`python -m pytest tests/dual_loop/test_controlled_harness.py -q`为`4 passed in 9.57s`；完整命令`python -m pytest -q`为`320 passed in 73.31s`。
+- 该实现使用本地`TaskStream`和本地SGD初始化，只证明平台无关核心集成；CLI写入`synthetic=true`和`formal_eligible=false`。本任务未运行A/B/C、未调用PyTRiO、未使用SwanLab、未消耗官方试运行，也未生成可提交`checkpoint.npz`。
+
 ## 2026-11-13：受控双闭环证据与规格锁定
 
 - 对仓库外13张智训引擎宣讲截图逐文件计算SHA-256并登记为`B-RSI-002`；明确其证据等级低于正式规则/SDK，未据此编造字段或平台权限。

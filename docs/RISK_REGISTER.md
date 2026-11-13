@@ -2,8 +2,8 @@
 
 | ID | 等级 | 风险 | 触发器 | 缓解措施 | 负责人 | 状态 |
 |---|---|---|---|---|---|---|
-| R-036 | P0 | 训练子进程通过完整源目录发现未来批次 | worker收到官方数据根或可遍历父目录 | RuntimeAdapter唯一入口、每轮物化目录、RoundDataManifest、清理环境变量、未来诱饵测试；无法隔离则失败关闭 | 技术负责人 | PARTIAL：`online_data.py`训练句柄不含源根、只允许manifest相对文件且未来诱饵测试通过；正式RuntimeAdapter与子进程环境清理仍待DUAL-INTEGRATION-001 |
-| R-037 | P0 | Gate/Anchor误入训练或Replay未完成隔离 | 预处理器在非候选训练集合拟合 | 四用途类型、候选集合构造器、样本生命周期审计和专项测试 | 技术负责人 | MITIGATED_CORE：四用途、`round+2`晋升和Update+Replay构造测试通过；模型适配集成仍须复验预处理拟合集合 |
+| R-036 | P0 | 训练子进程通过完整源目录发现未来批次 | worker收到官方数据根或可遍历父目录 | RuntimeAdapter唯一入口、每轮物化目录、RoundDataManifest、清理环境变量、未来诱饵测试；无法隔离则失败关闭 | 技术负责人 | PARTIAL：`online_data.py`训练句柄不含源根、只允许manifest相对文件且未来诱饵测试通过；`controlled_harness.py`逐轮只物化当前Update、合格Replay及隔离评估通道。正式SDK进程挂载与环境清理仍待官方接口，不宣称已完成容器级路径隔离 |
+| R-037 | P0 | Gate/Anchor误入训练或Replay未完成隔离 | 预处理器在非候选训练集合拟合 | 四用途类型、候选集合构造器、样本生命周期审计和专项测试 | 技术负责人 | MITIGATED_LOCAL：四用途、`round+2`晋升、Update+Replay构造及十轮模型适配集成通过；当前Gate/Anchor只进入SafetyGate评估。正式官方训练器的数据入口仍须在DUAL-EXPERIMENT-001复验 |
 | R-038 | P1 | 下一批自然难度被误归因于上一轮动作 | 只比较跨批绝对指标 | 保留直接前任一轮影子预测并做同样本配对差；不可用时降级为低置信度 | 技术负责人 | OPEN：等待DUAL-VALUE-001 |
 | R-039 | P0 | Qwen补丁突破安全核心或资源边界 | 补丁访问文件/网络/反射/无限循环/OOM | 仅纯函数槽、AST+签名+隔离子进程+资源限制+形状/有限值/确定性/差异门 | 技术负责人 | MITIGATED_CORE：13项攻击/输出契约测试与完整回归通过；正式容器cgroup和只读挂载仍待DUAL-RC-001复验 |
 | R-040 | P0 | 新候选不符合父检查点续训或64 MiB产物约束 | 从头训练、父链未实际使用、模型产物过大或缺独立预测入口 | 模型注册门验证父哈希/实际加载、checkpoint.npz、独立预测和`<=64*1024*1024`字节；不兼容版本禁止试运行 | 技术负责人 | PARTIAL：本地父链、checkpoint、64 MiB及独立预测门通过9项测试；正式字段和挂载命令仍待H-001映射 |

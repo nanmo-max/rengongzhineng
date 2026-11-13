@@ -12,6 +12,7 @@ from typing import Sequence
 import numpy as np
 
 from .budget import BudgetLimits
+from .controlled_harness import ControlledDualLoopHarness, ControlledHarnessConfig
 from .harness import HarnessConfig, UnifiedHarness
 from .model_gate import predict_checkpoint
 from .official_sdk import OfficialSdkSpec, load_official_adapter_factory
@@ -53,6 +54,12 @@ def _parser() -> argparse.ArgumentParser:
         default=ProtocolMode.PREDICT_THEN_FEEDBACK.value,
     )
     smoke.add_argument("--max-batches", type=int)
+    controlled_smoke = subparsers.add_parser(
+        "controlled-loop-smoke",
+        help="run or resume the ten-round controlled dual loop on synthetic data",
+    )
+    controlled_smoke.add_argument("--output", type=Path, required=True)
+    controlled_smoke.add_argument("--max-rounds-this-call", type=int)
     report = subparsers.add_parser("render-report", help="render an offline HTML report")
     report.add_argument("--input", type=Path, required=True)
     report.add_argument("--output", type=Path, required=True)
@@ -121,6 +128,46 @@ def _validate_official_agent_selection(
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parser().parse_args(argv)
+    if args.command == "controlled-loop-smoke":
+        summary = ControlledDualLoopHarness(
+            args.output,
+            ControlledHarnessConfig(
+                performance_drop_threshold=0.0,
+                drift_threshold=0.1,
+                min_gate_gain=-1.0,
+                max_anchor_degradation=1.0,
+                min_gate_samples=4,
+            ),
+        ).run(
+            synthetic_bearing_stream(seed=20261113, development_batches=10),
+            max_rounds_this_call=args.max_rounds_this_call,
+        )
+        payload = {
+            "schema_version": 1,
+            "synthetic": True,
+            "formal_eligible": False,
+            "complete": summary.complete,
+            "task_kind": summary.task_kind,
+            "total_candidates": summary.total_candidates,
+            "real_experiment_count": summary.real_experiment_count,
+            "stable_model_id": summary.stable_model_id,
+            "rounds": [asdict(item) for item in summary.rounds],
+        }
+        (args.output / "summary.json").write_text(
+            json.dumps(payload, ensure_ascii=False, allow_nan=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        print(
+            json.dumps(
+                {
+                    "status": "completed" if summary.complete else "paused",
+                    "round_count": len(summary.rounds),
+                    "candidate_count": summary.total_candidates,
+                },
+                allow_nan=False,
+            )
+        )
+        return 0
     if args.command == "checkpoint-predict":
         inputs = np.load(args.input_npy, allow_pickle=False)
         predictions = predict_checkpoint(args.checkpoint, inputs)

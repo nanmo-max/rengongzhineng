@@ -12,8 +12,8 @@ EVIDENCE-RSI-001(DONE)
   -> DUAL-QWEN-001(DONE)
   -> DUAL-PLUGIN-001(DONE)
   -> DUAL-MODEL-001(DONE)
-  -> DUAL-INTEGRATION-001(READY)
-  -> DUAL-EXPERIMENT-001(BLOCKED_DEP)
+  -> DUAL-INTEGRATION-001(DONE)
+  -> DUAL-EXPERIMENT-001(READY)
   -> DUAL-RC-001(BLOCKED_DEP)
 ```
 
@@ -78,14 +78,15 @@ EVIDENCE-RSI-001(DONE)
 
 ### DUAL-INTEGRATION-001 十批受控双闭环集成
 
-- 状态：`READY`
+- 状态：`DONE`
 - 依赖：DUAL-MODEL-001
 - 优先级：P0
 - 完成标准：统一CLI、RuntimeAdapter、证据路由、候选执行、门控、影子、审计和恢复贯通；任务重命名不改变决策
+- 证据：`src/brace_msi/controlled_harness.py`、`python -m brace_msi controlled-loop-smoke`、`tests/dual_loop/test_controlled_harness.py`；分类/回归十轮、任务重命名不变性、中断续跑和CLI共`4 passed`，完整回归`320 passed`。该入口只接受本地`TaskStream`并显式写入`synthetic=true/formal_eligible=false`，不是官方父检查点续训或平台成绩。
 
 ### DUAL-EXPERIMENT-001 A/B/C合法顺序对照
 
-- 状态：`BLOCKED_DEP`
+- 状态：`READY`
 - 依赖：DUAL-INTEGRATION-001；实验预注册
 - 优先级：P1
 - 完成标准：静态、固定更新、确定性双闭环和PyTRiO受控双闭环公平比较；十轮、至少三次真实实验链、资源和失败齐全；不消耗官方试运行
