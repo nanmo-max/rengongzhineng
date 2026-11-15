@@ -45,8 +45,8 @@ _FORBIDDEN_INPUTS = {
 _PLATFORM_ACTIONS = {Action.NOOP, Action.INCREMENTAL_UPDATE, Action.REPLAY_REFIT}
 _COMPETITIVE_SCHEDULES: dict[str, tuple[tuple[int, int, float], ...]] = {
     "A": ((1, 1, 1.0), (5, 1, 1.0), (9, 1, 1.0)),
-    "B": ((1, 1, 1.0), (5, 5, 3.0), (9, 1, 0.3)),
-    "C": ((1, 1, 1.0), (5, 5, 1.0), (9, 1, 0.3)),
+    "B": ((1, 1, 1.0), (5, 1, 0.3), (9, 5, 3.0)),
+    "C": ((1, 1, 1.0), (5, 1, 0.3), (9, 5, 1.0)),
 }
 
 
@@ -559,32 +559,58 @@ def _competitive_gate(
             anchor_before["macro_f1"] - anchor_candidate["macro_f1"]
         ) / max(abs(anchor_before["macro_f1"]), 1e-12)
         secondary_safe = candidate["accuracy"] + 1e-12 >= before["accuracy"]
+        secondary_relative_degradation = max(
+            0.0,
+            (before["accuracy"] - candidate["accuracy"])
+            / max(abs(before["accuracy"]), 1e-12),
+        )
     else:
         relative_anchor_degradation = (
             anchor_candidate["rmse"] - anchor_before["rmse"]
         ) / max(abs(anchor_before["rmse"]), 1e-12)
         secondary_safe = candidate["mae"] <= before["mae"] + 1e-12
+        secondary_relative_degradation = max(
+            0.0,
+            (candidate["mae"] - before["mae"])
+            / max(abs(before["mae"]), 1e-12),
+        )
 
     min_relative = {"A": 0.0, "B": 0.005, "C": 0.005}.get(profile, 0.01)
     max_anchor_relative = {"A": 0.01, "B": 0.02, "C": 0.02}.get(profile, 0.01)
     relative_replay_degradation: float | None = None
+    replay_secondary_safe = False
     if replay_before is not None and replay_candidate is not None:
         replay_key = "macro_f1" if task == "classification" else "rmse"
         if task == "classification":
             replay_absolute = replay_before[replay_key] - replay_candidate[replay_key]
+            replay_secondary_safe = (
+                replay_candidate["accuracy"] + 1e-12 >= replay_before["accuracy"]
+            )
         else:
             replay_absolute = replay_candidate[replay_key] - replay_before[replay_key]
+            replay_secondary_safe = replay_candidate["mae"] <= replay_before["mae"] + 1e-12
         relative_replay_degradation = replay_absolute / max(
             abs(replay_before[replay_key]), 1e-12
         )
-    if primary_improvement <= 0 or relative_improvement < min_relative:
+    safe_replay_gain = (
+        primary_improvement >= 0
+        and (secondary_safe or secondary_relative_degradation <= 0.01)
+        and relative_replay_degradation is not None
+        and -relative_replay_degradation > min_relative
+        and replay_secondary_safe
+    )
+    if (
+        primary_improvement <= 0 or relative_improvement < min_relative
+    ) and not safe_replay_gain:
         accepted, reason = False, "primary_gain_below_task_contract"
-    elif not secondary_safe:
+    elif not secondary_safe and not safe_replay_gain:
         accepted, reason = False, "secondary_metric_regressed"
     elif relative_anchor_degradation > max_anchor_relative:
         accepted, reason = False, "anchor_risk_exceeded"
     elif relative_replay_degradation is not None and relative_replay_degradation > 0.02:
         accepted, reason = False, "replay_history_regressed"
+    elif safe_replay_gain:
+        accepted, reason = True, "safe_replay_gain"
     else:
         accepted, reason = True, "competitive_gate_passed"
     return CompetitiveGateOutcome(

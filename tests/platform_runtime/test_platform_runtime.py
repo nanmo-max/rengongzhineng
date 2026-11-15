@@ -652,9 +652,9 @@ def test_competitive_mode_spreads_b_schedule_across_stream_then_retains(tmp_path
     assert summary["noop_count"] == 7
     trained = [row for row in summary["rounds"] if row["candidate_trained"]]
     assert [row["round_index"] for row in trained] == [1, 5, 9]
-    assert [row["epochs"] for row in trained] == [1, 5, 1]
+    assert [row["epochs"] for row in trained] == [1, 1, 5]
     assert [row["learning_rate"] for row in trained] == pytest.approx(
-        [0.01, 0.03, 0.003]
+        [0.01, 0.003, 0.03]
     )
     assert all(
         row["decision"]["executed_action"] == "noop"
@@ -730,6 +730,38 @@ def test_competitive_gate_rejects_historical_replay_regression() -> None:
 
     assert result.accepted is False
     assert result.reason == "replay_history_regressed"
+
+
+def test_competitive_gate_accepts_current_tie_with_safe_replay_gain() -> None:
+    result = platform_runtime._competitive_gate(
+        profile="A",
+        task="classification",
+        before={"macro_f1": 1.0, "accuracy": 1.0},
+        candidate={"macro_f1": 1.0, "accuracy": 1.0},
+        anchor_before={"macro_f1": 0.95, "accuracy": 0.97},
+        anchor_candidate={"macro_f1": 0.95, "accuracy": 0.97},
+        replay_before={"macro_f1": 0.78, "accuracy": 0.96},
+        replay_candidate={"macro_f1": 0.98, "accuracy": 0.99},
+    )
+
+    assert result.accepted is True
+    assert result.reason == "safe_replay_gain"
+
+
+def test_competitive_gate_accepts_small_mae_tradeoff_when_history_improves() -> None:
+    result = platform_runtime._competitive_gate(
+        profile="C",
+        task="regression",
+        before={"rmse": 50.0, "mae": 40.0},
+        candidate={"rmse": 49.9, "mae": 40.2},
+        anchor_before={"rmse": 45.0, "mae": 35.0},
+        anchor_candidate={"rmse": 44.0, "mae": 34.0},
+        replay_before={"rmse": 52.0, "mae": 39.0},
+        replay_candidate={"rmse": 51.0, "mae": 38.0},
+    )
+
+    assert result.accepted is True
+    assert result.reason == "safe_replay_gain"
 
 
 def test_pytrio_noop_is_recorded_as_retain_without_training(tmp_path: Path) -> None:
