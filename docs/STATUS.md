@@ -1,9 +1,9 @@
 # 当前状态
 
 - 最近同步：2026-11-15（Asia/Shanghai）
-- 当前阶段：`BRACE-MSI-0.7.1rc1`已完成本地发布验收；真实容器内PyTRiO、断网恢复、383项回归及`docker save/load`均通过，等待平台导入/模型校验
+- 当前阶段：`OFFICIAL-FLOW-SIM-001`已完成；`BRACE-MSI-0.7.1rc1`继续冻结，任务自然流模拟器已替代正式本地复演入口，旧按行均切模拟器只保留历史复现
 - 当前路线：**保留平台父链/安全内核，先通过Native逐状态等价门，再迁移冻结日程、尺度适配Gate与受控PyTRiO建议** `[D-061]`
-- 当前唯一核心任务：`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`；`REPORT-EVIDENCE-FIX-001`已完成，等待用户在平台导入镜像、模型校验和正式试运行。
+- 当前唯一核心任务：`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`；本地官方流程架构已完成，无新的`READY`任务。不得依据已暴露本地确认集继续调参。
 - 稳定边界：全部历史RC和实验不改写；`0.5.0rc1`只作研究证据，不得上传。正式线从D-058开始只输出原生官方MLP续训checkpoint。A3之后禁止继续LLM调参 `[D-043]`
 - 官方试运行：已使用1/10次，剩余9/10次；该运行对应旧提交v2，不是RC4，正式评测仍为0/2 `[O-PLATFORM-006]`
 
@@ -21,6 +21,7 @@
 0i. `UNSEEN-REPORT-001`已完成：单页HTML包含三任务摘要、最终确认指标、30轮模型选择和可展开实验记录；JSON提供同一机器字段。页面显著标注“本地独立确认集、非官方”，见`results/UNSEEN-REPORT-001.md`。
 0j. `OFFICIAL-DATA-REPORT-001`已完成后经D-067降级：页面具备三任务30个展开记录，但继承V1的validation选择污染，只保留为样式演示；不得作为性能或泛化证据。修正版见下一条。
 0k. `REPORT-EVIDENCE-FIX-001`已完成：确认旧V1没有训练数据直接泄漏证据，但逐轮重复公开validation并据此选轮次，属于选择污染。V1降级为界面演示；V2逐轮只展示Gate稳定/候选指标，冻结后每任务只评估最终checkpoint一次，不再含validation选轮字段。专项7项、完整回归390项通过，见`results/REPORT-EVIDENCE-FIX-001.md`。
+0l. `OFFICIAL-FLOW-SIM-001`已完成：Gas按自然批次/时间、Bearing按寿命进度、Engine按完整unit构造十轮；每轮先预测封存再开放反馈，Prequential与候选Gate分离，未来轮和确认不提前物化。三任务10/10轮、父链与零交叉硬门通过；A/C保持静态，B一次部署后本地确认退化，作为负证据保留。完整回归399项，见`results/OFFICIAL-FLOW-SIM-001.md`。
 1. `DUAL-DATA-001`已完成：四缓冲区、Gate一轮隔离、Update+Replay候选集合、只读manifest、训练/评估分离句柄和未来诱饵阻断通过4项专项测试；完整回归`275 passed`。
 2. `DUAL-TXN-001`已完成：每批单决策、0至2候选、首候选结果触发升级、十批前缀、原子提交/恢复及影子配对收益通过5项专项测试；完整回归`280 passed`。
 3. `DUAL-VALUE-001`已完成：每任务隔离统计、身份无关证据画像、弱先验、延迟收益专用更新和性能—CPU/RSS/Token/模型体积Pareto前沿通过5项专项测试；完整回归`285 passed`。

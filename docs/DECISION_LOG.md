@@ -72,6 +72,7 @@
 | D-065 | 2026-11-15 | LOCKED | `UNSEEN-SIM-001-A4`证明基础Qwen3.5-4B可经PyTRiO真实参与三任务十轮决策，但不证明性能泛化：16次有效响应和15次建议执行后，三个确认集最佳仍均为静态round 0。Battery/Hydraulic的同批Gate部署在跨设备/工况confirmation退化，Mill保持静态。confirmation已经打开，禁止据此调参重跑；当前RC7不得宣称未知任务性能。下一代候选若另行授权，优先改进组/时间前向验证或未知任务默认不部署，而非增加Qwen调用。 | `results/UNSEEN-SIM-001.md`；A3/A4机器报告与独立复算 |
 | D-066 | 2026-11-15 | LOCKED | 冻结`BRACE-MSI-0.7.1rc1`为`0.7.0rc1`的发布补丁候选：只提高Native PyTRiO默认超时并内置经固定哈希校验的Qwen3.5-4B tokenizer-only资产；不改变工业模型、竞争参数、候选日程、SafetyGate或历史性能结论。镜像不得包含Qwen权重、工业模型权重、数据或凭据。真实容器在线提案、断网retain、383项回归及`docker save/load`全部通过后，`0.7.1rc1`替代`0.7.0rc1`作为本地上传入口；平台导入、模型校验和正式评测仍分别验收。 | `results/PYTRIO-ONLINE-001.md`、`results/RC71_VERIFICATION.json`、`results/RC71_CONTAINER_ACCEPTANCE.json` |
 | D-067 | 2026-11-15 | LOCKED | 报告证据链禁止逐轮重复读取同一公开validation并据此选择“最佳轮次”。逐轮只能展示当轮Gate上的稳定/候选指标与Harness真实部署决定；十轮策略完全冻结后，公开validation最多评估最终稳定checkpoint一次，且只作历史暴露的描述性确认。旧`PLATFORM-REPORT-SIM-001`/`OFFICIAL-DATA-REPORT-001` V1报告保留为界面与协议演示，但其轮次排名和泛化结论无效。 | 用户2026-11-15验证集选择污染审计；`REPORT-EVIDENCE-FIX-001`红绿测试与V2机器报告 |
+| D-068 | 2026-11-15 | LOCKED | 现有`platform_simulation.py`按JSONL行数均切十段且先开放标签的流程不得继续承担官方流程模拟。新模拟器采用双层评测：稳定模型先预测未见批次并封存，之后开放标签计算不反馈策略的Prequential指标，再按任务自然组生成Update/Gate并训练候选；最终确认集冻结后只读一次。Gas按自然批次与源内时间、Bearing按未见轴承寿命进度、Engine按完整unit构流；正式隐藏测试尚未开始且完全不可见，本地确认指标不得冒充官方隐藏成绩。现有RC、旧V1/V2报告和负证据全部保留。 | 用户2026-11-15架构级修改指令；本地官方包与完整Gas 10批只读审计；H-001 |
 
 ## 已被替代的历史决策
 

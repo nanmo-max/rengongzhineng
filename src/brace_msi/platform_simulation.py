@@ -1,4 +1,10 @@
-"""Local ten-round simulation of the native platform mount contract."""
+"""Legacy equal-row smoke simulation of the native mount contract.
+
+This module is retained only to reproduce historical RC evidence.  It is not a
+valid official-flow or performance simulator because it divides one labeled
+JSONL file by row offset.  New work must use ``official_flow_simulation`` and a
+frozen task-aware ``TaskStreamPlan``.
+"""
 
 from __future__ import annotations
 
@@ -33,7 +39,7 @@ def run_ten_round_simulation(
     experiment_name: str = "platform-native-simulation",
     advisor: PlatformAdvisor | None = None,
 ) -> dict[str, Any]:
-    """Materialize ten isolated batches and exercise the exact native runtime API."""
+    """Reproduce the historical low-fidelity equal-row smoke simulation."""
 
     data_path = Path(data_path).resolve()
     parent_checkpoint = Path(parent_checkpoint).resolve()
@@ -99,6 +105,8 @@ def run_ten_round_simulation(
     summary: dict[str, Any] = {
         "format": "brace-msi.platform-simulation.v1",
         "status": "completed",
+        "simulation_fidelity": "legacy_equal_row_slice",
+        "not_official_flow": True,
         "round_count": len(receipts),
         "decision_count": sum("decision" in row for row in receipts),
         "candidate_count": sum(bool(row["candidate_trained"]) for row in receipts),

@@ -884,6 +884,7 @@ def start_round(
     config: PlatformRuntimeConfig = PlatformRuntimeConfig(),
     *,
     advisor: PlatformAdvisor | None = None,
+    gate_data_path: Path | None = None,
 ) -> dict[str, Any]:
     """Execute one platform round and atomically publish the selected checkpoint."""
 
@@ -917,10 +918,39 @@ def start_round(
     parent = _NativeModel.load(parent_path)
     if "base_learning_rate" not in state:
         state["base_learning_rate"] = float(parent.meta["learning_rate"])
-    batch = _read_rows(Path(data_path), parent, require_answers=True)
-    update_indices, gate_indices = _split_indices(
-        batch["y"], parent.meta["task"], config.gate_fraction
-    )
+    update_batch = _read_rows(Path(data_path), parent, require_answers=True)
+    if gate_data_path is None:
+        batch = update_batch
+        update_indices, gate_indices = _split_indices(
+            batch["y"], parent.meta["task"], config.gate_fraction
+        )
+        partition_mode = "internal_split"
+        feedback_update_count = len(batch["ids"])
+        feedback_update_sha256 = batch["sha256"]
+        feedback_gate_sha256 = None
+    else:
+        gate_batch = _read_rows(Path(gate_data_path), parent, require_answers=True)
+        if set(update_batch["ids"]) & set(gate_batch["ids"]):
+            raise ValueError("explicit Update and Gate sample IDs overlap")
+        if len(update_batch["ids"]) < 2:
+            raise ValueError("explicit Update needs at least two samples")
+        batch = {
+            "path": update_batch["path"],
+            "ids": [*update_batch["ids"], *gate_batch["ids"]],
+            "x": np.concatenate((update_batch["x"], gate_batch["x"]), axis=0),
+            "y": np.concatenate((update_batch["y"], gate_batch["y"]), axis=0),
+            "sha256": hashlib.sha256(
+                (update_batch["sha256"] + gate_batch["sha256"]).encode("ascii")
+            ).hexdigest(),
+        }
+        update_indices = np.arange(len(update_batch["ids"]), dtype=np.int64)
+        gate_indices = np.arange(
+            len(update_batch["ids"]), len(batch["ids"]), dtype=np.int64
+        )
+        partition_mode = "explicit_update_gate"
+        feedback_update_count = len(update_batch["ids"])
+        feedback_update_sha256 = update_batch["sha256"]
+        feedback_gate_sha256 = gate_batch["sha256"]
     anchor_path = workspace / "anchor.npz"
     replay_path = workspace / "replay.npz"
     new_anchor = not anchor_path.exists()
@@ -1076,6 +1106,10 @@ def start_round(
             "round_index": round_index,
             "task": parent.meta["task"],
             "sample_count": len(batch["ids"]),
+            "partition_mode": partition_mode,
+            "feedback_update_sample_count": feedback_update_count,
+            "feedback_update_sha256": feedback_update_sha256,
+            "feedback_gate_sha256": feedback_gate_sha256,
             "update_count": len(update_indices),
             "gate_count": len(gate_indices),
             "anchor_count": len(anchor_x),

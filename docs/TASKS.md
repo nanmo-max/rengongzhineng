@@ -25,10 +25,23 @@ EVIDENCE-RSI-001(DONE)
   -> UNSEEN-REPORT-001(DONE)
   -> OFFICIAL-DATA-REPORT-001(DONE)
   -> REPORT-EVIDENCE-FIX-001(DONE)
+  -> OFFICIAL-FLOW-SIM-001(DONE_MIXED)
   -> FORMAL-RELEASE-001(BLOCKED_EXTERNAL)
 ```
 
 以上为当前正式重构图；`0.6.0rc1`及下方历史任务图保持冻结，新竞争候选只在独立分支演进。
+
+### OFFICIAL-FLOW-SIM-001 官方生命周期双层本地模拟
+
+- 状态：`DONE_MIXED`
+- 依赖：REPORT-EVIDENCE-FIX-001、PLATFORM-NATIVE-001
+- 优先级：P0（现有按行均切十段模拟器不符合任务自然分组，也没有先预测后反馈）
+- 目标：冻结现有RC与历史报告，新增独立`StreamPlan`、任务流构造器、预测封存、`ScoreVault`和分组Update/Gate入口；逐轮严格执行“未见批次预测→封存→标签反馈→Prequential计分→候选Gate→部署/保留”，最终确认集只在策略冻结后读取一次。
+- 数据边界：Gas父模型已见Batch 1，使用完整原始Batch 2—9构造十轮并保留Batch 10作最终确认；Bearing以未见完整轴承和寿命进度构流；Engine以完整unit分组构流。父训练ID、流ID和最终确认ID必须零交叉。
+- 完成标准：移除新入口的行号均切逻辑；Prequential与候选Gate指标分离；预测文件在标签反馈前封存并校验哈希；Bearing未来snapshot不可提前进入Replay；Engine unit不跨轮；调整输入文件名或JSONL行顺序不改变归属；最终确认只读一次且不反馈ActionPolicy；专项测试和完整回归通过，生成机器可审计本地模拟证据。
+- 停止条件：不得把本地最终确认称为官方隐藏测试；不得读取未来正式隐藏数据、调用官方试运行或覆盖原始数据；若本地数据无法满足十轮和独立确认，必须失败关闭或明确降级，不得按行伪造。
+- 设计与计划：`superpowers/specs/2026-11-15-official-flow-simulation-design.md`、`superpowers/plans/2026-11-15-official-flow-simulation.md`。
+- 证据：任务自然分组、预测封存、ScoreVault、显式Update/Gate和未来不物化测试全部通过；399项完整回归通过。A2三任务均10/10轮且父链有效，A/C部署0次，B部署1次；B相对静态流平均RMSE略降但本地确认RMSE由静态241.980799恶化为495.437675，作为负证据保留。详见`results/OFFICIAL-FLOW-SIM-001.md`。
 
 ### REPORT-EVIDENCE-FIX-001 报告验证选择污染修正
 

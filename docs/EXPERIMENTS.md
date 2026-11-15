@@ -402,3 +402,12 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 - 成功门：除A3协议门外，至少3次非零Token有效响应、至少1次建议被执行；若服务失败或全为确定性恢复，仍完成可安全完成的轮次并标记Agent门失败，不冒充PyTRiO成功。
 - 输出：新目录`D:/brace-msi-unseen/UNSEEN-SIM-001-A4/`；不覆盖A1/A2/A3，不消耗官方试运行，不同步SwanLab。
 - 证据：`results/UNSEEN-SIM-001.md`；报告JSON/HTML SHA-256为`AA3CA8F...AEE8D7`/`A0165511...E1E92B8`。confirmation已经打开，禁止据此调参重跑。
+
+## OFFICIAL-FLOW-SIM-001-A1/A2
+
+- 状态：`PROTOCOL_PASS_PERFORMANCE_MIXED_CONFIRMATION_EXPOSED`。
+- A1：三任务使用静态父模型完成十轮预测封存、后反馈和一次本地确认，候选数0；只验证流程。A1已经打开全部本地确认分区。
+- A2：配置在查看A1结果前已冻结为A/C竞争策略、B protocol；三任务分别3/10/3个真实候选、采用0/1/0，全部10/10轮、父链和ScoreVault硬门通过。A/C保持静态；B流平均RMSE从静态623.356135降至612.887552，但本地确认RMSE从241.980799恶化到495.437675。
+- 数据：Gas Batch 2—9流/Batch 10确认；Bearing未见轴承寿命进度流/完整轴承确认；Engine完整unit流/完整unit确认。父训练、流和确认ID/特征交叉0。
+- 资源：A/B/C CPU 5.734/1.797/6.203秒，峰值RSS约202.6/204.5/493.9 MiB；Token 0。SwanLab仅生成离线聚合目录，未同步。
+- 边界：A2确认是第2次历史暴露，只作负面诊断，禁止据此调参。正式隐藏测试尚未开始；官方试运行新增使用0次。证据见`results/OFFICIAL-FLOW-SIM-001.md`。

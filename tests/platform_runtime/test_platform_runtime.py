@@ -277,6 +277,55 @@ def test_start_round_continues_parent_without_official_package_tree(tmp_path: Pa
     assert not (tmp_path / "baselines").exists()
 
 
+def test_partitioned_round_never_trains_or_builds_buffers_from_gate(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    update = tmp_path / "update.jsonl"
+    gate = tmp_path / "gate.jsonl"
+    parent = tmp_path / "checkpoint.npz"
+    _write_parent(parent)
+    _write_data(update, count=20)
+    gate_rows = []
+    for index in range(6):
+        gate_rows.append(
+            {
+                "id": f"gate-{index:03d}",
+                "inputs": {"features": [9999.0 + index, 9999.0]},
+                "answer": "cold" if index < 3 else "hot",
+            }
+        )
+    gate.write_text(
+        "".join(json.dumps(row, separators=(",", ":")) + "\n" for row in gate_rows),
+        encoding="utf-8",
+    )
+    observed_training: list[np.ndarray] = []
+    original_fit = platform_runtime._NativeModel.fit
+
+    def recording_fit(model, values: np.ndarray, targets: np.ndarray, epochs: int):
+        observed_training.append(values.copy())
+        return original_fit(model, values, targets, epochs)
+
+    monkeypatch.setattr(platform_runtime._NativeModel, "fit", recording_fit)
+
+    receipt = start_round(
+        update,
+        parent,
+        tmp_path / "workspace",
+        tmp_path / "output",
+        PlatformRuntimeConfig(min_primary_improvement=-1.0, min_relative_improvement=-1.0),
+        gate_data_path=gate,
+    )
+
+    assert receipt["partition_mode"] == "explicit_update_gate"
+    assert receipt["feedback_update_sample_count"] == 20
+    assert receipt["gate_count"] == 6
+    assert observed_training and float(observed_training[0].max()) < 9999.0
+    with np.load(tmp_path / "workspace" / "anchor.npz", allow_pickle=False) as anchor:
+        assert float(anchor["x"].max()) < 9999.0
+    with np.load(tmp_path / "workspace" / "replay.npz", allow_pickle=False) as replay:
+        assert float(replay["x"].max()) < 9999.0
+
+
 def test_start_round_accepts_existing_empty_output_mount(tmp_path: Path) -> None:
     data = tmp_path / "data.jsonl"
     parent = tmp_path / "checkpoint.npz"

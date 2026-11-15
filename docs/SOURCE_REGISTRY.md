@@ -491,3 +491,11 @@ PyTRiO通用接口、Qwen3.5-4B基础模型平台校验和持久化Sampler路线
 - 修正：V2逐轮只复制当轮`metrics_before`、`metrics_candidate`和真实`deployed`；十轮冻结后只评估`round-10/checkpoint.npz`一次。每任务`public_validation_evaluations=1`，不存在`selected_round`/`selected_metrics`。
 - 产物：`D:/brace-msi-native-competitive/RC7-OFFICIAL-REPORT-SIM-V2-A2/`；详情见`docs/results/REPORT-EVIDENCE-FIX-001.md`。
 - 边界：公开validation已经历史暴露，V2单次结果仍不是独立测试或官方隐藏成绩；旧V1不删除，只降级为界面/协议演示。
+
+### L-EVIDENCE-011 官方流程模拟数据可用性审计
+
+- 类型：本地可核验数据事实与用户当前实现指令，不是正式SDK或隐藏测试证据。
+- 已核验：官方A父训练集为Gas Batch 1（445条），本机另有原始Batch 1—10；官方B validation包含3条完整未见轴承；官方C validation包含106个未见unit。现有`platform_simulation.py`确实按JSONL行数均切十段并在预测前向训练入口提供标签。
+- 实现边界：正式隐藏数据尚未开始、不可见；只能模拟协议、数据可见性和任务自然规律，不能承诺数值与正式隐藏评测一致。Gas/Bearing/Engine本地确认集只作一次性本地证据，不是官方隐藏指标。
+- 数据位置：`C:/Users/Administrator/Desktop/官方/Dataset/batch1.dat`至`batch10.dat`；`C:/Users/Administrator/Desktop/人工智能创新大赛/训练包/cpu-{a,b,c}-*/public/*.jsonl`。原始文件保持只读。
+- 实现结果：`OFFICIAL-FLOW-SIM-001`三任务各10轮、父链、自然分组、预测封存和一次本地确认通过；A2为混合/负性能证据，正式隐藏状态仍为未开始/不可用。机器摘要与边界见`results/OFFICIAL-FLOW-SIM-001.md`。

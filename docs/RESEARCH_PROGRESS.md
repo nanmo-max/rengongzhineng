@@ -644,3 +644,11 @@
 - V1和原展示文件保留并追加污染警示；最终V2-A2位于`D:/brace-msi-native-competitive/RC7-OFFICIAL-REPORT-SIM-V2-A2/`，页面视觉检查通过。
 - 专项`7 passed in 0.81s`；最终HEAD完整回归`390 passed in 151.76s`。
 
+## 2026-11-15：OFFICIAL-FLOW-SIM-001
+
+- 将正式本地复演从“父模型已见train按行均切十段”替换为任务自然`StreamPlan`：Gas自然批次/时间、Bearing寿命进度、Engine完整unit；旧入口只保留历史并标记低保真。
+- 新增预测封存与外部`ScoreVault`：每轮无标签预测先落盘并哈希，之后才物化反馈、Update和Gate；未来轮及最终确认不提前物化，Prequential指标不进入ActionPolicy。
+- `start_round`新增向后兼容的独立Gate能力；专项证明当前Gate不进入训练、Anchor或Replay。
+- 官方数据A2三任务均10/10轮、父链有效，候选/采用为3/0、10/1、3/0。B在同批Gate采用后跨未见轴承确认明显退化，作为负证据保留；A/C保持静态。
+- 生成本地官方要素JSON/HTML，明确`hidden_test_status=not_started_not_available`及确认集第2次历史暴露。最终完整回归`399 passed in 153.34s`；详情见`results/OFFICIAL-FLOW-SIM-001.md`。
+

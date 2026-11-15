@@ -1,5 +1,14 @@
 # 新会话恢复与交接
 
+## 2026-11-15官方生命周期模拟恢复入口（当前）
+
+1. `OFFICIAL-FLOW-SIM-001`已完成，当前无本地`READY`任务；唯一核心任务回到`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`。不要重复A1/A2或再次读取本地确认集调参。
+2. 新正式本地复演入口为`scripts/run_official_flow_simulation.py`和`src/brace_msi/official_flow_simulation.py`；旧`platform_simulation.py`按行均切入口仅用于历史RC复现，机器摘要明确标记`not_official_flow`。
+3. A2产物位于`D:/brace-msi-official-flow/OFFICIAL-FLOW-SIM-001-A2/`；官方要素报告为`report/official-flow-report.html`与JSON。正式隐藏测试尚未开始，报告不可作为官方成绩。
+4. A2三任务10/10轮、父链有效，候选/采用为A 3/0、B 10/1、C 3/0；B本地确认显著退化，属于负证据。A1已经先打开确认，A2为第2次历史暴露，禁止反向修改策略。
+5. PyTRiO在线有效性继续引用`PYTRIO-ONLINE-001`；A2本身Token为0。新脚本支持`--advisor pytrio`，但没有必要为接口证明重复消耗余额。A2 SwanLab仅离线聚合，未同步公网。
+6. 当前HEAD完整回归为399项通过。恢复后先读`results/OFFICIAL-FLOW-SIM-001.md`，不得把协议通过提升为性能或隐藏泛化通过。
+
 ## 2026-11-15未知任务复演后恢复入口（当前）
 
 1. `PYTRIO-ONLINE-001`、`UNSEEN-SIM-001`、`UNSEEN-REPORT-001`、`OFFICIAL-DATA-REPORT-001`和`REPORT-EVIDENCE-FIX-001`均已结束；当前唯一核心任务为`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`。不要重跑A3/A4、Gas/Bearing/Engine或使用已经打开的validation/confirmation调参。
