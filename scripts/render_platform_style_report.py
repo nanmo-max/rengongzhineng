@@ -14,6 +14,11 @@ TASK_NAMES = {
     "hydraulic": "B · 液压蓄能器状态分类",
     "mill": "C · 铣削刀具磨损预测",
 }
+OFFICIAL_TASK_NAMES = {
+    "A": "A · 气体传感器漂移分类",
+    "B": "B · 轴承寿命预测",
+    "C": "C · 发动机剩余寿命预测",
+}
 SECRET_MARKERS = ("api_key", "authorization", "trio_aq")
 
 
@@ -104,37 +109,124 @@ def _round_record(row: dict[str, Any], task_kind: str) -> dict[str, Any]:
     }
 
 
-def build_platform_style_report(source: dict[str, Any]) -> dict[str, Any]:
-    _assert_no_secrets(source)
+def _historical_round_record(profile: str, row: dict[str, Any]) -> dict[str, Any]:
+    index = int(row["round"])
+    adopted = row.get("model_selection") == "adopt"
+    return {
+        "round": index,
+        "adaptation_metrics": _metric_rows(
+            "classification" if profile == "A" else "regression",
+            row.get("public_validation_metrics") or {},
+        ),
+        "candidate_metrics": [],
+        "model_selection": "采用本轮模型" if adopted else "保留此前模型",
+        "experiment_record": {
+            "history": (
+                "首轮：读取官方父模型与冻结运行历史"
+                if index == 1
+                else f"读取至第{index - 1}轮的冻结实验历史"
+            ),
+            "hypothesis": "历史冻结运行未记录结构化实验假设",
+            "modification": {
+                "action": str(row.get("executed_action") or "noop"),
+                "epochs": "未记录",
+                "learning_rate": "未记录",
+                "training_sample_count": "未记录",
+            },
+            "advisor": {
+                "source": "historical_report",
+                "input_tokens": int(row.get("input_tokens", 0)),
+                "output_tokens": int(row.get("output_tokens", 0)),
+            },
+            "gate": {
+                "reason": "历史报告未记录门控原因",
+                "deployed": bool(row.get("deployed_by_harness")),
+            },
+            "resources": {
+                "cpu_seconds": float(row.get("cpu_seconds", 0.0)),
+                "runtime_seconds": float(row.get("wall_seconds", 0.0)),
+                "peak_rss_bytes": int(row.get("peak_rss_bytes", 0)),
+            },
+        },
+    }
+
+
+def _build_historical_tasks(source: dict[str, Any]) -> list[dict[str, Any]]:
     tasks = []
-    for task in source["tasks"]:
-        if int(task["round_count"]) != 10 or len(task["rounds"]) != 10:
+    for profile, task in source["tasks"].items():
+        if int(task["completed_rounds"]) != 10 or len(task["rounds"]) != 10:
             raise ValueError("platform-style report requires exactly ten completed rounds")
+        task_kind = "classification" if profile == "A" else "regression"
         tasks.append(
             {
-                "task_id": task["task"],
-                "display_name": TASK_NAMES.get(task["task"], str(task["task"])),
-                "task_kind": task["task_kind"],
+                "task_id": profile,
+                "display_name": OFFICIAL_TASK_NAMES.get(profile, profile),
+                "task_kind": task_kind,
                 "status": "记录完整",
                 "completed_rounds": 10,
                 "total_rounds": 10,
-                "final_adopted_model": _final_adopted_model(task),
-                "confirmation_sample_count": int(task["partition_counts"]["confirmation"]),
-                "cpu_seconds": sum(float(row.get("cpu_seconds", 0.0)) for row in task["rounds"]),
-                "runtime_seconds": sum(float(row.get("wall_seconds", 0.0)) for row in task["rounds"]),
-                "final_confirmation_metrics": _metric_rows(
-                    task["task_kind"], task["final_confirmation_metrics"]
-                ),
+                "final_adopted_model": f"第{int(task['selected_round'])}轮模型",
+                "confirmation_sample_count": int(task["evaluation_samples"]),
+                "evaluation_sample_label": "公开验证样本",
+                "metric_heading": "历史暴露公开验证指标（非官方）",
+                "cpu_seconds": float(task["cpu_seconds"]),
+                "runtime_seconds": float(task["wall_seconds"]),
+                "final_confirmation_metrics": _metric_rows(task_kind, task["selected_metrics"]),
                 "initial_confirmation_metrics": _metric_rows(
-                    task["task_kind"], task["initial_confirmation_metrics"]
+                    task_kind, task["rounds"][0]["public_validation_metrics"]
                 ),
-                "rounds": [_round_record(row, task["task_kind"]) for row in task["rounds"]],
+                "rounds": [_historical_round_record(profile, row) for row in task["rounds"]],
             }
         )
+    return tasks
+
+
+def build_platform_style_report(source: dict[str, Any]) -> dict[str, Any]:
+    _assert_no_secrets(source)
+    historical = source.get("format") == "brace-msi.local-platform-report-simulation.v1"
+    if historical:
+        tasks = _build_historical_tasks(source)
+    else:
+        tasks = []
+        for task in source["tasks"]:
+            if int(task["round_count"]) != 10 or len(task["rounds"]) != 10:
+                raise ValueError("platform-style report requires exactly ten completed rounds")
+            tasks.append(
+                {
+                    "task_id": task["task"],
+                    "display_name": TASK_NAMES.get(task["task"], str(task["task"])),
+                    "task_kind": task["task_kind"],
+                    "status": "记录完整",
+                    "completed_rounds": 10,
+                    "total_rounds": 10,
+                    "final_adopted_model": _final_adopted_model(task),
+                    "confirmation_sample_count": int(task["partition_counts"]["confirmation"]),
+                    "evaluation_sample_label": "确认集样本",
+                    "metric_heading": "本地独立确认集指标（非官方）",
+                    "cpu_seconds": sum(float(row.get("cpu_seconds", 0.0)) for row in task["rounds"]),
+                    "runtime_seconds": sum(float(row.get("wall_seconds", 0.0)) for row in task["rounds"]),
+                    "final_confirmation_metrics": _metric_rows(
+                        task["task_kind"], task["final_confirmation_metrics"]
+                    ),
+                    "initial_confirmation_metrics": _metric_rows(
+                        task["task_kind"], task["initial_confirmation_metrics"]
+                    ),
+                    "rounds": [_round_record(row, task["task_kind"]) for row in task["rounds"]],
+                }
+            )
     result = {
         "format": "brace-msi.platform-style-local-report.v1",
-        "source_experiment_id": source["experiment_id"],
-        "evidence_boundary": "local_confirmation_not_official_hidden_test",
+        "source_experiment_id": source.get("experiment_id", "PLATFORM-REPORT-SIM-001"),
+        "evidence_boundary": (
+            "historically_exposed_public_validation_not_official_hidden_test"
+            if historical
+            else "local_confirmation_not_official_hidden_test"
+        ),
+        "boundary_text": (
+            "本报告使用历史暴露的官方公开validation和冻结checkpoint；版式仅复用官方页面信息要素，不是官方隐藏测试、官方评分或新的参数选择。"
+            if historical
+            else "本报告使用冻结的本地模拟父模型与独立确认集，版式仅复用官方页面信息要素；不是官方隐藏测试、官方评分或平台试运行成绩。"
+        ),
         "official_score": False,
         "official_trial_consumed": bool(source.get("official_trial_consumed", False)),
         "advisor_model": source.get("advisor_model"),
@@ -199,11 +291,11 @@ def render_platform_style_html(report: dict[str, Any]) -> str:
             "<div class='summary-grid'>"
             f"<div><span>完成轮次</span><strong>{task['completed_rounds']} / {task['total_rounds']}</strong></div>"
             f"<div><span>最终采用</span><strong>{html.escape(task['final_adopted_model'])}</strong></div>"
-            f"<div><span>确认集样本</span><strong>{task['confirmation_sample_count']:,}</strong></div>"
+                f"<div><span>{html.escape(task['evaluation_sample_label'])}</span><strong>{task['confirmation_sample_count']:,}</strong></div>"
             f"<div><span>CPU 用时</span><strong>{task['cpu_seconds']:.6f} 秒</strong></div>"
             f"<div><span>运行时间</span><strong>{task['runtime_seconds']:.6f} 秒</strong></div>"
             "</div>"
-            "<h3>本地独立确认集指标（非官方）</h3>"
+            f"<h3>{html.escape(task['metric_heading'])}</h3>"
             f"<div class='metrics-grid'>{_metrics_html(task['final_confirmation_metrics'])}</div>"
             "<table><thead><tr><th>轮次</th><th>公开适应流指标</th><th>模型选择</th><th>实验记录</th></tr></thead>"
             f"<tbody>{''.join(round_rows)}</tbody></table></section>"
@@ -220,7 +312,7 @@ table{width:100%;border-collapse:collapse;margin-top:22px}th{background:#eee9e1;
 details summary{cursor:pointer;font-weight:600}.record{margin-top:12px;padding:12px 14px;background:var(--soft);border-radius:8px}.record p{display:grid;grid-template-columns:110px 1fr;gap:12px;margin:8px 0}.record b{font-size:12px}.record span{overflow-wrap:anywhere}
 @media(max-width:850px){.summary-grid{grid-template-columns:repeat(2,1fr)}.metrics-grid{grid-template-columns:1fr}table{display:block;overflow-x:auto}}
 </style></head><body><main><header class='hero'><h1>BRACE-MSI 本地正式流程复演</h1>
-<p class='boundary'><b>证据边界：</b>本报告使用冻结的本地模拟父模型与独立确认集，版式仅复用官方页面信息要素；不是官方隐藏测试、官方评分或平台试运行成绩。</p>
+<p class='boundary'><b>证据边界：</b>""" + html.escape(report["boundary_text"]) + """</p>
 <p>Agent：""" + html.escape(str(report.get("advisor_model") or "未启用")) + """　|　总Token：输入 """ + str(report["input_tokens"]) + " / 输出 " + str(report["output_tokens"]) + "</p></header>" + "".join(sections) + "</main></body></html>"
 
 

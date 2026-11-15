@@ -23,10 +23,23 @@ EVIDENCE-RSI-001(DONE)
   -> PYTRIO-ONLINE-001(DONE)
   -> UNSEEN-SIM-001(DONE_NEGATIVE)
   -> UNSEEN-REPORT-001(DONE)
+  -> OFFICIAL-DATA-REPORT-001(DONE)
   -> FORMAL-RELEASE-001(BLOCKED_EXTERNAL)
 ```
 
 以上为当前正式重构图；`0.6.0rc1`及下方历史任务图保持冻结，新竞争候选只在独立分支演进。
+
+### OFFICIAL-DATA-REPORT-001 Gas/Bearing/Engine官方要素风格报告
+
+- 状态：`DONE`
+- 依赖：PLATFORM-REPORT-SIM-001、UNSEEN-REPORT-001
+- 优先级：P0（用户要求对原始三任务生成同样报告）
+- 目标：复用RC7冻结A/B/C十轮checkpoint及`PLATFORM-REPORT-SIM-001`历史公开validation复演结果，生成与UNSEEN报告相同的信息层级和可展开逐轮记录。
+- 完成标准：Gas/Bearing/Engine各10轮；显示最终采用轮、公开验证样本、CPU/运行时间、Accuracy/Macro-F1或MAE/RMSE/NASA、逐轮模型选择、动作、Token和资源；缺失的历史假设/Gate字段明确显示“未记录”，不补造；显著标记历史暴露公开验证和非官方成绩。
+- 停止条件：不得重训、再次读取公开validation、调用PyTRiO或使用官方试运行；现有机器报告字段不足时只降级展示。
+- 产物：`D:/brace-msi-native-competitive/RC7-OFFICIAL-REPORT-SIM/platform-style/`下HTML与JSON。
+- 证据：三任务各10轮、30个展开记录、历史缺失字段明确降级为“未记录”、敏感标记扫描通过；专项4项通过。哈希与指标摘要见`results/OFFICIAL-DATA-REPORT-001.md`。
+
 
 ### UNSEEN-REPORT-001 官方要素风格的本地模拟报告
 

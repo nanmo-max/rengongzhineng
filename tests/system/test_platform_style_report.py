@@ -126,3 +126,101 @@ def test_html_is_readable_expandable_and_explicitly_non_official() -> None:
     assert "<details" in output
     assert "官方隐藏成绩" not in output
     assert "api_key" not in output.lower()
+
+
+def test_original_three_task_report_is_adapted_without_inventing_missing_hypotheses() -> None:
+    rounds = [
+        {
+            "round": index,
+            "public_validation_metrics": {"mae": 40.0 - index, "rmse": 50.0 - index, "nasa_score": 1000.0 - index},
+            "model_selection": "adopt" if index in {1, 9} else "retain_previous",
+            "candidate_trained": index in {1, 5, 9},
+            "deployed_by_harness": index == 9,
+            "executed_action": "replay_refit" if index in {5, 9} else ("incremental_update" if index == 1 else "noop"),
+            "cpu_seconds": 1.0,
+            "wall_seconds": 2.0,
+            "peak_rss_bytes": 1000,
+            "input_tokens": 0,
+            "output_tokens": 0,
+        }
+        for index in range(1, 11)
+    ]
+    source = {
+        "format": "brace-msi.local-platform-report-simulation.v1",
+        "official_score": False,
+        "simulation_only": True,
+        "data_scope": "historically_exposed_public_validation",
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tasks": {
+            "C": {
+                "completed_rounds": 10,
+                "selected_round": 9,
+                "selected_metrics": {"mae": 31.0, "rmse": 41.0, "nasa_score": 991.0},
+                "evaluation_samples": 9687,
+                "cpu_seconds": 10.0,
+                "wall_seconds": 20.0,
+                "rounds": rounds,
+            }
+        },
+    }
+
+    result = MODULE.build_platform_style_report(source)
+    task = result["tasks"][0]
+
+    assert result["evidence_boundary"] == "historically_exposed_public_validation_not_official_hidden_test"
+    assert task["display_name"] == "C · 发动机剩余寿命预测"
+    assert task["final_adopted_model"] == "第9轮模型"
+    assert task["evaluation_sample_label"] == "公开验证样本"
+    assert task["metric_heading"] == "历史暴露公开验证指标（非官方）"
+    assert task["final_confirmation_metrics"][2] == {
+        "key": "nasa_score",
+        "label": "NASA · 非对称评分",
+        "value": 991.0,
+    }
+    assert task["rounds"][0]["experiment_record"]["hypothesis"] == "历史冻结运行未记录结构化实验假设"
+    assert task["rounds"][0]["experiment_record"]["gate"]["reason"] == "历史报告未记录门控原因"
+
+
+def test_original_report_html_uses_public_validation_boundary() -> None:
+    source = {
+        "format": "brace-msi.local-platform-report-simulation.v1",
+        "official_score": False,
+        "simulation_only": True,
+        "data_scope": "historically_exposed_public_validation",
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tasks": {
+            "A": {
+                "completed_rounds": 10,
+                "selected_round": 1,
+                "selected_metrics": {"accuracy": 0.8, "macro_f1": 0.7},
+                "evaluation_samples": 100,
+                "cpu_seconds": 1.0,
+                "wall_seconds": 2.0,
+                "rounds": [
+                    {
+                        "round": index,
+                        "public_validation_metrics": {"accuracy": 0.8, "macro_f1": 0.7},
+                        "model_selection": "adopt" if index == 1 else "retain_previous",
+                        "candidate_trained": index == 1,
+                        "deployed_by_harness": index == 1,
+                        "executed_action": "incremental_update" if index == 1 else "noop",
+                        "cpu_seconds": 0.1,
+                        "wall_seconds": 0.2,
+                        "peak_rss_bytes": 1000,
+                        "input_tokens": 0,
+                        "output_tokens": 0,
+                    }
+                    for index in range(1, 11)
+                ],
+            }
+        },
+    }
+
+    output = MODULE.render_platform_style_html(MODULE.build_platform_style_report(source))
+
+    assert "A · 气体传感器漂移分类" in output
+    assert "公开验证样本" in output
+    assert "历史暴露公开验证指标（非官方）" in output
+    assert "本地独立确认集指标（非官方）" not in output

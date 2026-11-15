@@ -3,7 +3,7 @@
 - 最近同步：2026-11-15（Asia/Shanghai）
 - 当前阶段：`BRACE-MSI-0.7.1rc1`已完成本地发布验收；真实容器内PyTRiO、断网恢复、383项回归及`docker save/load`均通过，等待平台导入/模型校验
 - 当前路线：**保留平台父链/安全内核，先通过Native逐状态等价门，再迁移冻结日程、尺度适配Gate与受控PyTRiO建议** `[D-061]`
-- 当前唯一任务：`FORMAL-RELEASE-001`（`BLOCKED_EXTERNAL`）。`UNSEEN-REPORT-001`已从冻结A4证据生成官方要素风格的HTML/JSON；没有重训、额外PyTRiO调用或confirmation读取。
+- 当前唯一核心任务：`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`；`OFFICIAL-DATA-REPORT-001`已完成，等待用户在平台导入镜像、模型校验和正式试运行。
 - 稳定边界：全部历史RC和实验不改写；`0.5.0rc1`只作研究证据，不得上传。正式线从D-058开始只输出原生官方MLP续训checkpoint。A3之后禁止继续LLM调参 `[D-043]`
 - 官方试运行：已使用1/10次，剩余9/10次；该运行对应旧提交v2，不是RC4，正式评测仍为0/2 `[O-PLATFORM-006]`
 
@@ -19,6 +19,7 @@
 0g. `PYTRIO-ONLINE-001`已完成：Qwen3.5-4B基础模型在三个独立宿主进程中3/3返回严格合法非零Token结构化提案，累计1,103/581 Token，至少1次建议实际进入受控Harness；`0.7.1rc1`镜像内置固定哈希的tokenizer-only资产后，在4核8GB只读容器中不挂载宿主缓存也取得330/184 Token并执行候选。断网两次失败后只retain父模型。平台正式Token报告仍待试运行。
 0h. `UNSEEN-SIM-001`已完成负结果：Battery/Hydraulic/Mill各10轮，A4调用Qwen3.5-4B PyTRiO取得16次有效响应、15次执行，协议/Agent门通过；但确认集严格改善0/3，最佳均为静态round 0。结果仅为模拟父模型本地压力测试，不是官方成绩。
 0i. `UNSEEN-REPORT-001`已完成：单页HTML包含三任务摘要、最终确认指标、30轮模型选择和可展开实验记录；JSON提供同一机器字段。页面显著标注“本地独立确认集、非官方”，见`results/UNSEEN-REPORT-001.md`。
+0j. `OFFICIAL-DATA-REPORT-001`已完成：复用既有Gas/Bearing/Engine冻结十轮报告生成官方要素风格HTML/JSON，三任务各10轮、共30个展开记录；结果明确标注为历史暴露公开validation而非官方隐藏成绩，见`results/OFFICIAL-DATA-REPORT-001.md`。
 1. `DUAL-DATA-001`已完成：四缓冲区、Gate一轮隔离、Update+Replay候选集合、只读manifest、训练/评估分离句柄和未来诱饵阻断通过4项专项测试；完整回归`275 passed`。
 2. `DUAL-TXN-001`已完成：每批单决策、0至2候选、首候选结果触发升级、十批前缀、原子提交/恢复及影子配对收益通过5项专项测试；完整回归`280 passed`。
 3. `DUAL-VALUE-001`已完成：每任务隔离统计、身份无关证据画像、弱先验、延迟收益专用更新和性能—CPU/RSS/Token/模型体积Pareto前沿通过5项专项测试；完整回归`285 passed`。

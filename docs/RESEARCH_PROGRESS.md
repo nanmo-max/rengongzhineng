@@ -624,3 +624,11 @@
 - HTML/JSON SHA-256为`F9EFD518...A5EC798`/`BC5CCAF5...FDD65FE`；字段、展开记录和敏感标记扫描通过。完整说明见`results/UNSEEN-REPORT-001.md`。
 - 生成器专项2项及当前HEAD完整回归`385 passed in 156.71s`。
 
+## 2026-11-15：OFFICIAL-DATA-REPORT-001
+
+- 未重训、未重新读取公开validation、未调用PyTRiO或官方试运行；只转换`PLATFORM-REPORT-SIM-001`已冻结的Gas/Bearing/Engine十轮机器报告。
+- 生成三任务单页HTML及机器JSON：A/B/C各10轮，共30个可展开记录；展示公开验证样本、CPU/运行时间、Accuracy/Macro-F1或MAE/RMSE/NASA、模型选择、动作、Token和资源。
+- 最终采用轮与冻结证据一致：A第9轮（Macro-F1 0.725695）、B第1轮（RMSE 660.076488）、C第9轮（RMSE 51.949287）。缺失的历史假设、Gate理由和训练参数显示“未记录”，未补造字段。
+- HTML/JSON SHA-256为`A15445AB...90BEDEA`/`AB64E5A7...0B40ED1`；页面显著标注“历史暴露公开验证、非官方隐藏测试”，敏感标记扫描未发现API Key。完整说明见`results/OFFICIAL-DATA-REPORT-001.md`。
+- 生成器专项`4 passed`；当前HEAD完整回归`387 passed in 156.61s`。
+
