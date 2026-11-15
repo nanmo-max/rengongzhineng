@@ -5,6 +5,8 @@ ARG PIP_INDEX_URL=https://pypi.org/simple
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     BRACE_FORMAL_RELEASE=1 \
+    BRACE_PYTRIO_TOKENIZER_BUNDLE=1 \
+    MODELSCOPE_CACHE=/opt/brace-tokenizer-cache \
     PIP_DEFAULT_TIMEOUT=120 \
     PIP_RETRIES=10 \
     OMP_NUM_THREADS=4 \
@@ -18,6 +20,9 @@ COPY requirements.lock requirements-swanlab.lock requirements-pytrio.lock pyproj
 RUN python3 -m pip install --no-cache-dir --index-url "${PIP_INDEX_URL}" --only-binary=:all: -r requirements.lock
 RUN python3 -m pip install --no-cache-dir --index-url "${PIP_INDEX_URL}" -r requirements-swanlab.lock
 RUN python3 -m pip install --no-cache-dir --index-url "${PIP_INDEX_URL}" -r requirements-pytrio.lock
+COPY scripts/fetch_pytrio_tokenizer.py /tmp/fetch_pytrio_tokenizer.py
+RUN python3 /tmp/fetch_pytrio_tokenizer.py \
+    && rm -f /tmp/fetch_pytrio_tokenizer.py
 COPY src ./src
 RUN python3 -m pip install --no-cache-dir --no-deps .
 

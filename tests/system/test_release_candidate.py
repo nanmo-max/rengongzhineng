@@ -74,3 +74,13 @@ def test_source_archive_contains_only_selected_release_files(tmp_path: Path) -> 
         names = set(handle.namelist())
     assert f"{RELEASE_ID}/src/brace_msi/cli.py" in names
     assert not any("dataji/" in name or name.endswith(".pkl") for name in names)
+
+
+def test_formal_image_bundles_tokenizer_without_model_weights() -> None:
+    root = Path(__file__).resolve().parents[2]
+    dockerfile = (root / "Dockerfile").read_text(encoding="utf-8")
+
+    assert "fetch_pytrio_tokenizer.py" in dockerfile
+    assert "BRACE_PYTRIO_TOKENIZER_BUNDLE=1" in dockerfile
+    assert "MODELSCOPE_CACHE=/opt/brace-tokenizer-cache" in dockerfile
+    assert "model.safetensors" not in dockerfile
