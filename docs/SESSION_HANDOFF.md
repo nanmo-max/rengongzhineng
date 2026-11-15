@@ -2,7 +2,7 @@
 
 ## 2026-11-15未知任务复演后恢复入口（当前）
 
-1. `PYTRIO-ONLINE-001`与`UNSEEN-SIM-001`均已结束；当前唯一任务恢复为`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`。不要重跑A3/A4或使用已经打开的confirmation调参。
+1. `PYTRIO-ONLINE-001`与`UNSEEN-SIM-001`均已结束；当前唯一任务为`UNSEEN-REPORT-001 (IN_PROGRESS)`，完成冻结A4证据的本地易读报告后再回到`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`。不要重跑A3/A4或使用已经打开的confirmation调参。
 2. A4确实调用`Qwen/Qwen3.5-4B` PyTRiO：16次有效响应、15次建议执行、8,100/3,470输入/输出Token；协议和Agent门通过，但Battery/Hydraulic退化、Mill持平，严格改善0/3。证据见`docs/results/UNSEEN-SIM-001.md`。
 3. `0.7.1rc1`本地发布验收已完成：内置固定哈希tokenizer-only资产、容器真实PyTRiO 330/184 Token、断网retain、383项回归、禁入扫描及`docker save/load`通过。正式上传归档为`D:/brace-msi-native-competitive/RC71-CONTAINER-ACCEPTANCE-FINAL/brace-msi-0.7.1rc1-harness.tar`，SHA-256 `6BA798571F88CC88A6FB298FA63E99CE723DFCC057A3BDEB9EF103E69DCF3CFE`。
 4. 下一动作只允许：完成当前已登记的`UNSEEN-REPORT-001`文档任务，或由用户执行平台上传/校验/正式试运行。平台试运行前继续核对非零Token、父链、独立预测和64 MiB；不得再训练Qwen或重开工业模型参数。
