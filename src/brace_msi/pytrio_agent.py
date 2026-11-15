@@ -417,6 +417,21 @@ class PyTrioAgentClient:
             )
 
         response_hash = _sha256_text(sampled.text)
+        if sampled.input_tokens <= 0 or sampled.output_tokens <= 0:
+            if not self.config.allow_fallback:
+                raise RuntimeError(
+                    "PyTRiO proposal failed: zero_token_receipt"
+                ) from None
+            return self._fallback_outcome(
+                context,
+                prompt_hash=prompt_hash,
+                response_hash=response_hash,
+                input_tokens=max(0, sampled.input_tokens),
+                output_tokens=max(0, sampled.output_tokens),
+                started=started,
+                category="zero_token_receipt",
+                detail="TokenUsageError",
+            )
         try:
             proposal = parse_experiment_proposal(sampled.text)
         except (ValueError, TypeError, json.JSONDecodeError):
@@ -609,6 +624,15 @@ def build_agent_prompt(payload: Mapping[str, Any]) -> str:
             allowed_actions = {Action.NOOP}
     else:
         allowed_actions = set(_ALLOWED_TOOLS)
+    requested_parameters = payload.get("capabilities", {}).get("allowed_parameters")
+    if isinstance(requested_parameters, list):
+        allowed_parameters = sorted(
+            value
+            for value in _ALLOWED_PARAMETER_KEYS
+            if value in requested_parameters
+        )
+    else:
+        allowed_parameters = sorted(_ALLOWED_PARAMETER_KEYS)
     schema = {
         "schema_version": PROPOSAL_SCHEMA_VERSION,
         "action": sorted(action.value for action in allowed_actions),
@@ -616,7 +640,7 @@ def build_agent_prompt(payload: Mapping[str, Any]) -> str:
             action.value: _ALLOWED_TOOLS[action]
             for action in sorted(allowed_actions, key=lambda item: item.value)
         },
-        "parameters_allowed": sorted(_ALLOWED_PARAMETER_KEYS),
+        "parameters_allowed": allowed_parameters,
         "required_fields": [
             "schema_version",
             "action",

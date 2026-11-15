@@ -22,6 +22,11 @@
 - COMPOSE-A1：`INVALID_CONFIGURATION`。虽然B路由进入protocol，但配置仍设`max_training_rounds=3`，导致旧协议第4—10轮未训练，不能代表`0.6.0rc1`；A/B/C候选总数仅9而非16。结果保留但不用于发布，未读取validation。
 - COMPOSE-A2预注册：`RUNNING_TRAIN_INTERNAL`。唯一修正是`max_training_rounds=10`；A/C仍由固定日程限制为各3候选，B完整执行10候选。成功标准：候选总数16，B路由与旧protocol测试等价，A/C结果复现A5；不读取validation。
 - COMPOSE-A2：`COMPLETED_RELEASE_COMPOSITION_TRAIN_INTERNAL`。候选数A/B/C=`3/10/3`，接受数均1，父链均有效；A/C复现DEV-A5，B复现protocol行为。摘要SHA-256 `CBF2FF87DF6DB1252E54F827FD2A6C131F4D2A7236C0AEB09B28E0E859D115C5`，配置SHA-256 `66BAE85D4DA6A50BA66EB64C89E431A049BC30F4D18170C3388F77DDA6C20314`。公开validation未重开。
+- NATIVE-PYTRIO-A1：`COMPLETED_MIXED_NOT_ACCEPTED`。第1轮服务返回376/311个非零Token及合法action，但包含Native未执行的额外参数，建议被安全拒绝；第2/3轮各两次RuntimeError后retain，Token为0。没有把失败冒充Agent成功。摘要SHA-256 `D05760D35998D314DB16125E2218528CAEBC3C17B16D61F83076EFCE6E3F64FF`。
+- NATIVE-PYTRIO-A2：`COMPLETED_PARTIAL`。首轮Qwen建议被执行，362/208 Token；后两轮同进程内各两次RuntimeError并retain。提示词收紧已解决参数拒绝，但连续服务调用仍不稳定。
+- NATIVE-PYTRIO-A3预注册：`READY_SINGLE_RECOVERY_CALL`。使用全新进程继续A2已提交的3轮历史，仅调用第4轮一次（仍允许SDK内部一次重试）；若获得非零Token且建议执行，则与A1/A2首轮共同构成3次非零调用证据。无论成败停止远程验收，不扩大费用。
+- NATIVE-PYTRIO-A3：`BLOCKED_EXTERNAL_RETAINED`。全新进程继续3轮历史，但两次RuntimeError、Token为0，执行noop/retain；摘要SHA-256 `DA70C131F519304CA63D2DECA4A9B450E2467B94F49CA8DBDA336CC02E8E7B64`。A1/A2合计只有2次非零Token响应、1次建议执行，未达到3次门，不再消耗余额。
+- SWANLAB-NATIVE-RC-A1：`COMPLETED`。COMPOSE-A2的A/B/C三项聚合离线记录经敏感扫描后同步到`brace-msi-platform-native`，各112条；链接与边界见`results/NATIVE-COMPETITIVE-RC-001-PYTRIO-SWANLAB.md`。
 
 ## PLATFORM-NATIVE-CONTAINER-002-A2-FINAL
 

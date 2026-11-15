@@ -725,6 +725,7 @@ def _decision_for_round(
                 Action.INCREMENTAL_UPDATE.value,
                 Action.REPLAY_REFIT.value,
             ],
+            "allowed_parameters": ["epochs", "learning_rate"],
             "family_switch": False,
             "bounded_hpo": False,
         },

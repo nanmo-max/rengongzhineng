@@ -104,6 +104,17 @@ def test_valid_structured_proposal_records_only_hashes_and_usage() -> None:
     assert transport.calls[0]["timeout_seconds"] == 30.0
 
 
+def test_zero_token_response_never_counts_as_pytrio_evidence() -> None:
+    client = PyTrioAgentClient(
+        PyTrioAgentConfig(allow_fallback=False),
+        transport=FakeTransport(SamplingResult(valid_response(), 0, 0)),
+        fallback=fallback,
+    )
+
+    with pytest.raises(RuntimeError, match="zero_token_receipt"):
+        client.propose(context())
+
+
 @pytest.mark.parametrize(
     "raw",
     [
@@ -226,6 +237,19 @@ def test_prompt_only_advertises_runtime_executable_actions() -> None:
         "replay_refit",
     ]
     assert set(schema["tool_mapping"]) == set(schema["action"])
+
+
+def test_prompt_only_advertises_runtime_executable_parameters() -> None:
+    payload = context().to_payload()
+    payload["capabilities"]["allowed_parameters"] = ["epochs", "learning_rate"]
+
+    prompt = build_agent_prompt(payload)
+
+    schema_line = next(
+        line for line in prompt.splitlines() if line.startswith("PROPOSAL_SCHEMA=")
+    )
+    schema = json.loads(schema_line.split("=", 1)[1])
+    assert schema["parameters_allowed"] == ["epochs", "learning_rate"]
 
 
 def test_prompt_exposes_minimum_candidate_policy_without_task_identity_rules() -> None:

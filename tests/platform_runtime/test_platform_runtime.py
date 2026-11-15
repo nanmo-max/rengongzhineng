@@ -17,6 +17,7 @@ from brace_msi.platform_runtime import (
     submit_predictions,
 )
 from brace_msi.platform_simulation import run_ten_round_simulation
+from brace_msi.platform_advisor import build_platform_advisor
 from brace_msi.policies import Action
 from brace_msi.pytrio_agent import (
     AdvisorOutcome,
@@ -822,4 +823,31 @@ def test_competitive_mode_can_reuse_verified_protocol_for_declared_profile(
     assert routed["accepted_count"] == legacy["accepted_count"]
     assert routed["final_metrics"] == legacy["final_metrics"]
     assert routed["final_checkpoint_sha256"] == legacy["final_checkpoint_sha256"]
+
+
+def test_pytrio_failure_retains_without_training(tmp_path: Path) -> None:
+    class FailingTransport:
+        def sample(self, prompt: str, **kwargs: object):
+            raise TimeoutError("offline")
+
+    data = tmp_path / "data.jsonl"
+    parent = tmp_path / "checkpoint.npz"
+    _write_data(data, count=60)
+    _write_parent(parent, profile="A")
+
+    receipt = start_round(
+        data,
+        parent,
+        tmp_path / "workspace",
+        tmp_path / "output",
+        PlatformRuntimeConfig(policy_mode="competitive"),
+        advisor=build_platform_advisor(transport=FailingTransport()),
+    )
+
+    assert receipt["decision"]["advisor_source"] == "deterministic_recovery"
+    assert receipt["decision"]["advisor_receipt"]["status"] == "fallback_after_retry"
+    assert receipt["decision"]["executed_action"] == "noop"
+    assert receipt["candidate_trained"] is False
+    assert receipt["input_tokens"] == 0
+    assert receipt["output_tokens"] == 0
 

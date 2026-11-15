@@ -42,7 +42,7 @@
 | R-031 | P1 | 公开源码仓库没有项目级许可证 | 评委要求明确源码再利用许可或开源声明 | 依赖许可证与源码许可证分开说明；由权利人选择MIT/Apache-2.0等项目许可证后再提交 | 队长 | OPEN：仓库已公开分支但未虚构许可证，需队长作法律选择 |
 | R-032 | P0 | 公开validation一次性门控后继续调参导致选择偏差 | 根据PAPER-FUSION结果重开validation或扩大候选 | 单次打开锁、结果SHA、D-046冻结混合门控；后续只在隐藏测试确认 | 技术负责人 | MITIGATED/OPEN：本轮只打开一次并停止；隐藏泛化仍未知 |
 | R-033 | P1 | PaperFusion模型产物过大或被错误打包进镜像 | C模型约456MB、运行中峰值约3.20GB | `.dockerignore`排除joblib；镜像只含代码；运行时挂载数据并在输出卷训练；4核8GB容器复验 | 技术负责人 | MITIGATED：RC4镜像240,701,023字节且无权重；4核8GB断网训练完成、峰值RSS 3,198,783,488字节，运行时模型只存在输出卷。证据`docs/results/RC4_CONTAINER_ACCEPTANCE.json` |
-| R-034 | P0 | 正式提交声明使用Agent但运行时静默退回确定性策略 | 平台报告Token为0且流程仍完成 | provider显式选择；PyTRiO模式记录触发、重试、Token和恢复收据；提交前核对模型、镜像/源码绑定和非零调用收据 | 技术负责人 | REALIZED/MITIGATED_LOCAL/OPEN_PLATFORM：0.6.0rc1镜像默认`BRACE_ADVISOR=pytrio`，每轮决策均记录advisor来源、Token和失败原因；断网验收显式覆盖为deterministic且未冒充Agent成功。下一次平台试运行仍必须检查非零Token与收据 |
-| R-035 | P0 | 基础Qwen3.5-4B结构化提案可靠性低于A3 Sampler | 历史新留出schema仅83.33%，任一非法响应可使严格正式运行失败 | 保留严格schema与失败关闭；基础模型候选仅在平台校验通过后使用；首个新试运行核对非零Token、10轮完成和非法响应数，不用隐藏成绩反向调prompt | 技术负责人 | OPEN：历史基础模型留出证据已知；本机单次在线Smoke无收据，尚不能证明新候选在线可靠性 |
+| R-034 | P0 | 正式提交声明使用Agent但运行时静默退回确定性策略 | 平台报告Token为0且流程仍完成 | provider显式选择；PyTRiO模式记录触发、重试、Token和恢复收据；提交前核对模型、镜像/源码绑定和非零调用收据 | 技术负责人 | MITIGATED_LOCAL/OPEN_PLATFORM：Native在线A1/A2共获得2次非零Token响应，A2有1次建议实际执行；Token零与服务RuntimeError均显式retain且不计Agent成功。第三次非零调用被外部服务阻塞，下一次平台试运行仍必须核对 |
+| R-035 | P0 | 基础Qwen3.5-4B结构化提案可靠性低于A3 Sampler | 历史新留出schema仅83.33%，任一非法响应可使严格正式运行失败 | 提示词只广告Native可执行action/parameter；保留严格schema与失败关闭；首个新试运行核对非零Token、10轮完成和非法响应数 | 技术负责人 | PARTIAL/OPEN_PLATFORM：在线A1暴露参数能力过宽，收紧为`epochs/learning_rate`后A2首轮建议合法并执行；连续调用仍发生外部RuntimeError，需平台环境复验 |
 
 风险关闭必须在本表填写证据路径，不得仅写“已解决”。
