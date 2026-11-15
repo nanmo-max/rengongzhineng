@@ -1,7 +1,7 @@
 {
   "format": "brace-msi.release-verification.v1",
   "release_id": "BRACE-MSI-0.7.1rc1",
-  "runtime_commit": "624a9c4db392eda068443750e9ed25cc4258f3d5",
+  "runtime_commit": "45fc8f73732f101a163ac4581e716380de64bc35",
   "pytest": {
     "status": "PASS",
     "passed": 383,
