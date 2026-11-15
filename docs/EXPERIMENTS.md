@@ -333,3 +333,12 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 - SwanLab：三任务各112条聚合记录公开同步，敏感字段扫描通过。
 - 归档：`docker save` tar 241,897,984字节，SHA-256 `B4EF8820FE38B4479B16657A85594719EB86CA7BAD157C0B484DDF4715FB1BD7`，重载通过。
 - 边界：没有使用官方试运行；容器训练内指标不作为新独立性能结论；平台镜像/模型/续训/评测状态待外部验证。
+
+## PLATFORM-REPORT-SIM-001-A1
+
+- 状态：`PASS_LOCAL_PROTOCOL_SIMULATION`。
+- 输入：RC7修复后容器的A/B/C各10轮checkpoint；三个官方训练包的历史暴露`public/validation.jsonl`。
+- 行为：逐轮只读评估，按A Macro-F1最大、B/C RMSE最小模拟官方“采用本轮/保留此前最佳”；不训练、不修改checkpoint。
+- 结果：A/B/C均10/10轮，最终采用第9/1/9轮；共25,972条预测；指标与D-063冻结边界一致。
+- 产物：`D:/brace-msi-native-competitive/RC7-OFFICIAL-REPORT-SIM/report.json`与`report.html`；详情见`results/PLATFORM-REPORT-SIM-001.md`。
+- 边界：公开validation历史暴露；Token为本地确定性容器记录0，不冒充在线或官方成绩；官方试运行新增使用0次。

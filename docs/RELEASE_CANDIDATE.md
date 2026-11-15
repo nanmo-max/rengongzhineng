@@ -24,13 +24,13 @@
 | 平台镜像/模型/续训校验 | BLOCKED_EXTERNAL | 尚未上传，正式SDK字段和挂载未知 |
 | 正式评测 | NOT_RUN | 本任务未消耗官方试运行 |
 
-当前归档：`D:/brace-msi-release/BRACE-MSI-0.6.0rc1/BRACE-MSI-0.6.0rc1-image-clean.tar`，SHA-256 `F98FB679D1216564634382E00CC105980C7857021BE33F99A59A240496CBC62D`。完整证据见[PLATFORM-NATIVE-001.md](results/PLATFORM-NATIVE-001.md)。在平台显示“镜像可用”并通过新版本校验前，不能宣称正式通过；旧`0.5.0rc1/0.5.1rc1`不得代替。
+历史0.6归档：`D:/brace-msi-release/BRACE-MSI-0.6.0rc1/BRACE-MSI-0.6.0rc1-image-clean.tar`。它只保留Protocol RC追溯，不得代替本文顶部的0.7竞争候选。
 
 ## 历史候选：0.3.0rc3
 
 ## 结论
 
-`BRACE-MSI-0.3.0rc3`是当前本地正式候选。它在RC2确定性Harness、A/B/C官方训练器与冻结性能参数上增加PyTRiO 0.2.9客户端、A3持久化Sampler的结构化动作意图，以及训练前ActionSandbox和训练后SafetyGate。`BRACE-MSI-0.1.0rc1`、`0.2.0rc2`、A1失败和A2负对照均保留为历史，不回写。
+`BRACE-MSI-0.3.0rc3`是历史候选，不是当前上传入口。它在RC2确定性Harness、A/B/C官方训练器与冻结性能参数上增加PyTRiO 0.2.9客户端、A3持久化Sampler的结构化动作意图，以及训练前ActionSandbox和训练后SafetyGate。`BRACE-MSI-0.1.0rc1`、`0.2.0rc2`、A1失败和A2负对照均保留为历史，不回写。
 
 RC3不包含原始数据、A/B/C检查点、Sampler权重、Embedding、API密钥或私有日志。模型路径和凭据只在平台运行时注入。公开验证已历史暴露，三任务指标不是隐藏测试或官方成绩。
 
@@ -53,7 +53,7 @@ RC3不包含原始数据、A/B/C检查点、Sampler权重、Embedding、API密�
 
 机器证据见`docs/results/RC3_CONTAINER_ACCEPTANCE.json`与`docs/results/RC3_VERIFICATION.json`；PyTRiO与三任务证据见`docs/results/PYTRIO-COMPETITIVE-001-A1.md`。
 
-## 当前上传入口
+## 历史0.3上传入口（禁止用于当前提交）
 
 - Harness镜像归档：`D:/brace-msi-release/BRACE-MSI-0.3.0rc3/BRACE-MSI-0.3.0rc3-image-clean.tar`
 - SHA-256：`0daef2e0e66cd2d3bc809a5d836a03020d1f90d677df91830fedc4feeb6d325a`
@@ -61,7 +61,7 @@ RC3不包含原始数据、A/B/C检查点、Sampler权重、Embedding、API密�
 - 模型基座：`Qwen/Qwen3.5-4B`
 - PyTRiO API Key：只填平台字段，不写入镜像、源码仓库或作品文档
 
-## 生成最终交付目录
+## 历史0.3交付命令（仅追溯）
 
 在干净Git工作树、最终提交和验证证据完成后执行：
 

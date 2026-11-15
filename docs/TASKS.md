@@ -19,10 +19,19 @@ EVIDENCE-RSI-001(DONE)
   -> FORMAL-CONTINUATION-RC-001(DONE)
   -> PLATFORM-NATIVE-001(DONE)
   -> NATIVE-COMPETITIVE-RC-001(DONE_LOCAL_EXTERNAL_BLOCK)
+  -> PLATFORM-REPORT-SIM-001(DONE)
   -> FORMAL-RELEASE-001(BLOCKED_EXTERNAL)
 ```
 
 以上为当前正式重构图；`0.6.0rc1`及下方历史任务图保持冻结，新竞争候选只在独立分支演进。
+
+### PLATFORM-REPORT-SIM-001 官方报告字段本地复演
+
+- 状态：`DONE`
+- 依赖：NATIVE-COMPETITIVE-RC-001、O-PLATFORM-010
+- 目标：不消耗官方试运行，以冻结RC7轮次checkpoint和历史暴露公开validation复演官方报告的10轮、逐轮指标、模型采用、资源和Token字段。
+- 证据：A/B/C均10/10轮，共25,972条公开验证预测；模拟最终采用第9/1/9轮，指标与冻结性能边界一致；机器JSON/HTML和哈希见`results/PLATFORM-REPORT-SIM-001.md`。
+- 边界：只验证报告流程，不是隐藏测试、官方成绩或新选型，不得据此重开调参。
 
 ### NATIVE-COMPETITIVE-RC-001 原生竞争候选冲刺
 

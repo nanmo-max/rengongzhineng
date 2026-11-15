@@ -2,7 +2,7 @@
 
 > 本清单不保存任何API Key。表中“已准备”仅表示本地材料存在，不代表官方平台已经校验或正式评测通过。
 
-> 2026-11-15正式镜像警告：只上传`BRACE-MSI-0.5.1rc1-image-clean.tar`。`0.5.0rc1`是异构模型研究RC，已标记`DO_NOT_UPLOAD`，不符合O-PLATFORM-008已实际执行的原生父检查点续训语义。
+> 2026-11-15正式镜像警告：只上传最终交付目录中的`BRACE-MSI-0.7.0rc1-image-clean.tar`。0.5.x是历史/研究RC，0.6.0是Protocol RC，均不得代替当前竞争候选。
 
 ## 提交表单
 
@@ -10,9 +10,9 @@
 |---|---|---|---|
 | 模型类型 | 基础模型 `Qwen/Qwen3.5-4B` | 已通过历史平台校验 | 持久化Sampler此前未通过平台校验；按D-050使用基础模型，不填写Sampler路径 |
 | 完整Sampler权重路径 | 不适用 | 不填写 | 不把历史A3路径用于本版本 |
-| 训练记录链接 | `https://swanlab.cn/@nanmo-max/brace-msi-final` | 已同步并核验 | 公开项目含Gas/Bearing/Engine三个`FINISHED`实验，每项10条聚合记录 |
-| Harness镜像 | `BRACE-MSI-0.5.1rc1-image-clean.tar` | 本地已准备，平台未校验 | SHA-256：`6331280b384b89b2315cfad12551fbdf7855cac2c2ef2d9712464cf23334e181`；上传后必须等待“镜像可用”并另做模型/续训校验 |
-| 源码仓库链接 | `https://github.com/nanmo-max/rengongzhineng/tree/codex/generalist-q1-sprint` | 分支已存在；本轮提交待推送 | 未覆盖远端main或历史RC标签；正式运行时代码提交`0481866` |
+| 训练记录链接 | `https://swanlab.cn/@nanmo-max/brace-msi-platform-native` | 已同步并核验 | A/B/C三项聚合记录各112条；不含逐样本数据、检查点或凭据 |
+| Harness镜像 | `D:/brace-msi-release/BRACE-MSI-0.7.0rc1-final/BRACE-MSI-0.7.0rc1-image-clean.tar` | 本地已准备，平台未校验 | SHA-256：`b4ef8820fe38b4479b16657a85594719eb86ca7bad157c0b484ddf4715fb1bd7`；上传后必须等待“镜像可用”并另做模型/续训校验 |
+| 源码仓库链接 | `https://github.com/nanmo-max/rengongzhineng/tree/codex/native-competitive-rc` | 本地分支已冻结；待确认远端推送完成 | 不覆盖远端main或历史RC标签 |
 | PyTRiO API Key | 由队长在平台字段中粘贴 | 人工填写 | 不通过聊天、Git、作品文档或日志传递 |
 | 作品文档 | `D:/brace-msi-release/BRACE-MSI-0.4.0rc1-submission-materials/BRACE-MSI-作品说明书.docx` | 已生成并校验 | 无官方模板；指导教师暂不填写；PDF预览为`BRACE-MSI-作品说明书-最终版.pdf` |
 
@@ -21,7 +21,7 @@
 ## 镜像上传核对
 
 - 上传的是`docker save`生成的`.tar`，不是源码ZIP或Docker构建上下文；
-- 本地文件大小为241,774,080字节；镜像内部大小为241,750,529字节；
+- 本地文件大小为241,897,984字节；镜像内部大小为241,874,808字节；
 - 镜像平台为linux/amd64，默认用户UID 10001；
 - 镜像不含原始数据、A/B/C检查点、Sampler权重、Embedding或密钥；
 - 平台选择镜像后再执行“校验并保存新版本”；
@@ -31,17 +31,17 @@
 
 - 只推送源码、配置、测试和脱敏聚合证据；
 - 不推送`D:/brace-msi-*`运行目录、官方训练包、模型检查点、镜像tar、API Key或逐样本日志；
-- 历史RC分支和标签保持不变；新候选只推送独立`codex/generalist-q1-sprint`分支；
-- 不覆盖main，不移动任何历史标签；0.5.1rc1是否另建标签由队长在平台校验后决定；
+- 历史RC分支和标签保持不变；新候选只推送独立`codex/native-competitive-rc`分支；
+- 不覆盖main，不移动任何历史标签；0.7.0rc1是否另建标签由队长在平台校验后决定；
 - 公布仓库前必须由权利人选择项目源码许可证。没有许可证时不得写“本项目已按某许可证开源”。
 
 ## SwanLab核对
 
 - 使用SDK 0.10.0及以上；当前冻结环境为0.10.4；
-- 项目建议名：`brace-msi-final`；实验名分别为`gas-final`、`bearing-final`、`engine-final`，或按比赛平台最终规范调整；
+- 当前公开项目：`brace-msi-platform-native`；A/B/C三项聚合运行链接见`docs/results/NATIVE-COMPETITIVE-RC-001-PYTRIO-SWANLAB.md`；
 - 记录至少包括轮次、候选动作、主/次指标、是否接受、CPU秒、墙钟、峰值RSS、候选数和回滚数；
 - 不记录特征、标签、样本ID、预测明细、密钥、完整Sampler路径或私有平台字段；
-- 已由SwanLab API确认项目公开、三个实验均`FINISHED`且指标曲线存在；提交前仍建议用未登录浏览器人工打开一次；
+- 三项均已完成112条聚合记录同步；提交前仍建议用未登录浏览器人工打开一次；
 - 若比赛要求一个统一实验链接，则建立项目概览或分组页面，不拼造不存在的URL。
 
 ## 最终人工操作
@@ -49,8 +49,8 @@
 1. 在平台选择已经上传并校验的Harness镜像；
 2. 模型类型选择基础模型`Qwen/Qwen3.5-4B`，不填写Sampler路径；
 3. 在平台直接填写PyTRiO API Key；
-4. 粘贴SwanLab项目链接`https://swanlab.cn/@nanmo-max/brace-msi-final`；
-5. 分支推送后粘贴`https://github.com/nanmo-max/rengongzhineng/tree/codex/generalist-q1-sprint`；
+4. 粘贴SwanLab项目链接`https://swanlab.cn/@nanmo-max/brace-msi-platform-native`；
+5. 分支推送后粘贴`https://github.com/nanmo-max/rengongzhineng/tree/codex/native-competitive-rc`；
 6. 上传作品说明书；
 7. 指导教师字段按当前要求留空；
 8. 截图保存平台校验成功页面和版本号。

@@ -11,7 +11,7 @@
 
 ## 2026-11-13受控双闭环重构恢复入口（历史）
 
-> 历史更新：O-PLATFORM-008记录旧提交被平台以“未基于baseline/父检查点真实续训”拒绝，随后形成`0.5.1rc1`。该入口已被本文件顶部的`0.6.0rc1`平台原生RC恢复入口替代；此段只保留追溯。
+> 历史更新：O-PLATFORM-008记录旧提交被平台以“未基于baseline/父检查点真实续训”拒绝，随后形成`0.5.1rc1`。该入口已被本文件顶部的`0.7.0rc1`原生竞争RC恢复入口替代；此段只保留追溯。
 
 1. 当前路线以D-051/D-052/D-057及`docs/superpowers/specs/2026-11-13-controlled-dual-loop-design.md`为准；既有`0.4.1rc1`与历史实验冻结，不得改写。
 2. `GENERALIST-MODEL-001`与`DUAL-RC-001`已`DONE`：A保留父模型，B/C冻结固定HGB父集成；禁止重开validation调权重。当前唯一任务为`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`。
