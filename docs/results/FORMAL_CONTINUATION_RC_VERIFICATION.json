@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "release_id": "BRACE-MSI-0.5.1rc1",
+  "runtime_commit": "04818664feb0e21ae52f6cf60e98f9626620207e",
+  "pytest": {
+    "status": "PASS",
+    "passed": 333,
+    "command": "D:/anaconda3/python.exe -m pytest -q --tb=short",
+    "duration_seconds": 131.98
+  },
+  "focused_tests": {
+    "status": "PASS",
+    "passed": 18,
+    "scope": "formal release boundary, native A/B/C two-generation lineage, release packaging"
+  },
+  "clean_environment": {
+    "status": "PASS",
+    "kind": "linux_container",
+    "version": "0.5.1rc1",
+    "uid": 10001
+  },
+  "pip_check": {
+    "status": "PASS",
+    "scope": "release container"
+  },
+  "compileall": {
+    "status": "PASS",
+    "scope": "/app/src in release container"
+  },
+  "official_test_opportunities_used": 0
+}

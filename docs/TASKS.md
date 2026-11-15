@@ -16,7 +16,7 @@ EVIDENCE-RSI-001(DONE)
   -> DUAL-EXPERIMENT-001(DONE_MIXED)
   -> GENERALIST-MODEL-001(DONE)
   -> DUAL-RC-001(DONE)
-  -> FORMAL-CONTINUATION-RC-001(IN_PROGRESS)
+  -> FORMAL-CONTINUATION-RC-001(DONE)
   -> FORMAL-RELEASE-001(BLOCKED_EXTERNAL)
 ```
 
@@ -117,12 +117,13 @@ EVIDENCE-RSI-001(DONE)
 
 ### FORMAL-CONTINUATION-RC-001 原生父检查点续训正式候选
 
-- 状态：`IN_PROGRESS`
+- 状态：`DONE`
 - 依赖：DUAL-RC-001、O-PLATFORM-008
 - 优先级：P0，唯一当前任务
 - 完成标准：正式镜像禁用全部异构研究模型命令；A/B/C均以官方训练器从官方baseline生成子checkpoint，再从子checkpoint续训生成孙checkpoint；schema、标准化、Adam、epoch、step和父哈希链可验证；独立预测、64 MiB、完整回归、4核8GB断网及`docker save/load`通过。
 - 停止条件：需要猜测正式SDK字段、原训练包哈希变化、任一父链/schema/优化器状态验证失败、镜像包含数据/权重/密钥或容器验收失败。正式SDK字段仍可标记外部阻塞，但不得阻止平台无关续训候选构建。
 - 选择边界：不重新打开公开validation调参，不重新训练HGB/PaperFusion，不消耗官方试运行；本任务只修复平台合规发布线，不产生新的性能结论。
+- 证据：三任务父链专项3项、完整回归333项；linux/amd64镜像241,750,529字节，4核8GB断网A/B/C各十轮/3候选，三项`validate-only=true`，独立预测和异构命令失败关闭通过；`docker save/load`归档SHA-256 `6331280b...34e181`。详见`docs/results/FORMAL-CONTINUATION-RC-001.md`。
 
 ```text
 ROUTE-001(DONE)
@@ -258,6 +259,7 @@ ROUTE-001(DONE)
 - 基础模型兼容进度：平台重复拒绝持久化Sampler而接受Qwen3.5-4B基础模型后，`0.4.1rc1`已通过TDD专项27项与完整回归271项；CLI允许`provider=pytrio/model_path=None`，仍保留显式provider、失败关闭和非零调用要求。单次本机在线Smoke无响应且无收据，已按预注册停止，不写成通过；本地镜像验收见下一条。
 - RC6本地证据：`0.4.1rc1`镜像linux/amd64、240,662,396字节、UID10001、无Torch/数据/权重/密钥；4核8GB断网Synthetic Smoke完成。基础模型入口无Sampler路径时在断网环境8.696秒明确失败关闭且运行文件0项；归档240,685,056字节，SHA-256 `63fff363...54e48e`并经`docker load`验证。见`RC6_CONTAINER_ACCEPTANCE.json`与`RC6_VERIFICATION.json`。
 - RC7本地证据：`0.5.0rc1`完整回归329项；镜像241,051,292字节、linux/amd64、UID10001、无数据/权重/密钥；4核8GB断网十轮Smoke、B/C通用父集成训练与独立预测通过；归档241,074,176字节，SHA-256 `e3cc5f1c...9799747`并经`docker load`验证。A按SafetyGate保留父模型。见`DUAL_RC_CONTAINER_ACCEPTANCE.json`、`DUAL_RC_VERIFICATION.json`与`DUAL-RC-001.md`。
+- RC8本地证据：D-058后`0.5.1rc1`恢复为官方原生MLP续训；完整回归333项，A/B/C容器各十轮/3候选、父链/schema/Adam/预处理连续、独立预测和正式命令边界均通过。linux/amd64镜像241,750,529字节；归档241,774,080字节，SHA-256 `6331280b...34e181`并经`docker load`验证。见`FORMAL_CONTINUATION_RC_CONTAINER_ACCEPTANCE.json`、`FORMAL_CONTINUATION_RC_VERIFICATION.json`与`FORMAL-CONTINUATION-RC-001.md`。
 - 外部剩余：正式SDK事件映射、评分细则和比赛SwanLab规范；平台上传、校验和试运行属于用户控制的外部写操作。未满足前不得标记全量DONE。
 
 ```text

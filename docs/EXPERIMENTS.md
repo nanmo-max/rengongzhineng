@@ -244,9 +244,9 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 - 工程结果：329项完整回归；镜像241,051,292字节、UID10001、禁入扫描为空、容器`pip check`和`compileall`通过。归档241,074,176字节，SHA-256 `e3cc5f1c...9799747`，删除本地标签后`docker load`成功。
 - 未满足项：A没有严格超过静态父模型；正式SDK、镜像可用、模型校验、续训协议和正式评测均未验证。证据见`docs/results/DUAL-RC-001.md`。
 
-## FORMAL-CONTINUATION-RC-001-A1预注册
+## FORMAL-CONTINUATION-RC-001-A1
 
-- 状态：`REGISTERED`。
+- 状态：`SUCCEEDED_LOCAL_PLATFORM_PENDING`。
 - 目的：只验证正式发布线确实使用官方训练器完成`baseline -> child -> grandchild`原生续训，并在正式Docker镜像中禁用异构研究模型入口；不进行新模型选择或性能调参。
 - 输入：只读官方A/B/C训练包及各自初始`checkpoint.npz`；原始包哈希必须与`configs/official_package_dev.json`一致。
 - 候选：每个任务先从baseline续训1 epoch，再从该子checkpoint续训1 epoch。学习率和batch size沿用父包默认值；不读取任务名称改变算法，不使用HGB、ExtraTrees、PaperFusion、PyTRiO、SwanLab或官方试运行。
@@ -255,3 +255,4 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 - 性能边界：不重新打开公开validation做参数选择，不产生新的泛化或性能结论。训练器为验证续训完整性执行的指标读取只作为协议证据，不用于改变参数或候选。
 - 成功标准：A/B/C六个候选全部满足父链和schema验证，完整回归与容器验收通过，生成独立新RC和机器证据包。
 - 停止条件：包哈希变化、父链/schema/Adam/预处理任一验证失败、产物超限、正式镜像仍能执行异构模型命令、容器资源门失败或需要猜测官方SDK字段。
+- 实际：A/B/C均完成十轮和3个真实候选，`validate-only`三项为`valid=true`；两代父链专项3项及完整回归333项通过。镜像在4核8GB断网下完成，四个异构研究命令均失败关闭，A/B/C独立预测通过。归档SHA-256为`6331280b...34e181`，官方试运行/PyTRiO/SwanLab调用均0。公开指标只作历史暴露续训链证据，不产生新独立性能结论。详见`docs/results/FORMAL-CONTINUATION-RC-001.md`。

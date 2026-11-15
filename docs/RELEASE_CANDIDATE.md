@@ -16,7 +16,7 @@
 | 平台镜像/模型/续训校验 | BLOCKED_EXTERNAL | 尚未上传，正式SDK字段和挂载未知 |
 | 正式评测 | NOT_RUN | 本任务未消耗官方试运行 |
 
-`0.5.1rc1`归档和容器证据由`FORMAL-CONTINUATION-RC-001`生成后写入本节；在此之前不得上传`0.5.0rc1`代替正式续训候选。历史研究证据见[DUAL-RC-001.md](results/DUAL-RC-001.md)。
+当前归档：`D:/brace-msi-release/BRACE-MSI-0.5.1rc1/BRACE-MSI-0.5.1rc1-image-clean.tar`，SHA-256 `6331280b384b89b2315cfad12551fbdf7855cac2c2ef2d9712464cf23334e181`。本地父链和容器证据见[FORMAL-CONTINUATION-RC-001.md](results/FORMAL-CONTINUATION-RC-001.md)。在平台显示“镜像可用”并通过新版本校验前，不能宣称正式通过；不得上传`0.5.0rc1`代替它。
 
 ## 历史候选：0.3.0rc3
 

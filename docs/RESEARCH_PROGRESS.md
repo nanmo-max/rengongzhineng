@@ -549,3 +549,11 @@
 - 完整回归`329 passed in 93.98s`。主机全局Anaconda仍有历史无关依赖冲突，未冒充干净环境；发布容器本身`pip check`通过。
 - `docker save`归档为241,074,176字节，SHA-256 `e3cc5f1c3c2a879344632e083623001864c8dac380c6ebb87239ac5de9799747`；删除本地镜像标签后`docker load`成功。A仍保留父模型，没有虚构严格提升；平台状态仍全部待验证。
 
+## 2026-11-15：FORMAL-CONTINUATION-RC-001
+
+- 登记旧提交平台拒绝截图为O-PLATFORM-008，明确它不是0.5.0结果；D-058据此将异构HGB/PaperFusion从正式提交线剥离并保留历史研究证据。
+- TDD新增正式镜像命令边界和A/B/C两代父链验证；红阶段复现研究命令仍会执行，修复后镜像环境`BRACE_FORMAL_RELEASE=1`使四个异构模型命令失败关闭。
+- A/B/C分别从官方baseline执行原生续训并继续从子checkpoint续训；schema、标准化、权重、Adam、epoch、step和父哈希链验证通过。完整回归`333 passed in 131.98s`。
+- `BRACE-MSI-0.5.1rc1`在4核8GB、断网、256 PID下完成三任务各十轮/3候选，三项`validate-only`为`valid=true`，官方独立预测入口三项通过。公开指标只作历史暴露续训链证据，不用于新调参。
+- 镜像linux/amd64、241,750,529字节、UID10001，无数据/权重/密钥；`docker save`归档241,774,080字节，SHA-256 `6331280b...34e181`，删除标签后`docker load`恢复成功。官方试运行、PyTRiO、SwanLab调用均0。
+

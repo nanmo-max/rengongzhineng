@@ -1,9 +1,9 @@
 # 当前状态
 
 - 最近同步：2026-11-15（Asia/Shanghai）
-- 当前阶段：平台旧提交实际拒绝证据已确认原生父检查点续训为正式硬门；`0.5.0rc1`保留为研究RC且`DO_NOT_UPLOAD`，正在生成原生续训正式候选
+- 当前阶段：`BRACE-MSI-0.5.1rc1`原生父检查点续训候选已通过本地完整回归与容器验收；`0.5.0rc1`保留为研究RC且`DO_NOT_UPLOAD`
 - 当前路线：**Qwen3.5-4B基础模型受控建议 + BRACE确定性双闭环 + 四缓冲区物理隔离 + 官方A/B/C工业模型** `[D-050]` `[D-052]`
-- 当前唯一任务：`FORMAL-CONTINUATION-RC-001`（`IN_PROGRESS`）；正式镜像仅允许官方训练器原结构续训或`retain`，完成后再回到`FORMAL-RELEASE-001`的平台字段阻塞。
+- 当前唯一任务：`FORMAL-RELEASE-001`（`BLOCKED_EXTERNAL`）；由用户上传`0.5.1rc1`并等待镜像可用、模型/续训校验与正式SDK字段。平台外本地发布工作已完成。
 - 稳定边界：全部历史RC和实验不改写；`0.5.0rc1`只作研究证据，不得上传。正式线从D-058开始只输出原生官方MLP续训checkpoint。A3之后禁止继续LLM调参 `[D-043]`
 - 官方试运行：已使用1/10次，剩余9/10次；该运行对应旧提交v2，不是RC4，正式评测仍为0/2 `[O-PLATFORM-006]`
 
@@ -12,6 +12,7 @@
 0. `EVIDENCE-RSI-001`已完成：13张宣讲截图逐文件登记SHA-256，证据等级为宣讲材料；D-051/D-052锁定十批决策事务与受控双闭环语义，未把截图冒充正式SDK。
 0a. 官方公告`O-PLATFORM-007`新增硬门：`docker save`归档、真实父检查点续训、独立预测入口、`checkpoint.npz`及模型产物总量不超过64 MiB；内部字段与挂载路径仍未知，不猜测。
 0b. 旧提交平台拒绝截图`O-PLATFORM-008`确认“另一套模型替代baseline”会被拒绝；该截图不是`0.5.0rc1`结果，但足以触发D-058将异构模型与正式提交线隔离。
+0c. `FORMAL-CONTINUATION-RC-001`已完成：正式镜像禁用HGB/PaperFusion命令，A/B/C均以官方训练器完成十轮/3候选原生续训，三项机器复算有效；333项回归、4核8GB断网、独立预测、64 MiB与`docker save/load`门通过。
 1. `DUAL-DATA-001`已完成：四缓冲区、Gate一轮隔离、Update+Replay候选集合、只读manifest、训练/评估分离句柄和未来诱饵阻断通过4项专项测试；完整回归`275 passed`。
 2. `DUAL-TXN-001`已完成：每批单决策、0至2候选、首候选结果触发升级、十批前缀、原子提交/恢复及影子配对收益通过5项专项测试；完整回归`280 passed`。
 3. `DUAL-VALUE-001`已完成：每任务隔离统计、身份无关证据画像、弱先验、延迟收益专用更新和性能—CPU/RSS/Token/模型体积Pareto前沿通过5项专项测试；完整回归`285 passed`。
@@ -50,7 +51,7 @@
 
 ## 当前执行入口
 
-新本地候选归档为`D:/brace-msi-release/BRACE-MSI-0.5.0rc1/BRACE-MSI-0.5.0rc1-image-clean.tar`，SHA-256 `e3cc5f1c3c2a879344632e083623001864c8dac380c6ebb87239ac5de9799747`。它尚未上传且未通过平台镜像、模型、续训或评测校验；原`0.4.1rc1`入口继续作为历史稳定归档，不被覆盖。机器证据见`docs/results/DUAL-RC-001.md`。
+正式上传归档为`D:/brace-msi-release/BRACE-MSI-0.5.1rc1/BRACE-MSI-0.5.1rc1-image-clean.tar`，SHA-256 `6331280b384b89b2315cfad12551fbdf7855cac2c2ef2d9712464cf23334e181`。它由`docker save`生成并已重载验证，但尚未上传且未通过平台镜像、模型、续训或评测校验。`0.5.0rc1`不得上传。机器证据见`docs/results/FORMAL-CONTINUATION-RC-001.md`。
 
 正式路线、已知能力与未知边界见[FORMAL_ROUTE.md](FORMAL_ROUTE.md)。实验必须遵守[EXPERIMENT_PROTOCOL.md](EXPERIMENT_PROTOCOL.md)。
 

@@ -2,6 +2,8 @@
 
 ## 2026-11-13受控双闭环重构恢复入口（当前）
 
+> 2026-11-15优先更新：O-PLATFORM-008记录旧提交被平台以“未基于baseline/父检查点真实续训”拒绝。D-058已将`0.5.0rc1`标记为研究RC、`DO_NOT_UPLOAD`。正式上传入口已改为`BRACE-MSI-0.5.1rc1`：`D:/brace-msi-release/BRACE-MSI-0.5.1rc1/BRACE-MSI-0.5.1rc1-image-clean.tar`，SHA-256 `6331280b384b89b2315cfad12551fbdf7855cac2c2ef2d9712464cf23334e181`。本地333项回归、A/B/C原生父链、4核8GB断网和`docker save/load`已通过；平台状态仍全部待验证。当前唯一任务为`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`。
+
 1. 当前路线以D-051/D-052/D-057及`docs/superpowers/specs/2026-11-13-controlled-dual-loop-design.md`为准；既有`0.4.1rc1`与历史实验冻结，不得改写。
 2. `GENERALIST-MODEL-001`与`DUAL-RC-001`已`DONE`：A保留父模型，B/C冻结固定HGB父集成；禁止重开validation调权重。当前唯一任务为`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`。
 3. 宣讲截图证据登记见`B-RSI-002`和`source_notes/RSI_LECTURE_EVIDENCE_2026-11-13.md`；它们不提供正式SDK字段。
