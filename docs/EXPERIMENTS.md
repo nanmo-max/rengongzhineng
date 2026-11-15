@@ -342,3 +342,18 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 - 结果：A/B/C均10/10轮，最终采用第9/1/9轮；共25,972条预测；指标与D-063冻结边界一致。
 - 产物：`D:/brace-msi-native-competitive/RC7-OFFICIAL-REPORT-SIM/report.json`与`report.html`；详情见`results/PLATFORM-REPORT-SIM-001.md`。
 - 边界：公开validation历史暴露；Token为本地确定性容器记录0，不冒充在线或官方成绩；官方试运行新增使用0次。
+
+## UNSEEN-SIM-001-A1预注册
+
+- 状态：`REGISTERED_NOT_RUN`。
+- 研究问题：冻结RC7的原生续训、门控和保留机制，在未参与其设计的电池容量回归、液压蓄能器状态分类和铣削VB回归上，能否完成十轮并相对模拟静态父模型获得安全改善？
+- 原始数据：只读使用`C:/Users/Administrator/Desktop/人工智能创新大赛/模拟正式数据集`；运行根固定为新目录`D:/brace-msi-unseen/UNSEEN-SIM-001-A1/`。
+- 特征：每个传感器序列只提取数量、均值、标准差、最小、最大、中位数、四分位数、RMS、首尾差和线性斜率；允许合法工况量，但禁止目标、未来总循环数、总寿命、未来容量/VB、其余液压profile目标或数据集名称作为模型输入。
+- 任务：Battery预测放电循环容量；Hydraulic预测蓄能器状态`90/100/115/130`；Mill只使用实测非缺失VB记录预测VB。
+- 划分：以电池ID、液压循环的目标分层隔离索引、Mill case为不可交叉组，固定种子`20261115`建立bootstrap/adaptation/confirmation；bootstrap只建模拟父checkpoint，adaptation按合法组内顺序分十轮，confirmation冻结后只评估一次。所有样本ID和组清单保存哈希审计。
+- 对照与执行：静态模拟父模型 vs 冻结RC7未知profile的原生十轮路径；不启用数据集名称路由、PyTRiO、SwanLab或额外HPO。每轮最多一个候选，沿用RuntimeAdapter、父链、Gate、Replay、64 MiB和独立预测检查。
+- 指标：分类记录Macro-F1、Accuracy；回归记录RMSE、MAE；同时记录逐轮指标、最差阶段、候选/接受/拒绝、CPU、墙钟、峰值RSS、参数量、checkpoint大小和预测数。
+- 预算：4 CPU设计、8 GiB上限；原始派生特征缓存与运行产物不得写回数据目录；三任务串行执行。
+- 成功标准：三任务10/10轮、父链有效、零分组交叉和零目标泄漏；最终confirmation三任务均不劣于静态父模型，至少两个严格改善；全部checkpoint可加载且小于64 MiB。
+- 停止条件：任一泄漏/交叉、标签定义不明确、少于50条adaptation样本、非有限特征、父模型或续训链不可加载，或confirmation打开后需要改参数。若性能失败则保留负结果并停止，不用confirmation调参重跑。
+- 证据边界：这是模拟正式流程和未知任务压力测试，不是官方试运行、隐藏成绩或RC7重新选型；完成后`REGISTERED_NOT_RUN`改为实际状态并记录全部失败。

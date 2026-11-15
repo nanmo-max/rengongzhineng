@@ -1,9 +1,9 @@
 # 当前状态
 
 - 最近同步：2026-11-15（Asia/Shanghai）
-- 当前阶段：`BRACE-MSI-0.7.0rc1`本地Release Candidate已冻结；等待平台上传与试运行
+- 当前阶段：`BRACE-MSI-0.7.0rc1`保持冻结；执行三个新工业数据集的独立泛化复演
 - 当前路线：**保留平台父链/安全内核，先通过Native逐状态等价门，再迁移冻结日程、尺度适配Gate与受控PyTRiO建议** `[D-061]`
-- 当前唯一任务：`FORMAL-RELEASE-001`（`BLOCKED_EXTERNAL`）；`NATIVE-COMPETITIVE-RC-001`已完成全部本地工作。发布组合为A/C竞争策略+B复用`0.6.0rc1` protocol；377项回归、4核8GB断网、三任务30轮、独立预测、SwanLab聚合记录与`docker save/load`通过。PyTRiO取得2次非零响应/1次建议执行，第三次仍被服务RuntimeError阻塞；平台精确启动、镜像校验和正式试运行等待外部操作。
+- 当前唯一可执行任务：`UNSEEN-SIM-001`（`IN_PROGRESS`）；只在用户新增的电池、液压、铣削数据上复演冻结RC7运行语义，不改变RC7。`FORMAL-RELEASE-001`继续为`BLOCKED_EXTERNAL`，等待平台上传、镜像校验和正式试运行。
 - 稳定边界：全部历史RC和实验不改写；`0.5.0rc1`只作研究证据，不得上传。正式线从D-058开始只输出原生官方MLP续训checkpoint。A3之后禁止继续LLM调参 `[D-043]`
 - 官方试运行：已使用1/10次，剩余9/10次；该运行对应旧提交v2，不是RC4，正式评测仍为0/2 `[O-PLATFORM-006]`
 

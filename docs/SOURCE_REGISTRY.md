@@ -251,6 +251,14 @@
 - 证据：[source_notes/OFFICIAL_DATA_INTAKE_2026-11-10.md](source_notes/OFFICIAL_DATA_INTAKE_2026-11-10.md)
 - 边界：目录没有组委会manifest、比赛任务定义、指标、官方切分或许可证文件；“官方数据”身份目前同时依赖用户确认与原始数据指纹，正式实验协议仍待H-006解决。
 
+### L-DATA-005 新增三套未知任务泛化模拟数据
+
+- 来源：用户2026-11-15放入`C:/Users/Administrator/Desktop/人工智能创新大赛/模拟正式数据集`；本地只读资料，不是赛事官方隐藏数据或正式训练包。
+- 电池：NASA Battery Aging Archive六个ZIP，包含多个电池的MAT循环记录；合法监督信号取放电循环`Capacity`，重复电池ID必须按内容来源去重。
+- 液压：UCI Condition Monitoring of Hydraulic Systems，2,205个60秒循环、17类传感器文件及`profile.txt`；本实验预注册目标为文档明确较难的液压蓄能器状态分类，输入只来自传感器统计量，不使用其余profile列。
+- 铣削：NASA/UC Berkeley Mill数据，167次运行、16个case、六路9,000点传感器；合法回归目标为实测后刀面磨损`VB`，缺失VB记录不得插值后冒充实测标签。
+- 边界：三者均缺少赛事父checkpoint、正式任务manifest和评分公式；只能生成明确标记的模拟父模型并作本地泛化复演，不得写成官方成绩。
+
 ### L-AUTH-005 正式实验记录阶段边界
 
 - 来源：用户2026-11-11当前指令

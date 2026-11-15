@@ -20,10 +20,21 @@ EVIDENCE-RSI-001(DONE)
   -> PLATFORM-NATIVE-001(DONE)
   -> NATIVE-COMPETITIVE-RC-001(DONE_LOCAL_EXTERNAL_BLOCK)
   -> PLATFORM-REPORT-SIM-001(DONE)
+  -> UNSEEN-SIM-001(IN_PROGRESS)
   -> FORMAL-RELEASE-001(BLOCKED_EXTERNAL)
 ```
 
 以上为当前正式重构图；`0.6.0rc1`及下方历史任务图保持冻结，新竞争候选只在独立分支演进。
+
+### UNSEEN-SIM-001 三个新工业数据集的冻结RC泛化复演
+
+- 状态：`IN_PROGRESS`
+- 依赖：NATIVE-COMPETITIVE-RC-001、PLATFORM-REPORT-SIM-001
+- 优先级：P0（用户授权的本地独立验证；不替换或修改RC7）
+- 目标：在电池老化、液压状态监测和铣削刀具磨损三个此前未用于RC7开发的数据集上，使用统一数值特征契约、模拟父checkpoint、十轮原生续训、门控、独立预测和官方报告字段，检验未知任务泛化与资源成本。
+- 完成标准：原始数据保持只读并登记哈希；三任务均形成不含目标泄漏的特征与设备/工况隔离切分；模拟父模型只读取bootstrap分区；十轮只读取adaptation分区；confirmation分区在策略冻结后只评估一次；每轮父链、候选、部署/拒绝、CPU、RSS、checkpoint大小和预测数可复算；输出JSON/HTML报告及机器校验。
+- 停止条件：发现目标/未来泄漏、分组交叉、样本不足以形成十轮、非有限特征、父checkpoint不可加载、产物超过64 MiB或需要修改RC7策略；失败也必须保存并报告，不得用confirmation结果调参重跑。
+- 边界：这是自建模拟父模型上的本地泛化实验，不是官方数据、官方父checkpoint、隐藏成绩或新RC性能证明；不调用PyTRiO、SwanLab或官方试运行，不修改`0.7.0rc1`镜像和归档。
 
 ### PLATFORM-REPORT-SIM-001 官方报告字段本地复演
 

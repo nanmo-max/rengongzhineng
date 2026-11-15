@@ -68,6 +68,7 @@
 | D-062 | 2026-11-15 | LOCKED | 新竞争候选以稳定性能提升为首要目标，不以论文来源、创新性或Agent复杂度作为准入条件。允许在官方MLP父链与checkpoint schema不变的前提下采用公开认可的成熟CPU方法（类/样本权重、稳健或非对称损失、学习率调度、合法Replay等）；每项方法必须先有train内部证据并记录参数量、CPU、RSS、模型大小和最差阶段，禁止借此重开公开validation搜索或扩大为无界HPO。 | 用户2026-11-15补充要求；D-037实验真实性边界；O-PLATFORM-008父模型续训门 |
 
 | D-063 | 2026-11-15 | LOCKED | 冻结`BRACE-MSI-0.7.0rc1`为本地原生竞争Release Candidate：A/C使用冻结竞争策略，B复用已验证Protocol策略；PyTRiO只能表达训练或retain意图，不能覆盖候选轮次、动作、epoch或学习率，服务失败只retain。发布性能边界为一次冻结公开确认A `0.725695` Macro-F1、B复用`0.6.0rc1`的`660.076488` RMSE、C `51.949287` RMSE；公开验证已暴露，不是官方成绩。377项回归、4核8GB断网30轮、独立预测、64 MiB和`docker save/load`通过；平台镜像/模型/试运行仍为外部阻塞。 | D-061/D-062；独立发布审计；`results/NATIVE-COMPETITIVE-RC-001-RELEASE.md` |
+| D-064 | 2026-11-15 | LOCKED | 用户新增的电池老化、液压状态监测和铣削刀具磨损数据只用于`UNSEEN-SIM-001`独立泛化复演。RC7镜像、策略、历史证据和归档保持冻结；因新数据没有官方父checkpoint，允许在严格隔离的bootstrap分区生成明确标记为`simulated_parent=true`的兼容MLP父模型，再以adaptation分区执行十轮原生续训，最后一次打开confirmation分区。液压选择文献明确较难的蓄能器状态分类，电池预测放电容量，Mill预测实测VB；数据集名称不得进入动作策略。 | 用户2026-11-15授权；三个数据集随附说明；D-063 |
 
 ## 已被替代的历史决策
 
