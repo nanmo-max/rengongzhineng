@@ -16,6 +16,7 @@ EVIDENCE-RSI-001(DONE)
   -> DUAL-EXPERIMENT-001(DONE_MIXED)
   -> GENERALIST-MODEL-001(DONE)
   -> DUAL-RC-001(DONE)
+  -> FORMAL-CONTINUATION-RC-001(IN_PROGRESS)
   -> FORMAL-RELEASE-001(BLOCKED_EXTERNAL)
 ```
 
@@ -112,6 +113,16 @@ EVIDENCE-RSI-001(DONE)
 - 上传验收：归档必须由`docker save`生成并可`docker load`；分别记录镜像可用、模型校验、续训协议和评测状态，不把上传完成冒充通过 `[O-PLATFORM-007]`
 - 修订门：D-057在D-056负证据后将本地冻结标准修订为A不低于父模型、至少B/C两项改善；不再要求用不安全候选强行提高A，也不把A写成提升
 - 实际：`BRACE-MSI-0.5.0rc1`已生成；329项回归通过，linux/amd64镜像241,051,292字节，4核8GB断网十轮Smoke、B/C完整训练、B/C独立预测、禁入扫描、`pip check`、`compileall`与`docker save/load`均通过。A按D-056保留父模型，因此没有满足“Gas严格超过静态”；B/C公开历史暴露验证分别由RMSE 681.159833/52.868573改善至675.010677/49.336020。该局限不隐瞒，不再重开validation调参。证据：`docs/results/DUAL-RC-001.md`。
+- 正式边界修订：O-PLATFORM-008到达后，D-058将本任务产物降为研究RC并标记`DO_NOT_UPLOAD`；历史本地验收继续有效，但不能证明符合平台原生续训协议。
+
+### FORMAL-CONTINUATION-RC-001 原生父检查点续训正式候选
+
+- 状态：`IN_PROGRESS`
+- 依赖：DUAL-RC-001、O-PLATFORM-008
+- 优先级：P0，唯一当前任务
+- 完成标准：正式镜像禁用全部异构研究模型命令；A/B/C均以官方训练器从官方baseline生成子checkpoint，再从子checkpoint续训生成孙checkpoint；schema、标准化、Adam、epoch、step和父哈希链可验证；独立预测、64 MiB、完整回归、4核8GB断网及`docker save/load`通过。
+- 停止条件：需要猜测正式SDK字段、原训练包哈希变化、任一父链/schema/优化器状态验证失败、镜像包含数据/权重/密钥或容器验收失败。正式SDK字段仍可标记外部阻塞，但不得阻止平台无关续训候选构建。
+- 选择边界：不重新打开公开validation调参，不重新训练HGB/PaperFusion，不消耗官方试运行；本任务只修复平台合规发布线，不产生新的性能结论。
 
 ```text
 ROUTE-001(DONE)

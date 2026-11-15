@@ -61,6 +61,7 @@
 | D-055 | 2026-11-13 | LOCKED | A1/A2证明官方参考MLP续训可安全做到不低于静态，但不足以形成高竞争力增益；因此停止依据同一公开validation继续微调续训阈值，也不启动无性能依据的PyTRiO臂。下一步允许在公开train内部组折开发身份盲的自建分类/回归CPU候选，但正式候选必须把官方父模型作为实际集成成员、保存父哈希、独立预测并满足64 MiB门，不能把从头训练冒充续训。 | `DUAL-EXPERIMENT-001-A1/A2`；用户明确允许“若不成功则自建”；D-053 |
 | D-056 | 2026-11-13 | LOCKED | 冻结GENERALIST-MODEL-001-A1的固定50/50父模型集成：A拒绝并保留官方父模型，B/C接受HGB父集成。不得根据已打开的公开validation改混合权重、模型池或参数；新RC只集成此冻结选择并验证训练/预测、资源、镜像和父链。 | A1一次性validation、B/C主辅指标共同改善、A SafetyGate拒绝、64 MiB与独立预测通过 |
 | D-057 | 2026-11-13 | LOCKED | 冻结`BRACE-MSI-0.5.0rc1`为受控双闭环的本地Release Candidate：镜像提供身份盲的单包`generalist-fit`和独立`generalist-predict`入口，A保留官方父模型，B/C按D-056使用固定HGB父集成；模型只在挂载输出卷生成，不打包数据、权重或凭据。该RC已完成4核8GB断网训练、预测、完整回归及`docker save/load`，但不替代任何已在平台绑定的版本，正式SDK映射、镜像可用、模型校验与评测仍须分别验证。D-056已证明A通用候选无安全增益，因此DUAL-RC本地冻结门修订为“A不低于父模型且至少B/C两项改善”；A未严格超过静态的事实继续明示，不作全三任务提升声明。 | `docs/results/DUAL-RC-001.md`、329项回归、`DUAL_RC_CONTAINER_ACCEPTANCE.json`；D-053、D-056 |
+| D-058 | 2026-11-15 | LOCKED | O-PLATFORM-008证明平台会拒绝“另一套模型替代baseline”。正式提交产物必须由官方训练器从本轮平台父`checkpoint.npz`继续训练，继承原模型schema、权重、Adam状态、预处理状态、epoch与step；`retain`仅允许原样保留父模型。HGB/ExtraTrees/PaperFusion等异构模型继续作为研究证据，但不得进入正式checkpoint或正式镜像可执行入口。`0.5.0rc1`保留为本地研究RC并标记`DO_NOT_UPLOAD`；后续正式RC采用原生父检查点续训并在镜像内禁用研究命令。 | O-PLATFORM-008、D-028、D-053；平台旧提交实际拒绝提示 |
 
 ## 已被替代的历史决策
 

@@ -29,6 +29,12 @@ def audit_a():
     return audit_package_root(PACKAGE_ROOT, config)["A"]
 
 
+@pytest.fixture(scope="module")
+def audit_packages():
+    config = json.loads((REPO_ROOT / "configs" / "official_package_dev.json").read_text(encoding="utf-8"))
+    return audit_package_root(PACKAGE_ROOT, config)
+
+
 def one_epoch(audit_a) -> CandidateConfig:
     return CandidateConfig(epochs=1, learning_rate=audit_a.base_learning_rate, batch_size=audit_a.base_batch_size)
 
@@ -112,6 +118,54 @@ def test_original_trainer_resume_one_plus_one_exactly_matches_two_epochs(tmp_pat
         )
         predictions.append(json.loads(completed.stdout))
     assert predictions[0] == predictions[1]
+
+
+@pytest.mark.parametrize("profile", ("A", "B", "C"))
+def test_formal_lineage_preserves_native_checkpoint_contract_for_two_generations(
+    tmp_path: Path, audit_packages, profile: str
+) -> None:
+    package = audit_packages[profile]
+    config = CandidateConfig(
+        epochs=1,
+        learning_rate=package.base_learning_rate,
+        batch_size=package.base_batch_size,
+    )
+    trainer = OfficialTrainer(python_executable=PYTHON, timeout_seconds=90)
+
+    child = trainer.run_candidate(
+        package,
+        package.checkpoint_path,
+        tmp_path / profile / "child",
+        config,
+        f"formal-{profile.lower()}-child",
+    )
+    child_path = Path(child.output_dir) / "checkpoint.npz"
+    grandchild = trainer.run_candidate(
+        package,
+        child_path,
+        tmp_path / profile / "grandchild",
+        config,
+        f"formal-{profile.lower()}-grandchild",
+    )
+    grandchild_path = Path(grandchild.output_dir) / "checkpoint.npz"
+
+    assert child.parent_sha256 == package.checkpoint_sha256
+    assert grandchild.parent_sha256 == child.checkpoint_sha256
+    assert child_path.stat().st_size < 64 * 1024 * 1024
+    assert grandchild_path.stat().st_size < 64 * 1024 * 1024
+    assert child.model_state_changed and child.optimizer_state_changed
+    assert grandchild.model_state_changed and grandchild.optimizer_state_changed
+    assert grandchild.initial_epochs == child.final_epochs
+    assert grandchild.initial_steps == child.final_steps
+    with np.load(package.checkpoint_path, allow_pickle=False) as parent, np.load(
+        child_path, allow_pickle=False
+    ) as first, np.load(grandchild_path, allow_pickle=False) as second:
+        assert set(parent.files) == set(first.files) == set(second.files)
+        assert "model_blob" not in parent.files
+        np.testing.assert_array_equal(parent["mean"], first["mean"])
+        np.testing.assert_array_equal(first["mean"], second["mean"])
+        np.testing.assert_array_equal(parent["scale"], first["scale"])
+        np.testing.assert_array_equal(first["scale"], second["scale"])
 
 
 def test_validation_rejects_tampered_report_schema(tmp_path: Path, audit_a) -> None:

@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 import numpy as np
+import pytest
 
 from brace_msi.cli import main
 from brace_msi.generalist_model import (
@@ -137,3 +138,44 @@ def test_generalist_fit_cli_creates_parent_linked_checkpoint_without_validation(
     assert receipt["artifact_bytes"] == artifact.stat().st_size
     assert checkpoint.metadata["parent_sha256"] == package.checkpoint_sha256
     assert checkpoint.metadata["selected_family"] == "linear"
+
+
+def test_formal_release_mode_disables_all_generalist_model_commands(
+    tmp_path: Path, monkeypatch
+) -> None:
+    monkeypatch.setenv("BRACE_FORMAL_RELEASE", "1")
+    invocations = (
+        [
+            "generalist-run",
+            "--package-config",
+            str(tmp_path / "missing.json"),
+            "--package-root",
+            str(tmp_path / "packages"),
+            "--output",
+            str(tmp_path / "run"),
+        ],
+        [
+            "generalist-fit",
+            "--package-config",
+            str(tmp_path / "missing.json"),
+            "--package-root",
+            str(tmp_path / "packages"),
+            "--profile",
+            "A",
+            "--output",
+            str(tmp_path / "fit"),
+        ],
+        [
+            "generalist-predict",
+            "--checkpoint",
+            str(tmp_path / "missing.npz"),
+            "--input-jsonl",
+            str(tmp_path / "missing.jsonl"),
+            "--output-jsonl",
+            str(tmp_path / "predictions.jsonl"),
+        ],
+    )
+
+    for argv in invocations:
+        with pytest.raises(ValueError, match="research-only command is disabled"):
+            main(argv)

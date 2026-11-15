@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from dataclasses import asdict
 from pathlib import Path
@@ -42,6 +43,18 @@ from .swanlab_adapter import (
     build_sync_command,
     export_public_spool,
 )
+
+
+_RESEARCH_ONLY_COMMANDS = frozenset(
+    {"generalist-run", "generalist-fit", "generalist-predict", "paper-fusion-run"}
+)
+
+
+def _enforce_formal_release_boundary(command: str) -> None:
+    if os.environ.get("BRACE_FORMAL_RELEASE") == "1" and command in _RESEARCH_ONLY_COMMANDS:
+        raise ValueError(
+            f"research-only command is disabled in formal release images: {command}"
+        )
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -168,6 +181,7 @@ def _validate_official_agent_selection(
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parser().parse_args(argv)
+    _enforce_formal_release_boundary(args.command)
     if args.command == "controlled-loop-smoke":
         summary = ControlledDualLoopHarness(
             args.output,

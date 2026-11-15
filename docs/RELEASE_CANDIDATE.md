@@ -1,8 +1,8 @@
 # BRACE-MSI Release Candidate
 
-## 当前本地候选：0.5.0rc1
+## 当前正式续训候选：0.5.1rc1
 
-`BRACE-MSI-0.5.0rc1`是受控双闭环重构后的本地候选，不覆盖或删除既有RC。它增加四缓冲区、单轮事务、动作价值与影子收益、受限插件、分层模型门，以及身份盲的父模型集成训练/独立预测入口。
+`BRACE-MSI-0.5.1rc1`是D-058之后的正式续训候选，不覆盖或删除既有RC。它保留受控双闭环，但正式镜像只允许官方训练器从官方baseline或平台父`checkpoint.npz`原结构续训；异构通用模型与PaperFusion命令在镜像内失败关闭。`0.5.0rc1`继续保留为本地研究RC，标记`DO_NOT_UPLOAD`。
 
 冻结工业模型选择为：A保留官方父模型；B/C在运行时从官方父checkpoint训练有界HGB，并与父模型固定50/50集成。核心训练逻辑不读取数据集名称选择动作。公开validation已经历史暴露；B/C改善是开发门控证据，不是隐藏测试或官方成绩。A没有严格超过父模型，因此不宣称三任务全部提升。
 
@@ -16,7 +16,7 @@
 | 平台镜像/模型/续训校验 | BLOCKED_EXTERNAL | 尚未上传，正式SDK字段和挂载未知 |
 | 正式评测 | NOT_RUN | 本任务未消耗官方试运行 |
 
-当前归档：`D:/brace-msi-release/BRACE-MSI-0.5.0rc1/BRACE-MSI-0.5.0rc1-image-clean.tar`。详细证据见[DUAL-RC-001.md](results/DUAL-RC-001.md)。
+`0.5.1rc1`归档和容器证据由`FORMAL-CONTINUATION-RC-001`生成后写入本节；在此之前不得上传`0.5.0rc1`代替正式续训候选。历史研究证据见[DUAL-RC-001.md](results/DUAL-RC-001.md)。
 
 ## 历史候选：0.3.0rc3
 

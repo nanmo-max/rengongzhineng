@@ -9,8 +9,8 @@ import zipfile
 
 from .packaging import audit_docker_context
 
-RELEASE_ID = "BRACE-MSI-0.5.0rc1"
-RELEASE_VERSION = "0.5.0rc1"
+RELEASE_ID = "BRACE-MSI-0.5.1rc1"
+RELEASE_VERSION = "0.5.1rc1"
 
 _ROOT_FILES = frozenset(
     {
@@ -56,6 +56,7 @@ class ReleaseTreeAudit:
     regression_sprint_status: str
     sprint_harness_status: str
     docker_context_under_2gb: bool
+    formal_release_boundary: bool
 
 
 def select_release_files(candidates: tuple[Path, ...]) -> tuple[Path, ...]:
@@ -83,6 +84,7 @@ def audit_release_tree(root: Path, tracked_files: tuple[Path, ...]) -> ReleaseTr
         Path("requirements-swanlab.lock"),
         Path("src/brace_msi/cli.py"),
         Path("src/brace_msi/official_sdk.py"),
+        Path("src/brace_msi/official_trainer.py"),
         Path("src/brace_msi/release_candidate.py"),
         Path("src/brace_msi/swanlab_adapter.py"),
         Path("src/brace_msi/generalist_model.py"),
@@ -154,6 +156,11 @@ def audit_release_tree(root: Path, tracked_files: tuple[Path, ...]) -> ReleaseTr
     if context.forbidden_files:
         findings.append("Docker build context contains forbidden files")
 
+    dockerfile = (root / "Dockerfile").read_text(encoding="utf-8")
+    formal_release_boundary = "BRACE_FORMAL_RELEASE=1" in dockerfile
+    if not formal_release_boundary:
+        findings.append("Dockerfile does not enable the formal release command boundary")
+
     return ReleaseTreeAudit(
         release_id=RELEASE_ID,
         blocking_findings=tuple(findings),
@@ -164,6 +171,7 @@ def audit_release_tree(root: Path, tracked_files: tuple[Path, ...]) -> ReleaseTr
         regression_sprint_status=regression_status,
         sprint_harness_status=harness_status,
         docker_context_under_2gb=under_limit,
+        formal_release_boundary=formal_release_boundary,
     )
 
 

@@ -243,3 +243,15 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 - 跨平台验收：Linux产物序列化哈希与Windows研究产物不同，但B/C公开validation指标完全一致并继续通过原门控；未据此调参。
 - 工程结果：329项完整回归；镜像241,051,292字节、UID10001、禁入扫描为空、容器`pip check`和`compileall`通过。归档241,074,176字节，SHA-256 `e3cc5f1c...9799747`，删除本地标签后`docker load`成功。
 - 未满足项：A没有严格超过静态父模型；正式SDK、镜像可用、模型校验、续训协议和正式评测均未验证。证据见`docs/results/DUAL-RC-001.md`。
+
+## FORMAL-CONTINUATION-RC-001-A1预注册
+
+- 状态：`REGISTERED`。
+- 目的：只验证正式发布线确实使用官方训练器完成`baseline -> child -> grandchild`原生续训，并在正式Docker镜像中禁用异构研究模型入口；不进行新模型选择或性能调参。
+- 输入：只读官方A/B/C训练包及各自初始`checkpoint.npz`；原始包哈希必须与`configs/official_package_dev.json`一致。
+- 候选：每个任务先从baseline续训1 epoch，再从该子checkpoint续训1 epoch。学习率和batch size沿用父包默认值；不读取任务名称改变算法，不使用HGB、ExtraTrees、PaperFusion、PyTRiO、SwanLab或官方试运行。
+- 验证：两代checkpoint均须与直接父checkpoint schema完全一致，继承预处理状态，模型和Adam状态真实变化，epoch/step单调增加，父哈希链准确；产物小于64 MiB并可被官方独立预测入口加载。
+- 容器门：`BRACE_FORMAL_RELEASE=1`；`generalist-run`、`generalist-fit`、`generalist-predict`和`paper-fusion-run`必须失败关闭；4核8GB、断网、非root、无数据/权重/密钥、`docker save/load`通过。
+- 性能边界：不重新打开公开validation做参数选择，不产生新的泛化或性能结论。训练器为验证续训完整性执行的指标读取只作为协议证据，不用于改变参数或候选。
+- 成功标准：A/B/C六个候选全部满足父链和schema验证，完整回归与容器验收通过，生成独立新RC和机器证据包。
+- 停止条件：包哈希变化、父链/schema/Adam/预处理任一验证失败、产物超限、正式镜像仍能执行异构模型命令、容器资源门失败或需要猜测官方SDK字段。
