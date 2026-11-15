@@ -79,7 +79,7 @@
     "format": "docker save tar",
     "path": "D:/brace-msi-native-competitive/RC71-CONTAINER-ACCEPTANCE-FINAL/brace-msi-0.7.1rc1-harness.tar",
     "size_bytes": 248888320,
-    "sha256": "6BA798571F88CC88A6FB298FA63E99CE723DFCC057A3BDEB9EF103E69DCF3CFE",
+    "sha256": "6ba798571f88cc88a6fb298fa63e99ce723dfcc057a3bdeb9ef103e69dcf3cfe",
     "docker_load_verified": true
   },
   "tests": {
