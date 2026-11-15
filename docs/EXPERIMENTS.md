@@ -370,7 +370,13 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 
 ## UNSEEN-SIM-001-A2预注册
 
-- 状态：`REGISTERED_NOT_RUN`。
+- 状态：`INVALID_EVIDENCE_ID_MISMATCH`。三任务均完成10轮且协议检查通过，但机器报告内部`experiment_id`被脚本硬编码为A1，与A2输出目录不一致，故不作为最终有效报告。诊断结果保留：Battery/Hydraulic各部署1次后confirmation退化，Mill部署0次并保持静态；未据此调参。
 - 唯一变更：Battery只接受尺寸为1且有限的实测`Capacity`；空数组、多值或非有限目标显式排除，不插值、不从传感器反算、不改变其余特征、切分、模型、十轮策略、预算、成功标准或confirmation规则。
 - 输出：新目录`D:/brace-msi-unseen/UNSEEN-SIM-001-A2/`；A1失败目录保持只读证据。
 - 其余协议：完全继承A1预注册。
+
+## UNSEEN-SIM-001-A3预注册
+
+- 状态：`REGISTERED_NOT_RUN`。
+- 唯一变更：CLI必须显式传入实验ID，报告原样记录`UNSEEN-SIM-001-A3`；所有数据、特征、分组、父模型、随机种子、十轮策略、门控、预算与成功标准继承A2且保持不变。
+- 输出：新目录`D:/brace-msi-unseen/UNSEEN-SIM-001-A3/`；A1/A2目录均保留。

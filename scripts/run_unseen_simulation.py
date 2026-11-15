@@ -510,7 +510,7 @@ th:first-child,td:first-child{text-align:left}.note{background:#fff3cd;padding:1
 <tbody>""" + "".join(task_rows) + "</tbody></table></html>"
 
 
-def run(source_root: Path, output_root: Path) -> dict[str, Any]:
+def run(source_root: Path, output_root: Path, *, experiment_id: str) -> dict[str, Any]:
     source_root = source_root.resolve()
     output_root = output_root.resolve()
     if output_root.exists() or output_root.is_symlink():
@@ -542,7 +542,7 @@ def run(source_root: Path, output_root: Path) -> dict[str, Any]:
     ]
     report = {
         "format": "brace-msi.unseen-platform-simulation.v1",
-        "experiment_id": "UNSEEN-SIM-001-A1",
+        "experiment_id": experiment_id,
         "status": "completed",
         "official_score": False,
         "official_trial_consumed": False,
@@ -575,8 +575,9 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--source", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--experiment-id", required=True)
     args = parser.parse_args()
-    report = run(args.source, args.output)
+    report = run(args.source, args.output, experiment_id=args.experiment_id)
     print(json.dumps({key: report[key] for key in (
         "experiment_id", "status", "all_protocol_checks_passed", "all_final_not_worse",
         "strictly_improved_task_count", "success_standard_met", "elapsed_seconds",
