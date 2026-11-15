@@ -2,6 +2,16 @@
 
 本文件是全部实验运行的唯一登记处，包括失败和中止实验。
 
+## PYTRIO-ONLINE-001（REGISTERED）
+
+- 研究问题：此前两次有效基础模型响应后出现的连续`RuntimeError`是否主要由过短客户端超时导致；扩大到60秒但保持一次SDK尝试，能否获得至少3次独立非零Token严格提案并由RC7安全执行至少1次？
+- 输入：仅使用不含原始样本、标签、路径或凭据的聚合AgentContext；随后用官方A包公开train首批和父checkpoint做一次受控入口验收，不读取公开validation。
+- 模型：平台已校验的`Qwen/Qwen3.5-4B`基础模型；不使用Sampler路径，不训练LoRA。
+- 预算：最多6次远程采样；每次最多768输出Token、60秒客户端超时；沿用既有10元累计上限；官方试运行0次。
+- 成功标准：至少3次非零Token且严格schema合法的响应；至少1次提案通过RC7白名单并实际进入候选执行；完整收据含哈希、Token、延迟和失败分类但不含凭据/原始响应。
+- 停止条件：达到成功标准立即停止，或6次额度用尽/余额不足/服务持续异常即保留负证据停止。
+- 代码基线：`3587fcde9381f919e869d18569b13582e07755ec`；分支`codex/native-competitive-rc`。
+
 ## NATIVE-COMPETITIVE-RC-001（REGISTERED）
 
 - 研究问题：平台原生执行器与官方训练器逐状态等价后，迁移已冻结日程并使用train内部风险规则，能否形成同时具备性能、协议、PyTRiO、SwanLab和Docker证据的新竞争RC？
@@ -345,7 +355,7 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 
 ## UNSEEN-SIM-001-A1预注册
 
-- 状态：`REGISTERED_NOT_RUN`。
+- 状态：`FAILED_DATA_QUALITY_BEFORE_TRAINING`。首次只读解析在Battery `B0050/B0052`发现25条`discharge`记录的`Capacity`为空数组，原实现尝试强制转标量并抛出`TypeError`；训练、confirmation、PyTRiO、SwanLab和官方试运行均未启动。失败目录只含原始清单`D:/brace-msi-unseen/UNSEEN-SIM-001-A1/raw-manifest.json`，保留不覆盖。
 - 研究问题：冻结RC7的原生续训、门控和保留机制，在未参与其设计的电池容量回归、液压蓄能器状态分类和铣削VB回归上，能否完成十轮并相对模拟静态父模型获得安全改善？
 - 原始数据：只读使用`C:/Users/Administrator/Desktop/人工智能创新大赛/模拟正式数据集`；运行根固定为新目录`D:/brace-msi-unseen/UNSEEN-SIM-001-A1/`。
 - 特征：每个传感器序列只提取数量、均值、标准差、最小、最大、中位数、四分位数、RMS、首尾差和线性斜率；允许合法工况量，但禁止目标、未来总循环数、总寿命、未来容量/VB、其余液压profile目标或数据集名称作为模型输入。
@@ -357,3 +367,10 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 - 成功标准：三任务10/10轮、父链有效、零分组交叉和零目标泄漏；最终confirmation三任务均不劣于静态父模型，至少两个严格改善；全部checkpoint可加载且小于64 MiB。
 - 停止条件：任一泄漏/交叉、标签定义不明确、少于50条adaptation样本、非有限特征、父模型或续训链不可加载，或confirmation打开后需要改参数。若性能失败则保留负结果并停止，不用confirmation调参重跑。
 - 证据边界：这是模拟正式流程和未知任务压力测试，不是官方试运行、隐藏成绩或RC7重新选型；完成后`REGISTERED_NOT_RUN`改为实际状态并记录全部失败。
+
+## UNSEEN-SIM-001-A2预注册
+
+- 状态：`REGISTERED_NOT_RUN`。
+- 唯一变更：Battery只接受尺寸为1且有限的实测`Capacity`；空数组、多值或非有限目标显式排除，不插值、不从传感器反算、不改变其余特征、切分、模型、十轮策略、预算、成功标准或confirmation规则。
+- 输出：新目录`D:/brace-msi-unseen/UNSEEN-SIM-001-A2/`；A1失败目录保持只读证据。
+- 其余协议：完全继承A1预注册。
