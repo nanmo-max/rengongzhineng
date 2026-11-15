@@ -483,3 +483,11 @@ PyTRiO通用接口、Qwen3.5-4B基础模型平台校验和持久化Sampler路线
 - 来源：`D:/brace-msi-unseen/UNSEEN-SIM-001-A3/`、`D:/brace-msi-unseen/UNSEEN-SIM-001-A4/`及`docs/results/UNSEEN-SIM-001.md`。
 - 已确认：三任务各10轮、父链和隔离协议通过；A4真实调用`Qwen/Qwen3.5-4B` PyTRiO，取得16次有效响应、15次建议执行和8,100/3,470输入/输出Token。
 - 性能边界：Battery/Hydraulic最终退化，Mill持平，严格改善0/3；不得写成官方成绩、隐藏泛化通过或新RC性能证明。
+
+### L-EVIDENCE-010 报告验证选择污染审计与修正
+
+- 类型：本地可核验代码与机器产物，不是官方证据。
+- 根因：旧`scripts/simulate_platform_report.py`逐轮读取同一`public/validation.jsonl`并按A Macro-F1最大、B/C RMSE最小选择轮次；训练入口自身仍使用当前批次Update/Gate，没有发现validation进入训练的证据。
+- 修正：V2逐轮只复制当轮`metrics_before`、`metrics_candidate`和真实`deployed`；十轮冻结后只评估`round-10/checkpoint.npz`一次。每任务`public_validation_evaluations=1`，不存在`selected_round`/`selected_metrics`。
+- 产物：`D:/brace-msi-native-competitive/RC7-OFFICIAL-REPORT-SIM-V2-A2/`；详情见`docs/results/REPORT-EVIDENCE-FIX-001.md`。
+- 边界：公开validation已经历史暴露，V2单次结果仍不是独立测试或官方隐藏成绩；旧V1不删除，只降级为界面/协议演示。

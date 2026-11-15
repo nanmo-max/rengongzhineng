@@ -349,12 +349,21 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 
 ## PLATFORM-REPORT-SIM-001-A1
 
-- 状态：`PASS_LOCAL_PROTOCOL_SIMULATION`。
+- 状态：`INVALID_FOR_PERFORMANCE / RETAINED_AS_INTERFACE_DEMO`（被D-067替代）。
 - 输入：RC7修复后容器的A/B/C各10轮checkpoint；三个官方训练包的历史暴露`public/validation.jsonl`。
 - 行为：逐轮只读评估，按A Macro-F1最大、B/C RMSE最小模拟官方“采用本轮/保留此前最佳”；不训练、不修改checkpoint。
-- 结果：A/B/C均10/10轮，最终采用第9/1/9轮；共25,972条预测；指标与D-063冻结边界一致。
+- 结果：A/B/C均10/10轮，共25,972条逐轮重复公开validation预测；该实现按validation选择第9/1/9轮，构成选择污染，不能证明泛化或选择最终轮次。
 - 产物：`D:/brace-msi-native-competitive/RC7-OFFICIAL-REPORT-SIM/report.json`与`report.html`；详情见`results/PLATFORM-REPORT-SIM-001.md`。
-- 边界：公开validation历史暴露；Token为本地确定性容器记录0，不冒充在线或官方成绩；官方试运行新增使用0次。
+- 边界：只保留界面和协议演示；Token为本地确定性容器记录0，不冒充在线或官方成绩；官方试运行新增使用0次。
+
+## REPORT-EVIDENCE-FIX-001-A1
+
+- 状态：`SUCCEEDED_LOCAL_REPORT_CORRECTION`。
+- 输入：同一RC7冻结十轮收据、round-10最终稳定checkpoint及历史暴露公开validation；未重训或改写checkpoint。
+- 行为：逐轮仅展示Gate稳定/候选指标和Harness真实部署；A/B/C各在十轮完全冻结后对round-10执行一次公开validation评估，总读取3次。
+- 结果：最终模型来源由部署链确定为A第9轮、B第1轮、C第9轮；冻结后单次公开validation数值保持A Macro-F1 0.725695、B RMSE 660.076488、C RMSE 51.949287，但不再用于选轮次。
+- 产物：`D:/brace-msi-native-competitive/RC7-OFFICIAL-REPORT-SIM-V2-A2/`；证据见`results/REPORT-EVIDENCE-FIX-001.md`。
+- 边界：公开validation历史已暴露，仍非独立泛化或官方隐藏成绩；PyTRiO、SwanLab和官方试运行新增使用均为0。
 
 ## UNSEEN-SIM-001-A1预注册
 

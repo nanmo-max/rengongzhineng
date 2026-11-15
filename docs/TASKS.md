@@ -24,10 +24,22 @@ EVIDENCE-RSI-001(DONE)
   -> UNSEEN-SIM-001(DONE_NEGATIVE)
   -> UNSEEN-REPORT-001(DONE)
   -> OFFICIAL-DATA-REPORT-001(DONE)
+  -> REPORT-EVIDENCE-FIX-001(DONE)
   -> FORMAL-RELEASE-001(BLOCKED_EXTERNAL)
 ```
 
 以上为当前正式重构图；`0.6.0rc1`及下方历史任务图保持冻结，新竞争候选只在独立分支演进。
+
+### REPORT-EVIDENCE-FIX-001 报告验证选择污染修正
+
+- 状态：`DONE`
+- 依赖：PLATFORM-REPORT-SIM-001、OFFICIAL-DATA-REPORT-001
+- 优先级：P0（现有报告证据等级错误）
+- 根因：旧生成器对十轮冻结checkpoint重复读取同一公开validation，并用该指标选择“最佳轮次”；这不是训练样本泄漏，但构成validation参与模型选择。
+- 目标：逐轮只展示当前批次Gate上的稳定/候选指标和Harness真实部署决策；策略与十轮完全冻结后，仅对最终稳定checkpoint读取一次公开validation，且不得据此选择轮次。
+- 完成标准：每任务公开validation评估恰好一次；逐轮记录不含公开validation指标；最终模型来源由Harness部署链确定；旧V1报告明确降级为界面/协议演示；专项与完整回归通过，并生成独立V2产物。
+- 停止条件：不重训、不修改checkpoint、不调用PyTRiO/SwanLab/官方试运行，不把公开validation写成独立泛化证据。
+- 证据：V2三任务30轮、每任务公开validation恰好读取1次，零`selected_round`/`selected_metrics`和零逐轮`public_validation_metrics`；专项7项、完整回归390项通过。详见`results/REPORT-EVIDENCE-FIX-001.md`。
 
 ### OFFICIAL-DATA-REPORT-001 Gas/Bearing/Engine官方要素风格报告
 
@@ -38,7 +50,7 @@ EVIDENCE-RSI-001(DONE)
 - 完成标准：Gas/Bearing/Engine各10轮；显示最终采用轮、公开验证样本、CPU/运行时间、Accuracy/Macro-F1或MAE/RMSE/NASA、逐轮模型选择、动作、Token和资源；缺失的历史假设/Gate字段明确显示“未记录”，不补造；显著标记历史暴露公开验证和非官方成绩。
 - 停止条件：不得重训、再次读取公开validation、调用PyTRiO或使用官方试运行；现有机器报告字段不足时只降级展示。
 - 产物：`D:/brace-msi-native-competitive/RC7-OFFICIAL-REPORT-SIM/platform-style/`下HTML与JSON。
-- 证据：三任务各10轮、30个展开记录、历史缺失字段明确降级为“未记录”、敏感标记扫描通过；专项4项通过。哈希与指标摘要见`results/OFFICIAL-DATA-REPORT-001.md`。
+- 证据更正：三任务各10轮、30个展开记录及页面字段有效，但继承V1的validation轮次选择污染；仅保留界面演示。修正证据见`REPORT-EVIDENCE-FIX-001`。
 
 
 ### UNSEEN-REPORT-001 官方要素风格的本地模拟报告
@@ -81,8 +93,8 @@ EVIDENCE-RSI-001(DONE)
 - 状态：`DONE`
 - 依赖：NATIVE-COMPETITIVE-RC-001、O-PLATFORM-010
 - 目标：不消耗官方试运行，以冻结RC7轮次checkpoint和历史暴露公开validation复演官方报告的10轮、逐轮指标、模型采用、资源和Token字段。
-- 证据：A/B/C均10/10轮，共25,972条公开验证预测；模拟最终采用第9/1/9轮，指标与冻结性能边界一致；机器JSON/HTML和哈希见`results/PLATFORM-REPORT-SIM-001.md`。
-- 边界：只验证报告流程，不是隐藏测试、官方成绩或新选型，不得据此重开调参。
+- 证据更正：A/B/C均10/10轮，但25,972条是对同一公开validation逐轮重复评估，且V1据此模拟选择第9/1/9轮，构成选择污染。机器JSON/HTML保留为界面演示；修正见`REPORT-EVIDENCE-FIX-001`。
+- 边界：只验证旧报告页面流程；不是隐藏测试、官方成绩、独立泛化或有效轮次选择证据。
 
 ### NATIVE-COMPETITIVE-RC-001 原生竞争候选冲刺
 

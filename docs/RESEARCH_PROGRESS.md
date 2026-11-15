@@ -596,9 +596,11 @@
 
 ## 2026-11-15：PLATFORM-REPORT-SIM-001
 
+> 后续更正：本节V1对同一公开validation逐轮评估并据此选轮，已由D-067判定为选择污染；仅保留历史追溯，修正见`REPORT-EVIDENCE-FIX-001`。
+
 - 新增三张旧官方试运行完整报告截图和两张平台公告截图已按哈希登记；它们确认旧提交14,773条隐藏预测、三任务10/10轮、最终均采用第1轮及详细CPU/运行时字段，但没有新增正式调用命令。
 - 使用修复后RC7容器轮次checkpoint，逐轮只读评估官方公开validation并生成官方页面字段形态的JSON/HTML；不训练、不改模型、不调用PyTRiO或官方平台。
-- A/B/C模拟最终采用第9/1/9轮，主指标0.725695 Macro-F1、660.076488 RMSE、51.949287 RMSE；C同时记录NASA 4,026,364,609.895953。总样本25,972与旧隐藏14,773不同，明确标注为公开验证规模差异。
+- V1曾按重复公开validation模拟选择第9/1/9轮并报告0.725695 Macro-F1、660.076488/51.949287 RMSE；该选轮结论已判无效，数值仅作为历史暴露validation的描述性记录保留。
 - 产物位于`D:/brace-msi-native-competitive/RC7-OFFICIAL-REPORT-SIM/`；JSON/HTML SHA-256为`5137E3C8...37F92CC8`、`AB9D81BD...AC182F80`。
 
 ## 2026-11-15：PYTRIO-ONLINE-001
@@ -626,9 +628,19 @@
 
 ## 2026-11-15：OFFICIAL-DATA-REPORT-001
 
+> 后续更正：本节展示继承V1选择污染，只保留界面样式证据；修正见`REPORT-EVIDENCE-FIX-001`。
+
 - 未重训、未重新读取公开validation、未调用PyTRiO或官方试运行；只转换`PLATFORM-REPORT-SIM-001`已冻结的Gas/Bearing/Engine十轮机器报告。
 - 生成三任务单页HTML及机器JSON：A/B/C各10轮，共30个可展开记录；展示公开验证样本、CPU/运行时间、Accuracy/Macro-F1或MAE/RMSE/NASA、模型选择、动作、Token和资源。
-- 最终采用轮与冻结证据一致：A第9轮（Macro-F1 0.725695）、B第1轮（RMSE 660.076488）、C第9轮（RMSE 51.949287）。缺失的历史假设、Gate理由和训练参数显示“未记录”，未补造字段。
+- V1页面曾显示A第9轮、B第1轮、C第9轮；其validation选轮语义已判无效。V2改由Harness部署链确定相同模型来源，冻结后validation只描述最终checkpoint，不参与选择。
 - HTML/JSON SHA-256为`A15445AB...90BEDEA`/`AB64E5A7...0B40ED1`；页面显著标注“历史暴露公开验证、非官方隐藏测试”，敏感标记扫描未发现API Key。完整说明见`results/OFFICIAL-DATA-REPORT-001.md`。
 - 生成器专项`4 passed`；当前HEAD完整回归`387 passed in 156.61s`。
+
+## 2026-11-15：REPORT-EVIDENCE-FIX-001
+
+- 审计确认训练批次ID、特征和设备组没有与公开validation直接重叠证据；问题位于报告层：V1对同一公开validation逐轮重复评估并用其选择第9/1/9轮，构成验证集选择污染。
+- TDD新增报告证据链测试后，将V2改为逐轮只读取冻结收据中的稳定/候选Gate指标及真实部署决定；策略冻结后，仅对各任务`round-10/checkpoint.npz`评估一次公开validation。
+- 机器复算：三任务30轮，`public_validation_evaluations=3`，零`selected_round`/`selected_metrics`字段，零逐轮`public_validation_metrics`；最终来源由部署链确定为A第9轮、B第1轮、C第9轮。
+- V1和原展示文件保留并追加污染警示；最终V2-A2位于`D:/brace-msi-native-competitive/RC7-OFFICIAL-REPORT-SIM-V2-A2/`，页面视觉检查通过。
+- 专项`7 passed in 0.81s`；最终HEAD完整回归`390 passed in 151.76s`。
 

@@ -71,6 +71,7 @@
 | D-064 | 2026-11-15 | LOCKED | 用户新增的电池老化、液压状态监测和铣削刀具磨损数据只用于`UNSEEN-SIM-001`独立泛化复演。RC7镜像、策略、历史证据和归档保持冻结；因新数据没有官方父checkpoint，允许在严格隔离的bootstrap分区生成明确标记为`simulated_parent=true`的兼容MLP父模型，再以adaptation分区执行十轮原生续训，最后一次打开confirmation分区。液压选择文献明确较难的蓄能器状态分类，电池预测放电容量，Mill预测实测VB；数据集名称不得进入动作策略。 | 用户2026-11-15授权；三个数据集随附说明；D-063 |
 | D-065 | 2026-11-15 | LOCKED | `UNSEEN-SIM-001-A4`证明基础Qwen3.5-4B可经PyTRiO真实参与三任务十轮决策，但不证明性能泛化：16次有效响应和15次建议执行后，三个确认集最佳仍均为静态round 0。Battery/Hydraulic的同批Gate部署在跨设备/工况confirmation退化，Mill保持静态。confirmation已经打开，禁止据此调参重跑；当前RC7不得宣称未知任务性能。下一代候选若另行授权，优先改进组/时间前向验证或未知任务默认不部署，而非增加Qwen调用。 | `results/UNSEEN-SIM-001.md`；A3/A4机器报告与独立复算 |
 | D-066 | 2026-11-15 | LOCKED | 冻结`BRACE-MSI-0.7.1rc1`为`0.7.0rc1`的发布补丁候选：只提高Native PyTRiO默认超时并内置经固定哈希校验的Qwen3.5-4B tokenizer-only资产；不改变工业模型、竞争参数、候选日程、SafetyGate或历史性能结论。镜像不得包含Qwen权重、工业模型权重、数据或凭据。真实容器在线提案、断网retain、383项回归及`docker save/load`全部通过后，`0.7.1rc1`替代`0.7.0rc1`作为本地上传入口；平台导入、模型校验和正式评测仍分别验收。 | `results/PYTRIO-ONLINE-001.md`、`results/RC71_VERIFICATION.json`、`results/RC71_CONTAINER_ACCEPTANCE.json` |
+| D-067 | 2026-11-15 | LOCKED | 报告证据链禁止逐轮重复读取同一公开validation并据此选择“最佳轮次”。逐轮只能展示当轮Gate上的稳定/候选指标与Harness真实部署决定；十轮策略完全冻结后，公开validation最多评估最终稳定checkpoint一次，且只作历史暴露的描述性确认。旧`PLATFORM-REPORT-SIM-001`/`OFFICIAL-DATA-REPORT-001` V1报告保留为界面与协议演示，但其轮次排名和泛化结论无效。 | 用户2026-11-15验证集选择污染审计；`REPORT-EVIDENCE-FIX-001`红绿测试与V2机器报告 |
 
 ## 已被替代的历史决策
 

@@ -151,6 +151,58 @@ def _historical_round_record(profile: str, row: dict[str, Any]) -> dict[str, Any
     }
 
 
+def _corrected_round_record(profile: str, row: dict[str, Any]) -> dict[str, Any]:
+    index = int(row["round"])
+    deployed = bool(row.get("deployed_by_harness"))
+    candidate_trained = bool(row.get("candidate_trained"))
+    return {
+        "round": index,
+        "adaptation_metrics": _metric_rows(
+            "classification" if profile == "A" else "regression",
+            row.get("gate_metrics_before") or {},
+        ),
+        "candidate_metrics": _metric_rows(
+            "classification" if profile == "A" else "regression",
+            row.get("gate_metrics_candidate") or {},
+        ),
+        "model_selection": (
+            "采用本轮模型"
+            if deployed
+            else "候选未采用，保留此前模型"
+            if candidate_trained
+            else "保留此前模型"
+        ),
+        "experiment_record": {
+            "history": (
+                "首轮：读取官方父模型与当前合法批次"
+                if index == 1
+                else f"读取至第{index - 1}轮的冻结实验历史"
+            ),
+            "hypothesis": "历史冻结运行未记录结构化实验假设",
+            "modification": {
+                "action": str(row.get("executed_action") or "noop"),
+                "epochs": "未记录",
+                "learning_rate": "未记录",
+                "training_sample_count": "未记录",
+            },
+            "advisor": {
+                "source": "historical_report",
+                "input_tokens": int(row.get("input_tokens", 0)),
+                "output_tokens": int(row.get("output_tokens", 0)),
+            },
+            "gate": {
+                "reason": str(row.get("gate_reason") or "未记录"),
+                "deployed": deployed,
+            },
+            "resources": {
+                "cpu_seconds": float(row.get("cpu_seconds", 0.0)),
+                "runtime_seconds": float(row.get("wall_seconds", 0.0)),
+                "peak_rss_bytes": int(row.get("peak_rss_bytes", 0)),
+            },
+        },
+    }
+
+
 def _build_historical_tasks(source: dict[str, Any]) -> list[dict[str, Any]]:
     tasks = []
     for profile, task in source["tasks"].items():
@@ -165,10 +217,13 @@ def _build_historical_tasks(source: dict[str, Any]) -> list[dict[str, Any]]:
                 "status": "记录完整",
                 "completed_rounds": 10,
                 "total_rounds": 10,
-                "final_adopted_model": f"第{int(task['selected_round'])}轮模型",
+                "final_adopted_model": (
+                    f"历史validation选择：第{int(task['selected_round'])}轮（不可作泛化证据）"
+                ),
                 "confirmation_sample_count": int(task["evaluation_samples"]),
                 "evaluation_sample_label": "公开验证样本",
-                "metric_heading": "历史暴露公开验证指标（非官方）",
+                "metric_heading": "重复公开validation结果（选择污染，仅界面演示）",
+                "round_metric_heading": "重复公开validation指标（受污染）",
                 "cpu_seconds": float(task["cpu_seconds"]),
                 "runtime_seconds": float(task["wall_seconds"]),
                 "final_confirmation_metrics": _metric_rows(task_kind, task["selected_metrics"]),
@@ -181,10 +236,52 @@ def _build_historical_tasks(source: dict[str, Any]) -> list[dict[str, Any]]:
     return tasks
 
 
+def _build_corrected_tasks(source: dict[str, Any]) -> list[dict[str, Any]]:
+    tasks = []
+    for profile, task in source["tasks"].items():
+        if int(task["completed_rounds"]) != 10 or len(task["rounds"]) != 10:
+            raise ValueError("platform-style report requires exactly ten completed rounds")
+        if int(task.get("public_validation_evaluations", 0)) != 1:
+            raise ValueError("corrected report requires exactly one frozen public validation read")
+        task_kind = "classification" if profile == "A" else "regression"
+        deployed_round = task.get("last_deployed_round")
+        tasks.append(
+            {
+                "task_id": profile,
+                "display_name": OFFICIAL_TASK_NAMES.get(profile, profile),
+                "task_kind": task_kind,
+                "status": "记录完整",
+                "completed_rounds": 10,
+                "total_rounds": 10,
+                "final_adopted_model": (
+                    f"第{int(deployed_round)}轮部署的稳定模型"
+                    if deployed_round is not None
+                    else "初始父模型"
+                ),
+                "confirmation_sample_count": int(task["evaluation_samples"]),
+                "evaluation_sample_label": "冻结后公开validation样本",
+                "metric_heading": "冻结后单次公开validation指标（非独立测试）",
+                "round_metric_heading": "当前批次Gate指标",
+                "cpu_seconds": float(task["cpu_seconds"]),
+                "runtime_seconds": float(task["wall_seconds"]),
+                "final_confirmation_metrics": _metric_rows(
+                    task_kind, task["final_validation_metrics"]
+                ),
+                "initial_confirmation_metrics": [],
+                "rounds": [_corrected_round_record(profile, row) for row in task["rounds"]],
+            }
+        )
+    return tasks
+
+
 def build_platform_style_report(source: dict[str, Any]) -> dict[str, Any]:
     _assert_no_secrets(source)
-    historical = source.get("format") == "brace-msi.local-platform-report-simulation.v1"
-    if historical:
+    source_format = source.get("format")
+    historical = source_format == "brace-msi.local-platform-report-simulation.v1"
+    corrected = source_format == "brace-msi.local-platform-report-simulation.v2"
+    if corrected:
+        tasks = _build_corrected_tasks(source)
+    elif historical:
         tasks = _build_historical_tasks(source)
     else:
         tasks = []
@@ -203,6 +300,7 @@ def build_platform_style_report(source: dict[str, Any]) -> dict[str, Any]:
                     "confirmation_sample_count": int(task["partition_counts"]["confirmation"]),
                     "evaluation_sample_label": "确认集样本",
                     "metric_heading": "本地独立确认集指标（非官方）",
+                    "round_metric_heading": "公开适应流指标",
                     "cpu_seconds": sum(float(row.get("cpu_seconds", 0.0)) for row in task["rounds"]),
                     "runtime_seconds": sum(float(row.get("wall_seconds", 0.0)) for row in task["rounds"]),
                     "final_confirmation_metrics": _metric_rows(
@@ -218,12 +316,16 @@ def build_platform_style_report(source: dict[str, Any]) -> dict[str, Any]:
         "format": "brace-msi.platform-style-local-report.v1",
         "source_experiment_id": source.get("experiment_id", "PLATFORM-REPORT-SIM-001"),
         "evidence_boundary": (
-            "historically_exposed_public_validation_not_official_hidden_test"
+            "single_frozen_public_validation_not_used_for_selection"
+            if corrected
+            else "repeated_public_validation_selection_contaminated_interface_demo_only"
             if historical
             else "local_confirmation_not_official_hidden_test"
         ),
         "boundary_text": (
-            "本报告使用历史暴露的官方公开validation和冻结checkpoint；版式仅复用官方页面信息要素，不是官方隐藏测试、官方评分或新的参数选择。"
+            "逐轮仅展示当前批次Gate证据；公开validation仅在十轮策略冻结后评估一次，未用于选择轮次。该validation历史已暴露，因此仍不是独立测试、官方隐藏测试或官方评分。"
+            if corrected
+            else "旧V1报告对同一公开validation重复评估并据此挑选轮次，存在验证集选择污染；只保留为界面和协议演示，不得作为性能或泛化证据。"
             if historical
             else "本报告使用冻结的本地模拟父模型与独立确认集，版式仅复用官方页面信息要素；不是官方隐藏测试、官方评分或平台试运行成绩。"
         ),
@@ -265,10 +367,21 @@ def render_platform_style_html(report: dict[str, Any]) -> str:
             advisor = record["advisor"]
             gate = record["gate"]
             resources = record["resources"]
+            metrics_cell = (
+                "<div class='gate-metrics'><b>稳定模型Gate</b>"
+                + _metrics_html(row["adaptation_metrics"])
+                + "</div>"
+            )
+            if row["candidate_metrics"]:
+                metrics_cell += (
+                    "<div class='gate-metrics candidate'><b>候选模型Gate</b>"
+                    + _metrics_html(row["candidate_metrics"])
+                    + "</div>"
+                )
             round_rows.append(
                 "<tr>"
                 f"<td class='round-number'>{row['round']}</td>"
-                f"<td>{_metrics_html(row['adaptation_metrics'])}</td>"
+                f"<td>{metrics_cell}</td>"
                 f"<td><span class='choice {'adopted' if gate['deployed'] else 'retained'}'>"
                 f"{html.escape(row['model_selection'])}</span></td>"
                 "<td><details><summary>查看本轮记录</summary><div class='record'>"
@@ -297,7 +410,7 @@ def render_platform_style_html(report: dict[str, Any]) -> str:
             "</div>"
             f"<h3>{html.escape(task['metric_heading'])}</h3>"
             f"<div class='metrics-grid'>{_metrics_html(task['final_confirmation_metrics'])}</div>"
-            "<table><thead><tr><th>轮次</th><th>公开适应流指标</th><th>模型选择</th><th>实验记录</th></tr></thead>"
+            f"<table><thead><tr><th>轮次</th><th>{html.escape(task['round_metric_heading'])}</th><th>模型选择</th><th>实验记录</th></tr></thead>"
             f"<tbody>{''.join(round_rows)}</tbody></table></section>"
         )
     return """<!doctype html><html lang='zh-CN'><head><meta charset='utf-8'>
@@ -310,6 +423,7 @@ h1{margin:0 0 8px;font-size:26px}h2{margin:0 0 8px;font-size:21px}h3{margin:28px
 .summary-grid{display:grid;grid-template-columns:repeat(5,minmax(130px,1fr));gap:18px;margin:24px 0}.summary-grid div,.metric{display:flex;flex-direction:column;gap:5px}.summary-grid span,.metric span{color:var(--muted);font-size:12px}.summary-grid strong,.metric strong{font-weight:600}.metrics-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;background:var(--soft);padding:16px;border-radius:10px}
 table{width:100%;border-collapse:collapse;margin-top:22px}th{background:#eee9e1;text-align:left;font-weight:600}th,td{padding:14px 12px;border-bottom:1px solid var(--line);vertical-align:top}.round-number{width:54px;text-align:center;font-weight:700}.choice{display:inline-block;border-radius:999px;padding:5px 10px;font-size:12px}.adopted{background:#e6f2ea;color:var(--green)}.retained{background:#f0ece6;color:#665d55}
 details summary{cursor:pointer;font-weight:600}.record{margin-top:12px;padding:12px 14px;background:var(--soft);border-radius:8px}.record p{display:grid;grid-template-columns:110px 1fr;gap:12px;margin:8px 0}.record b{font-size:12px}.record span{overflow-wrap:anywhere}
+.gate-metrics{padding:6px 0}.gate-metrics+.gate-metrics{margin-top:8px;padding-top:10px;border-top:1px dashed var(--line)}.gate-metrics>b{display:block;color:var(--muted);font-size:12px;margin-bottom:4px}.gate-metrics .metric{display:inline-flex;min-width:150px;margin-right:14px}.gate-metrics.candidate{background:#fbf8f3;padding:9px;border-radius:7px}
 @media(max-width:850px){.summary-grid{grid-template-columns:repeat(2,1fr)}.metrics-grid{grid-template-columns:1fr}table{display:block;overflow-x:auto}}
 </style></head><body><main><header class='hero'><h1>BRACE-MSI 本地正式流程复演</h1>
 <p class='boundary'><b>证据边界：</b>""" + html.escape(report["boundary_text"]) + """</p>

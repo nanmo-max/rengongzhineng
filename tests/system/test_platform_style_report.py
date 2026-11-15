@@ -168,11 +168,11 @@ def test_original_three_task_report_is_adapted_without_inventing_missing_hypothe
     result = MODULE.build_platform_style_report(source)
     task = result["tasks"][0]
 
-    assert result["evidence_boundary"] == "historically_exposed_public_validation_not_official_hidden_test"
+    assert result["evidence_boundary"] == "repeated_public_validation_selection_contaminated_interface_demo_only"
     assert task["display_name"] == "C · 发动机剩余寿命预测"
-    assert task["final_adopted_model"] == "第9轮模型"
+    assert task["final_adopted_model"] == "历史validation选择：第9轮（不可作泛化证据）"
     assert task["evaluation_sample_label"] == "公开验证样本"
-    assert task["metric_heading"] == "历史暴露公开验证指标（非官方）"
+    assert task["metric_heading"] == "重复公开validation结果（选择污染，仅界面演示）"
     assert task["final_confirmation_metrics"][2] == {
         "key": "nasa_score",
         "label": "NASA · 非对称评分",
@@ -222,5 +222,64 @@ def test_original_report_html_uses_public_validation_boundary() -> None:
 
     assert "A · 气体传感器漂移分类" in output
     assert "公开验证样本" in output
-    assert "历史暴露公开验证指标（非官方）" in output
+    assert "重复公开validation结果（选择污染，仅界面演示）" in output
+    assert "存在验证集选择污染" in output
     assert "本地独立确认集指标（非官方）" not in output
+
+
+def test_corrected_report_uses_gate_metrics_and_single_frozen_confirmation() -> None:
+    source = {
+        "format": "brace-msi.local-platform-report-simulation.v2",
+        "official_score": False,
+        "simulation_only": True,
+        "data_scope": "per_round_gate_plus_single_frozen_public_validation",
+        "selection_use": "harness_gate_only_public_validation_not_used_for_selection",
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tasks": {
+            "A": {
+                "completed_rounds": 10,
+                "final_checkpoint_round": 10,
+                "last_deployed_round": 9,
+                "final_model_origin": "round_9_deployment",
+                "final_validation_metrics": {"accuracy": 0.8, "macro_f1": 0.7},
+                "evaluation_samples": 100,
+                "public_validation_evaluations": 1,
+                "cpu_seconds": 1.0,
+                "wall_seconds": 2.0,
+                "rounds": [
+                    {
+                        "round": index,
+                        "gate_metrics_before": {"accuracy": 0.5, "macro_f1": 0.4},
+                        "gate_metrics_candidate": {"accuracy": 0.6, "macro_f1": 0.5},
+                        "model_selection": "adopt" if index == 9 else "retain_previous",
+                        "candidate_trained": True,
+                        "deployed_by_harness": index == 9,
+                        "gate_reason": "safe_gain" if index == 9 else "candidate_rejected",
+                        "executed_action": "replay_refit",
+                        "cpu_seconds": 0.1,
+                        "wall_seconds": 0.2,
+                        "peak_rss_bytes": 1000,
+                        "input_tokens": 0,
+                        "output_tokens": 0,
+                    }
+                    for index in range(1, 11)
+                ],
+            }
+        },
+    }
+
+    result = MODULE.build_platform_style_report(source)
+    task = result["tasks"][0]
+    output = MODULE.render_platform_style_html(result)
+
+    assert result["evidence_boundary"] == "single_frozen_public_validation_not_used_for_selection"
+    assert task["final_adopted_model"] == "第9轮部署的稳定模型"
+    assert task["metric_heading"] == "冻结后单次公开validation指标（非独立测试）"
+    assert task["round_metric_heading"] == "当前批次Gate指标"
+    assert task["rounds"][0]["adaptation_metrics"][1]["value"] == 0.4
+    assert "当前批次Gate指标" in output
+    assert "稳定模型Gate" in output
+    assert "候选模型Gate" in output
+    assert "0.500000" in output
+    assert "公开validation仅在十轮策略冻结后评估一次，未用于选择轮次" in output

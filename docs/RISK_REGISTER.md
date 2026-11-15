@@ -46,5 +46,6 @@
 | R-035 | P0 | 基础Qwen3.5-4B结构化提案可靠性低于A3 Sampler | 历史新留出schema仅83.33%，任一非法响应可使严格正式运行失败 | 提示词只广告Native可执行action/parameter；保留严格schema与失败关闭；首个新试运行核对非零Token、10轮完成和非法响应数 | 技术负责人 | MITIGATED_LOCAL/OPEN_PLATFORM：收紧能力提示后，60秒窗口内3/3独立宿主响应和发布容器内1次响应均严格合法；冻结策略仍控制轮次与参数。平台容器内完整10轮非法响应数仍需正式试运行核对 |
 | R-043 | P0 | PyTRiO提案覆盖冻结轮次、动作或训练参数，导致本地性能证据与默认镜像路径不一致 | 合法提案在非候选轮启动训练，或改写epoch/LR/动作 | Agent只表达训练/retain意图；冻结策略拥有轮次、动作和参数；服务恢复路径只retain；收据记录全部约束 | 技术负责人 | MITIGATED_LOCAL：独立审计发现后以红绿测试修复；A/B/C带PyTRiO训练意图与确定性冻结策略的候选数、最终指标和checkpoint完全一致；42项专项、377项完整回归及修复后容器验收通过 |
 | R-044 | P0 | 未知任务同批Gate通过的候选在未来设备或工况上退化 | adaptation当前批改善并部署，但独立confirmation低于静态父模型 | 未知任务采用组/时间前向验证或无足够跨组证据时retain；确认集只作一次冻结评估，不用于回调参数；新机制须独立任务和新数据验证 | 技术负责人 | REALIZED_OPEN：UNSEEN-SIM-001中Battery/Hydraulic各部署1次后独立confirmation退化，Mill未部署并持平；A3/A4均严格改善0/3。当前RC冻结，等待新任务授权后处理 |
+| R-045 | P0 | 报告重复评估公开validation并用其选择轮次，制造独立泛化假象 | 同一稳定checkpoint在多轮产生相同指标，报告仍标记“采用最佳轮次” | 逐轮只读Gate收据；冻结后只对round-10最终稳定checkpoint评估一次公开validation；schema记录读取次数并禁止`selected_round`字段；旧V1显著降级 | 技术负责人 | MITIGATED：确认无训练ID/特征/设备直接重叠证据；V2每任务validation读取1次、总3次，逐轮无`public_validation_metrics`，最终来源由Harness部署链决定。V1保留但标记为选择污染、仅界面演示 |
 
 风险关闭必须在本表填写证据路径，不得仅写“已解决”。

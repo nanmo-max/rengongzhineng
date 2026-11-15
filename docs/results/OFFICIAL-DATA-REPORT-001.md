@@ -1,5 +1,7 @@
 # OFFICIAL-DATA-REPORT-001 结果
 
+> **2026-11-15证据更正：** 本文件转换自存在validation选择污染的V1机器报告，因此只能保留为页面样式演示。下方“最终采用”不能作为独立模型选择或泛化证据。修正版见`REPORT-EVIDENCE-FIX-001.md`。
+
 ## 结论
 
 已将既有Gas、Bearing、Engine冻结十轮机器报告转换为便于查看的官方要素风格HTML和机器JSON。该任务只做格式转换，没有重新训练、重新读取公开validation、调用PyTRiO、同步SwanLab或消耗官方试运行。
