@@ -1,0 +1,21 @@
+{
+  "experiment_id": "PLATFORM-NATIVE-SIM-001-A2",
+  "protocol": "brace-msi.platform-native.v1",
+  "rounds": 10,
+  "epochs_per_round": 1,
+  "learning_rate_multiplier": 1.0,
+  "gate_fraction": 0.2,
+  "min_primary_improvement": 0.0,
+  "max_training_rounds": 10,
+  "profiles": {
+    "A": "cpu-a-guide-20261110-v1",
+    "B": "cpu-b-rul-20261110-v1",
+    "C": "cpu-c-guide-20261110-v1"
+  },
+  "data_file": "public/train.jsonl",
+  "prediction_file": "public/validation.jsonl",
+  "parent_checkpoint": "checkpoint.npz",
+  "swanlab_mode": "offline",
+  "official_test_opportunities_used": 0,
+  "result_boundary": "local_platform_mount_simulation_with_exposed_public_validation"
+}

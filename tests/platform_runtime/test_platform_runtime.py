@@ -1,0 +1,516 @@
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+import numpy as np
+import pytest
+
+from brace_msi.cli import main
+import brace_msi.platform_runtime as platform_runtime
+from brace_msi.platform_runtime import (
+    PlatformRuntimeConfig,
+    describe_runtime,
+    start_round,
+    submit_predictions,
+)
+from brace_msi.platform_simulation import run_ten_round_simulation
+from brace_msi.policies import Action
+from brace_msi.pytrio_agent import (
+    AdvisorOutcome,
+    AdvisorReceipt,
+    ExperimentProposal,
+)
+
+
+class RecordingAdvisor:
+    def __init__(self, action: Action = Action.REPLAY_REFIT) -> None:
+        self.action = action
+        self.contexts = []
+
+    def advise(self, context, trigger):
+        self.contexts.append((context, trigger))
+        tool = {
+            Action.REPLAY_REFIT: "train_replay_refit",
+            Action.BOUNDED_HPO: "train_bounded_hpo",
+        }[self.action]
+        return AdvisorOutcome(
+            proposal=ExperimentProposal(
+                schema_version="brace-msi.experiment-proposal.v1",
+                action=self.action,
+                tool=tool,
+                rationale="bounded test proposal",
+                parameters={"epochs": 2, "learning_rate": 0.003},
+                max_cpu_seconds=30.0,
+                max_candidates=1,
+                stop_conditions=("budget_exhausted",),
+            ),
+            source="pytrio",
+            receipt=AdvisorReceipt(
+                status="accepted",
+                triggered=True,
+                trigger_reasons=trigger.reasons,
+                attempts=1,
+                error_categories=(),
+                total_input_tokens=120,
+                total_output_tokens=40,
+                total_latency_seconds=0.25,
+            ),
+        )
+
+
+def _write_parent(path: Path, *, task: str = "classification") -> None:
+    hidden = 2
+    features = 2
+    classes = ["cold", "hot"] if task == "classification" else []
+    outputs = len(classes) if classes else 1
+    params = {
+        "w1": np.zeros((features, hidden), dtype=np.float64),
+        "b1": np.zeros(hidden, dtype=np.float64),
+        "w2": np.zeros((hidden, outputs), dtype=np.float64),
+        "b2": np.zeros(outputs, dtype=np.float64),
+    }
+    meta = {
+        "format": "contest.cpu-mlp.v1",
+        "device": "cpu",
+        "profile": "X",
+        "task": task,
+        "paths": [
+            '[["key","features"],["index",0]]',
+            '[["key","features"],["index",1]]',
+        ],
+        "classes": classes,
+        "hidden": hidden,
+        "seed": 42,
+        "epochs": 20,
+        "steps": 80,
+        "learning_rate": 0.01,
+        "batch_size": 4,
+        "parameter_count": sum(value.size for value in params.values()),
+        "target_mean": 5.0 if task == "regression" else 0.0,
+        "target_scale": 5.0 if task == "regression" else 1.0,
+    }
+    np.savez(
+        path,
+        **params,
+        **{f"adam_first_{key}": np.zeros_like(value) for key, value in params.items()},
+        **{f"adam_second_{key}": np.zeros_like(value) for key, value in params.items()},
+        mean=np.zeros(features, dtype=np.float64),
+        scale=np.ones(features, dtype=np.float64),
+        metadata=np.asarray(json.dumps(meta, sort_keys=True, separators=(",", ":"))),
+    )
+
+
+def _write_data(path: Path, *, task: str = "classification", count: int = 20) -> None:
+    rows = []
+    for index in range(count):
+        hot = index >= count // 2
+        answer = (10.0 if hot else 0.0) if task == "regression" else ("hot" if hot else "cold")
+        rows.append(
+            {
+                "id": f"sample-{index:03d}",
+                "inputs": {"features": [float(index), float(index % 3)]},
+                "answer": answer,
+            }
+        )
+    path.write_text(
+        "".join(json.dumps(row, separators=(",", ":")) + "\n" for row in rows),
+        encoding="utf-8",
+    )
+
+
+def test_describe_declares_native_mount_contract_without_package_root() -> None:
+    description = describe_runtime()
+
+    assert description["data_root"] == "/data"
+    assert description["parent_checkpoint"] == "/previous/checkpoint.npz"
+    assert description["workspace_root"] == "/workspace"
+    assert description["output_root"] == "/output"
+    assert "package_root" not in description
+    assert description["checkpoint_format"] == "contest.cpu-mlp.v1"
+
+
+def test_start_round_continues_parent_without_official_package_tree(tmp_path: Path) -> None:
+    data = tmp_path / "data.jsonl"
+    parent = tmp_path / "checkpoint.npz"
+    workspace = tmp_path / "workspace"
+    output = tmp_path / "output"
+    _write_data(data)
+    _write_parent(parent)
+
+    receipt = start_round(
+        data,
+        parent,
+        workspace,
+        output,
+        PlatformRuntimeConfig(
+            epochs=1,
+            min_primary_improvement=-1.0,
+            min_relative_improvement=-1.0,
+        ),
+    )
+
+    assert receipt["status"] == "completed"
+    assert receipt["round_index"] == 1
+    assert receipt["candidate_trained"] is True
+    assert receipt["parent_loaded"] is True
+    assert receipt["deployed"] is True
+    assert (output / "checkpoint.npz").is_file()
+    assert (output / "training.json").is_file()
+    assert (workspace / "state.json").is_file()
+    with np.load(output / "checkpoint.npz", allow_pickle=False) as child:
+        metadata = json.loads(str(child["metadata"].item()))
+    assert metadata["epochs"] == 21
+    assert metadata["steps"] > 80
+    assert receipt["parent_checkpoint_sha256"] != receipt["checkpoint_sha256"]
+    assert not (tmp_path / "baseline-info.json").exists()
+    assert not (tmp_path / "baselines").exists()
+
+
+def test_start_round_accepts_existing_empty_output_mount(tmp_path: Path) -> None:
+    data = tmp_path / "data.jsonl"
+    parent = tmp_path / "checkpoint.npz"
+    output = tmp_path / "output"
+    output.mkdir()
+    _write_data(data)
+    _write_parent(parent)
+
+    receipt = start_round(
+        data,
+        parent,
+        tmp_path / "workspace",
+        output,
+        PlatformRuntimeConfig(
+            min_primary_improvement=-1.0,
+            min_relative_improvement=-1.0,
+        ),
+    )
+
+    assert receipt["status"] == "completed"
+    assert (output / "checkpoint.npz").is_file()
+
+
+def test_start_round_refuses_nonempty_output_mount(tmp_path: Path) -> None:
+    data = tmp_path / "data.jsonl"
+    parent = tmp_path / "checkpoint.npz"
+    output = tmp_path / "output"
+    output.mkdir()
+    (output / "foreign.txt").write_text("do not overwrite", encoding="utf-8")
+    _write_data(data)
+    _write_parent(parent)
+
+    with pytest.raises(FileExistsError, match="empty"):
+        start_round(data, parent, tmp_path / "workspace", output)
+
+
+def test_start_round_stages_inside_existing_output_mount_to_avoid_cross_device_rename(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    data = tmp_path / "data.jsonl"
+    parent = tmp_path / "checkpoint.npz"
+    workspace = tmp_path / "workspace"
+    output_parent = tmp_path / "read-only-root"
+    output = output_parent / "output"
+    output.mkdir(parents=True)
+    _write_data(data)
+    _write_parent(parent)
+    original = platform_runtime.tempfile.mkdtemp
+
+    def checked_mkdtemp(*, prefix: str, dir: Path) -> str:
+        assert Path(dir).resolve() == output.resolve()
+        return original(prefix=prefix, dir=dir)
+
+    monkeypatch.setattr(platform_runtime.tempfile, "mkdtemp", checked_mkdtemp)
+
+    receipt = start_round(
+        data,
+        parent,
+        workspace,
+        output,
+        PlatformRuntimeConfig(
+            min_primary_improvement=-1.0,
+            min_relative_improvement=-1.0,
+        ),
+    )
+    assert receipt["status"] == "completed"
+
+
+def test_submit_predictions_uses_checkpoint_schema_and_never_requires_answers(tmp_path: Path) -> None:
+    parent = tmp_path / "checkpoint.npz"
+    requests = tmp_path / "requests.jsonl"
+    output = tmp_path / "predictions.jsonl"
+    _write_parent(parent)
+    requests.write_text(
+        json.dumps({"id": "q-1", "inputs": {"features": [1.0, 2.0]}}) + "\n",
+        encoding="utf-8",
+    )
+
+    receipt = submit_predictions(parent, requests, output)
+
+    assert receipt == {"status": "completed", "sample_count": 1, "task": "classification"}
+    row = json.loads(output.read_text(encoding="utf-8"))
+    assert row["id"] == "q-1"
+    assert [item["label"] for item in row["outputs"]] == ["cold", "hot"]
+    assert sum(item["score"] for item in row["outputs"]) == pytest.approx(1.0)
+
+
+def test_second_round_uses_platform_parent_and_appends_atomic_history(tmp_path: Path) -> None:
+    data = tmp_path / "data.jsonl"
+    first_parent = tmp_path / "checkpoint.npz"
+    workspace = tmp_path / "workspace"
+    _write_data(data, task="regression")
+    _write_parent(first_parent, task="regression")
+
+    first_output = tmp_path / "round-1"
+    first = start_round(
+        data,
+        first_parent,
+        workspace,
+        first_output,
+        PlatformRuntimeConfig(
+            epochs=1,
+            min_primary_improvement=-1e9,
+            min_relative_improvement=-1.0,
+        ),
+    )
+    second_output = tmp_path / "round-2"
+    second = start_round(
+        data,
+        first_output / "checkpoint.npz",
+        workspace,
+        second_output,
+        PlatformRuntimeConfig(
+            epochs=1,
+            min_primary_improvement=-1e9,
+            min_relative_improvement=-1.0,
+        ),
+    )
+
+    assert first["round_index"] == 1
+    assert second["round_index"] == 2
+    assert second["parent_checkpoint_sha256"] == first["checkpoint_sha256"]
+    assert first["anchor_count"] > 0
+    assert first["replay_count"] == 0
+    assert second["replay_count"] > 0
+    assert second["training_sample_count"] > second["update_count"]
+    assert set(second["anchor_metrics_before"]) == {"mae", "rmse"}
+    assert set(second["anchor_metrics_candidate"]) == {"mae", "rmse"}
+    assert "anchor_degradation" in second
+    assert "relative_improvement" in second
+    assert (workspace / "anchor.npz").is_file()
+    assert (workspace / "replay.npz").is_file()
+    state = json.loads((workspace / "state.json").read_text(encoding="utf-8"))
+    assert [row["round_index"] for row in state["rounds"]] == [1, 2]
+    assert (workspace / "public-spool.jsonl").read_text(encoding="utf-8").count("\n") == 2
+
+
+def test_start_fails_closed_when_parent_schema_does_not_match_data(tmp_path: Path) -> None:
+    data = tmp_path / "data.jsonl"
+    parent = tmp_path / "checkpoint.npz"
+    _write_data(data)
+    _write_parent(parent)
+    rows = [json.loads(line) for line in data.read_text(encoding="utf-8").splitlines()]
+    rows[0]["inputs"]["features"].append(99.0)
+    data.write_text("\n".join(json.dumps(row) for row in rows) + "\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="feature schema"):
+        start_round(
+            data,
+            parent,
+            tmp_path / "workspace",
+            tmp_path / "output",
+            PlatformRuntimeConfig(),
+        )
+
+
+def test_cli_exposes_describe_start_and_submit(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    data = tmp_path / "data.jsonl"
+    parent = tmp_path / "checkpoint.npz"
+    workspace = tmp_path / "workspace"
+    output = tmp_path / "output"
+    predictions = tmp_path / "predictions.jsonl"
+    _write_data(data)
+    _write_parent(parent)
+
+    assert main(["describe"]) == 0
+    description = json.loads(capsys.readouterr().out)
+    assert description["format"] == "brace-msi.platform-native.v1"
+
+    assert main(
+        [
+            "start",
+            "--data",
+            str(data),
+            "--previous-checkpoint",
+            str(parent),
+            "--workspace",
+            str(workspace),
+            "--output",
+            str(output),
+            "--min-primary-improvement",
+            "-1",
+        ]
+    ) == 0
+    start_receipt = json.loads(capsys.readouterr().out)
+    assert start_receipt["round_index"] == 1
+
+    requests = tmp_path / "requests.jsonl"
+    requests.write_text(
+        json.dumps({"id": "q-1", "inputs": {"features": [1.0, 2.0]}}) + "\n",
+        encoding="utf-8",
+    )
+    assert main(
+        [
+            "submit",
+            "--checkpoint",
+            str(output / "checkpoint.npz"),
+            "--requests",
+            str(requests),
+            "--output",
+            str(predictions),
+        ]
+    ) == 0
+    submit_receipt = json.loads(capsys.readouterr().out)
+    assert submit_receipt["sample_count"] == 1
+    assert predictions.is_file()
+
+
+def test_ten_round_simulation_preserves_parent_chain_and_ten_real_candidates(
+    tmp_path: Path,
+) -> None:
+    data = tmp_path / "data.jsonl"
+    validation = tmp_path / "validation.jsonl"
+    parent = tmp_path / "checkpoint.npz"
+    run_root = tmp_path / "simulation"
+    _write_data(data, count=100)
+    _write_data(validation, count=20)
+    _write_parent(parent)
+
+    summary = run_ten_round_simulation(
+        data,
+        parent,
+        run_root,
+        prediction_data_path=validation,
+        config=PlatformRuntimeConfig(
+            epochs=1,
+            min_primary_improvement=-1.0,
+            min_relative_improvement=-1.0,
+            max_training_rounds=10,
+        ),
+        export_swanlab=False,
+    )
+
+    assert summary["status"] == "completed"
+    assert summary["round_count"] == 10
+    assert summary["candidate_count"] == 10
+    assert summary["noop_count"] == 0
+    assert summary["parent_chain_valid"] is True
+    assert (run_root / "round-10" / "checkpoint.npz").is_file()
+    assert (run_root / "predictions.jsonl").is_file()
+    assert summary["prediction_sample_count"] == 20
+    assert set(summary["initial_metrics"]) == {"accuracy", "macro_f1"}
+    assert set(summary["final_metrics"]) == {"accuracy", "macro_f1"}
+    state = json.loads((run_root / "workspace" / "state.json").read_text(encoding="utf-8"))
+    assert len(state["rounds"]) == 10
+
+
+def test_formal_runtime_defaults_to_real_candidate_in_all_ten_rounds() -> None:
+    assert PlatformRuntimeConfig().max_training_rounds == 10
+    assert PlatformRuntimeConfig().max_anchor_degradation == 0.0
+    assert PlatformRuntimeConfig().min_relative_improvement == 0.05
+
+
+def test_container_defaults_to_native_start_command() -> None:
+    dockerfile = Path("Dockerfile").read_text(encoding="utf-8")
+    assert 'ENTRYPOINT ["python3", "-m", "brace_msi"]' in dockerfile
+    assert 'CMD ["start"]' in dockerfile
+    assert 'ENV BRACE_ADVISOR=pytrio' in dockerfile
+
+
+def test_pytrio_advice_is_bounded_and_recorded_without_bypassing_gate(tmp_path: Path) -> None:
+    data = tmp_path / "data.jsonl"
+    parent = tmp_path / "checkpoint.npz"
+    advisor = RecordingAdvisor()
+    _write_data(data, count=60)
+    _write_parent(parent)
+
+    receipt = start_round(
+        data,
+        parent,
+        tmp_path / "workspace",
+        tmp_path / "output",
+        PlatformRuntimeConfig(
+            epochs=1,
+            min_primary_improvement=1.0,
+            min_relative_improvement=1.0,
+        ),
+        advisor=advisor,
+    )
+
+    assert len(advisor.contexts) == 1
+    assert receipt["decision"]["source"] == "pytrio"
+    assert receipt["decision"]["proposed_action"] == "replay_refit"
+    assert receipt["decision"]["executed_action"] == "replay_refit"
+    assert receipt["decision"]["proposal_accepted"] is True
+    assert receipt["epochs"] == 2
+    assert receipt["learning_rate"] == pytest.approx(0.003)
+    assert receipt["input_tokens"] == 120
+    assert receipt["output_tokens"] == 40
+    assert receipt["deployed"] is False
+
+
+def test_unsupported_advisor_action_falls_back_to_safe_real_candidate(tmp_path: Path) -> None:
+    data = tmp_path / "data.jsonl"
+    parent = tmp_path / "checkpoint.npz"
+    _write_data(data, count=60)
+    _write_parent(parent)
+
+    receipt = start_round(
+        data,
+        parent,
+        tmp_path / "workspace",
+        tmp_path / "output",
+        PlatformRuntimeConfig(min_primary_improvement=-1.0, min_relative_improvement=-1.0),
+        advisor=RecordingAdvisor(Action.BOUNDED_HPO),
+    )
+
+    assert receipt["candidate_trained"] is True
+    assert receipt["decision"]["proposed_action"] == "bounded_hpo"
+    assert receipt["decision"]["proposal_accepted"] is False
+    assert receipt["decision"]["executed_action"] == "incremental_update"
+    assert receipt["decision"]["fallback_reason"] == "unsupported_platform_action"
+
+
+def test_all_ten_rounds_have_decision_and_execution_receipts(tmp_path: Path) -> None:
+    data = tmp_path / "data.jsonl"
+    validation = tmp_path / "validation.jsonl"
+    parent = tmp_path / "checkpoint.npz"
+    advisor = RecordingAdvisor()
+    _write_data(data, count=100)
+    _write_data(validation, count=20)
+    _write_parent(parent)
+
+    summary = run_ten_round_simulation(
+        data,
+        parent,
+        tmp_path / "simulation",
+        prediction_data_path=validation,
+        config=PlatformRuntimeConfig(
+            min_primary_improvement=-1.0,
+            min_relative_improvement=-1.0,
+        ),
+        export_swanlab=False,
+        advisor=advisor,
+    )
+
+    assert len(advisor.contexts) == 10
+    assert summary["round_count"] == 10
+    assert summary["decision_count"] == 10
+    assert summary["candidate_count"] == 10
+    assert summary["complete_ten_rounds"] is True
+    assert summary["input_tokens"] == 1200
+    assert summary["output_tokens"] == 400
+    assert [row["round_index"] for row in summary["rounds"]] == list(range(1, 11))
+    assert all("decision" in row for row in summary["rounds"])
+    assert all(row["candidate_trained"] for row in summary["rounds"])
+

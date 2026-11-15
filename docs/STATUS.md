@@ -1,9 +1,9 @@
 # 当前状态
 
 - 最近同步：2026-11-15（Asia/Shanghai）
-- 当前阶段：`BRACE-MSI-0.5.1rc1`原生父检查点续训候选已通过本地完整回归与容器验收；`0.5.0rc1`保留为研究RC且`DO_NOT_UPLOAD`
+- 当前阶段：`BRACE-MSI-0.6.0rc1`平台原生发布候选已完成本地全量验收；等待平台精确启动映射、镜像导入和正式试运行
 - 当前路线：**Qwen3.5-4B基础模型受控建议 + BRACE确定性双闭环 + 四缓冲区物理隔离 + 官方A/B/C工业模型** `[D-050]` `[D-052]`
-- 当前唯一任务：`FORMAL-RELEASE-001`（`BLOCKED_EXTERNAL`）；由用户上传`0.5.1rc1`并等待镜像可用、模型/续训校验与正式SDK字段。平台外本地发布工作已完成。
+- 当前唯一任务：`FORMAL-RELEASE-001`（`BLOCKED_EXTERNAL`）；本地无剩余P0实现，等待平台精确启动schema、凭据注入与镜像/模型校验。
 - 稳定边界：全部历史RC和实验不改写；`0.5.0rc1`只作研究证据，不得上传。正式线从D-058开始只输出原生官方MLP续训checkpoint。A3之后禁止继续LLM调参 `[D-043]`
 - 官方试运行：已使用1/10次，剩余9/10次；该运行对应旧提交v2，不是RC4，正式评测仍为0/2 `[O-PLATFORM-006]`
 
@@ -13,6 +13,7 @@
 0a. 官方公告`O-PLATFORM-007`新增硬门：`docker save`归档、真实父检查点续训、独立预测入口、`checkpoint.npz`及模型产物总量不超过64 MiB；内部字段与挂载路径仍未知，不猜测。
 0b. 旧提交平台拒绝截图`O-PLATFORM-008`确认“另一套模型替代baseline”会被拒绝；该截图不是`0.5.0rc1`结果，但足以触发D-058将异构模型与正式提交线隔离。
 0c. `FORMAL-CONTINUATION-RC-001`已完成：正式镜像禁用HGB/PaperFusion命令，A/B/C均以官方训练器完成十轮/3候选原生续训，三项机器复算有效；333项回归、4核8GB断网、独立预测、64 MiB与`docker save/load`门通过。
+0d. `PLATFORM-NATIVE-001`已完成：`describe/start/submit`直接消费平台四挂载，不再要求完整包树；A/B/C在最终`0.6.0rc1`镜像中各完成10轮、10决策和10次真实候选，30轮父链、门控和独立预测全部通过。完整回归348项，镜像241,855,558字节，归档SHA-256 `F98FB679...CBC62D`。断网验收未冒充在线PyTRiO通过。
 1. `DUAL-DATA-001`已完成：四缓冲区、Gate一轮隔离、Update+Replay候选集合、只读manifest、训练/评估分离句柄和未来诱饵阻断通过4项专项测试；完整回归`275 passed`。
 2. `DUAL-TXN-001`已完成：每批单决策、0至2候选、首候选结果触发升级、十批前缀、原子提交/恢复及影子配对收益通过5项专项测试；完整回归`280 passed`。
 3. `DUAL-VALUE-001`已完成：每任务隔离统计、身份无关证据画像、弱先验、延迟收益专用更新和性能—CPU/RSS/Token/模型体积Pareto前沿通过5项专项测试；完整回归`285 passed`。
@@ -51,7 +52,7 @@
 
 ## 当前执行入口
 
-正式上传归档为`D:/brace-msi-release/BRACE-MSI-0.5.1rc1/BRACE-MSI-0.5.1rc1-image-clean.tar`，SHA-256 `6331280b384b89b2315cfad12551fbdf7855cac2c2ef2d9712464cf23334e181`。它由`docker save`生成并已重载验证，但尚未上传且未通过平台镜像、模型、续训或评测校验。`0.5.0rc1`不得上传。机器证据见`docs/results/FORMAL-CONTINUATION-RC-001.md`。
+正式上传归档为`D:/brace-msi-release/BRACE-MSI-0.6.0rc1/BRACE-MSI-0.6.0rc1-image-clean.tar`，SHA-256 `F98FB679D1216564634382E00CC105980C7857021BE33F99A59A240496CBC62D`。它由`docker save`生成并已重载验证，但尚未上传且未通过平台镜像、模型、在线PyTRiO或正式评测校验。旧`0.5.0rc1/0.5.1rc1`不得代替。机器证据见`docs/results/PLATFORM-NATIVE-001.md`。
 
 正式路线、已知能力与未知边界见[FORMAL_ROUTE.md](FORMAL_ROUTE.md)。实验必须遵守[EXPERIMENT_PROTOCOL.md](EXPERIMENT_PROTOCOL.md)。
 

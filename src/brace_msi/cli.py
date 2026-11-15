@@ -35,6 +35,13 @@ from .paper_fusion_runner import (
     run_paper_fusion_sprint,
     validate_paper_fusion_output,
 )
+from .platform_runtime import (
+    PlatformRuntimeConfig,
+    describe_runtime,
+    start_round,
+    submit_predictions,
+)
+from .platform_advisor import build_platform_advisor
 from .reporting import render_html_report
 from .safety import GateConfig
 from .simulation import synthetic_bearing_stream
@@ -60,6 +67,54 @@ def _enforce_formal_release_boundary(command: str) -> None:
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="brace-msi")
     subparsers = parser.add_subparsers(dest="command", required=True)
+    subparsers.add_parser(
+        "describe", help="describe the native /data + /previous platform contract"
+    )
+    platform_start = subparsers.add_parser(
+        "start", help="continue one platform parent checkpoint on the current labeled batch"
+    )
+    platform_start.add_argument("--data", type=Path, default=Path("/data"))
+    platform_start.add_argument(
+        "--previous-checkpoint",
+        type=Path,
+        default=Path("/previous/checkpoint.npz"),
+    )
+    platform_start.add_argument("--workspace", type=Path, default=Path("/workspace"))
+    platform_start.add_argument("--output", type=Path, default=Path("/output"))
+    platform_start.add_argument("--epochs", type=int, default=1)
+    platform_start.add_argument("--learning-rate-multiplier", type=float, default=1.0)
+    platform_start.add_argument("--gate-fraction", type=float, default=0.2)
+    platform_start.add_argument("--min-primary-improvement", type=float, default=0.0)
+    platform_start.add_argument("--min-relative-improvement", type=float, default=0.05)
+    platform_start.add_argument("--max-training-rounds", type=int, default=10)
+    platform_start.add_argument("--max-anchor-degradation", type=float, default=0.0)
+    platform_start.add_argument("--max-replay-samples", type=int, default=4096)
+    platform_start.add_argument(
+        "--advisor",
+        choices=("deterministic", "pytrio"),
+        default=os.environ.get("BRACE_ADVISOR", "deterministic"),
+    )
+    platform_start.add_argument(
+        "--agent-model",
+        default=os.environ.get("BRACE_AGENT_MODEL", "Qwen/Qwen3.5-4B"),
+    )
+    platform_start.add_argument(
+        "--agent-model-path",
+        default=os.environ.get("BRACE_AGENT_MODEL_PATH") or None,
+    )
+    platform_start.add_argument(
+        "--agent-timeout-seconds", type=float, default=15.0
+    )
+    platform_submit = subparsers.add_parser(
+        "submit", help="run the independent JSONL prediction entry"
+    )
+    platform_submit.add_argument(
+        "--checkpoint", type=Path, default=Path("/output/checkpoint.npz")
+    )
+    platform_submit.add_argument("--requests", type=Path, default=Path("/data"))
+    platform_submit.add_argument(
+        "--output", type=Path, default=Path("/output/predictions.jsonl")
+    )
     smoke = subparsers.add_parser(
         "synthetic-smoke", help="run a protocol-only synthetic integration smoke"
     )
@@ -182,6 +237,42 @@ def _validate_official_agent_selection(
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     _enforce_formal_release_boundary(args.command)
+    if args.command == "describe":
+        print(json.dumps(describe_runtime(), ensure_ascii=False, allow_nan=False))
+        return 0
+    if args.command == "start":
+        advisor = (
+            build_platform_advisor(
+                model=args.agent_model,
+                model_path=args.agent_model_path,
+                timeout_seconds=args.agent_timeout_seconds,
+            )
+            if args.advisor == "pytrio"
+            else None
+        )
+        result = start_round(
+            args.data,
+            args.previous_checkpoint,
+            args.workspace,
+            args.output,
+            PlatformRuntimeConfig(
+                epochs=args.epochs,
+                learning_rate_multiplier=args.learning_rate_multiplier,
+                gate_fraction=args.gate_fraction,
+                min_primary_improvement=args.min_primary_improvement,
+                min_relative_improvement=args.min_relative_improvement,
+                max_training_rounds=args.max_training_rounds,
+                max_anchor_degradation=args.max_anchor_degradation,
+                max_replay_samples=args.max_replay_samples,
+            ),
+            advisor=advisor,
+        )
+        print(json.dumps(result, ensure_ascii=False, allow_nan=False))
+        return 0
+    if args.command == "submit":
+        result = submit_predictions(args.checkpoint, args.requests, args.output)
+        print(json.dumps(result, ensure_ascii=False, allow_nan=False))
+        return 0
     if args.command == "controlled-loop-smoke":
         summary = ControlledDualLoopHarness(
             args.output,

@@ -17,10 +17,21 @@ EVIDENCE-RSI-001(DONE)
   -> GENERALIST-MODEL-001(DONE)
   -> DUAL-RC-001(DONE)
   -> FORMAL-CONTINUATION-RC-001(DONE)
+  -> PLATFORM-NATIVE-001(DONE)
   -> FORMAL-RELEASE-001(BLOCKED_EXTERNAL)
 ```
 
 以上为D-052当前正式重构图；既有RC和下方历史任务图保持冻结，不因重构而改写。
+
+### PLATFORM-NATIVE-001 平台原生挂载训练/预测入口
+
+- 状态：`DONE`
+- 依赖：FORMAL-CONTINUATION-RC-001、O-PLATFORM-009
+- 优先级：P0，当前唯一执行任务
+- 完成标准：镜像无需完整官方包根即可直接读取`/data`与`/previous/checkpoint.npz`；父检查点模型、Adam、标准化、epoch/step真实续接；`describe/start/submit`本地契约模拟、独立预测、十轮均完成真实候选训练/验证/部署或拒绝、SwanLab离线聚合记录、原子输出与恢复通过；`checkpoint.npz`及模型产物不超过64 MiB；4核8GB断网容器模拟平台四挂载完成。
+- 停止条件：必须猜测平台未公布的命令或JSON字段才能继续。此时保留自动发现/显式参数双入口和本地模拟证据，把精确启动映射标为外部阻塞，不伪造官方通过。
+- 边界：旧`official-agent-run`整包审计继续用于本地研究，不得削弱；新入口只接受当前运行时数据和父检查点，不访问原始官方包根，不从头训练替代父模型。
+- 证据：`src/brace_msi/platform_runtime.py`、`platform_advisor.py`、`platform_simulation.py`；专项15项、完整回归348项；A/B/C正式镜像各10轮/10决策/10候选、父链和独立预测通过；`docs/results/PLATFORM-NATIVE-001.md`；归档SHA-256 `F98FB679...CBC62D`。
 
 ### EVIDENCE-RSI-001 宣讲证据与双闭环语义
 
@@ -249,7 +260,7 @@ ROUTE-001(DONE)
 ### FORMAL-RELEASE-001 正式环境与交付
 
 - 状态：`BLOCKED_EXTERNAL`（基础模型兼容候选本地完成；平台上传/试运行仍由用户控制）
-- 依赖：DUAL-RC-001、正式SDK/SwanLab规范
+- 依赖：PLATFORM-NATIVE-001、正式SDK/SwanLab规范
 - 优先级：P4
 - 完成标准：Docker构建、4核8GB断网、正式RuntimeAdapter、最终模型重训SwanLab记录、十轮无人值守、干净环境独立复现及交付审计全部通过
 - 停止条件：外部规范或容器环境缺失时明确`BLOCKED`，不得制造通过证据
@@ -260,6 +271,7 @@ ROUTE-001(DONE)
 - RC6本地证据：`0.4.1rc1`镜像linux/amd64、240,662,396字节、UID10001、无Torch/数据/权重/密钥；4核8GB断网Synthetic Smoke完成。基础模型入口无Sampler路径时在断网环境8.696秒明确失败关闭且运行文件0项；归档240,685,056字节，SHA-256 `63fff363...54e48e`并经`docker load`验证。见`RC6_CONTAINER_ACCEPTANCE.json`与`RC6_VERIFICATION.json`。
 - RC7本地证据：`0.5.0rc1`完整回归329项；镜像241,051,292字节、linux/amd64、UID10001、无数据/权重/密钥；4核8GB断网十轮Smoke、B/C通用父集成训练与独立预测通过；归档241,074,176字节，SHA-256 `e3cc5f1c...9799747`并经`docker load`验证。A按SafetyGate保留父模型。见`DUAL_RC_CONTAINER_ACCEPTANCE.json`、`DUAL_RC_VERIFICATION.json`与`DUAL-RC-001.md`。
 - RC8本地证据：D-058后`0.5.1rc1`恢复为官方原生MLP续训；完整回归333项，A/B/C容器各十轮/3候选、父链/schema/Adam/预处理连续、独立预测和正式命令边界均通过。linux/amd64镜像241,750,529字节；归档241,774,080字节，SHA-256 `6331280b...34e181`并经`docker load`验证。见`FORMAL_CONTINUATION_RC_CONTAINER_ACCEPTANCE.json`、`FORMAL_CONTINUATION_RC_VERIFICATION.json`与`FORMAL-CONTINUATION-RC-001.md`。
+- RC9本地证据：`0.6.0rc1`新增直接四挂载原生入口和逐轮决策收据；完整回归348项，A/B/C各完成10轮/10决策/10真实候选及独立预测，共30轮父链连续。镜像241,855,558字节；归档241,879,040字节，SHA-256 `F98FB679...CBC62D`并经`docker load`验证。见`docs/results/PLATFORM-NATIVE-001.md`。
 - 外部剩余：正式SDK事件映射、评分细则和比赛SwanLab规范；平台上传、校验和试运行属于用户控制的外部写操作。未满足前不得标记全量DONE。
 
 ```text

@@ -2,17 +2,17 @@
 
 | ID | 等级 | 风险 | 触发器 | 缓解措施 | 负责人 | 状态 |
 |---|---|---|---|---|---|---|
-| R-036 | P0 | 训练子进程通过完整源目录发现未来批次 | worker收到官方数据根或可遍历父目录 | RuntimeAdapter唯一入口、每轮物化目录、RoundDataManifest、清理环境变量、未来诱饵测试；无法隔离则失败关闭 | 技术负责人 | PARTIAL：A1/A2续训worker只复制哈希锁定的baseline代码且worker根无`public/`，只接收当前物化train/Gate绝对路径；正式Docker挂载级隔离仍待SDK，不把Windows本地进程边界表述为容器沙箱 |
+| R-036 | P0 | 训练子进程通过完整源目录发现未来批次 | worker收到官方数据根或可遍历父目录 | RuntimeAdapter唯一入口、每轮物化目录、RoundDataManifest、清理环境变量、未来诱饵测试；无法隔离则失败关闭 | 技术负责人 | MITIGATED_LOCAL：最终Docker每轮只挂载当前`/data`批次与直接父checkpoint，未来批次和完整包根均未挂载；A/B/C各10轮通过。平台实际挂载权限仍需正式试运行复验 |
 | R-037 | P0 | Gate/Anchor误入训练或Replay未完成隔离 | 预处理器在非候选训练集合拟合 | 四用途类型、候选集合构造器、样本生命周期审计和专项测试 | 技术负责人 | MITIGATED_LOCAL：A1/A2使用官方父检查点，当前Gate仅作baseline训练器验证参数和SafetyGate，固定Anchor从公开train隔离且不进入候选；Replay只含公开train或完成隔离的历史Gate。正式SDK仍需复验 |
 | R-038 | P1 | 下一批自然难度被误归因于上一轮动作 | 只比较跨批绝对指标 | 保留直接前任一轮影子预测并做同样本配对差；不可用时降级为低置信度 | 技术负责人 | MITIGATED_LOCAL：A1记录负延迟收益，A2在同一样本上运行前任影子并对负配对收益执行回滚；额外推理CPU/RSS已计量。正式SDK是否允许影子仍待确认 |
 | R-039 | P0 | Qwen补丁突破安全核心或资源边界 | 补丁访问文件/网络/反射/无限循环/OOM | 仅纯函数槽、AST+签名+隔离子进程+资源限制+形状/有限值/确定性/差异门 | 技术负责人 | MITIGATED_CORE：13项攻击/输出契约测试与完整回归通过；正式容器cgroup和只读挂载仍待DUAL-RC-001复验 |
-| R-040 | P0 | 新候选不符合父检查点续训或64 MiB产物约束 | 从头训练、异构模型替代baseline、父链未实际使用、模型产物过大或缺独立预测入口 | 正式镜像只允许官方训练器原schema续训或`retain`；逐代验证父哈希、权重/Adam/标准化/epoch/step、独立预测和`<=64*1024*1024`字节；异构研究命令在正式镜像失败关闭 | 技术负责人 | REALIZED_OLD_SUBMISSION/MITIGATED_LOCAL/BLOCKED_EXTERNAL：O-PLATFORM-008证明旧提交被拒；0.5.0rc1已`DO_NOT_UPLOAD`。0.5.1rc1的A/B/C两代父链、三任务十轮、独立预测、64 MiB和正式命令边界均通过本地Linux容器验收；正式SDK字段和平台模型校验仍待H-001 |
+| R-040 | P0 | 新候选不符合父检查点续训或64 MiB产物约束 | 从头训练、异构模型替代baseline、父链未实际使用、模型产物过大或缺独立预测入口 | 正式镜像只允许官方训练器原schema续训或`retain`；逐代验证父哈希、权重/Adam/标准化/epoch/step、独立预测和`<=64*1024*1024`字节；异构研究命令在正式镜像失败关闭 | 技术负责人 | REALIZED_OLD_SUBMISSION/MITIGATED_LOCAL/BLOCKED_EXTERNAL：O-PLATFORM-008证明旧提交被拒；0.6.0rc1在A/B/C共30轮均直接延续平台父checkpoint，父链、Adam/预处理/计数、独立预测和64 MiB门通过；正式平台校验仍待H-001 |
 | R-001 | P0 | 正式SDK事件顺序与预设状态机冲突 | SDK无法映射内部事件 | 事件适配层；SDK-001当天核验 | 技术负责人 | PARTIAL：插件清单、动态加载、两模式契约和fail-closed检查已完成；实际事件/数据映射仍等待SDK |
 | R-002 | P0 | B包首批无合法初始模型 | 无初训数据/模型且要求预测 | TaskBootstrap；只走官方默认/弃权路径 | 技术负责人 | PARTIAL：本地未知任务TaskBootstrap和兼容性守卫已测试；官方默认/弃权路径仍待SDK |
 | R-003 | P0 | 三次迭代计数不合规 | 被拒候选不计数或要求部署 | 以正式定义配置计数；准备三个真实候选 | 技术负责人 | PARTIAL：SPRINT-HARNESS-001中每任务均完成3次真实候选且父链可复算；官方是否计拒绝候选仍待H-003 |
 | R-004 | P0 | 标签可见性错误造成泄漏 | 同样本先训练后预测 | 事件级样本身份检查；非法顺序测试 | 技术负责人 | MITIGATED：`src/brace_msi/protocol/__init__.py`与`tests/protocol/test_state_machine.py`，13项测试通过；正式SDK映射后仍需复验 |
 | R-005 | P0 | SwanLab公开与B包保密冲突 | 日志包含逐样本私有信息 | 公开/私有双日志；字段白名单；只在最终工程模型正式重训时生成云端记录 | 队员B | MITIGATED/PARTIAL：`SWANLAB-FINAL-001`只同步聚合指标，敏感字段扫描无命中，公开项目3项均`FINISHED`；比赛专用字段与无公网评测同步责任仍等待H-004 |
-| R-006 | P0 | 镜像超过2GB或依赖GPU | 引入PyTorch/权重/重依赖 | 轻量CPU栈；持续体积检查 | 队员A | MITIGATED：0.5.0rc1实际linux/amd64镜像241,051,292字节；非root UID10001、`pip check`通过、无数据/权重/密钥，并在4核8GB、断网、256 PID限制下完成十轮Smoke及B/C完整训练/预测。`docker save/load`证据见`docs/results/DUAL_RC_CONTAINER_ACCEPTANCE.json` |
+| R-006 | P0 | 镜像超过2GB或依赖GPU | 引入PyTorch/权重/重依赖 | 轻量CPU栈；持续体积检查 | 队员A | MITIGATED：0.6.0rc1实际linux/amd64镜像241,855,558字节；非root、`pip check`通过、无数据/权重/密钥，并在4核8GB、断网、只读根和256 PID限制下完成A/B/C各10轮及独立预测；`docker save/load`见`docs/results/PLATFORM-NATIVE-001.md` |
 | R-007 | P0 | 截止日期认知错误 | 学校通知晚于内部假设 | 按11月13日准备；专人核实书面通知 | 团队通知负责人 | OPEN |
 | R-008 | P1 | BRACE复杂策略被简单更新支配 | EXP-002全面落后 | 停止扩展，回到动作选择/预算策略 | 技术负责人 | REALIZED/MITIGATED：`UNIFIED-POLICY-OPT-001-DEV-A1`中复杂BRACE在3/3任务级留出fold相对简单触发策略无优势且资源更高；已按D-034停止复杂扩展并冻结简单统一候选，证据见`docs/results/UNIFIED-POLICY-OPT-001.md` |
 | R-009 | P1 | 公开数据过拟合，B包失效 | 跨任务/密封段性能崩溃 | 通用接口、验证暴露记账、每轮单候选、禁止验证参与训练/预处理；最终以隐藏评测确认 | 技术负责人 | CONTROLLED/OPEN：`OFFICIAL-PACKAGE-DEV-001`记录15次成功训练器加载、15次预检哈希、12次套件审计读取和33次候选指标计算；D-031冻结同流继续调参。反复公开验证的选择偏差无法由本地消除，仍需隐藏评测确认 |
@@ -40,7 +40,7 @@
 | R-031 | P1 | 公开源码仓库没有项目级许可证 | 评委要求明确源码再利用许可或开源声明 | 依赖许可证与源码许可证分开说明；由权利人选择MIT/Apache-2.0等项目许可证后再提交 | 队长 | OPEN：仓库已公开分支但未虚构许可证，需队长作法律选择 |
 | R-032 | P0 | 公开validation一次性门控后继续调参导致选择偏差 | 根据PAPER-FUSION结果重开validation或扩大候选 | 单次打开锁、结果SHA、D-046冻结混合门控；后续只在隐藏测试确认 | 技术负责人 | MITIGATED/OPEN：本轮只打开一次并停止；隐藏泛化仍未知 |
 | R-033 | P1 | PaperFusion模型产物过大或被错误打包进镜像 | C模型约456MB、运行中峰值约3.20GB | `.dockerignore`排除joblib；镜像只含代码；运行时挂载数据并在输出卷训练；4核8GB容器复验 | 技术负责人 | MITIGATED：RC4镜像240,701,023字节且无权重；4核8GB断网训练完成、峰值RSS 3,198,783,488字节，运行时模型只存在输出卷。证据`docs/results/RC4_CONTAINER_ACCEPTANCE.json` |
-| R-034 | P0 | 正式提交声明使用Agent但运行时静默退回确定性策略 | 平台报告Token为0且流程仍完成 | provider显式选择；PyTRiO模式双层失败关闭；提交前核对Sampler、镜像/源码绑定和非零调用收据 | 技术负责人 | REALIZED/MITIGATED_LOCAL：旧试运行已触发，见O-PLATFORM-006；RC5完整回归及断网负向容器验收已阻止静默回退并限制SDK等待，见`RC5_CONTAINER_ACCEPTANCE.json`。平台新提交尚未发生，仍需下一次校验/试运行确认 |
+| R-034 | P0 | 正式提交声明使用Agent但运行时静默退回确定性策略 | 平台报告Token为0且流程仍完成 | provider显式选择；PyTRiO模式记录触发、重试、Token和恢复收据；提交前核对模型、镜像/源码绑定和非零调用收据 | 技术负责人 | REALIZED/MITIGATED_LOCAL/OPEN_PLATFORM：0.6.0rc1镜像默认`BRACE_ADVISOR=pytrio`，每轮决策均记录advisor来源、Token和失败原因；断网验收显式覆盖为deterministic且未冒充Agent成功。下一次平台试运行仍必须检查非零Token与收据 |
 | R-035 | P0 | 基础Qwen3.5-4B结构化提案可靠性低于A3 Sampler | 历史新留出schema仅83.33%，任一非法响应可使严格正式运行失败 | 保留严格schema与失败关闭；基础模型候选仅在平台校验通过后使用；首个新试运行核对非零Token、10轮完成和非法响应数，不用隐藏成绩反向调prompt | 技术负责人 | OPEN：历史基础模型留出证据已知；本机单次在线Smoke无收据，尚不能证明新候选在线可靠性 |
 
 风险关闭必须在本表填写证据路径，不得仅写“已解决”。

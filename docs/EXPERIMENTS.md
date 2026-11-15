@@ -2,6 +2,47 @@
 
 本文件是全部实验运行的唯一登记处，包括失败和中止实验。
 
+## PLATFORM-NATIVE-CONTAINER-002-A2-FINAL
+
+- 状态：`COMPLETED_PASS`。
+- 目的：验证平台原生四挂载入口在A/B/C上均完成全部10个决策轮和10次真实候选，而非只检查前三轮。
+- 环境：真实Linux/amd64 Docker，4核、8GB、断网、256 PID、只读根文件系统、无GPU；本地确定性Advisor，官方试运行0次。
+- 结果：A/B/C均为10轮、10决策、10候选和连续父链；接受数0/1/0；独立预测1,244/1,679/23,049行。完整回归348项通过。
+- 产物：`D:/brace-msi-platform-native-container/PLATFORM-NATIVE-CONTAINER-002-A2-FINAL/`；机器摘要SHA-256 `EAB693A1F423B8B1B4A8FF91302FFB705F6D4ED898B4FE6E4E8F61D98140BA5E`；聚合报告`docs/results/PLATFORM-NATIVE-001.md`。正式`docker save`归档SHA-256为`F98FB679D1216564634382E00CC105980C7857021BE33F99A59A240496CBC62D`。
+- 边界：公开validation历史暴露；断网验收没有真实PyTRiO Token；不宣称平台或隐藏测试通过。
+
+## PLATFORM-NATIVE-SIM-001-A1（REGISTERED）
+
+- 目的：在不消耗平台试运行机会的前提下，按O-PLATFORM-009四挂载契约模拟A/B/C十轮原生父检查点续训，验证每轮真实候选、父链、门控、独立预测、资源记录与SwanLab离线记录。
+- 配置：`configs/platform_native_simulation.json`；代码基线为本次任务提交前工作树，最终报告必须补充固定Git提交。
+- 输入：只读官方训练包的`public/train.jsonl`与初始`checkpoint.npz`；运行时每轮只物化当前批次与平台父检查点，不向原生入口暴露包根、`training.json`或`baselines/`。
+- 预算：A/B/C各10轮，每轮1 epoch、1个真实候选；总候选30；4核8GB；无GPU；不调用付费API；Qwen Token为0；官方试运行0次。
+- 成功标准：三任务各10轮、10个真实候选、父SHA链连续、候选训练与门控收据齐全、独立预测成功、模型产物小于64 MiB、SwanLab离线实验可生成；任何任务不得以预设NOOP代替完整轮次。
+- 停止条件：父检查点不兼容、当前批次少于合法切分下限、出现schema/未来数据泄漏、父链断裂、资源超限或SwanLab记录包含逐样本数据。
+- 结果边界：本地平台挂载模拟，不是官方隐藏评测或正式成绩；公开训练数据用于流程验收，不据此调参。
+
+## PLATFORM-NATIVE-SIM-001-A2（REGISTERED）
+
+- 目的：在A1十轮/30候选流程证据基础上，增加与训练流完全分离的`public/validation.jsonl`独立预测，并在相同样本上比较初始父模型和十轮最终模型，发现累积续训退化而不是只证明程序完成。
+- 配置：`configs/platform_native_simulation_a2.json`。
+- 输入与预算：同A1；训练仍只读取`public/train.jsonl`十个互斥顺序批次，最终预测/指标只读取公开validation，不回流到动作或参数选择；A/B/C各10轮、总候选30、官方试运行0次。
+- 成功标准：A1全部流程标准，加上三任务初始/最终主辅指标、独立预测行数和公开validation隔离证据。
+- 结果边界：validation已有历史暴露，只能用于回归验收和退化检测，不能宣称独立泛化或官方成绩；本轮结果不得触发继续调参。
+
+## PLATFORM-NATIVE-SIM-001-A3（REGISTERED）
+
+- 假设：A2的Bearing恶化来自仅以当前批次Gate部署、没有历史保护与Replay；加入首批固定Anchor和最多4096条合法历史Update回放，可在十轮全部真实训练的同时降低顺序遗忘。
+- 配置：`configs/platform_native_simulation_a3.json`；相对A2只新增`max_anchor_degradation=0`和`max_replay_samples=4096`，其他预算、数据顺序和最终验证不变。
+- 成功标准：A/B/C均完成10个真实候选且父链连续；B最终公开validation不得低于其初始父模型；Anchor、Replay样本数和门控原因逐轮可审计。
+- 停止条件与结果边界：同A2；若仍退化则保留负结果并修正动作/门控，不得用减少真实轮次掩盖。
+
+## PLATFORM-NATIVE-SIM-001-A4（REGISTERED）
+
+- 假设：A3退化来自零收益仍部署及当前Gate小幅收益噪声；要求严格正收益、相对改善至少5%且Anchor不退化，可保留十轮真实候选同时拒绝证据不足更新。
+- 配置：`configs/platform_native_simulation_a4.json`；相对A3只新增`min_relative_improvement=0.05`并把绝对门改为严格大于。
+- 成功标准：三任务各10个真实候选、零预设NOOP、父链连续；三任务最终validation均不低于各自初始父模型，至少一项有改善。
+- 结果边界：同A2/A3，公开validation仅作本地回归验收，不反馈继续调参或包装为官方成绩。
+
 ## 当前汇总
 
 - 正式实验：0

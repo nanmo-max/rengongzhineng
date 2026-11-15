@@ -62,6 +62,8 @@
 | D-056 | 2026-11-13 | LOCKED | 冻结GENERALIST-MODEL-001-A1的固定50/50父模型集成：A拒绝并保留官方父模型，B/C接受HGB父集成。不得根据已打开的公开validation改混合权重、模型池或参数；新RC只集成此冻结选择并验证训练/预测、资源、镜像和父链。 | A1一次性validation、B/C主辅指标共同改善、A SafetyGate拒绝、64 MiB与独立预测通过 |
 | D-057 | 2026-11-13 | LOCKED | 冻结`BRACE-MSI-0.5.0rc1`为受控双闭环的本地Release Candidate：镜像提供身份盲的单包`generalist-fit`和独立`generalist-predict`入口，A保留官方父模型，B/C按D-056使用固定HGB父集成；模型只在挂载输出卷生成，不打包数据、权重或凭据。该RC已完成4核8GB断网训练、预测、完整回归及`docker save/load`，但不替代任何已在平台绑定的版本，正式SDK映射、镜像可用、模型校验与评测仍须分别验证。D-056已证明A通用候选无安全增益，因此DUAL-RC本地冻结门修订为“A不低于父模型且至少B/C两项改善”；A未严格超过静态的事实继续明示，不作全三任务提升声明。 | `docs/results/DUAL-RC-001.md`、329项回归、`DUAL_RC_CONTAINER_ACCEPTANCE.json`；D-053、D-056 |
 | D-058 | 2026-11-15 | LOCKED | O-PLATFORM-008证明平台会拒绝“另一套模型替代baseline”。正式提交产物必须由官方训练器从本轮平台父`checkpoint.npz`继续训练，继承原模型schema、权重、Adam状态、预处理状态、epoch与step；`retain`仅允许原样保留父模型。HGB/ExtraTrees/PaperFusion等异构模型继续作为研究证据，但不得进入正式checkpoint或正式镜像可执行入口。`0.5.0rc1`保留为本地研究RC并标记`DO_NOT_UPLOAD`；后续正式RC采用原生父检查点续训并在镜像内禁用研究命令。 | O-PLATFORM-008、D-028、D-053；平台旧提交实际拒绝提示 |
+| D-059 | 2026-11-15 | LOCKED | 平台发布线新增原生运行时适配层，直接消费`/data`和`/previous/checkpoint.npz`并写入`/workspace`、`/output`；本地完整包树审计与包内`baselines.train`只保留为研发/供应链证据，不再作为平台入口前置条件。新入口必须加载父检查点并延续原模型、Adam、标准化和计数状态，未知文件名或调用schema采用显式参数/安全发现并失败关闭。基础Qwen和SwanLab均为可选后端，缺失或断网不得阻断确定性训练闭环。 | O-PLATFORM-009；用户要求先在本地严格模拟完整提交流程 |
+| D-060 | 2026-11-15 | LOCKED | 冻结`BRACE-MSI-0.6.0rc1`为平台原生候选：每个官方批次均产生一个决策事务和一个真实官方MLP续训候选，十轮不得以只测前三轮或预设NOOP代替；PyTRiO/Qwen仅能提出受限动作和参数，确定性Harness负责实际训练、门控与回滚。镜像默认启用基础`Qwen/Qwen3.5-4B` PyTRiO，断网/异常最多重试一次后带收据恢复；离线验收必须显式标记Token为0，不能冒充在线通过。 | PLATFORM-NATIVE-CONTAINER-002-A2-FINAL；348项回归；`docs/results/PLATFORM-NATIVE-001.md` |
 
 ## 已被替代的历史决策
 

@@ -417,6 +417,14 @@
 
 ## 待核实假设与冲突
 
+### O-PLATFORM-009 平台原生运行时挂载与不兼容诊断
+
+- 来源：用户转发的2026-11-15平台实际兼容性诊断；尚无独立SDK文档文件，证据等级为平台运行反馈。
+- 已确认运行时输入：训练容器只提供`/data`（逐样本`id`、`inputs`、`answer`）、`/previous/checkpoint.npz`、`/workspace`与`/output`。
+- 已确认失败原因：`BRACE-MSI-0.5.1rc1`发布入口先要求完整官方包根并执行`baseline-info.json`、`training.json`、源码、公开切分与整包树哈希审计，随后从包内启动`baselines.train`；上述文件不在平台运行时挂载中，因此训练前必然失败。平台结论为接口条件不满足，不是选手违规。
+- 已确认修正方向：作品需要直接消费`/data`和`/previous/checkpoint.npz`的原生训练与预测入口；不得要求平台补齐仅用于本地开发审计的包文件。
+- 边界：反馈没有给出`/data`的实际文件名、调用命令、进程协议或`describe/start/submit`的精确JSON schema。实现必须支持本地契约模拟并保持字段发现失败关闭，不能把自定字段冒充官方SDK字段。
+
 ### H-001 正式批次协议
 
 `predict_then_feedback`、`labeled_train_then_predict`、标签直接提供和标签受限等表述并存。必须由正式SDK解决。

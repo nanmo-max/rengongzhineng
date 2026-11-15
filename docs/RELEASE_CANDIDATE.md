@@ -1,22 +1,24 @@
 # BRACE-MSI Release Candidate
 
-## 当前正式续训候选：0.5.1rc1
+## 当前正式续训候选：0.6.0rc1
 
-`BRACE-MSI-0.5.1rc1`是D-058之后的正式续训候选，不覆盖或删除既有RC。它保留受控双闭环，但正式镜像只允许官方训练器从官方baseline或平台父`checkpoint.npz`原结构续训；异构通用模型与PaperFusion命令在镜像内失败关闭。`0.5.0rc1`继续保留为本地研究RC，标记`DO_NOT_UPLOAD`。
+`BRACE-MSI-0.6.0rc1`是D-059/D-060之后的平台原生续训候选，不覆盖或删除既有RC。它直接消费`/data`、`/previous/checkpoint.npz`、`/workspace`和`/output`，不再错误要求平台提供完整官方训练包树。正式checkpoint只由平台父MLP原结构续训产生；异构通用模型与PaperFusion命令继续失败关闭。
 
-冻结工业模型选择为：A保留官方父模型；B/C在运行时从官方父checkpoint训练有界HGB，并与父模型固定50/50集成。核心训练逻辑不读取数据集名称选择动作。公开validation已经历史暴露；B/C改善是开发门控证据，不是隐藏测试或官方成绩。A没有严格超过父模型，因此不宣称三任务全部提升。
+每批均执行证据分析和一个真实续训候选，再由Gate与Anchor决定部署或保留父模型。正式镜像默认启用Qwen3.5-4B PyTRiO受控建议，但模型不能直接训练、部署或绕过预算；离线容器验收显式使用确定性Advisor，未虚构在线Token。
 
 | 项目 | 状态 | 证据或边界 |
 |---|---|---|
-| 完整代码回归 | PASS | 329项通过 |
-| 4核8GB断网 | PASS | 十轮Smoke、B/C全量训练和独立预测通过 |
-| 父checkpoint与产物 | PASS_LOCAL | B/C产物实际嵌入父checkpoint，239,914/200,616字节 |
-| Docker镜像 | PASS | linux/amd64，241,051,292字节，UID10001，无数据/权重/密钥 |
-| `docker save/load` | PASS | 241,074,176字节，SHA-256 `e3cc5f1c...9799747` |
+| 完整代码回归 | PASS | 348项通过 |
+| 三任务完整十轮 | PASS | A/B/C各10决策、10真实候选；30轮父链连续；独立预测通过 |
+| 4核8GB断网 | PASS | 全30轮、只读根、256 PID、无GPU |
+| 父checkpoint与产物 | PASS_LOCAL | 每轮真实加载父模型并延续权重、Adam、标准化、epoch/step；均小于64 MiB |
+| Docker镜像 | PASS | linux/amd64，241,855,558字节，非root，无数据/权重/密钥 |
+| `docker save/load` | PASS | 241,879,040字节，SHA-256 `F98FB679...CBC62D` |
+| 在线PyTRiO | NOT_RUN_LOCAL | 默认接口已接入；断网验收Token为0，未冒充成功 |
 | 平台镜像/模型/续训校验 | BLOCKED_EXTERNAL | 尚未上传，正式SDK字段和挂载未知 |
 | 正式评测 | NOT_RUN | 本任务未消耗官方试运行 |
 
-当前归档：`D:/brace-msi-release/BRACE-MSI-0.5.1rc1/BRACE-MSI-0.5.1rc1-image-clean.tar`，SHA-256 `6331280b384b89b2315cfad12551fbdf7855cac2c2ef2d9712464cf23334e181`。本地父链和容器证据见[FORMAL-CONTINUATION-RC-001.md](results/FORMAL-CONTINUATION-RC-001.md)。在平台显示“镜像可用”并通过新版本校验前，不能宣称正式通过；不得上传`0.5.0rc1`代替它。
+当前归档：`D:/brace-msi-release/BRACE-MSI-0.6.0rc1/BRACE-MSI-0.6.0rc1-image-clean.tar`，SHA-256 `F98FB679D1216564634382E00CC105980C7857021BE33F99A59A240496CBC62D`。完整证据见[PLATFORM-NATIVE-001.md](results/PLATFORM-NATIVE-001.md)。在平台显示“镜像可用”并通过新版本校验前，不能宣称正式通过；旧`0.5.0rc1/0.5.1rc1`不得代替。
 
 ## 历史候选：0.3.0rc3
 

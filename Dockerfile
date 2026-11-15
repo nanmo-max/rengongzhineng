@@ -23,5 +23,6 @@ RUN python3 -m pip install --no-cache-dir --no-deps .
 
 RUN useradd --create-home --uid 10001 brace
 USER brace
+ENV BRACE_ADVISOR=pytrio
 ENTRYPOINT ["python3", "-m", "brace_msi"]
-CMD ["--help"]
+CMD ["start"]
