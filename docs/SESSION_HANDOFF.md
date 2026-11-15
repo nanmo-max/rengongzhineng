@@ -1,6 +1,13 @@
 # 新会话恢复与交接
 
-## 2026-11-15原生竞争RC恢复入口（当前）
+## 2026-11-15未知任务复演后恢复入口（当前）
+
+1. `PYTRIO-ONLINE-001`与`UNSEEN-SIM-001`均已结束；当前唯一任务恢复为`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`。不要重跑A3/A4或使用已经打开的confirmation调参。
+2. A4确实调用`Qwen/Qwen3.5-4B` PyTRiO：16次有效响应、15次建议执行、8,100/3,470输入/输出Token；协议和Agent门通过，但Battery/Hydraulic退化、Mill持平，严格改善0/3。证据见`docs/results/UNSEEN-SIM-001.md`。
+3. 当前源码HEAD为`0.7.1rc1`准备态，包含在线超时修正和经验证的tokenizer-only资产；尚未形成新的Docker验收证据。已验证可上传归档仍是下节的`0.7.0rc1` tar，未经构建验收不得替换。
+4. 下一动作只允许：取得Docker条件后构建/验收`0.7.1rc1`，或进行平台上传/校验/正式试运行。平台试运行前继续核对非零Token、父链、独立预测和64 MiB。
+
+## 2026-11-15原生竞争RC恢复入口（历史上传基线）
 
 1. `NATIVE-COMPETITIVE-RC-001`已完成全部本地工作，当前唯一任务为`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`；不要重复三任务30轮、重新打开公开validation或继续LLM调参。
 2. 当前正式上传归档为`D:/brace-msi-native-competitive/RC7-CONTAINER-ACCEPTANCE-FINAL/brace-msi-0.7.0rc1-harness.tar`，SHA-256 `B4EF8820FE38B4479B16657A85594719EB86CA7BAD157C0B484DDF4715FB1BD7`。旧0.5.x/0.6.0不得上传代替。

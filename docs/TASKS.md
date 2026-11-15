@@ -20,8 +20,8 @@ EVIDENCE-RSI-001(DONE)
   -> PLATFORM-NATIVE-001(DONE)
   -> NATIVE-COMPETITIVE-RC-001(DONE_LOCAL_EXTERNAL_BLOCK)
   -> PLATFORM-REPORT-SIM-001(DONE)
-  -> PYTRIO-ONLINE-001(IN_PROGRESS)
-  -> UNSEEN-SIM-001(PAUSED_BY_USER_PRIORITY)
+  -> PYTRIO-ONLINE-001(DONE)
+  -> UNSEEN-SIM-001(DONE_NEGATIVE)
   -> FORMAL-RELEASE-001(BLOCKED_EXTERNAL)
 ```
 
@@ -29,7 +29,7 @@ EVIDENCE-RSI-001(DONE)
 
 ### PYTRIO-ONLINE-001 基础模型在线稳定性与RC入口验收
 
-- 状态：`IN_PROGRESS`
+- 状态：`DONE`
 - 依赖：NATIVE-COMPETITIVE-RC-001
 - 优先级：P0（用户2026-11-15明确要求补齐PyTRiO）
 - 目标：不训练新Sampler、不改工业模型参数，使用平台已校验的`Qwen/Qwen3.5-4B`基础模型完成至少3次独立非零Token结构化提案，其中至少1次建议实际进入RC7受控Harness；验证服务失败仍只retain。
@@ -37,16 +37,18 @@ EVIDENCE-RSI-001(DONE)
 - 完成标准：至少3次非零Token、严格schema合法的PyTRiO响应；至少1次在冻结策略约束下实际执行；请求/响应只保存哈希、Token、延迟和结构化收据；专项测试、完整回归及必要镜像补丁验收通过。
 - 停止条件：6次额度用尽仍不足3次有效响应、账户余额不足、服务端持续异常或必须泄露凭据；此时保留全部失败证据并标记外部阻塞，不制造通过。
 - 边界：不得重开公开validation、改变RC7性能策略、训练大模型、打印凭据或消耗官方平台试运行。
+- 证据：3个独立进程均取得严格合法非零Token响应，累计输入/输出1,103/581 Token，至少1次建议进入受控Harness；72项相关及382项完整回归通过。见`D:/brace-msi-pytrio/PYTRIO-ONLINE-001-A1/summary.json`及`RESEARCH_PROGRESS.md`。
 
 ### UNSEEN-SIM-001 三个新工业数据集的冻结RC泛化复演
 
-- 状态：`PAUSED_BY_USER_PRIORITY`（待PYTRIO-ONLINE-001结束后恢复）
+- 状态：`DONE_NEGATIVE`
 - 依赖：NATIVE-COMPETITIVE-RC-001、PLATFORM-REPORT-SIM-001
 - 优先级：P0（用户授权的本地独立验证；不替换或修改RC7）
 - 目标：在电池老化、液压状态监测和铣削刀具磨损三个此前未用于RC7开发的数据集上，使用统一数值特征契约、模拟父checkpoint、十轮原生续训、门控、独立预测和官方报告字段，检验未知任务泛化与资源成本。
 - 完成标准：原始数据保持只读并登记哈希；三任务均形成不含目标泄漏的特征与设备/工况隔离切分；模拟父模型只读取bootstrap分区；十轮只读取adaptation分区；confirmation分区在策略冻结后只评估一次；每轮父链、候选、部署/拒绝、CPU、RSS、checkpoint大小和预测数可复算；输出JSON/HTML报告及机器校验。
 - 停止条件：发现目标/未来泄漏、分组交叉、样本不足以形成十轮、非有限特征、父checkpoint不可加载、产物超过64 MiB或需要修改RC7策略；失败也必须保存并报告，不得用confirmation结果调参重跑。
-- 边界：这是自建模拟父模型上的本地泛化实验，不是官方数据、官方父checkpoint、隐藏成绩或新RC性能证明；不调用PyTRiO、SwanLab或官方试运行，不修改`0.7.0rc1`镜像和归档。
+- 边界：这是自建模拟父模型上的本地泛化实验，不是官方数据、官方父checkpoint、隐藏成绩或新RC性能证明；按用户补充要求A4调用Qwen3.5-4B PyTRiO，但未调用SwanLab或官方试运行，也未修改`0.7.0rc1`镜像和归档。
+- 证据：A1数据质量失败、A2证据ID失配、A3确定性负对照、A4真实PyTRiO对照全部保留。A4三任务30轮、16次有效响应、15次建议执行，协议门和Agent门通过，但严格改善0/3；见`results/UNSEEN-SIM-001.md`。
 
 ### PLATFORM-REPORT-SIM-001 官方报告字段本地复演
 

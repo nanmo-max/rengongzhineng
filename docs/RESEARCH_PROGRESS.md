@@ -608,3 +608,11 @@
 - 三次延迟为13.626、16.559、13.335秒；旧15秒默认位于正常延迟边缘。TDD先得到默认15秒断言失败，再将Native入口默认调整为60秒；相关72项与完整382项回归通过。
 - 机器摘要位于`D:/brace-msi-pytrio/PYTRIO-ONLINE-001-A1/summary.json`，SHA-256为`3005C56B...D063C7AF`。本机在线门已通过，平台容器内网络、凭据注入和Token报告仍需正式试运行确认。
 
+## 2026-11-15：UNSEEN-SIM-001
+
+- A1在训练前发现Battery 25条放电记录的`Capacity`为空数组并失败关闭；A2完成流程但报告实验ID与目录不一致，标记INVALID。两次负证据均保留。
+- A3确定性对照与A4 PyTRiO对照均完成Battery/Hydraulic/Mill各10轮，父链、分组隔离、checkpoint加载和协议检查通过。
+- A4使用`Qwen/Qwen3.5-4B`基础模型，16次有效响应、15次结构化建议执行，输入/输出Token 8,100/3,470；Agent门通过，未使用Sampler、SwanLab或官方试运行。
+- 独立confirmation结果为Battery RMSE 0.335763→0.409475、Hydraulic Macro-F1 0.238964→0.092620、Mill RMSE 0.392140→0.392140；严格改善0/3，性能成功标准失败。
+- 三个round 10 checkpoint独立加载复算与报告一致，大小均远低于64 MiB；当前HEAD完整回归`383 passed in 171.63s`。完整证据见`results/UNSEEN-SIM-001.md`。
+

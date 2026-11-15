@@ -475,3 +475,10 @@ PyTRiO通用接口、Qwen3.5-4B基础模型平台校验和持久化Sampler路线
 ### H-006 官方数据任务定义与切分
 
 任务类型、预测单位、主指标、公开训练/验证切分、参考训练器和初始权重已由O-PLATFORM-001与O-PLATFORM-005确认。仍缺正式SDK/批次协议、隐藏测试、完整评分公式、平台运行资源计量和许可证，因此训练包本地续训仍不能作为官方成绩。
+
+### L-EVIDENCE-009 三个未见工业任务本地正式流程复演
+
+- 类型：本地可核验实验事实，不是官方证据。
+- 来源：`D:/brace-msi-unseen/UNSEEN-SIM-001-A3/`、`D:/brace-msi-unseen/UNSEEN-SIM-001-A4/`及`docs/results/UNSEEN-SIM-001.md`。
+- 已确认：三任务各10轮、父链和隔离协议通过；A4真实调用`Qwen/Qwen3.5-4B` PyTRiO，取得16次有效响应、15次建议执行和8,100/3,470输入/输出Token。
+- 性能边界：Battery/Hydraulic最终退化，Mill持平，严格改善0/3；不得写成官方成绩、隐藏泛化通过或新RC性能证明。

@@ -385,9 +385,10 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 
 ## UNSEEN-SIM-001-A4预注册
 
-- 状态：`REGISTERED_NOT_RUN`。
+- 状态：`COMPLETED_AGENT_PASS_PERFORMANCE_FAIL`。三任务各10轮及全部协议检查通过；PyTRiO有效响应16次、接受并执行15次，输入/输出Token为8,100/3,470，Agent门通过。Battery最终RMSE从静态0.335763退化至0.409475，Hydraulic Macro-F1从0.238964退化至0.092620，Mill RMSE保持0.392140；严格改善0/3，性能成功标准失败。
 - 目的：按用户要求在A3完全相同的数据、模拟父checkpoint、十轮、门控和资源边界上启用正式基础模型`Qwen/Qwen3.5-4B` PyTRiO Advisor，形成确定性A3的公平Agent对照。
 - PyTRiO协议：只通过`build_platform_advisor`调用基础模型，不使用Sampler微调权重；temperature 0、最大768输出Token、单次60秒、失败最多重试一次。Qwen只能返回受限训练/retain意图，不能改变数据、轮次、动作实现、epoch、学习率、Gate、父链或部署；失败必须留下收据并确定性retain。
 - 记录：逐轮保存advisor来源、触发原因、尝试次数、错误类别、输入/输出Token、延迟、提案动作、实际动作和约束；不得保存API Key或原始私有数据。
 - 成功门：除A3协议门外，至少3次非零Token有效响应、至少1次建议被执行；若服务失败或全为确定性恢复，仍完成可安全完成的轮次并标记Agent门失败，不冒充PyTRiO成功。
 - 输出：新目录`D:/brace-msi-unseen/UNSEEN-SIM-001-A4/`；不覆盖A1/A2/A3，不消耗官方试运行，不同步SwanLab。
+- 证据：`results/UNSEEN-SIM-001.md`；报告JSON/HTML SHA-256为`AA3CA8F...AEE8D7`/`A0165511...E1E92B8`。confirmation已经打开，禁止据此调参重跑。
