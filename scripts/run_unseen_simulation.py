@@ -22,6 +22,7 @@ from brace_msi.platform_runtime import (
     _NativeModel,
     evaluate_checkpoint,
 )
+from brace_msi.platform_advisor import build_platform_advisor
 from brace_msi.platform_simulation import run_ten_round_simulation
 
 
@@ -383,6 +384,7 @@ def _task_report(
     task_kind: str,
     rows: list[dict[str, Any]],
     feature_names: list[str],
+    advisor: Any | None,
 ) -> dict[str, Any]:
     partitions = _partition_rows(task_name, rows)
     data_root = task_root / "data"
@@ -404,6 +406,7 @@ def _task_report(
         prediction_data_path=data_root / "confirmation.jsonl",
         config=PlatformRuntimeConfig(policy_mode="competitive", max_training_rounds=10),
         export_swanlab=False,
+        advisor=advisor,
     )
     confirmation_path = data_root / "confirmation.jsonl"
     per_round: list[dict[str, Any]] = []
@@ -510,7 +513,14 @@ th:first-child,td:first-child{text-align:left}.note{background:#fff3cd;padding:1
 <tbody>""" + "".join(task_rows) + "</tbody></table></html>"
 
 
-def run(source_root: Path, output_root: Path, *, experiment_id: str) -> dict[str, Any]:
+def run(
+    source_root: Path,
+    output_root: Path,
+    *,
+    experiment_id: str,
+    advisor_mode: str,
+    pytrio_timeout_seconds: float,
+) -> dict[str, Any]:
     source_root = source_root.resolve()
     output_root = output_root.resolve()
     if output_root.exists() or output_root.is_symlink():
@@ -530,8 +540,24 @@ def run(source_root: Path, output_root: Path, *, experiment_id: str) -> dict[str
     task_reports = []
     for task_name, task_kind, loader in task_specs:
         rows, feature_names = loader(source_root)
+        advisor = (
+            build_platform_advisor(
+                model="Qwen/Qwen3.5-4B",
+                model_path=None,
+                timeout_seconds=pytrio_timeout_seconds,
+            )
+            if advisor_mode == "pytrio"
+            else None
+        )
         task_reports.append(
-            _task_report(output_root / task_name, task_name, task_kind, rows, feature_names)
+            _task_report(
+                output_root / task_name,
+                task_name,
+                task_kind,
+                rows,
+                feature_names,
+                advisor,
+            )
         )
     successful = [
         task["round_count"] == 10
@@ -540,6 +566,18 @@ def run(source_root: Path, output_root: Path, *, experiment_id: str) -> dict[str
         and task["final_improvement"] >= -1e-12
         for task in task_reports
     ]
+    all_rounds = [round_row for task in task_reports for round_row in task["rounds"]]
+    pytrio_response_count = sum(
+        round_row.get("decision", {}).get("advisor_source") == "pytrio"
+        and int(round_row.get("input_tokens", 0)) > 0
+        and int(round_row.get("output_tokens", 0)) > 0
+        for round_row in all_rounds
+    )
+    pytrio_executed_count = sum(
+        round_row.get("decision", {}).get("advisor_source") == "pytrio"
+        and bool(round_row.get("decision", {}).get("proposal_accepted"))
+        for round_row in all_rounds
+    )
     report = {
         "format": "brace-msi.unseen-platform-simulation.v1",
         "experiment_id": experiment_id,
@@ -549,6 +587,17 @@ def run(source_root: Path, output_root: Path, *, experiment_id: str) -> dict[str
         "rc_modified": False,
         "simulated_parent": True,
         "seed": SEED,
+        "advisor_mode": advisor_mode,
+        "advisor_model": "Qwen/Qwen3.5-4B" if advisor_mode == "pytrio" else None,
+        "pytrio_response_count": pytrio_response_count,
+        "pytrio_executed_count": pytrio_executed_count,
+        "input_tokens": sum(int(row.get("input_tokens", 0)) for row in all_rounds),
+        "output_tokens": sum(int(row.get("output_tokens", 0)) for row in all_rounds),
+        "agent_gate_met": (
+            pytrio_response_count >= 3 and pytrio_executed_count >= 1
+            if advisor_mode == "pytrio"
+            else None
+        ),
         "source_manifest_sha256": _json_sha256(raw_manifest),
         "task_count": len(task_reports),
         "all_protocol_checks_passed": all(
@@ -576,11 +625,21 @@ def main() -> int:
     parser.add_argument("--source", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--experiment-id", required=True)
+    parser.add_argument("--advisor", choices=("deterministic", "pytrio"), default="deterministic")
+    parser.add_argument("--pytrio-timeout-seconds", type=float, default=60.0)
     args = parser.parse_args()
-    report = run(args.source, args.output, experiment_id=args.experiment_id)
+    report = run(
+        args.source,
+        args.output,
+        experiment_id=args.experiment_id,
+        advisor_mode=args.advisor,
+        pytrio_timeout_seconds=args.pytrio_timeout_seconds,
+    )
     print(json.dumps({key: report[key] for key in (
         "experiment_id", "status", "all_protocol_checks_passed", "all_final_not_worse",
-        "strictly_improved_task_count", "success_standard_met", "elapsed_seconds",
+        "strictly_improved_task_count", "success_standard_met", "pytrio_response_count",
+        "pytrio_executed_count", "agent_gate_met", "input_tokens", "output_tokens",
+        "elapsed_seconds",
     )}, ensure_ascii=False, allow_nan=False, sort_keys=True))
     return 0
 
