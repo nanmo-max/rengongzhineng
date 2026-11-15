@@ -86,6 +86,11 @@ def _parser() -> argparse.ArgumentParser:
         choices=("protocol", "competitive"),
         default=os.environ.get("BRACE_POLICY_MODE", "protocol"),
     )
+    platform_start.add_argument(
+        "--protocol-profiles",
+        default=os.environ.get("BRACE_PROTOCOL_PROFILES", ""),
+        help="comma-separated verified profiles that retain the protocol policy",
+    )
     platform_start.add_argument("--epochs", type=int, default=1)
     platform_start.add_argument("--learning-rate-multiplier", type=float, default=1.0)
     platform_start.add_argument("--gate-fraction", type=float, default=0.2)
@@ -262,6 +267,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             args.output,
             PlatformRuntimeConfig(
                 policy_mode=args.policy_mode,
+                protocol_profiles=tuple(
+                    value.strip()
+                    for value in args.protocol_profiles.split(",")
+                    if value.strip()
+                ),
                 epochs=args.epochs,
                 learning_rate_multiplier=args.learning_rate_multiplier,
                 gate_fraction=args.gate_fraction,

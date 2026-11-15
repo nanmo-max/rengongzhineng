@@ -785,3 +785,41 @@ def test_pytrio_noop_is_recorded_as_retain_without_training(tmp_path: Path) -> N
     assert receipt["deployed"] is False
     assert receipt["checkpoint_sha256"] == receipt["parent_checkpoint_sha256"]
 
+
+def test_competitive_mode_can_reuse_verified_protocol_for_declared_profile(
+    tmp_path: Path,
+) -> None:
+    data = tmp_path / "data.jsonl"
+    parent = tmp_path / "checkpoint.npz"
+    _write_data(data, task="regression", count=100)
+    _write_parent(parent, task="regression", profile="B")
+
+    routed = run_ten_round_simulation(
+        data,
+        parent,
+        tmp_path / "routed",
+        prediction_data_path=data,
+        config=PlatformRuntimeConfig(
+            policy_mode="competitive",
+            protocol_profiles=("B",),
+            min_relative_improvement=0.05,
+        ),
+        export_swanlab=False,
+    )
+    legacy = run_ten_round_simulation(
+        data,
+        parent,
+        tmp_path / "legacy",
+        prediction_data_path=data,
+        config=PlatformRuntimeConfig(
+            policy_mode="protocol",
+            min_relative_improvement=0.05,
+        ),
+        export_swanlab=False,
+    )
+
+    assert routed["candidate_count"] == legacy["candidate_count"] == 10
+    assert routed["accepted_count"] == legacy["accepted_count"]
+    assert routed["final_metrics"] == legacy["final_metrics"]
+    assert routed["final_checkpoint_sha256"] == legacy["final_checkpoint_sha256"]
+

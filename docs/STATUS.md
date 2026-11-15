@@ -3,7 +3,7 @@
 - 最近同步：2026-11-15（Asia/Shanghai）
 - 当前阶段：`BRACE-MSI-0.6.0rc1`冻结为Protocol RC；独立分支冲刺原生竞争候选
 - 当前路线：**保留平台父链/安全内核，先通过Native逐状态等价门，再迁移冻结日程、尺度适配Gate与受控PyTRiO建议** `[D-061]`
-- 当前唯一任务：`NATIVE-COMPETITIVE-RC-001`（`IN_PROGRESS`）；Task 1执行器等价与Task 2竞争门控已完成，下一步运行不读取公开validation的DEV-A3并冻结候选。正式平台精确启动schema仍由`FORMAL-RELEASE-001`跟踪为外部阻塞。
+- 当前唯一任务：`NATIVE-COMPETITIVE-RC-001`（`IN_PROGRESS`）；Task 1—3已完成，发布组合为A/C竞争策略+B复用`0.6.0rc1` protocol。下一步完成Native PyTRiO非零调用、最终SwanLab聚合记录和Docker RC。正式平台精确启动schema仍由`FORMAL-RELEASE-001`跟踪为外部阻塞。
 - 稳定边界：全部历史RC和实验不改写；`0.5.0rc1`只作研究证据，不得上传。正式线从D-058开始只输出原生官方MLP续训checkpoint。A3之后禁止继续LLM调参 `[D-043]`
 - 官方试运行：已使用1/10次，剩余9/10次；该运行对应旧提交v2，不是RC4，正式评测仍为0/2 `[O-PLATFORM-006]`
 

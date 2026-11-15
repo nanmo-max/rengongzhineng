@@ -57,6 +57,7 @@ class PlatformAdvisor(Protocol):
 @dataclass(frozen=True)
 class PlatformRuntimeConfig:
     policy_mode: str = "protocol"
+    protocol_profiles: tuple[str, ...] = ()
     epochs: int = 1
     learning_rate_multiplier: float = 1.0
     gate_fraction: float = 0.2
@@ -69,6 +70,8 @@ class PlatformRuntimeConfig:
     def __post_init__(self) -> None:
         if self.policy_mode not in {"protocol", "competitive"}:
             raise ValueError("policy mode must be protocol or competitive")
+        if any(not value.strip() for value in self.protocol_profiles):
+            raise ValueError("protocol profiles must be non-empty strings")
         if not 1 <= self.epochs <= 5:
             raise ValueError("epochs must be in 1..5")
         if not 0.1 <= self.learning_rate_multiplier <= 3.0:
@@ -726,6 +729,11 @@ def _decision_for_round(
             "bounded_hpo": False,
         },
     )
+    policy_mode = (
+        "protocol"
+        if str(parent.meta.get("profile")) in config.protocol_profiles
+        else config.policy_mode
+    )
     candidate_events = sum(bool(row.get("candidate_trained")) for row in history)
     base_learning_rate = float(
         state.get("base_learning_rate", parent.meta["learning_rate"])
@@ -740,7 +748,7 @@ def _decision_for_round(
         else None
     )
     candidate_budget_available = candidate_events < config.max_training_rounds
-    if config.policy_mode == "competitive" and (
+    if policy_mode == "competitive" and (
         not candidate_budget_available
         or (schedule is not None and scheduled is None)
     ):
@@ -749,7 +757,7 @@ def _decision_for_round(
         learning_rate = base_learning_rate
     else:
         default_action = Action.REPLAY_REFIT if len(replay_x) else Action.INCREMENTAL_UPDATE
-        if config.policy_mode == "competitive" and scheduled is not None:
+        if policy_mode == "competitive" and scheduled is not None:
             epochs, multiplier = scheduled
             learning_rate = base_learning_rate * multiplier
         else:
@@ -976,7 +984,12 @@ def start_round(
             relative_improvement = _relative_improvement(
                 parent.meta["task"], before, candidate_metrics
             )
-            if config.policy_mode == "competitive":
+            policy_mode = (
+                "protocol"
+                if str(parent.meta.get("profile")) in config.protocol_profiles
+                else config.policy_mode
+            )
+            if policy_mode == "competitive":
                 gate_outcome = _competitive_gate(
                     profile=str(parent.meta.get("profile", "")),
                     task=parent.meta["task"],

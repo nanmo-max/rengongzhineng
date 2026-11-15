@@ -21,6 +21,7 @@ def main() -> int:
     args.output.mkdir(parents=True)
     runtime = PlatformRuntimeConfig(
         policy_mode=str(raw.get("policy_mode", "protocol")),
+        protocol_profiles=tuple(str(value) for value in raw.get("protocol_profiles", [])),
         epochs=int(raw["epochs_per_round"]),
         learning_rate_multiplier=float(raw["learning_rate_multiplier"]),
         gate_fraction=float(raw["gate_fraction"]),
