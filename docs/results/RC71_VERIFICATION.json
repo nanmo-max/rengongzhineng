@@ -19,6 +19,10 @@
     "status": "PASS",
     "summary": "No broken requirements found inside the release image."
   },
+  "compileall": {
+    "status": "PASS",
+    "targets": ["src", "tests", "scripts"]
+  },
   "tokenizer_bundle": {
     "status": "PASS",
     "model": "Qwen/Qwen3.5-4B",

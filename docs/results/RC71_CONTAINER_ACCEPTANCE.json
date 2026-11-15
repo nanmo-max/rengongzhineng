@@ -13,6 +13,7 @@
     "under_2gb": true,
     "runtime_user": "brace",
     "runtime_uid": 10001,
+    "forbidden_files": [],
     "forbidden_model_weight_files": [],
     "embedded_dataset_or_checkpoint": false,
     "embedded_secret": false,
@@ -62,6 +63,17 @@
     "silent_training_fallback": false,
     "training_receipt_sha256": "FF144D876A04824054C92C861FC9E49487A2DAC8B78E6D501B5740F009E9665E",
     "evidence_root": "D:/brace-msi-native-competitive/RC71-PYTRIO-OFFLINE-BUNDLED"
+  },
+  "runtime_acceptance": {
+    "status": "completed",
+    "network": "none",
+    "cpus": 4,
+    "memory_bytes": 8589934592,
+    "pids_limit": 256,
+    "read_only_root": true,
+    "executed_action": "noop",
+    "candidate_trained": false,
+    "parent_retained": true
   },
   "archive": {
     "format": "docker save tar",
