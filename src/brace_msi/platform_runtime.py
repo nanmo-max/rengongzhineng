@@ -770,6 +770,7 @@ def _decision_for_round(
     fallback_reason: str | None = None
     advisor_source = "not_configured"
     advisor_receipt: dict[str, Any] | None = None
+    policy_constraints_applied: list[str] = []
     rationale = "deterministic bounded continuation"
     if advisor is not None:
         outcome = advisor.advise(context, trigger)
@@ -819,11 +820,39 @@ def _decision_for_round(
                     )
                 ):
                     raise ValueError("learning_rate_out_of_bounds")
-                action = proposal.action
-                epochs = proposed_epochs
-                learning_rate = float(proposed_learning_rate)
-                rationale = proposal.rationale
-                proposal_accepted = True
+                if outcome.source == "deterministic_recovery":
+                    action = Action.NOOP
+                    epochs = 0
+                    learning_rate = base_learning_rate
+                    rationale = proposal.rationale
+                    proposal_accepted = True
+                elif (
+                    policy_mode == "competitive"
+                    and schedule is not None
+                    and scheduled is None
+                    and proposal.action is not Action.NOOP
+                ):
+                    raise ValueError("outside_frozen_candidate_schedule")
+                elif default_action is not Action.NOOP:
+                    if proposal.action is Action.NOOP:
+                        raise ValueError("frozen_candidate_required")
+                    if proposal.action is not default_action:
+                        policy_constraints_applied.append("action")
+                    if proposed_epochs != epochs:
+                        policy_constraints_applied.append("epochs")
+                    if not math.isclose(
+                        float(proposed_learning_rate), learning_rate, rel_tol=0.0, abs_tol=1e-15
+                    ):
+                        policy_constraints_applied.append("learning_rate")
+                    action = default_action
+                    rationale = proposal.rationale
+                    proposal_accepted = True
+                else:
+                    action = Action.NOOP
+                    epochs = 0
+                    learning_rate = base_learning_rate
+                    rationale = proposal.rationale
+                    proposal_accepted = True
             except ValueError as exc:
                 fallback_reason = str(exc)
     outcome = "retain" if action is Action.NOOP else "candidate"
@@ -837,6 +866,7 @@ def _decision_for_round(
         "executed_action": action.value,
         "proposal_accepted": proposal_accepted,
         "fallback_reason": fallback_reason,
+        "policy_constraints_applied": policy_constraints_applied,
         "rationale": rationale,
         "outcome": outcome,
         "epochs": epochs,

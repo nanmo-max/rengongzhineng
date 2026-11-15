@@ -563,10 +563,15 @@ def test_pytrio_advice_is_bounded_and_recorded_without_bypassing_gate(tmp_path: 
     assert len(advisor.contexts) == 1
     assert receipt["decision"]["source"] == "pytrio"
     assert receipt["decision"]["proposed_action"] == "replay_refit"
-    assert receipt["decision"]["executed_action"] == "replay_refit"
+    assert receipt["decision"]["executed_action"] == "incremental_update"
     assert receipt["decision"]["proposal_accepted"] is True
-    assert receipt["epochs"] == 2
-    assert receipt["learning_rate"] == pytest.approx(0.003)
+    assert receipt["epochs"] == 1
+    assert receipt["learning_rate"] == pytest.approx(0.01)
+    assert set(receipt["decision"]["policy_constraints_applied"]) == {
+        "action",
+        "epochs",
+        "learning_rate",
+    }
     assert receipt["input_tokens"] == 120
     assert receipt["output_tokens"] == 40
     assert receipt["deployed"] is False
@@ -774,20 +779,112 @@ def test_pytrio_noop_is_recorded_as_retain_without_training(tmp_path: Path) -> N
     _write_data(data, count=60)
     _write_parent(parent, profile="A")
 
-    receipt = start_round(
+    first = start_round(
         data,
         parent,
         tmp_path / "workspace",
-        tmp_path / "output",
+        tmp_path / "round-1",
+        PlatformRuntimeConfig(policy_mode="competitive", max_training_rounds=3),
+    )
+    receipt = start_round(
+        data,
+        tmp_path / "round-1" / "checkpoint.npz",
+        tmp_path / "workspace",
+        tmp_path / "round-2",
         PlatformRuntimeConfig(policy_mode="competitive", max_training_rounds=3),
         advisor=RecordingAdvisor(Action.NOOP),
     )
 
+    assert first["candidate_trained"] is True
     assert receipt["decision"]["source"] == "pytrio"
     assert receipt["decision"]["outcome"] == "retain"
     assert receipt["candidate_trained"] is False
     assert receipt["deployed"] is False
     assert receipt["checkpoint_sha256"] == receipt["parent_checkpoint_sha256"]
+
+
+def test_pytrio_cannot_escape_frozen_competitive_candidate_schedule(
+    tmp_path: Path,
+) -> None:
+    data = tmp_path / "data.jsonl"
+    parent = tmp_path / "checkpoint.npz"
+    _write_data(data, count=60)
+    _write_parent(parent, profile="A")
+
+    first = start_round(
+        data,
+        parent,
+        tmp_path / "workspace",
+        tmp_path / "round-1",
+        PlatformRuntimeConfig(policy_mode="competitive", max_training_rounds=3),
+    )
+    second = start_round(
+        data,
+        tmp_path / "round-1" / "checkpoint.npz",
+        tmp_path / "workspace",
+        tmp_path / "round-2",
+        PlatformRuntimeConfig(policy_mode="competitive", max_training_rounds=3),
+        advisor=RecordingAdvisor(Action.REPLAY_REFIT),
+    )
+
+    assert first["candidate_trained"] is True
+    assert second["candidate_trained"] is False
+    assert second["decision"]["executed_action"] == "noop"
+    assert second["decision"]["proposal_accepted"] is False
+    assert second["decision"]["fallback_reason"] == "outside_frozen_candidate_schedule"
+
+
+def test_pytrio_training_intent_cannot_override_frozen_action_or_parameters(
+    tmp_path: Path,
+) -> None:
+    data = tmp_path / "data.jsonl"
+    parent = tmp_path / "checkpoint.npz"
+    _write_data(data, count=60)
+    _write_parent(parent, profile="A")
+
+    receipt = start_round(
+        data,
+        parent,
+        tmp_path / "workspace",
+        tmp_path / "round-1",
+        PlatformRuntimeConfig(policy_mode="competitive", max_training_rounds=3),
+        advisor=RecordingAdvisor(Action.REPLAY_REFIT),
+    )
+
+    assert receipt["candidate_trained"] is True
+    assert receipt["decision"]["source"] == "pytrio"
+    assert receipt["decision"]["proposed_action"] == "replay_refit"
+    assert receipt["decision"]["executed_action"] == "incremental_update"
+    assert receipt["epochs"] == 1
+    assert receipt["learning_rate"] == pytest.approx(0.01)
+    assert set(receipt["decision"]["policy_constraints_applied"]) == {
+        "action",
+        "epochs",
+        "learning_rate",
+    }
+
+
+def test_pytrio_noop_cannot_cancel_frozen_candidate_round(tmp_path: Path) -> None:
+    data = tmp_path / "data.jsonl"
+    parent = tmp_path / "checkpoint.npz"
+    _write_data(data, count=60)
+    _write_parent(parent, profile="A")
+
+    receipt = start_round(
+        data,
+        parent,
+        tmp_path / "workspace",
+        tmp_path / "round-1",
+        PlatformRuntimeConfig(policy_mode="competitive", max_training_rounds=3),
+        advisor=RecordingAdvisor(Action.NOOP),
+    )
+
+    assert receipt["candidate_trained"] is True
+    assert receipt["decision"]["source"] == "deterministic_policy"
+    assert receipt["decision"]["proposed_action"] == "noop"
+    assert receipt["decision"]["executed_action"] == "incremental_update"
+    assert receipt["decision"]["proposal_accepted"] is False
+    assert receipt["decision"]["fallback_reason"] == "frozen_candidate_required"
 
 
 def test_competitive_mode_can_reuse_verified_protocol_for_declared_profile(
@@ -826,6 +923,50 @@ def test_competitive_mode_can_reuse_verified_protocol_for_declared_profile(
     assert routed["accepted_count"] == legacy["accepted_count"]
     assert routed["final_metrics"] == legacy["final_metrics"]
     assert routed["final_checkpoint_sha256"] == legacy["final_checkpoint_sha256"]
+
+
+@pytest.mark.parametrize(
+    ("profile", "task", "expected_candidates"),
+    (("A", "classification", 3), ("B", "regression", 10), ("C", "regression", 3)),
+)
+def test_pytrio_training_intents_preserve_frozen_release_policy(
+    tmp_path: Path, profile: str, task: str, expected_candidates: int
+) -> None:
+    data = tmp_path / "data.jsonl"
+    parent = tmp_path / "checkpoint.npz"
+    _write_data(data, task=task, count=100)
+    _write_parent(parent, task=task, profile=profile)
+    config = PlatformRuntimeConfig(
+        policy_mode="competitive",
+        protocol_profiles=("B",),
+        max_training_rounds=10,
+        min_primary_improvement=-1e9,
+        min_relative_improvement=-1.0,
+        max_anchor_degradation=1e9,
+    )
+
+    deterministic = run_ten_round_simulation(
+        data,
+        parent,
+        tmp_path / "deterministic",
+        prediction_data_path=data,
+        config=config,
+        export_swanlab=False,
+    )
+    advised = run_ten_round_simulation(
+        data,
+        parent,
+        tmp_path / "advised",
+        prediction_data_path=data,
+        config=config,
+        export_swanlab=False,
+        advisor=RecordingAdvisor(Action.REPLAY_REFIT),
+    )
+
+    assert advised["candidate_count"] == deterministic["candidate_count"] == expected_candidates
+    assert advised["accepted_count"] == deterministic["accepted_count"]
+    assert advised["final_metrics"] == deterministic["final_metrics"]
+    assert advised["final_checkpoint_sha256"] == deterministic["final_checkpoint_sha256"]
 
 
 def test_pytrio_failure_retains_without_training(tmp_path: Path) -> None:
