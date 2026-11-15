@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "release_id": "BRACE-MSI-0.7.0rc1",
+  "evidence_scope": "native_competitive_release_container_acceptance",
+  "official_score": false,
+  "source_commit": "fa166d63c52d382341315de911e74c3bea2cc62c",
+  "image": {
+    "tag": "brace-msi:0.7.0rc1",
+    "id": "sha256:bafe0e013fc76310bca68d868b49855fd143c61c73392f8240b0a72aa66574bf",
+    "os": "linux",
+    "architecture": "amd64",
+    "size_bytes": 241874808,
+    "under_2gb": true,
+    "runtime_user": "brace",
+    "runtime_uid": 10001,
+    "forbidden_files": [],
+    "torch_installed": false,
+    "brace_msi_version": "0.7.0rc1",
+    "pytrio_version": "0.2.9",
+    "swanlab_version": "0.10.4",
+    "pip_check": "PASS"
+  },
+  "build": {
+    "engine": "Docker Engine 28.5.1",
+    "base_image": "mcr.microsoft.com/azurelinux/base/python:3.12",
+    "base_digest": "sha256:379135d4dbe66b12825a54d4ed7aef21aa61227533ff1b9151d70f95f9266746",
+    "index": "https://pypi.org/simple"
+  },
+  "runtime_acceptance": {
+    "network": "none",
+    "cpus": 4,
+    "memory_bytes": 8589934592,
+    "pids_limit": 256,
+    "read_only_root": true,
+    "status": "completed",
+    "profiles": {
+      "A": {
+        "rounds": 10,
+        "decisions": 10,
+        "candidates": 3,
+        "accepted": 1,
+        "parent_chain_valid": true,
+        "cpu_seconds": 0.6441928,
+        "wall_seconds": 1.5319446350004,
+        "peak_rss_bytes": 94965760,
+        "checkpoint_bytes": 132180,
+        "summary_sha256": "B27838B60F8696FE4D1E938382F215FD5C384F003BFD0AF2E412B75BED9EE3EC"
+      },
+      "B": {
+        "rounds": 10,
+        "decisions": 10,
+        "candidates": 10,
+        "accepted": 1,
+        "parent_chain_valid": true,
+        "cpu_seconds": 4.1577186,
+        "wall_seconds": 3.5966737870001,
+        "peak_rss_bytes": 113430528,
+        "checkpoint_bytes": 36600,
+        "summary_sha256": "9D202D289102286BD2C05727A589C83EE16C8971D4B9415E77D6FD7E7F143E03"
+      },
+      "C": {
+        "rounds": 10,
+        "decisions": 10,
+        "candidates": 3,
+        "accepted": 1,
+        "parent_chain_valid": true,
+        "cpu_seconds": 21.0110159,
+        "wall_seconds": 20.309055122,
+        "peak_rss_bytes": 238686208,
+        "checkpoint_bytes": 28848,
+        "summary_sha256": "947994FF5B50915E16B50AA527109781AC4DDBDA5FCE15DAEF49D53641EE4689"
+      }
+    },
+    "independent_prediction": {
+      "status": "PASS",
+      "sample_count": 1244,
+      "sha256": "04A2135F717CB0C041F53C031ECBAE90649962E294D6F7524AB42E3084087A20"
+    },
+    "offline_pytrio_failure": {
+      "status": "PASS",
+      "attempts": 2,
+      "executed_action": "noop",
+      "candidate_trained": false,
+      "parent_retained": true,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "silent_training_fallback": false
+    }
+  },
+  "archive": {
+    "format": "docker save tar",
+    "path": "D:/brace-msi-native-competitive/RC7-CONTAINER-ACCEPTANCE-FINAL/brace-msi-0.7.0rc1-harness.tar",
+    "size_bytes": 241897984,
+    "sha256": "B4EF8820FE38B4479B16657A85594719EB86CA7BAD157C0B484DDF4715FB1BD7",
+    "docker_load_verified": true
+  },
+  "tests": {
+    "final_source_environment": "377 passed in 150.76s",
+    "compileall": "PASS",
+    "container_pip_check": "PASS"
+  },
+  "boundaries": [
+    "This is local Harness and container evidence, not an official hidden-test score.",
+    "The image includes code but no industrial model weight, raw dataset, API key or persisted Sampler path.",
+    "The deterministic 30-round container acceptance validates engineering behavior; it is not additional independent performance selection.",
+    "The offline PyTRiO test proves safe retain after two failed calls and does not claim an online model response.",
+    "No official trial or formal evaluation opportunity was used during this acceptance."
+  ]
+}

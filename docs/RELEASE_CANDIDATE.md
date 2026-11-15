@@ -2,7 +2,9 @@
 
 ## 当前构建候选：0.7.0rc1
 
-`BRACE-MSI-0.7.0rc1`在独立分支继承`0.6.0rc1`的平台原生续训、父链、安全门、审计和回滚底座。A/C使用冻结竞争策略，B通过显式能力路由复用已验证的Protocol策略；未知profile默认走竞争策略。当前代码、SwanLab和本地性能证据已完成，真实Docker验收完成前不得称为正式Release Candidate。
+`BRACE-MSI-0.7.0rc1`在独立分支继承`0.6.0rc1`的平台原生续训、父链、安全门、审计和回滚底座。A/C使用冻结竞争策略，B通过显式能力路由复用已验证的Protocol策略；未知profile默认走竞争策略。377项回归、真实Docker、4核8GB断网、三任务30轮、独立预测、64 MiB和`docker save/load`均已通过，现为本地Release Candidate。
+
+上传归档：`D:/brace-msi-native-competitive/RC7-CONTAINER-ACCEPTANCE-FINAL/brace-msi-0.7.0rc1-harness.tar`；SHA-256 `B4EF8820FE38B4479B16657A85594719EB86CA7BAD157C0B484DDF4715FB1BD7`。完整证据见[发布验收](results/NATIVE-COMPETITIVE-RC-001-RELEASE.md)。平台“镜像可用”、模型校验和正式试运行仍未完成。
 
 ## 冻结Protocol RC：0.6.0rc1
 

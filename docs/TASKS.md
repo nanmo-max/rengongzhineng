@@ -18,7 +18,7 @@ EVIDENCE-RSI-001(DONE)
   -> DUAL-RC-001(DONE)
   -> FORMAL-CONTINUATION-RC-001(DONE)
   -> PLATFORM-NATIVE-001(DONE)
-  -> NATIVE-COMPETITIVE-RC-001(IN_PROGRESS)
+  -> NATIVE-COMPETITIVE-RC-001(DONE_LOCAL_EXTERNAL_BLOCK)
   -> FORMAL-RELEASE-001(BLOCKED_EXTERNAL)
 ```
 
@@ -26,7 +26,7 @@ EVIDENCE-RSI-001(DONE)
 
 ### NATIVE-COMPETITIVE-RC-001 原生竞争候选冲刺
 
-- 状态：`IN_PROGRESS`
+- 状态：`DONE_LOCAL_EXTERNAL_BLOCK`
 - 依赖：PLATFORM-NATIVE-001、PYTRIO-COMPETITIVE-001-A1、REGRESSION-SPRINT-001
 - 优先级：P0，当前唯一执行任务
 - 目标：在不改写`0.6.0rc1`的前提下，验证`_NativeModel.fit`与官方训练器逐状态等价，迁移已冻结日程，使用train内部证据修正Gate/retain语义，形成带PyTRiO非零调用、SwanLab聚合记录和真实Docker归档的完整新RC。
@@ -34,7 +34,7 @@ EVIDENCE-RSI-001(DONE)
 - 停止条件：任一Native状态无法在限定修复内与官方训练器等价；必须再次利用公开validation选择参数或Gate；任何任务冻结确认退化；平台凭据/网络不可用时只允许把在线PyTRiO标为`BLOCKED_EXTERNAL`，不得制造成功证据。
 - 边界：不运行新SFT、论文包装或模型家族搜索；允许D-062定义的成熟父链兼容方法，但只做train内部有证据的有界候选，不扩张为无界HPO；D-060只约束冻结的Protocol RC，竞争候选按D-061执行；不使用官方试运行机会完成基础调试。
 - 计划：`superpowers/specs/2026-11-15-native-competitive-rc-design.md`、`superpowers/plans/2026-11-15-native-competitive-rc.md`
-- 当前证据：Task 1逐状态等价门通过；Task 2竞争模式、真实retain和任务尺度Gate通过；Task 3训练内部A/C改善、B保持旧protocol，唯一一次冻结确认得到A `0.725695`、C `51.949287`，B复用`0.6.0rc1`既有`660.076488`。发布组合路由已做差分等价与train内部16候选验证。下一步Task 4 PyTRiO与SwanLab。
+- 当前证据：Task 1逐状态等价门通过；Task 2竞争模式、真实retain和任务尺度Gate通过；Task 3冻结发布组合为A/C竞争策略+B复用旧protocol，一次冻结确认得到A `0.725695`、B `660.076488`、C `51.949287`。Task 4 Native PyTRiO取得2次非零响应/1次建议执行，第三次因服务RuntimeError保持外部阻塞；SwanLab三任务聚合记录已公开。Task 5完成377项回归、linux/amd64非root镜像、4核8GB断网30轮、独立预测、64 MiB、禁入扫描和`docker save/load`。归档SHA-256 `B4EF8820...5FB1BD7`；证据见`results/NATIVE-COMPETITIVE-RC-001-RELEASE.md`。本地任务完成，平台镜像/模型/试运行仍由`FORMAL-RELEASE-001`跟踪。
 
 ### PLATFORM-NATIVE-001 平台原生挂载训练/预测入口
 

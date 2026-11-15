@@ -1,9 +1,9 @@
 # 当前状态
 
 - 最近同步：2026-11-15（Asia/Shanghai）
-- 当前阶段：`BRACE-MSI-0.6.0rc1`冻结为Protocol RC；独立分支冲刺原生竞争候选
+- 当前阶段：`BRACE-MSI-0.7.0rc1`本地Release Candidate已冻结；等待平台上传与试运行
 - 当前路线：**保留平台父链/安全内核，先通过Native逐状态等价门，再迁移冻结日程、尺度适配Gate与受控PyTRiO建议** `[D-061]`
-- 当前唯一任务：`NATIVE-COMPETITIVE-RC-001`（`IN_PROGRESS`）；Task 1—3及SwanLab聚合记录已完成，发布组合为A/C竞争策略+B复用`0.6.0rc1` protocol。PyTRiO已取得2次非零响应/1次建议执行，但第三次被服务RuntimeError阻塞；下一步完成Docker RC，在线门保持外部阻塞。正式平台精确启动schema仍由`FORMAL-RELEASE-001`跟踪为外部阻塞。
+- 当前唯一任务：`FORMAL-RELEASE-001`（`BLOCKED_EXTERNAL`）；`NATIVE-COMPETITIVE-RC-001`已完成全部本地工作。发布组合为A/C竞争策略+B复用`0.6.0rc1` protocol；377项回归、4核8GB断网、三任务30轮、独立预测、SwanLab聚合记录与`docker save/load`通过。PyTRiO取得2次非零响应/1次建议执行，第三次仍被服务RuntimeError阻塞；平台精确启动、镜像校验和正式试运行等待外部操作。
 - 稳定边界：全部历史RC和实验不改写；`0.5.0rc1`只作研究证据，不得上传。正式线从D-058开始只输出原生官方MLP续训checkpoint。A3之后禁止继续LLM调参 `[D-043]`
 - 官方试运行：已使用1/10次，剩余9/10次；该运行对应旧提交v2，不是RC4，正式评测仍为0/2 `[O-PLATFORM-006]`
 
@@ -53,7 +53,7 @@
 
 ## 当前执行入口
 
-正式上传归档为`D:/brace-msi-release/BRACE-MSI-0.6.0rc1/BRACE-MSI-0.6.0rc1-image-clean.tar`，SHA-256 `F98FB679D1216564634382E00CC105980C7857021BE33F99A59A240496CBC62D`。它由`docker save`生成并已重载验证，但尚未上传且未通过平台镜像、模型、在线PyTRiO或正式评测校验。旧`0.5.0rc1/0.5.1rc1`不得代替。机器证据见`docs/results/PLATFORM-NATIVE-001.md`。
+正式上传归档为`D:/brace-msi-native-competitive/RC7-CONTAINER-ACCEPTANCE-FINAL/brace-msi-0.7.0rc1-harness.tar`，SHA-256 `B4EF8820FE38B4479B16657A85594719EB86CA7BAD157C0B484DDF4715FB1BD7`。它由`docker save`生成并已重载验证，但尚未通过平台“镜像可用”、模型校验、在线PyTRiO或正式评测。旧`0.5.x/0.6.0rc1`不得代替新竞争候选。机器证据见`docs/results/NATIVE-COMPETITIVE-RC-001-RELEASE.md`。
 
 正式路线、已知能力与未知边界见[FORMAL_ROUTE.md](FORMAL_ROUTE.md)。实验必须遵守[EXPERIMENT_PROTOCOL.md](EXPERIMENT_PROTOCOL.md)。
 
