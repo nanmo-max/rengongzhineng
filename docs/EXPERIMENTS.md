@@ -2,6 +2,15 @@
 
 本文件是全部实验运行的唯一登记处，包括失败和中止实验。
 
+## NATIVE-COMPETITIVE-RC-001（REGISTERED）
+
+- 研究问题：平台原生执行器与官方训练器逐状态等价后，迁移已冻结日程并使用train内部风险规则，能否形成同时具备性能、协议、PyTRiO、SwanLab和Docker证据的新竞争RC？
+- 数据：官方A/B/C训练包；参数和Gate选择只使用train内部批次/组证据；公开validation只在配置冻结后读取一次，不反馈调整。
+- 对照：`0.6.0rc1`原生结果、早期冻结日程证据；不把两者成绩混为同一实验。
+- 预算：不新增HPO、SFT、论文复现或官方试运行；PyTRiO仅做Native入口最少3次非零Token验收；A/B/C最多各10轮、每轮0或1候选。
+- 成功标准：见`TASKS.md`的`NATIVE-COMPETITIVE-RC-001`；所有失败、等价差异和发布阻塞必须保留。
+- 代码基线：`836920c`；执行分支`codex/native-competitive-rc`。
+
 ## PLATFORM-NATIVE-CONTAINER-002-A2-FINAL
 
 - 状态：`COMPLETED_PASS`。
