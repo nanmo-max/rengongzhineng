@@ -22,10 +22,23 @@ EVIDENCE-RSI-001(DONE)
   -> PLATFORM-REPORT-SIM-001(DONE)
   -> PYTRIO-ONLINE-001(DONE)
   -> UNSEEN-SIM-001(DONE_NEGATIVE)
+  -> UNSEEN-REPORT-001(DONE)
   -> FORMAL-RELEASE-001(BLOCKED_EXTERNAL)
 ```
 
 以上为当前正式重构图；`0.6.0rc1`及下方历史任务图保持冻结，新竞争候选只在独立分支演进。
+
+### UNSEEN-REPORT-001 官方要素风格的本地模拟报告
+
+- 状态：`DONE`
+- 依赖：UNSEEN-SIM-001、O-PLATFORM-010
+- 优先级：P0（用户要求按官方页面要素生成易读报告）
+- 目标：不重训、不调用PyTRiO、不修改A4证据，从`UNSEEN-SIM-001-A4/report.json`生成单页HTML与机器JSON；包含完成轮次、最终采用模型、确认样本、CPU/运行时间、最终指标、逐轮评估、模型选择和可展开实验记录。
+- 完成标准：三任务各10轮；最终采用来源可由checkpoint链复算；逐轮记录包含历史、假设、修改、Advisor/Token、Gate与资源；明显标注“本地独立确认集、非官方隐藏成绩”；无密钥、原始样本或伪造字段；专项测试和完整回归通过。
+- 停止条件：A4证据字段不足以可靠映射时显示“未记录”，不得猜测；不得重新打开数据或重跑confirmation补字段。
+- 产物：`D:/brace-msi-unseen/UNSEEN-SIM-001-A4/platform-style-report.json`与`.html`，仓库内保留脱敏说明和生成器测试。
+- 证据：三任务各10轮、30个展开记录、全部规定字段和敏感标记扫描通过；专项2项通过。产物哈希和摘要见`results/UNSEEN-REPORT-001.md`。
+
 
 ### PYTRIO-ONLINE-001 基础模型在线稳定性与RC入口验收
 
@@ -37,7 +50,7 @@ EVIDENCE-RSI-001(DONE)
 - 完成标准：至少3次非零Token、严格schema合法的PyTRiO响应；至少1次在冻结策略约束下实际执行；请求/响应只保存哈希、Token、延迟和结构化收据；专项测试、完整回归及必要镜像补丁验收通过。
 - 停止条件：6次额度用尽仍不足3次有效响应、账户余额不足、服务端持续异常或必须泄露凭据；此时保留全部失败证据并标记外部阻塞，不制造通过。
 - 边界：不得重开公开validation、改变RC7性能策略、训练大模型、打印凭据或消耗官方平台试运行。
-- 证据：3个独立进程均取得严格合法非零Token响应，累计输入/输出1,103/581 Token，至少1次建议进入受控Harness；72项相关及382项完整回归通过。见`D:/brace-msi-pytrio/PYTRIO-ONLINE-001-A1/summary.json`及`RESEARCH_PROGRESS.md`。
+- 证据：3个独立宿主进程均取得严格合法非零Token响应，累计输入/输出1,103/581 Token，至少1次建议进入受控Harness；`0.7.1rc1`正式镜像内置tokenizer-only资产后，在4核8GB只读容器中不挂载宿主模型缓存也取得330/184 Token并执行候选；断网两次失败后只retain。383项完整回归、镜像扫描及`docker save/load`通过。见`D:/brace-msi-pytrio/PYTRIO-ONLINE-001-A1/summary.json`、`results/PYTRIO-ONLINE-001.md`及`results/RC71_CONTAINER_ACCEPTANCE.json`。
 
 ### UNSEEN-SIM-001 三个新工业数据集的冻结RC泛化复演
 

@@ -1,0 +1,33 @@
+{
+  "format": "brace-msi.release-verification.v1",
+  "release_id": "BRACE-MSI-0.7.1rc1",
+  "runtime_commit": "624a9c4db392eda068443750e9ed25cc4258f3d5",
+  "pytest": {
+    "status": "PASS",
+    "passed": 383,
+    "seconds": 154.27,
+    "command": "python -m pytest -q --tb=short"
+  },
+  "clean_environment": {
+    "status": "PASS",
+    "path": "docker image brace-msi:0.7.1rc1",
+    "version": "0.7.1rc1",
+    "pytrio_version": "0.2.9",
+    "environment": "linux/amd64, non-root UID 10001, read-only root, 4 CPUs, 8 GiB"
+  },
+  "pip_check": {
+    "status": "PASS",
+    "summary": "No broken requirements found inside the release image."
+  },
+  "tokenizer_bundle": {
+    "status": "PASS",
+    "model": "Qwen/Qwen3.5-4B",
+    "asset_count": 7,
+    "model_weights_included": false,
+    "manifest": "/opt/brace-tokenizer-cache/BRACE_TOKENIZER_MANIFEST.json"
+  },
+  "container_runtime": {
+    "status": "PASS",
+    "evidence": "docs/results/RC71_CONTAINER_ACCEPTANCE.json"
+  }
+}

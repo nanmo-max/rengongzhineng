@@ -1,9 +1,9 @@
 # 当前状态
 
 - 最近同步：2026-11-15（Asia/Shanghai）
-- 当前阶段：`BRACE-MSI-0.7.0rc1`上传归档保持冻结；`0.7.1rc1`源码完成PyTRiO在线与未知任务复演，等待重新构建容器验收
+- 当前阶段：`BRACE-MSI-0.7.1rc1`已完成本地发布验收；真实容器内PyTRiO、断网恢复、383项回归及`docker save/load`均通过，等待平台导入/模型校验
 - 当前路线：**保留平台父链/安全内核，先通过Native逐状态等价门，再迁移冻结日程、尺度适配Gate与受控PyTRiO建议** `[D-061]`
-- 当前唯一任务：`FORMAL-RELEASE-001`（`BLOCKED_EXTERNAL`）；`PYTRIO-ONLINE-001`已通过，`UNSEEN-SIM-001`已完成负结果。下一步只在具备Docker构建条件时生成并验收`0.7.1rc1`新归档，或接入平台上传/镜像校验/正式试运行；不再重跑未知任务confirmation。
+- 当前唯一任务：`FORMAL-RELEASE-001`（`BLOCKED_EXTERNAL`）。`UNSEEN-REPORT-001`已从冻结A4证据生成官方要素风格的HTML/JSON；没有重训、额外PyTRiO调用或confirmation读取。
 - 稳定边界：全部历史RC和实验不改写；`0.5.0rc1`只作研究证据，不得上传。正式线从D-058开始只输出原生官方MLP续训checkpoint。A3之后禁止继续LLM调参 `[D-043]`
 - 官方试运行：已使用1/10次，剩余9/10次；该运行对应旧提交v2，不是RC4，正式评测仍为0/2 `[O-PLATFORM-006]`
 
@@ -16,8 +16,9 @@
 0d. `PLATFORM-NATIVE-001`已完成：`describe/start/submit`直接消费平台四挂载，不再要求完整包树；A/B/C在最终`0.6.0rc1`镜像中各完成10轮、10决策和10次真实候选，30轮父链、门控和独立预测全部通过。完整回归348项，镜像241,855,558字节，归档SHA-256 `F98FB679...CBC62D`。断网验收未冒充在线PyTRiO通过。
 0e. `NATIVE-COMPETITIVE-RC-001` Task 2已完成：竞争模式允许真实retain，候选固定在第1/5/9轮；首轮可训练但因无历史证据不得部署，B/C高强度候选移至第5轮；小幅安全收益、辅助指标、Anchor和Replay风险按任务契约门控。专项32项和完整回归365项通过。DEV-A1/A2负结果保留，未读取公开validation。
 0f. `PLATFORM-REPORT-SIM-001`已完成：根据新增官方旧试运行截图字段，对RC7冻结轮次进行本地报告复演；A/B/C均10/10轮，模拟采用第9/1/9轮，共25,972条历史暴露公开validation预测，结果与冻结性能边界一致。该任务未消耗官方试运行，不是隐藏成绩。
-0g. `PYTRIO-ONLINE-001`已完成：Qwen3.5-4B基础模型在三个独立进程中3/3返回严格合法非零Token结构化提案，累计1,103/581 Token，至少1次建议实际进入受控Harness；本地在线门通过，平台容器仍待正式试运行。
+0g. `PYTRIO-ONLINE-001`已完成：Qwen3.5-4B基础模型在三个独立宿主进程中3/3返回严格合法非零Token结构化提案，累计1,103/581 Token，至少1次建议实际进入受控Harness；`0.7.1rc1`镜像内置固定哈希的tokenizer-only资产后，在4核8GB只读容器中不挂载宿主缓存也取得330/184 Token并执行候选。断网两次失败后只retain父模型。平台正式Token报告仍待试运行。
 0h. `UNSEEN-SIM-001`已完成负结果：Battery/Hydraulic/Mill各10轮，A4调用Qwen3.5-4B PyTRiO取得16次有效响应、15次执行，协议/Agent门通过；但确认集严格改善0/3，最佳均为静态round 0。结果仅为模拟父模型本地压力测试，不是官方成绩。
+0i. `UNSEEN-REPORT-001`已完成：单页HTML包含三任务摘要、最终确认指标、30轮模型选择和可展开实验记录；JSON提供同一机器字段。页面显著标注“本地独立确认集、非官方”，见`results/UNSEEN-REPORT-001.md`。
 1. `DUAL-DATA-001`已完成：四缓冲区、Gate一轮隔离、Update+Replay候选集合、只读manifest、训练/评估分离句柄和未来诱饵阻断通过4项专项测试；完整回归`275 passed`。
 2. `DUAL-TXN-001`已完成：每批单决策、0至2候选、首候选结果触发升级、十批前缀、原子提交/恢复及影子配对收益通过5项专项测试；完整回归`280 passed`。
 3. `DUAL-VALUE-001`已完成：每任务隔离统计、身份无关证据画像、弱先验、延迟收益专用更新和性能—CPU/RSS/Token/模型体积Pareto前沿通过5项专项测试；完整回归`285 passed`。
@@ -56,7 +57,7 @@
 
 ## 当前执行入口
 
-正式上传归档为`D:/brace-msi-native-competitive/RC7-CONTAINER-ACCEPTANCE-FINAL/brace-msi-0.7.0rc1-harness.tar`，SHA-256 `B4EF8820FE38B4479B16657A85594719EB86CA7BAD157C0B484DDF4715FB1BD7`。它由`docker save`生成并已重载验证，但尚未通过平台“镜像可用”、模型校验、在线PyTRiO或正式评测。旧`0.5.x/0.6.0rc1`不得代替新竞争候选。机器证据见`docs/results/NATIVE-COMPETITIVE-RC-001-RELEASE.md`。
+正式上传归档为`D:/brace-msi-native-competitive/RC71-CONTAINER-ACCEPTANCE-FINAL/brace-msi-0.7.1rc1-harness.tar`，SHA-256 `6BA798571F88CC88A6FB298FA63E99CE723DFCC057A3BDEB9EF103E69DCF3CFE`。它由`docker save`生成并已重载验证；镜像为248,863,860字节，含7个固定哈希Tokenizer配置资产但不含Qwen权重、工业模型权重、数据或密钥。尚未通过平台“镜像可用”、模型校验或正式评测。旧`0.5.x/0.6.0/0.7.0rc1`不得代替该补丁候选。机器证据见`docs/results/RC71_CONTAINER_ACCEPTANCE.json`。
 
 正式路线、已知能力与未知边界见[FORMAL_ROUTE.md](FORMAL_ROUTE.md)。实验必须遵守[EXPERIMENT_PROTOCOL.md](EXPERIMENT_PROTOCOL.md)。
 

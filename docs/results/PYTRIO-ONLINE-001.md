@@ -24,4 +24,13 @@
 
 历史成功响应约14.86秒；本次三次成功响应为13.33—16.56秒。旧Native入口默认15秒处在正常响应延迟边缘，足以解释此前间歇性`RuntimeError`。发布补丁将Native PyTRiO默认超时提高到60秒，不改变模型、提示schema、候选日程、训练参数、安全门或失败retain语义。
 
-这证明本机PyTRiO服务链和RC入口可工作，不代替平台容器内的凭据注入、网络可达性和Token计量验证。
+## 发布容器验收
+
+`0.7.1rc1`镜像内置7个固定SHA-256的Qwen3.5-4B Tokenizer/配置资产，共22,912,511字节；明确不包含Qwen权重。容器只挂载运行时PyTRiO凭据，没有挂载宿主Tokenizer缓存：
+
+- 4核、8GB、256 PID、只读根文件系统下，一次请求成功；330/184 Token、4.620秒；合法`incremental_update`提案进入真实候选训练。
+- `--network none`下两次失败均有`RuntimeError`收据，随后执行`noop/retain`，候选训练为false，父checkpoint哈希保持不变。
+- 完整回归`383 passed in 154.27s`；镜像248,863,860字节，无模型权重、数据、checkpoint或密钥。
+- `docker save`归档已重载，SHA-256为`6BA798571F88CC88A6FB298FA63E99CE723DFCC057A3BDEB9EF103E69DCF3CFE`。
+
+这证明本机PyTRiO服务链、干净发布容器和失败恢复可工作；不代替平台侧镜像导入、凭据注入、Token计量或正式评测。

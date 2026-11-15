@@ -2,7 +2,7 @@
 
 > 本清单不保存任何API Key。表中“已准备”仅表示本地材料存在，不代表官方平台已经校验或正式评测通过。
 
-> 2026-11-15正式镜像警告：只上传最终交付目录中的`BRACE-MSI-0.7.0rc1-image-clean.tar`。0.5.x是历史/研究RC，0.6.0是Protocol RC，均不得代替当前竞争候选。
+> 2026-11-15正式镜像警告：只上传`D:/brace-msi-native-competitive/RC71-CONTAINER-ACCEPTANCE-FINAL/brace-msi-0.7.1rc1-harness.tar`。0.5.x是历史/研究RC，0.6.0是Protocol RC，0.7.0是被发布补丁替代的历史竞争候选。
 
 ## 提交表单
 
@@ -11,7 +11,7 @@
 | 模型类型 | 基础模型 `Qwen/Qwen3.5-4B` | 已通过历史平台校验 | 持久化Sampler此前未通过平台校验；按D-050使用基础模型，不填写Sampler路径 |
 | 完整Sampler权重路径 | 不适用 | 不填写 | 不把历史A3路径用于本版本 |
 | 训练记录链接 | `https://swanlab.cn/@nanmo-max/brace-msi-platform-native` | 已同步并核验 | A/B/C三项聚合记录各112条；不含逐样本数据、检查点或凭据 |
-| Harness镜像 | `D:/brace-msi-release/BRACE-MSI-0.7.0rc1-final/BRACE-MSI-0.7.0rc1-image-clean.tar` | 本地已准备，平台未校验 | SHA-256：`b4ef8820fe38b4479b16657a85594719eb86ca7bad157c0b484ddf4715fb1bd7`；上传后必须等待“镜像可用”并另做模型/续训校验 |
+| Harness镜像 | `D:/brace-msi-native-competitive/RC71-CONTAINER-ACCEPTANCE-FINAL/brace-msi-0.7.1rc1-harness.tar` | 本地已准备，平台未校验 | SHA-256：`6BA798571F88CC88A6FB298FA63E99CE723DFCC057A3BDEB9EF103E69DCF3CFE`；由`docker save`生成并重载通过，上传后必须等待“镜像可用”并另做模型/续训校验 |
 | 源码仓库链接 | `https://github.com/nanmo-max/rengongzhineng/tree/codex/native-competitive-rc` | 本地分支已冻结；待确认远端推送完成 | 不覆盖远端main或历史RC标签 |
 | PyTRiO API Key | 由队长在平台字段中粘贴 | 人工填写 | 不通过聊天、Git、作品文档或日志传递 |
 | 作品文档 | `D:/brace-msi-release/BRACE-MSI-0.4.0rc1-submission-materials/BRACE-MSI-作品说明书.docx` | 已生成并校验 | 无官方模板；指导教师暂不填写；PDF预览为`BRACE-MSI-作品说明书-最终版.pdf` |
@@ -21,9 +21,9 @@
 ## 镜像上传核对
 
 - 上传的是`docker save`生成的`.tar`，不是源码ZIP或Docker构建上下文；
-- 本地文件大小为241,897,984字节；镜像内部大小为241,874,808字节；
+- 本地文件大小为248,888,320字节；镜像内部大小为248,863,860字节；
 - 镜像平台为linux/amd64，默认用户UID 10001；
-- 镜像不含原始数据、A/B/C检查点、Sampler权重、Embedding或密钥；
+- 镜像不含原始数据、A/B/C检查点、Sampler权重、Qwen权重、Embedding或密钥；只包含固定哈希的Tokenizer/配置资产；
 - 平台选择镜像后再执行“校验并保存新版本”；
 - 校验失败时先保存平台原始错误文本和时间，不重复盲试消耗正式机会。
 

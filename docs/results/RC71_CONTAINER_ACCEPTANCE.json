@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "release_id": "BRACE-MSI-0.7.1rc1",
+  "evidence_scope": "pytrio_online_and_container_release_acceptance",
+  "official_score": false,
+  "source_commit": "624a9c4db392eda068443750e9ed25cc4258f3d5",
+  "image": {
+    "tag": "brace-msi:0.7.1rc1",
+    "id": "sha256:fc52be8919fa725e3a0b7a34c573c0ae0d83f3518d87e316969d1963b35718c5",
+    "os": "linux",
+    "architecture": "amd64",
+    "size_bytes": 248863860,
+    "under_2gb": true,
+    "runtime_user": "brace",
+    "runtime_uid": 10001,
+    "forbidden_model_weight_files": [],
+    "embedded_dataset_or_checkpoint": false,
+    "embedded_secret": false,
+    "brace_msi_version": "0.7.1rc1",
+    "pytrio_version": "0.2.9",
+    "pip_check": "PASS"
+  },
+  "tokenizer_bundle": {
+    "status": "PASS",
+    "model": "Qwen/Qwen3.5-4B",
+    "asset_count": 7,
+    "bytes": 22912511,
+    "model_weights_included": false,
+    "fixed_sha256_manifest": true
+  },
+  "online_pytrio": {
+    "status": "PASS",
+    "credentials_injected_at_runtime": true,
+    "host_tokenizer_cache_mounted": false,
+    "model": "Qwen/Qwen3.5-4B",
+    "attempts": 1,
+    "input_tokens": 330,
+    "output_tokens": 184,
+    "latency_seconds": 4.6196800019999955,
+    "proposal": "incremental_update",
+    "executed_action": "incremental_update",
+    "candidate_trained": true,
+    "deployed": false,
+    "gate_reason": "insufficient_history_for_deployment",
+    "parent_retained": true,
+    "cpus": 4,
+    "memory_bytes": 8589934592,
+    "pids_limit": 256,
+    "read_only_root": true,
+    "training_receipt_sha256": "BF50764A8E4C9DC090B89568344D3F765002575804E825B7BBC2D8F021118E2C",
+    "evidence_root": "D:/brace-msi-native-competitive/RC71-PYTRIO-ONLINE-BUNDLED"
+  },
+  "offline_pytrio_failure": {
+    "status": "PASS",
+    "network": "none",
+    "attempts": 2,
+    "executed_action": "noop",
+    "candidate_trained": false,
+    "parent_retained": true,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "silent_training_fallback": false,
+    "training_receipt_sha256": "FF144D876A04824054C92C861FC9E49487A2DAC8B78E6D501B5740F009E9665E",
+    "evidence_root": "D:/brace-msi-native-competitive/RC71-PYTRIO-OFFLINE-BUNDLED"
+  },
+  "archive": {
+    "format": "docker save tar",
+    "path": "D:/brace-msi-native-competitive/RC71-CONTAINER-ACCEPTANCE-FINAL/brace-msi-0.7.1rc1-harness.tar",
+    "size_bytes": 248888320,
+    "sha256": "6BA798571F88CC88A6FB298FA63E99CE723DFCC057A3BDEB9EF103E69DCF3CFE",
+    "docker_load_verified": true
+  },
+  "tests": {
+    "final_source_environment": "383 passed in 154.27s",
+    "container_pip_check": "PASS"
+  },
+  "boundaries": [
+    "This is local Harness, live PyTRiO and container evidence, not an official hidden-test score.",
+    "The image contains seven verified tokenizer/configuration assets but no Qwen model weights.",
+    "The image contains no industrial model weight, raw dataset, API key or persisted Sampler path.",
+    "No official trial or formal evaluation opportunity was used during this acceptance.",
+    "Platform image import, model validation and official evaluation remain external checks."
+  ]
+}

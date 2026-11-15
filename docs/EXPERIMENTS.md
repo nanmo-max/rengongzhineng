@@ -13,6 +13,7 @@
 - 代码基线：`3587fcde9381f919e869d18569b13582e07755ec`；分支`codex/native-competitive-rc`。
 - A1结果：三个独立进程均在第一次请求内获得严格合法提案，输入/输出Token分别为`330/184`、`370/197`、`403/200`，累计`1103/581`；第1轮建议按冻结策略真实训练候选，第2/3轮因不在候选日程而retain。公开validation、LoRA/SFT和官方试运行使用均为0。摘要SHA-256为`3005C56BAE0AF4A444B6CD231C449F34F66A1A049D351E4415B132F4D063C7AF`。
 - 根因与修正：此前有效调用约14.86秒，而失败验收使用更短窗口；A1的三次有效调用耗时13.33—16.56秒。正式入口默认超时由15秒提高到60秒，仍保留SDK单次尝试和Harness至多一次重试。
+- 容器发布验收：`0.7.1rc1`只内置7个固定SHA-256的Qwen3.5-4B Tokenizer/配置文件（22,912,511字节），不包含任何模型权重。4核8GB、只读根、256 PID容器在只挂载运行时凭据、不挂载宿主Tokenizer缓存时一次请求成功，330/184 Token、4.620秒，`incremental_update`候选真实训练；独立断网运行两次失败后执行`noop/retain`且候选训练为false。完整回归383项通过；归档SHA-256为`6BA798571F88CC88A6FB298FA63E99CE723DFCC057A3BDEB9EF103E69DCF3CFE`。
 
 ## NATIVE-COMPETITIVE-RC-001（REGISTERED）
 
