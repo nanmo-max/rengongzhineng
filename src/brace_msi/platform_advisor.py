@@ -35,7 +35,7 @@ def build_platform_advisor(
     *,
     model: str = "Qwen/Qwen3.5-4B",
     model_path: str | None = None,
-    timeout_seconds: float = 15.0,
+    timeout_seconds: float = 60.0,
     transport: SamplingTransport | None = None,
 ) -> RetryingProposalAdvisor:
     client = PyTrioAgentClient(

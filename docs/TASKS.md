@@ -20,15 +20,27 @@ EVIDENCE-RSI-001(DONE)
   -> PLATFORM-NATIVE-001(DONE)
   -> NATIVE-COMPETITIVE-RC-001(DONE_LOCAL_EXTERNAL_BLOCK)
   -> PLATFORM-REPORT-SIM-001(DONE)
-  -> UNSEEN-SIM-001(IN_PROGRESS)
+  -> PYTRIO-ONLINE-001(IN_PROGRESS)
+  -> UNSEEN-SIM-001(PAUSED_BY_USER_PRIORITY)
   -> FORMAL-RELEASE-001(BLOCKED_EXTERNAL)
 ```
 
 以上为当前正式重构图；`0.6.0rc1`及下方历史任务图保持冻结，新竞争候选只在独立分支演进。
 
-### UNSEEN-SIM-001 三个新工业数据集的冻结RC泛化复演
+### PYTRIO-ONLINE-001 基础模型在线稳定性与RC入口验收
 
 - 状态：`IN_PROGRESS`
+- 依赖：NATIVE-COMPETITIVE-RC-001
+- 优先级：P0（用户2026-11-15明确要求补齐PyTRiO）
+- 目标：不训练新Sampler、不改工业模型参数，使用平台已校验的`Qwen/Qwen3.5-4B`基础模型完成至少3次独立非零Token结构化提案，其中至少1次建议实际进入RC7受控Harness；验证服务失败仍只retain。
+- 预算：最多6次远程采样、每次最多768输出Token、60秒客户端超时；不消耗官方试运行，不调用27B，不进行LoRA/SFT。
+- 完成标准：至少3次非零Token、严格schema合法的PyTRiO响应；至少1次在冻结策略约束下实际执行；请求/响应只保存哈希、Token、延迟和结构化收据；专项测试、完整回归及必要镜像补丁验收通过。
+- 停止条件：6次额度用尽仍不足3次有效响应、账户余额不足、服务端持续异常或必须泄露凭据；此时保留全部失败证据并标记外部阻塞，不制造通过。
+- 边界：不得重开公开validation、改变RC7性能策略、训练大模型、打印凭据或消耗官方平台试运行。
+
+### UNSEEN-SIM-001 三个新工业数据集的冻结RC泛化复演
+
+- 状态：`PAUSED_BY_USER_PRIORITY`（待PYTRIO-ONLINE-001结束后恢复）
 - 依赖：NATIVE-COMPETITIVE-RC-001、PLATFORM-REPORT-SIM-001
 - 优先级：P0（用户授权的本地独立验证；不替换或修改RC7）
 - 目标：在电池老化、液压状态监测和铣削刀具磨损三个此前未用于RC7开发的数据集上，使用统一数值特征契约、模拟父checkpoint、十轮原生续训、门控、独立预测和官方报告字段，检验未知任务泛化与资源成本。

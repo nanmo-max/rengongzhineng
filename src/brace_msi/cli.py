@@ -125,7 +125,7 @@ def _parser() -> argparse.ArgumentParser:
         default=os.environ.get("BRACE_AGENT_MODEL_PATH") or None,
     )
     platform_start.add_argument(
-        "--agent-timeout-seconds", type=float, default=15.0
+        "--agent-timeout-seconds", type=float, default=60.0
     )
     platform_submit = subparsers.add_parser(
         "submit", help="run the independent JSONL prediction entry"
