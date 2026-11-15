@@ -18,7 +18,7 @@ EVIDENCE-RSI-001(DONE)
   -> DUAL-RC-001(DONE)
   -> FORMAL-CONTINUATION-RC-001(DONE)
   -> PLATFORM-NATIVE-001(DONE)
-  -> NATIVE-COMPETITIVE-RC-001(READY)
+  -> NATIVE-COMPETITIVE-RC-001(IN_PROGRESS)
   -> FORMAL-RELEASE-001(BLOCKED_EXTERNAL)
 ```
 
@@ -34,6 +34,7 @@ EVIDENCE-RSI-001(DONE)
 - 停止条件：任一Native状态无法在限定修复内与官方训练器等价；必须再次利用公开validation选择参数或Gate；任何任务冻结确认退化；平台凭据/网络不可用时只允许把在线PyTRiO标为`BLOCKED_EXTERNAL`，不得制造成功证据。
 - 边界：不运行新SFT、论文包装或模型家族搜索；允许D-062定义的成熟父链兼容方法，但只做train内部有证据的有界候选，不扩张为无界HPO；D-060只约束冻结的Protocol RC，竞争候选按D-061执行；不使用官方试运行机会完成基础调试。
 - 计划：`superpowers/specs/2026-11-15-native-competitive-rc-design.md`、`superpowers/plans/2026-11-15-native-competitive-rc.md`
+- 当前证据：Task 1逐状态等价门通过；Task 2竞争模式、真实retain、任务尺度Gate、首轮无历史禁止部署和第1/5/9轮有界候选已通过32项专项及365项完整回归。DEV-A1/A2均为训练内部负/混合结果且未读取公开validation；下一步只运行修正后的DEV-A3，再冻结配置。
 
 ### PLATFORM-NATIVE-001 平台原生挂载训练/预测入口
 

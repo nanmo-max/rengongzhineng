@@ -11,6 +11,9 @@
 - 成功标准：见`TASKS.md`的`NATIVE-COMPETITIVE-RC-001`；所有失败、等价差异和发布阻塞必须保留。
 - 代码基线：`836920c`；执行分支`codex/native-competitive-rc`。
 - Task 1结果：A/B/C官方Model与Native一轮loss、全部权重、Adam、预处理、metadata及预测逐值相同；Native 1+1与连续2 epoch逐状态相同。相关37项测试通过。既有30轮只读反事实确认A/B/C正收益候选为0/4/6、接受0/1/0；结果见`results/NATIVE-COMPETITIVE-RC-001-PARITY.md`。
+- DEV-A1：`COMPLETED_NEGATIVE_TRAIN_INTERNAL`。三个候选集中在前3轮；A不变，B从RMSE 233.357824退化到239.789618，C未形成可接受全历史优势。摘要`D:/brace-msi-native-competitive/NATIVE-COMPETITIVE-RC-001-DEV-A1/summary.json`，SHA-256 `E2C7A00EBD0289FCA0BB458190FCE7F156D9B4F940A4CD43B94F86069E8090CB`。
+- DEV-A2：`COMPLETED_MIXED_REJECTED_TRAIN_INTERNAL`。候选分散到第1/5/9轮；A不变，B首轮错误部署后RMSE从233.357824退化到299.846993，C RMSE从55.380385小幅改善至55.342797但MAE退化。摘要`D:/brace-msi-native-competitive/NATIVE-COMPETITIVE-RC-001-DEV-A2/summary.json`，SHA-256 `7A73559F89C3EF480466529CFAE401298823CE0B6717492CB4023C3DC4E668D4`。
+- Task 2修正：首轮候选因缺少历史证据只训练不部署；B/C强候选移到第5轮，最后一轮为低成本候选。专项32项、完整回归365项通过。公开validation、官方试运行和在线PyTRiO调用均为0。
 
 ## PLATFORM-NATIVE-CONTAINER-002-A2-FINAL
 

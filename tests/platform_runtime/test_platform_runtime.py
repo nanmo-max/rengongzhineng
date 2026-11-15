@@ -60,6 +60,7 @@ class RecordingAdvisor:
     def advise(self, context, trigger):
         self.contexts.append((context, trigger))
         tool = {
+            Action.NOOP: "noop",
             Action.REPLAY_REFIT: "train_replay_refit",
             Action.BOUNDED_HPO: "train_bounded_hpo",
         }[self.action]
@@ -88,7 +89,9 @@ class RecordingAdvisor:
         )
 
 
-def _write_parent(path: Path, *, task: str = "classification") -> None:
+def _write_parent(
+    path: Path, *, task: str = "classification", profile: str = "X"
+) -> None:
     hidden = 2
     features = 2
     classes = ["cold", "hot"] if task == "classification" else []
@@ -102,7 +105,7 @@ def _write_parent(path: Path, *, task: str = "classification") -> None:
     meta = {
         "format": "contest.cpu-mlp.v1",
         "device": "cpu",
-        "profile": "X",
+        "profile": profile,
         "task": task,
         "paths": [
             '[["key","features"],["index",0]]',
@@ -619,4 +622,134 @@ def test_all_ten_rounds_have_decision_and_execution_receipts(tmp_path: Path) -> 
     assert [row["round_index"] for row in summary["rounds"]] == list(range(1, 11))
     assert all("decision" in row for row in summary["rounds"])
     assert all(row["candidate_trained"] for row in summary["rounds"])
+
+
+def test_competitive_mode_spreads_b_schedule_across_stream_then_retains(tmp_path: Path) -> None:
+    data = tmp_path / "data.jsonl"
+    validation = tmp_path / "validation.jsonl"
+    parent = tmp_path / "checkpoint.npz"
+    _write_data(data, task="regression", count=100)
+    _write_data(validation, task="regression", count=20)
+    _write_parent(parent, task="regression", profile="B")
+
+    summary = run_ten_round_simulation(
+        data,
+        parent,
+        tmp_path / "simulation",
+        prediction_data_path=validation,
+        config=PlatformRuntimeConfig(
+            policy_mode="competitive",
+            max_training_rounds=3,
+            min_primary_improvement=-1e9,
+            min_relative_improvement=-1.0,
+            max_anchor_degradation=1e9,
+        ),
+        export_swanlab=False,
+    )
+
+    assert summary["complete_ten_rounds"] is True
+    assert summary["candidate_count"] == 3
+    assert summary["noop_count"] == 7
+    trained = [row for row in summary["rounds"] if row["candidate_trained"]]
+    assert [row["round_index"] for row in trained] == [1, 5, 9]
+    assert [row["epochs"] for row in trained] == [1, 5, 1]
+    assert [row["learning_rate"] for row in trained] == pytest.approx(
+        [0.01, 0.03, 0.003]
+    )
+    assert all(
+        row["decision"]["executed_action"] == "noop"
+        and row["decision"]["outcome"] == "retain"
+        and not row["candidate_trained"]
+        for row in summary["rounds"]
+        if row["round_index"] not in {1, 5, 9}
+    )
+
+
+def test_competitive_gate_accepts_small_safe_c_gain() -> None:
+    result = platform_runtime._competitive_gate(
+        profile="C",
+        task="regression",
+        before={"rmse": 50.0, "mae": 35.0},
+        candidate={"rmse": 49.5, "mae": 34.8},
+        anchor_before={"rmse": 40.0, "mae": 30.0},
+        anchor_candidate={"rmse": 40.4, "mae": 30.2},
+    )
+
+    assert result.accepted is True
+    assert result.relative_improvement == pytest.approx(0.01)
+    assert result.relative_anchor_degradation == pytest.approx(0.01)
+    assert result.reason == "competitive_gate_passed"
+
+
+def test_competitive_first_round_trains_but_cannot_deploy_without_history(
+    tmp_path: Path,
+) -> None:
+    data = tmp_path / "data.jsonl"
+    parent = tmp_path / "checkpoint.npz"
+    _write_data(data, task="regression", count=60)
+    _write_parent(parent, task="regression", profile="B")
+
+    receipt = start_round(
+        data,
+        parent,
+        tmp_path / "workspace",
+        tmp_path / "output",
+        PlatformRuntimeConfig(policy_mode="competitive", max_training_rounds=3),
+    )
+
+    assert receipt["candidate_trained"] is True
+    assert receipt["deployed"] is False
+    assert receipt["gate_reason"] == "insufficient_history_for_deployment"
+
+
+def test_competitive_gate_rejects_regression_secondary_metric_loss() -> None:
+    result = platform_runtime._competitive_gate(
+        profile="B",
+        task="regression",
+        before={"rmse": 100.0, "mae": 50.0},
+        candidate={"rmse": 95.0, "mae": 51.0},
+        anchor_before={"rmse": 100.0, "mae": 50.0},
+        anchor_candidate={"rmse": 100.5, "mae": 50.2},
+    )
+
+    assert result.accepted is False
+    assert result.reason == "secondary_metric_regressed"
+
+
+def test_competitive_gate_rejects_historical_replay_regression() -> None:
+    result = platform_runtime._competitive_gate(
+        profile="C",
+        task="regression",
+        before={"rmse": 50.0, "mae": 35.0},
+        candidate={"rmse": 49.0, "mae": 34.5},
+        anchor_before={"rmse": 40.0, "mae": 30.0},
+        anchor_candidate={"rmse": 40.2, "mae": 30.1},
+        replay_before={"rmse": 45.0, "mae": 32.0},
+        replay_candidate={"rmse": 47.0, "mae": 33.0},
+    )
+
+    assert result.accepted is False
+    assert result.reason == "replay_history_regressed"
+
+
+def test_pytrio_noop_is_recorded_as_retain_without_training(tmp_path: Path) -> None:
+    data = tmp_path / "data.jsonl"
+    parent = tmp_path / "checkpoint.npz"
+    _write_data(data, count=60)
+    _write_parent(parent, profile="A")
+
+    receipt = start_round(
+        data,
+        parent,
+        tmp_path / "workspace",
+        tmp_path / "output",
+        PlatformRuntimeConfig(policy_mode="competitive", max_training_rounds=3),
+        advisor=RecordingAdvisor(Action.NOOP),
+    )
+
+    assert receipt["decision"]["source"] == "pytrio"
+    assert receipt["decision"]["outcome"] == "retain"
+    assert receipt["candidate_trained"] is False
+    assert receipt["deployed"] is False
+    assert receipt["checkpoint_sha256"] == receipt["parent_checkpoint_sha256"]
 

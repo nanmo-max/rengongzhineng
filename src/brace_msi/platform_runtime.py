@@ -42,7 +42,12 @@ _FORBIDDEN_INPUTS = {
     "rul",
     "totalsnapshots",
 }
-_PLATFORM_ACTIONS = {Action.INCREMENTAL_UPDATE, Action.REPLAY_REFIT}
+_PLATFORM_ACTIONS = {Action.NOOP, Action.INCREMENTAL_UPDATE, Action.REPLAY_REFIT}
+_COMPETITIVE_SCHEDULES: dict[str, tuple[tuple[int, int, float], ...]] = {
+    "A": ((1, 1, 1.0), (5, 1, 1.0), (9, 1, 1.0)),
+    "B": ((1, 1, 1.0), (5, 5, 3.0), (9, 1, 0.3)),
+    "C": ((1, 1, 1.0), (5, 5, 1.0), (9, 1, 0.3)),
+}
 
 
 class PlatformAdvisor(Protocol):
@@ -51,6 +56,7 @@ class PlatformAdvisor(Protocol):
 
 @dataclass(frozen=True)
 class PlatformRuntimeConfig:
+    policy_mode: str = "protocol"
     epochs: int = 1
     learning_rate_multiplier: float = 1.0
     gate_fraction: float = 0.2
@@ -61,6 +67,8 @@ class PlatformRuntimeConfig:
     max_replay_samples: int = 4096
 
     def __post_init__(self) -> None:
+        if self.policy_mode not in {"protocol", "competitive"}:
+            raise ValueError("policy mode must be protocol or competitive")
         if not 1 <= self.epochs <= 5:
             raise ValueError("epochs must be in 1..5")
         if not 0.1 <= self.learning_rate_multiplier <= 3.0:
@@ -77,6 +85,16 @@ class PlatformRuntimeConfig:
             raise ValueError("maximum anchor degradation must be finite and nonnegative")
         if not 0 <= self.max_replay_samples <= 100_000:
             raise ValueError("maximum replay samples must be in 0..100000")
+
+
+@dataclass(frozen=True)
+class CompetitiveGateOutcome:
+    accepted: bool
+    reason: str
+    primary_improvement: float
+    relative_improvement: float
+    relative_anchor_degradation: float
+    relative_replay_degradation: float | None
 
 
 def describe_runtime() -> dict[str, Any]:
@@ -521,6 +539,68 @@ def _primary_value(task: str, metrics: dict[str, float]) -> float:
     return metrics["macro_f1"] if task == "classification" else metrics["rmse"]
 
 
+def _competitive_gate(
+    *,
+    profile: str,
+    task: str,
+    before: dict[str, float],
+    candidate: dict[str, float],
+    anchor_before: dict[str, float],
+    anchor_candidate: dict[str, float],
+    replay_before: dict[str, float] | None = None,
+    replay_candidate: dict[str, float] | None = None,
+) -> CompetitiveGateOutcome:
+    """Apply a task-contract gate using only current and historical train evidence."""
+
+    primary_improvement = _primary_improvement(task, before, candidate)
+    relative_improvement = _relative_improvement(task, before, candidate)
+    if task == "classification":
+        relative_anchor_degradation = (
+            anchor_before["macro_f1"] - anchor_candidate["macro_f1"]
+        ) / max(abs(anchor_before["macro_f1"]), 1e-12)
+        secondary_safe = candidate["accuracy"] + 1e-12 >= before["accuracy"]
+    else:
+        relative_anchor_degradation = (
+            anchor_candidate["rmse"] - anchor_before["rmse"]
+        ) / max(abs(anchor_before["rmse"]), 1e-12)
+        secondary_safe = candidate["mae"] <= before["mae"] + 1e-12
+
+    min_relative = {"A": 0.0, "B": 0.005, "C": 0.005}.get(profile, 0.01)
+    max_anchor_relative = {"A": 0.01, "B": 0.02, "C": 0.02}.get(profile, 0.01)
+    relative_replay_degradation: float | None = None
+    if replay_before is not None and replay_candidate is not None:
+        replay_key = "macro_f1" if task == "classification" else "rmse"
+        if task == "classification":
+            replay_absolute = replay_before[replay_key] - replay_candidate[replay_key]
+        else:
+            replay_absolute = replay_candidate[replay_key] - replay_before[replay_key]
+        relative_replay_degradation = replay_absolute / max(
+            abs(replay_before[replay_key]), 1e-12
+        )
+    if primary_improvement <= 0 or relative_improvement < min_relative:
+        accepted, reason = False, "primary_gain_below_task_contract"
+    elif not secondary_safe:
+        accepted, reason = False, "secondary_metric_regressed"
+    elif relative_anchor_degradation > max_anchor_relative:
+        accepted, reason = False, "anchor_risk_exceeded"
+    elif relative_replay_degradation is not None and relative_replay_degradation > 0.02:
+        accepted, reason = False, "replay_history_regressed"
+    else:
+        accepted, reason = True, "competitive_gate_passed"
+    return CompetitiveGateOutcome(
+        accepted=accepted,
+        reason=reason,
+        primary_improvement=float(primary_improvement),
+        relative_improvement=float(relative_improvement),
+        relative_anchor_degradation=float(relative_anchor_degradation),
+        relative_replay_degradation=(
+            float(relative_replay_degradation)
+            if relative_replay_degradation is not None
+            else None
+        ),
+    )
+
+
 def _decision_for_round(
     *,
     parent: _NativeModel,
@@ -610,14 +690,46 @@ def _decision_for_round(
             "official_parent_continuation": True,
             "incremental_update": True,
             "replay_refit": True,
+            "retain": True,
+            "allowed_actions": [
+                Action.NOOP.value,
+                Action.INCREMENTAL_UPDATE.value,
+                Action.REPLAY_REFIT.value,
+            ],
             "family_switch": False,
             "bounded_hpo": False,
         },
     )
-    default_action = Action.REPLAY_REFIT if len(replay_x) else Action.INCREMENTAL_UPDATE
+    candidate_events = sum(bool(row.get("candidate_trained")) for row in history)
+    base_learning_rate = float(
+        state.get("base_learning_rate", parent.meta["learning_rate"])
+    )
+    schedule = _COMPETITIVE_SCHEDULES.get(str(parent.meta.get("profile")))
+    scheduled = (
+        next(
+            ((epochs, multiplier) for round_number, epochs, multiplier in schedule if round_number == round_index),
+            None,
+        )
+        if schedule is not None
+        else None
+    )
+    candidate_budget_available = candidate_events < config.max_training_rounds
+    if config.policy_mode == "competitive" and (
+        not candidate_budget_available
+        or (schedule is not None and scheduled is None)
+    ):
+        default_action = Action.NOOP
+        epochs = 0
+        learning_rate = base_learning_rate
+    else:
+        default_action = Action.REPLAY_REFIT if len(replay_x) else Action.INCREMENTAL_UPDATE
+        if config.policy_mode == "competitive" and scheduled is not None:
+            epochs, multiplier = scheduled
+            learning_rate = base_learning_rate * multiplier
+        else:
+            epochs = config.epochs
+            learning_rate = base_learning_rate * config.learning_rate_multiplier
     action = default_action
-    epochs = config.epochs
-    learning_rate = float(parent.meta["learning_rate"]) * config.learning_rate_multiplier
     proposed_action: str | None = None
     proposal_accepted = False
     fallback_reason: str | None = None
@@ -635,26 +747,40 @@ def _decision_for_round(
                 validate_experiment_proposal(proposal)
                 if proposal.action not in _PLATFORM_ACTIONS:
                     raise ValueError("unsupported_platform_action")
+                if proposal.action is not Action.NOOP and not candidate_budget_available:
+                    raise ValueError("candidate_budget_exhausted")
                 if set(proposal.parameters) - {"epochs", "learning_rate"}:
                     raise ValueError("unsupported_platform_parameter")
-                proposed_epochs = proposal.parameters.get("epochs", epochs)
-                proposed_learning_rate = proposal.parameters.get(
-                    "learning_rate", learning_rate
+                proposed_epochs = (
+                    0
+                    if proposal.action is Action.NOOP
+                    else proposal.parameters.get("epochs", epochs)
+                )
+                proposed_learning_rate = (
+                    base_learning_rate
+                    if proposal.action is Action.NOOP
+                    else proposal.parameters.get("learning_rate", learning_rate)
                 )
                 if (
-                    isinstance(proposed_epochs, bool)
-                    or not isinstance(proposed_epochs, int)
-                    or not 1 <= proposed_epochs <= 5
+                    proposal.action is not Action.NOOP
+                    and (
+                        isinstance(proposed_epochs, bool)
+                        or not isinstance(proposed_epochs, int)
+                        or not 1 <= proposed_epochs <= 5
+                    )
                 ):
                     raise ValueError("epochs_out_of_bounds")
                 if (
-                    isinstance(proposed_learning_rate, bool)
-                    or not isinstance(proposed_learning_rate, (int, float))
-                    or not math.isfinite(float(proposed_learning_rate))
-                    or not (
-                        float(parent.meta["learning_rate"]) * 0.1
-                        <= float(proposed_learning_rate)
-                        <= float(parent.meta["learning_rate"]) * 3.0
+                    proposal.action is not Action.NOOP
+                    and (
+                        isinstance(proposed_learning_rate, bool)
+                        or not isinstance(proposed_learning_rate, (int, float))
+                        or not math.isfinite(float(proposed_learning_rate))
+                        or not (
+                            base_learning_rate * 0.1
+                            <= float(proposed_learning_rate)
+                            <= base_learning_rate * 3.0
+                        )
                     )
                 ):
                     raise ValueError("learning_rate_out_of_bounds")
@@ -665,6 +791,7 @@ def _decision_for_round(
                 proposal_accepted = True
             except ValueError as exc:
                 fallback_reason = str(exc)
+    outcome = "retain" if action is Action.NOOP else "candidate"
     decision = {
         "format": "brace-msi.platform-decision.v1",
         "source": advisor_source if proposal_accepted else "deterministic_policy",
@@ -676,6 +803,7 @@ def _decision_for_round(
         "proposal_accepted": proposal_accepted,
         "fallback_reason": fallback_reason,
         "rationale": rationale,
+        "outcome": outcome,
         "epochs": epochs,
         "learning_rate": learning_rate,
         "advisor_receipt": advisor_receipt,
@@ -722,6 +850,8 @@ def start_round(
         raise ValueError("platform parent does not match the previous committed round")
 
     parent = _NativeModel.load(parent_path)
+    if "base_learning_rate" not in state:
+        state["base_learning_rate"] = float(parent.meta["learning_rate"])
     batch = _read_rows(Path(data_path), parent, require_answers=True)
     update_indices, gate_indices = _split_indices(
         batch["y"], parent.meta["task"], config.gate_fraction
@@ -755,6 +885,7 @@ def start_round(
         )
     before = _metrics(parent, batch["x"][gate_indices], batch["y"][gate_indices])
     anchor_before = _metrics(parent, anchor_x, anchor_y)
+    replay_before = _metrics(parent, replay_x, replay_y) if len(replay_x) else None
     decision, executed_action, selected_epochs, selected_learning_rate = _decision_for_round(
         parent=parent,
         before=before,
@@ -777,10 +908,17 @@ def start_round(
         if use_replay
         else batch["y"][update_indices]
     )
-    candidate_trained = round_index <= config.max_training_rounds
+    candidate_events = sum(
+        bool(row.get("candidate_trained")) for row in state["rounds"]
+    )
+    candidate_trained = (
+        executed_action is not Action.NOOP
+        and candidate_events < config.max_training_rounds
+    )
     deployed = False
     candidate_metrics: dict[str, float] | None = None
     anchor_candidate_metrics: dict[str, float] | None = None
+    replay_candidate_metrics: dict[str, float] | None = None
     anchor_degradation: float | None = None
     relative_improvement: float | None = None
     losses: list[float] = []
@@ -800,6 +938,9 @@ def start_round(
                 candidate, batch["x"][gate_indices], batch["y"][gate_indices]
             )
             anchor_candidate_metrics = _metrics(candidate, anchor_x, anchor_y)
+            replay_candidate_metrics = (
+                _metrics(candidate, replay_x, replay_y) if len(replay_x) else None
+            )
             if parent.meta["task"] == "classification":
                 anchor_degradation = (
                     anchor_before["macro_f1"] - anchor_candidate_metrics["macro_f1"]
@@ -809,12 +950,41 @@ def start_round(
             relative_improvement = _relative_improvement(
                 parent.meta["task"], before, candidate_metrics
             )
-            deployed = (
-                _primary_improvement(parent.meta["task"], before, candidate_metrics)
-                > config.min_primary_improvement
-                and relative_improvement >= config.min_relative_improvement
-                and anchor_degradation <= config.max_anchor_degradation
-            )
+            if config.policy_mode == "competitive":
+                gate_outcome = _competitive_gate(
+                    profile=str(parent.meta.get("profile", "")),
+                    task=parent.meta["task"],
+                    before=before,
+                    candidate=candidate_metrics,
+                    anchor_before=anchor_before,
+                    anchor_candidate=anchor_candidate_metrics,
+                    replay_before=replay_before,
+                    replay_candidate=replay_candidate_metrics,
+                )
+                deployed = gate_outcome.accepted
+                gate_reason = gate_outcome.reason
+                relative_anchor_degradation = gate_outcome.relative_anchor_degradation
+                relative_replay_degradation = gate_outcome.relative_replay_degradation
+                if not len(replay_x):
+                    deployed = False
+                    gate_reason = "insufficient_history_for_deployment"
+            else:
+                deployed = (
+                    _primary_improvement(parent.meta["task"], before, candidate_metrics)
+                    > config.min_primary_improvement
+                    and relative_improvement >= config.min_relative_improvement
+                    and anchor_degradation <= config.max_anchor_degradation
+                )
+                gate_reason = "protocol_gate_passed" if deployed else "protocol_gate_rejected"
+                anchor_baseline = (
+                    anchor_before["macro_f1"]
+                    if parent.meta["task"] == "classification"
+                    else anchor_before["rmse"]
+                )
+                relative_anchor_degradation = anchor_degradation / max(
+                    abs(anchor_baseline), 1e-12
+                )
+                relative_replay_degradation = None
             candidate.save(candidate_path)
             candidate_sha = _sha256(candidate_path)
         checkpoint = temporary / "checkpoint.npz"
@@ -859,7 +1029,16 @@ def start_round(
             "metrics_candidate": candidate_metrics,
             "anchor_metrics_before": anchor_before,
             "anchor_metrics_candidate": anchor_candidate_metrics,
+            "replay_metrics_before": replay_before,
+            "replay_metrics_candidate": replay_candidate_metrics,
             "anchor_degradation": anchor_degradation,
+            "relative_anchor_degradation": (
+                relative_anchor_degradation if candidate_trained else None
+            ),
+            "relative_replay_degradation": (
+                relative_replay_degradation if candidate_trained else None
+            ),
+            "gate_reason": gate_reason if candidate_trained else "retain_no_candidate",
             "epochs": selected_epochs if candidate_trained else 0,
             "learning_rate": candidate.meta["learning_rate"] if candidate_trained else None,
             "batch_size": parent.meta["batch_size"],

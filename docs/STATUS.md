@@ -3,7 +3,7 @@
 - 最近同步：2026-11-15（Asia/Shanghai）
 - 当前阶段：`BRACE-MSI-0.6.0rc1`冻结为Protocol RC；独立分支冲刺原生竞争候选
 - 当前路线：**保留平台父链/安全内核，先通过Native逐状态等价门，再迁移冻结日程、尺度适配Gate与受控PyTRiO建议** `[D-061]`
-- 当前唯一任务：`NATIVE-COMPETITIVE-RC-001`（`IN_PROGRESS`）；正式平台精确启动schema仍由`FORMAL-RELEASE-001`跟踪为外部阻塞。
+- 当前唯一任务：`NATIVE-COMPETITIVE-RC-001`（`IN_PROGRESS`）；Task 1执行器等价与Task 2竞争门控已完成，下一步运行不读取公开validation的DEV-A3并冻结候选。正式平台精确启动schema仍由`FORMAL-RELEASE-001`跟踪为外部阻塞。
 - 稳定边界：全部历史RC和实验不改写；`0.5.0rc1`只作研究证据，不得上传。正式线从D-058开始只输出原生官方MLP续训checkpoint。A3之后禁止继续LLM调参 `[D-043]`
 - 官方试运行：已使用1/10次，剩余9/10次；该运行对应旧提交v2，不是RC4，正式评测仍为0/2 `[O-PLATFORM-006]`
 
@@ -14,6 +14,7 @@
 0b. 旧提交平台拒绝截图`O-PLATFORM-008`确认“另一套模型替代baseline”会被拒绝；该截图不是`0.5.0rc1`结果，但足以触发D-058将异构模型与正式提交线隔离。
 0c. `FORMAL-CONTINUATION-RC-001`已完成：正式镜像禁用HGB/PaperFusion命令，A/B/C均以官方训练器完成十轮/3候选原生续训，三项机器复算有效；333项回归、4核8GB断网、独立预测、64 MiB与`docker save/load`门通过。
 0d. `PLATFORM-NATIVE-001`已完成：`describe/start/submit`直接消费平台四挂载，不再要求完整包树；A/B/C在最终`0.6.0rc1`镜像中各完成10轮、10决策和10次真实候选，30轮父链、门控和独立预测全部通过。完整回归348项，镜像241,855,558字节，归档SHA-256 `F98FB679...CBC62D`。断网验收未冒充在线PyTRiO通过。
+0e. `NATIVE-COMPETITIVE-RC-001` Task 2已完成：竞争模式允许真实retain，候选固定在第1/5/9轮；首轮可训练但因无历史证据不得部署，B/C高强度候选移至第5轮；小幅安全收益、辅助指标、Anchor和Replay风险按任务契约门控。专项32项和完整回归365项通过。DEV-A1/A2负结果保留，未读取公开validation。
 1. `DUAL-DATA-001`已完成：四缓冲区、Gate一轮隔离、Update+Replay候选集合、只读manifest、训练/评估分离句柄和未来诱饵阻断通过4项专项测试；完整回归`275 passed`。
 2. `DUAL-TXN-001`已完成：每批单决策、0至2候选、首候选结果触发升级、十批前缀、原子提交/恢复及影子配对收益通过5项专项测试；完整回归`280 passed`。
 3. `DUAL-VALUE-001`已完成：每任务隔离统计、身份无关证据画像、弱先验、延迟收益专用更新和性能—CPU/RSS/Token/模型体积Pareto前沿通过5项专项测试；完整回归`285 passed`。

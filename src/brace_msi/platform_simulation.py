@@ -110,7 +110,7 @@ def run_ten_round_simulation(
         "initial_metrics": initial_metrics,
         "final_metrics": final_metrics,
         "complete_ten_rounds": len(receipts) == 10
-        and all("decision" in row and row["candidate_trained"] for row in receipts),
+        and all("decision" in row for row in receipts),
         "input_tokens": sum(int(row["input_tokens"]) for row in receipts),
         "output_tokens": sum(int(row["output_tokens"]) for row in receipts),
         "swanlab_logdir": swanlab_logdir,

@@ -81,6 +81,11 @@ def _parser() -> argparse.ArgumentParser:
     )
     platform_start.add_argument("--workspace", type=Path, default=Path("/workspace"))
     platform_start.add_argument("--output", type=Path, default=Path("/output"))
+    platform_start.add_argument(
+        "--policy-mode",
+        choices=("protocol", "competitive"),
+        default=os.environ.get("BRACE_POLICY_MODE", "protocol"),
+    )
     platform_start.add_argument("--epochs", type=int, default=1)
     platform_start.add_argument("--learning-rate-multiplier", type=float, default=1.0)
     platform_start.add_argument("--gate-fraction", type=float, default=0.2)
@@ -256,6 +261,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             args.workspace,
             args.output,
             PlatformRuntimeConfig(
+                policy_mode=args.policy_mode,
                 epochs=args.epochs,
                 learning_rate_multiplier=args.learning_rate_multiplier,
                 gate_fraction=args.gate_fraction,

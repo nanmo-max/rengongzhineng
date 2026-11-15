@@ -20,6 +20,7 @@ def main() -> int:
         raise FileExistsError("output must be a new directory")
     args.output.mkdir(parents=True)
     runtime = PlatformRuntimeConfig(
+        policy_mode=str(raw.get("policy_mode", "protocol")),
         epochs=int(raw["epochs_per_round"]),
         learning_rate_multiplier=float(raw["learning_rate_multiplier"]),
         gate_fraction=float(raw["gate_fraction"]),
