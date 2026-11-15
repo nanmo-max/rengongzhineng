@@ -9,8 +9,9 @@
 1. `NativeParity`在性能工作前逐状态比较官方训练器与`_NativeModel`。
 2. `NativeDecisionPolicy`消费任务契约、当前/历史train证据和预算，输出`retain`、`incremental_update`或`replay_refit`及冻结参数；不按十轮固定菜单训练。
 3. `NativeSafetyGate`使用任务契约提供的主指标、辅指标和train内部风险额度；不使用统一5%阈值或Anchor绝对零退化。
-4. PyTRiO只能提出结构化白名单建议；Harness负责参数边界、训练、Gate和提交。服务失败记录收据并retain。
-5. SwanLab只同步最终冻结运行的聚合训练、决策、资源和Token字段；逐样本数据、密钥和完整Sampler路径禁止公开。
+4. 性能候选优先复用冻结日程；若train内部证据不足，可采用不改变父checkpoint schema的成熟CPU方法，包括类/样本权重、稳健或非对称损失、学习率调度和合法Replay。参数量、CPU、RSS、模型大小及最差阶段必须进入同一收据。
+5. PyTRiO只能提出结构化白名单建议；Harness负责参数边界、训练、Gate和提交。服务失败记录收据并retain。
+6. SwanLab只同步最终冻结运行的聚合训练、决策、资源和Token字段；逐样本数据、密钥和完整Sampler路径禁止公开。
 
 ## Data and evidence boundaries
 

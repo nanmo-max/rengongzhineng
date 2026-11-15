@@ -13,7 +13,7 @@
 ## Global Constraints
 
 - Do not modify historical RC tags, raw data, or historical results.
-- No new HPO, SFT, paper reproduction, or official trial for basic debugging.
+- No new SFT, paper-driven expansion, model-family search, or official trial for basic debugging; a bounded mature-method candidate is allowed only from train-internal evidence and must preserve the official checkpoint schema.
 - Public validation is read once only after configuration freeze.
 - Secrets and sample-level data never enter Git or public SwanLab.
 
@@ -31,11 +31,11 @@
 
 **Files:** modify `tests/platform_runtime/test_platform_runtime.py`; create focused parity helper/test as needed; no production change until RED.
 
-- [ ] Add parameterized A/B/C official-vs-Native one-epoch state tests and Native 1+1-vs-2 test.
-- [ ] Run tests and observe expected parity failures or missing API.
-- [ ] Make the minimum executor correction and rerun focused plus official trainer tests.
-- [ ] Produce a read-only counterfactual summary from the existing 30 receipts.
-- [ ] Commit with SSOT evidence updates.
+- [x] Add parameterized A/B/C official-vs-Native one-epoch state tests and Native 1+1-vs-2 test.
+- [x] Run tests and observe missing official-equivalent checkpoint validation.
+- [x] Make the minimum executor correction and rerun focused plus official trainer tests.
+- [x] Produce a read-only counterfactual summary from the existing 30 receipts.
+- [x] Commit with SSOT evidence updates.
 
 ### Task 2: Retain, frozen schedules, and task-contract Gate
 

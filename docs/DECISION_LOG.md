@@ -65,6 +65,7 @@
 | D-059 | 2026-11-15 | LOCKED | 平台发布线新增原生运行时适配层，直接消费`/data`和`/previous/checkpoint.npz`并写入`/workspace`、`/output`；本地完整包树审计与包内`baselines.train`只保留为研发/供应链证据，不再作为平台入口前置条件。新入口必须加载父检查点并延续原模型、Adam、标准化和计数状态，未知文件名或调用schema采用显式参数/安全发现并失败关闭。基础Qwen和SwanLab均为可选后端，缺失或断网不得阻断确定性训练闭环。 | O-PLATFORM-009；用户要求先在本地严格模拟完整提交流程 |
 | D-060 | 2026-11-15 | LOCKED | 冻结`BRACE-MSI-0.6.0rc1`为平台原生候选：每个官方批次均产生一个决策事务和一个真实官方MLP续训候选，十轮不得以只测前三轮或预设NOOP代替；PyTRiO/Qwen仅能提出受限动作和参数，确定性Harness负责实际训练、门控与回滚。镜像默认启用基础`Qwen/Qwen3.5-4B` PyTRiO，断网/异常最多重试一次后带收据恢复；离线验收必须显式标记Token为0，不能冒充在线通过。 | PLATFORM-NATIVE-CONTAINER-002-A2-FINAL；348项回归；`docs/results/PLATFORM-NATIVE-001.md` |
 | D-061 | 2026-11-15 | LOCKED | `0.6.0rc1`继续冻结为Protocol RC，D-060“每轮真实候选”不扩展为竞争策略。新竞争分支每轮必须作真实决策，但可执行0或1候选；`retain`是有证据地不训练并提交父模型，候选训练后不部署仍记`reject`。执行前必须证明Native与官方训练器逐状态等价；只迁移已冻结参数来源，不重开公开validation搜索；统一5%相对增益与Anchor零退化门由train内部证据和任务契约替代。Native PyTRiO、SwanLab和容器验收属于新RC发布门。 | 用户批准2026-11-15竞赛冲刺方案；`PLATFORM-NATIVE-001`收据反事实；独立只读审计 |
+| D-062 | 2026-11-15 | LOCKED | 新竞争候选以稳定性能提升为首要目标，不以论文来源、创新性或Agent复杂度作为准入条件。允许在官方MLP父链与checkpoint schema不变的前提下采用公开认可的成熟CPU方法（类/样本权重、稳健或非对称损失、学习率调度、合法Replay等）；每项方法必须先有train内部证据并记录参数量、CPU、RSS、模型大小和最差阶段，禁止借此重开公开validation搜索或扩大为无界HPO。 | 用户2026-11-15补充要求；D-037实验真实性边界；O-PLATFORM-008父模型续训门 |
 
 ## 已被替代的历史决策
 

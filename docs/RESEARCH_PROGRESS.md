@@ -565,3 +565,10 @@
 - 最终镜像linux/amd64、241,855,558字节、非root、无数据/权重/密钥；4核8GB断网、只读根、256 PID验收通过。`docker save/load`归档241,879,040字节，SHA-256 `F98FB679...CBC62D`。
 - 官方试运行0次；断网验收Token为0并明确记录，未把PyTRiO自动测试冒充在线服务成功。精确平台启动与凭据注入仍等待外部材料。
 
+## 2026-11-15：NATIVE-COMPETITIVE-RC-001 Task 1
+
+- 修正成绩归属：早期冻结日程与`0.6.0rc1`分开记录，后者公开观察为A/B/C `0.714030/660.076488/52.868573`。
+- 新增A/B/C官方`Model.fit`与`_NativeModel.fit`逐状态差分：一轮loss、权重、Adam、mean/scale、metadata和预测逐值一致；Native 1+1与连续2 epoch一致。
+- TDD红阶段发现Native会接受负Adam二阶矩及官方模型拒绝的非法metadata；补齐device、schema、整数、架构、数值、参数量、预处理和Adam状态验证后转绿。
+- 相关验证`37 passed in 57.95s`。既有30轮只读反事实为A/B/C正收益0/4/6、实际接受0/1/0；没有新增训练或读取公开validation。
+

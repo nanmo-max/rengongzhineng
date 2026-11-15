@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import importlib.util
 import json
 from pathlib import Path
+from types import ModuleType
 
 import numpy as np
 import pytest
@@ -21,6 +23,33 @@ from brace_msi.pytrio_agent import (
     AdvisorReceipt,
     ExperimentProposal,
 )
+
+
+PACKAGE_ROOT = Path(r"C:\Users\Administrator\Desktop\人工智能创新大赛\训练包")
+PACKAGE_NAMES = {
+    "A": "cpu-a-guide-20261110-v1",
+    "B": "cpu-b-rul-20261110-v1",
+    "C": "cpu-c-guide-20261110-v1",
+}
+
+
+def _load_official_model_module(profile: str) -> ModuleType:
+    path = PACKAGE_ROOT / PACKAGE_NAMES[profile] / "baselines" / "model.py"
+    spec = importlib.util.spec_from_file_location(f"brace_official_model_{profile}", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _checkpoint_arrays(model) -> dict[str, np.ndarray]:
+    return {
+        **{name: value for name, value in model.params.items()},
+        **{f"adam_first_{name}": value for name, value in model.first.items()},
+        **{f"adam_second_{name}": value for name, value in model.second.items()},
+        "mean": model.mean,
+        "scale": model.scale,
+    }
 
 
 class RecordingAdvisor:
@@ -117,6 +146,83 @@ def _write_data(path: Path, *, task: str = "classification", count: int = 20) ->
         "".join(json.dumps(row, separators=(",", ":")) + "\n" for row in rows),
         encoding="utf-8",
     )
+
+
+@pytest.mark.parametrize("profile", ["A", "B", "C"])
+def test_native_fit_exactly_matches_official_model_state(profile: str) -> None:
+    package = PACKAGE_ROOT / PACKAGE_NAMES[profile]
+    checkpoint = package / "checkpoint.npz"
+    native = platform_runtime._NativeModel.load(checkpoint)
+    batch = platform_runtime._read_rows(
+        package / "public" / "train.jsonl", native, require_answers=True
+    )
+    official_module = _load_official_model_module(profile)
+    official = official_module.Model.load(checkpoint)
+
+    native_losses = native.fit(batch["x"], batch["y"], 1)
+    official_losses = official.fit(batch["x"], batch["y"], 1)
+
+    np.testing.assert_array_equal(native_losses, official_losses)
+    assert native.meta == official.meta
+    for name, expected in _checkpoint_arrays(official).items():
+        np.testing.assert_array_equal(_checkpoint_arrays(native)[name], expected)
+    np.testing.assert_array_equal(native.predict_raw(batch["x"]), official.predict(batch["x"]))
+
+
+@pytest.mark.parametrize("profile", ["A", "B", "C"])
+def test_native_split_resume_exactly_matches_continuous_two_epochs(profile: str) -> None:
+    package = PACKAGE_ROOT / PACKAGE_NAMES[profile]
+    checkpoint = package / "checkpoint.npz"
+    continuous = platform_runtime._NativeModel.load(checkpoint)
+    split = platform_runtime._NativeModel.load(checkpoint)
+    batch = platform_runtime._read_rows(
+        package / "public" / "train.jsonl", continuous, require_answers=True
+    )
+
+    continuous.fit(batch["x"], batch["y"], 2)
+    split.fit(batch["x"], batch["y"], 1)
+    split.fit(batch["x"], batch["y"], 1)
+
+    assert continuous.meta == split.meta
+    for name, expected in _checkpoint_arrays(continuous).items():
+        np.testing.assert_array_equal(_checkpoint_arrays(split)[name], expected)
+
+
+def test_native_rejects_negative_adam_second_moment(tmp_path: Path) -> None:
+    source = PACKAGE_ROOT / PACKAGE_NAMES["A"] / "checkpoint.npz"
+    with np.load(source, allow_pickle=False) as archive:
+        arrays = {name: archive[name].copy() for name in archive.files}
+    arrays["adam_second_w1"][0, 0] = -1.0
+    invalid = tmp_path / "invalid-negative-second-moment.npz"
+    np.savez(invalid, **arrays)
+
+    with pytest.raises(ValueError, match="Adam second moment"):
+        platform_runtime._NativeModel.load(invalid)
+
+
+@pytest.mark.parametrize(
+    ("mutation", "message"),
+    [
+        (lambda metadata: metadata.update(device="gpu"), "unsupported parent checkpoint"),
+        (lambda metadata: metadata.update(batch_size=0), "checkpoint architecture"),
+        (lambda metadata: metadata.update(parameter_count=1), "parameter count"),
+        (lambda metadata: metadata.update(learning_rate=0.0), "optimizer/scaler"),
+    ],
+)
+def test_native_rejects_metadata_the_official_model_rejects(
+    tmp_path: Path, mutation, message: str
+) -> None:
+    source = PACKAGE_ROOT / PACKAGE_NAMES["A"] / "checkpoint.npz"
+    with np.load(source, allow_pickle=False) as archive:
+        arrays = {name: archive[name].copy() for name in archive.files}
+    metadata = json.loads(str(arrays["metadata"].item()))
+    mutation(metadata)
+    arrays["metadata"] = np.asarray(json.dumps(metadata, sort_keys=True, separators=(",", ":")))
+    invalid = tmp_path / f"invalid-{message.replace('/', '-')}.npz"
+    np.savez(invalid, **arrays)
+
+    with pytest.raises(ValueError, match=message):
+        platform_runtime._NativeModel.load(invalid)
 
 
 def test_describe_declares_native_mount_contract_without_package_root() -> None:

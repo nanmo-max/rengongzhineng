@@ -7,7 +7,7 @@
 | R-038 | P1 | 下一批自然难度被误归因于上一轮动作 | 只比较跨批绝对指标 | 保留直接前任一轮影子预测并做同样本配对差；不可用时降级为低置信度 | 技术负责人 | MITIGATED_LOCAL：A1记录负延迟收益，A2在同一样本上运行前任影子并对负配对收益执行回滚；额外推理CPU/RSS已计量。正式SDK是否允许影子仍待确认 |
 | R-039 | P0 | Qwen补丁突破安全核心或资源边界 | 补丁访问文件/网络/反射/无限循环/OOM | 仅纯函数槽、AST+签名+隔离子进程+资源限制+形状/有限值/确定性/差异门 | 技术负责人 | MITIGATED_CORE：13项攻击/输出契约测试与完整回归通过；正式容器cgroup和只读挂载仍待DUAL-RC-001复验 |
 | R-040 | P0 | 新候选不符合父检查点续训或64 MiB产物约束 | 从头训练、异构模型替代baseline、父链未实际使用、模型产物过大或缺独立预测入口 | 正式镜像只允许官方训练器原schema续训或`retain`；逐代验证父哈希、权重/Adam/标准化/epoch/step、独立预测和`<=64*1024*1024`字节；异构研究命令在正式镜像失败关闭 | 技术负责人 | REALIZED_OLD_SUBMISSION/MITIGATED_LOCAL/BLOCKED_EXTERNAL：O-PLATFORM-008证明旧提交被拒；0.6.0rc1在A/B/C共30轮均直接延续平台父checkpoint，父链、Adam/预处理/计数、独立预测和64 MiB门通过；正式平台校验仍待H-001 |
-| R-041 | P0 | Native训练器与官方训练器状态不等价 | 同一父checkpoint、数据顺序和超参数下任一权重、Adam、计数、loss或预测不同 | 新竞争候选在任何性能实验前执行A/B/C逐状态差分门；失败时只修执行器，不迁移日程或发布新RC | 技术负责人 | OPEN：`0.6.0rc1`只证明Native父链可运行，尚无跨实现逐状态等价证据 |
+| R-041 | P0 | Native训练器与官方训练器状态不等价 | 同一父checkpoint、数据顺序和超参数下任一权重、Adam、计数、loss或预测不同 | 新竞争候选在任何性能实验前执行A/B/C逐状态差分门；失败时只修执行器，不迁移日程或发布新RC | 技术负责人 | MITIGATED_LOCAL：A/B/C一轮loss、全部权重、Adam、预处理、metadata与预测逐值相同；Native 1+1与连续2 epoch逐状态相同，37项相关测试通过；见`results/NATIVE-COMPETITIVE-RC-001-PARITY.md` |
 | R-042 | P0 | 统一5%与Anchor零退化门系统性拒绝有价值候选 | C正收益均低于5%，B正收益被Anchor零退化门拒绝 | 先对既有30轮做只读反事实；新门只依据train内部任务契约/波动冻结，公开validation仅作一次发布确认 | 技术负责人 | REALIZED：A/B/C正改善候选0/4/6，最终接受0/1/0；待NATIVE-COMPETITIVE-RC-001缓解 |
 | R-001 | P0 | 正式SDK事件顺序与预设状态机冲突 | SDK无法映射内部事件 | 事件适配层；SDK-001当天核验 | 技术负责人 | PARTIAL：插件清单、动态加载、两模式契约和fail-closed检查已完成；实际事件/数据映射仍等待SDK |
 | R-002 | P0 | B包首批无合法初始模型 | 无初训数据/模型且要求预测 | TaskBootstrap；只走官方默认/弃权路径 | 技术负责人 | PARTIAL：本地未知任务TaskBootstrap和兼容性守卫已测试；官方默认/弃权路径仍待SDK |

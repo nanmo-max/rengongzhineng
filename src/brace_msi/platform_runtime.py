@@ -232,20 +232,47 @@ class _NativeModel:
 
     def validate(self) -> None:
         meta = self.meta
-        if meta.get("format") != "contest.cpu-mlp.v1" or meta.get("task") not in {
-            "classification",
-            "regression",
-        }:
+        if (
+            meta.get("format") != "contest.cpu-mlp.v1"
+            or meta.get("device") != "cpu"
+            or meta.get("task") not in {"classification", "regression"}
+        ):
             raise ValueError("unsupported parent checkpoint")
         paths = meta.get("paths")
         classes = meta.get("classes")
         hidden = meta.get("hidden")
-        if not isinstance(paths, list) or not paths or not all(isinstance(value, str) for value in paths):
+        if (
+            not isinstance(paths, list)
+            or not 1 <= len(paths) <= 4096
+            or not all(isinstance(value, str) for value in paths)
+            or len(set(paths)) != len(paths)
+        ):
             raise ValueError("checkpoint feature paths are invalid")
-        if not isinstance(classes, list) or not all(isinstance(value, str) for value in classes):
+        if (
+            not isinstance(classes, list)
+            or any(not isinstance(value, str) or not value for value in classes)
+            or len(set(classes)) != len(classes)
+            or (meta["task"] == "classification" and len(classes) < 2)
+            or (meta["task"] == "regression" and classes)
+        ):
             raise ValueError("checkpoint classes are invalid")
         if not isinstance(hidden, int) or not 1 <= hidden <= 128:
             raise ValueError("checkpoint hidden width is invalid")
+        for field in ("epochs", "steps", "seed", "batch_size", "parameter_count"):
+            if type(meta.get(field)) is not int or meta[field] < 0:
+                raise ValueError("checkpoint integer state is invalid")
+        if (
+            not 0 <= meta["seed"] < 2**32
+            or not 1 <= meta["batch_size"] <= 65536
+            or not 0 < meta["parameter_count"] < 100000
+        ):
+            raise ValueError("checkpoint architecture is invalid")
+        for field in ("learning_rate", "target_mean", "target_scale"):
+            value = meta.get(field)
+            if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
+                raise ValueError("checkpoint numeric state is invalid")
+        if not 0 < meta["learning_rate"] <= 1 or meta["target_scale"] <= 0:
+            raise ValueError("checkpoint optimizer/scaler state is invalid")
         output = len(classes) if meta["task"] == "classification" else 1
         shapes = {
             "w1": (len(paths), hidden),
@@ -258,16 +285,20 @@ class _NativeModel:
                 value = group[name]
                 if value.shape != shape or value.dtype != np.dtype("float64") or not np.all(np.isfinite(value)):
                     raise ValueError("checkpoint tensor is invalid")
+        if sum(value.size for value in self.params.values()) != meta["parameter_count"]:
+            raise ValueError("checkpoint parameter count is invalid")
         if self.mean.shape != (len(paths),) or self.scale.shape != (len(paths),):
             raise ValueError("checkpoint preprocessing state is invalid")
-        if not np.all(np.isfinite(self.mean)) or not np.all(np.isfinite(self.scale)) or np.any(self.scale <= 0):
+        if (
+            self.mean.dtype != np.dtype("float64")
+            or self.scale.dtype != np.dtype("float64")
+            or not np.all(np.isfinite(self.mean))
+            or not np.all(np.isfinite(self.scale))
+            or np.any(self.scale <= 0)
+        ):
             raise ValueError("checkpoint preprocessing state is invalid")
-        for field in ("epochs", "steps", "seed", "batch_size", "parameter_count"):
-            if not isinstance(meta.get(field), int) or meta[field] < 0:
-                raise ValueError("checkpoint counter is invalid")
-        for field in ("learning_rate", "target_mean", "target_scale"):
-            if not isinstance(meta.get(field), (int, float)) or not math.isfinite(meta[field]):
-                raise ValueError("checkpoint numeric state is invalid")
+        if any(np.any(value < 0) for value in self.second.values()):
+            raise ValueError("invalid Adam second moment")
 
     def _normalized(self, values: np.ndarray) -> np.ndarray:
         if values.ndim != 2 or values.shape[1] != len(self.meta["paths"]):

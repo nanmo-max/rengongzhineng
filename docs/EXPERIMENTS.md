@@ -10,6 +10,7 @@
 - 预算：不新增HPO、SFT、论文复现或官方试运行；PyTRiO仅做Native入口最少3次非零Token验收；A/B/C最多各10轮、每轮0或1候选。
 - 成功标准：见`TASKS.md`的`NATIVE-COMPETITIVE-RC-001`；所有失败、等价差异和发布阻塞必须保留。
 - 代码基线：`836920c`；执行分支`codex/native-competitive-rc`。
+- Task 1结果：A/B/C官方Model与Native一轮loss、全部权重、Adam、预处理、metadata及预测逐值相同；Native 1+1与连续2 epoch逐状态相同。相关37项测试通过。既有30轮只读反事实确认A/B/C正收益候选为0/4/6、接受0/1/0；结果见`results/NATIVE-COMPETITIVE-RC-001-PARITY.md`。
 
 ## PLATFORM-NATIVE-CONTAINER-002-A2-FINAL
 
