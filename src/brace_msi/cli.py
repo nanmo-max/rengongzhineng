@@ -95,10 +95,22 @@ def _parser() -> argparse.ArgumentParser:
     platform_start.add_argument("--learning-rate-multiplier", type=float, default=1.0)
     platform_start.add_argument("--gate-fraction", type=float, default=0.2)
     platform_start.add_argument("--min-primary-improvement", type=float, default=0.0)
-    platform_start.add_argument("--min-relative-improvement", type=float, default=0.05)
-    platform_start.add_argument("--max-training-rounds", type=int, default=10)
+    platform_start.add_argument(
+        "--min-relative-improvement",
+        type=float,
+        default=float(os.environ.get("BRACE_MIN_RELATIVE_IMPROVEMENT", "0.05")),
+    )
+    platform_start.add_argument(
+        "--max-training-rounds",
+        type=int,
+        default=int(os.environ.get("BRACE_MAX_TRAINING_ROUNDS", "10")),
+    )
     platform_start.add_argument("--max-anchor-degradation", type=float, default=0.0)
-    platform_start.add_argument("--max-replay-samples", type=int, default=4096)
+    platform_start.add_argument(
+        "--max-replay-samples",
+        type=int,
+        default=int(os.environ.get("BRACE_MAX_REPLAY_SAMPLES", "4096")),
+    )
     platform_start.add_argument(
         "--advisor",
         choices=("deterministic", "pytrio"),

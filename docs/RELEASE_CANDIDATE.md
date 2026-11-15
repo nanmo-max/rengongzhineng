@@ -1,6 +1,10 @@
 # BRACE-MSI Release Candidate
 
-## 当前正式续训候选：0.6.0rc1
+## 当前构建候选：0.7.0rc1
+
+`BRACE-MSI-0.7.0rc1`在独立分支继承`0.6.0rc1`的平台原生续训、父链、安全门、审计和回滚底座。A/C使用冻结竞争策略，B通过显式能力路由复用已验证的Protocol策略；未知profile默认走竞争策略。当前代码、SwanLab和本地性能证据已完成，真实Docker验收完成前不得称为正式Release Candidate。
+
+## 冻结Protocol RC：0.6.0rc1
 
 `BRACE-MSI-0.6.0rc1`是D-059/D-060之后的平台原生续训候选，不覆盖或删除既有RC。它直接消费`/data`、`/previous/checkpoint.npz`、`/workspace`和`/output`，不再错误要求平台提供完整官方训练包树。正式checkpoint只由平台父MLP原结构续训产生；异构通用模型与PaperFusion命令继续失败关闭。
 

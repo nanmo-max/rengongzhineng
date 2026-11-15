@@ -535,6 +535,9 @@ def test_container_defaults_to_native_start_command() -> None:
     assert 'ENTRYPOINT ["python3", "-m", "brace_msi"]' in dockerfile
     assert 'CMD ["start"]' in dockerfile
     assert 'ENV BRACE_ADVISOR=pytrio' in dockerfile
+    assert 'BRACE_POLICY_MODE=competitive' in dockerfile
+    assert 'BRACE_PROTOCOL_PROFILES=B' in dockerfile
+    assert 'BRACE_MAX_REPLAY_SAMPLES=100000' in dockerfile
 
 
 def test_pytrio_advice_is_bounded_and_recorded_without_bypassing_gate(tmp_path: Path) -> None:

@@ -23,6 +23,11 @@ RUN python3 -m pip install --no-cache-dir --no-deps .
 
 RUN useradd --create-home --uid 10001 brace
 USER brace
-ENV BRACE_ADVISOR=pytrio
+ENV BRACE_ADVISOR=pytrio \
+    BRACE_POLICY_MODE=competitive \
+    BRACE_PROTOCOL_PROFILES=B \
+    BRACE_MAX_TRAINING_ROUNDS=10 \
+    BRACE_MIN_RELATIVE_IMPROVEMENT=0.05 \
+    BRACE_MAX_REPLAY_SAMPLES=100000
 ENTRYPOINT ["python3", "-m", "brace_msi"]
 CMD ["start"]
