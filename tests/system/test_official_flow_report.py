@@ -62,3 +62,74 @@ def test_report_separates_prequential_gate_confirmation_and_hidden(tmp_path: Pat
     assert report["tasks"]["A"]["confirmation_scope"] == "historically_exposed_local_confirmation"
     assert "正式隐藏测试尚未开始" in html
     assert "Prequential" in html and "Gate候选" in html
+
+
+def test_sequential_report_exposes_arrival_gate_and_next_batch_delayed_gain(
+    tmp_path: Path,
+) -> None:
+    for profile in "ABC":
+        root = tmp_path / profile
+        root.mkdir()
+        rounds = []
+        for index in range(1, 11):
+            rounds.append(
+                {
+                    "round_index": index,
+                    "prequential_metrics": {"macro_f1": 0.5} if profile == "A" else {"rmse": 10.0},
+                    "arrival_metrics": {"macro_f1": 0.5} if profile == "A" else {"rmse": 10.0},
+                    "external_score_visible_to_action_policy": True,
+                    "delayed_gain": (
+                        None
+                        if index == 1
+                        else {
+                            "settles_round_index": index - 1,
+                            "observed_round_index": index,
+                            "sample_count": 10,
+                            "paired_sample_ids": True,
+                            "gain": 0.01,
+                            "shadow_cpu_seconds": 0.1,
+                        }
+                    ),
+                    "candidate_gate_metrics": {"stable": {"rmse": 11.0}, "candidate": None},
+                    "runtime_receipt": {
+                        "sample_count": 10,
+                        "candidate_trained": index == 1,
+                        "deployed": index == 1,
+                        "decision": {"executed_action": "incremental_update" if index == 1 else "noop"},
+                        "gate_reason": "protocol_gate_passed" if index == 1 else "retain_no_candidate",
+                        "cpu_seconds": 1.0,
+                        "wall_seconds": 2.0,
+                        "peak_rss_bytes": 1024,
+                        "input_tokens": 0,
+                        "output_tokens": 0,
+                        "data_sha256": "a" * 64,
+                        "parent_checkpoint_sha256": "b" * 64,
+                        "checkpoint_sha256": "c" * 64,
+                    },
+                }
+            )
+        (root / "summary.json").write_text(
+            json.dumps(
+                {
+                    "format": "brace-msi.sequential-adaptation-simulation.v1",
+                    "rounds": rounds,
+                    "prequential_metrics_visible_to_policy": True,
+                    "shadow_cpu_seconds": 0.9,
+                    "local_final_confirmation": {"sample_count": 5, "metrics": {"rmse": 9.0}},
+                    "input_tokens": 0,
+                    "output_tokens": 0,
+                    "parent_chain_valid": True,
+                    "confirmation_read_count": 1,
+                }
+            ),
+            encoding="utf-8",
+        )
+
+    report = MODULE.build_report(tmp_path, confirmation_exposure_index=3)
+    html = MODULE.render_html(report)
+
+    assert report["format"] == "brace-msi.sequential-adaptation-report.v1"
+    assert report["tasks"]["A"]["rounds"][1]["delayed_gain"]["gain"] == 0.01
+    assert report["tasks"]["A"]["prequential_metrics_visible_to_policy"] is True
+    assert report["tasks"]["A"]["shadow_cpu_seconds"] == 0.9
+    assert "延迟收益" in html

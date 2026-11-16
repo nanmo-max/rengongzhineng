@@ -411,3 +411,15 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 - 数据：Gas Batch 2—9流/Batch 10确认；Bearing未见轴承寿命进度流/完整轴承确认；Engine完整unit流/完整unit确认。父训练、流和确认ID/特征交叉0。
 - 资源：A/B/C CPU 5.734/1.797/6.203秒，峰值RSS约202.6/204.5/493.9 MiB；Token 0。SwanLab仅生成离线聚合目录，未同步。
 - 边界：A2确认是第2次历史暴露，只作负面诊断，禁止据此调参。正式隐藏测试尚未开始；官方试运行新增使用0次。证据见`results/OFFICIAL-FLOW-SIM-001.md`。
+
+## DELAYED-GAIN-SIM-001-SMOKE-A1/A2/A3
+
+- 状态：`COMPLETED_PROTOCOL_PASS_PERFORMANCE_MIXED_CONFIRMATION_EXPOSED`。
+- Smoke A1：三任务各10轮、各1个候选且均拒绝，验证到达证据入口、封存、父链和一次确认。
+- A2：完整候选预算；A/C保持父模型。B第9轮部署后，第10轮在相同到达样本上的直接前任配对收益为`-310.293697 RMSE`，但旧实现未回滚，最终确认RMSE恶化至`993.202677`。失败产物保留。
+- A3：唯一机制变更为D-070直接前任回滚；B第10轮执行`rollback`并恢复到RMSE `241.980799`，A/C仍保持父模型。A/B/C候选训练为7/3/6，候选采用0/1/0，回滚0/1/0。
+- 资源：A/B/C CPU为6.718750/1.390625/6.406250秒，峰值RSS为207.03/204.42/494.07 MiB；影子推理仅B消耗0.171875 CPU秒；Token 0。
+- SwanLab：A3每任务生成本地离线聚合目录，未同步公网；路径见`results/DELAYED-GAIN-SIM-001.md`。
+- 报告：`D:/brace-msi-delayed-gain/DELAYED-GAIN-SIM-001-A3/report/official-flow-report.{json,html}`；隐藏状态为未开始，确认暴露指数5。
+- 验证：专项59项、完整回归407项、编译、diff、机器不变量和密钥扫描通过。
+- 边界：本地代理流程、非官方成绩；确认已反复暴露，禁止据此调参；本实验未重复调用PyTRiO或消耗官方试运行。

@@ -26,7 +26,7 @@ EVIDENCE-RSI-001(DONE)
   -> OFFICIAL-DATA-REPORT-001(DONE)
   -> REPORT-EVIDENCE-FIX-001(DONE)
   -> OFFICIAL-FLOW-SIM-001(DONE_MIXED)
-  -> DELAYED-GAIN-SIM-001(IN_PROGRESS)
+  -> DELAYED-GAIN-SIM-001(DONE_MIXED)
   -> FORMAL-RELEASE-001(BLOCKED_EXTERNAL)
 ```
 
@@ -34,13 +34,14 @@ EVIDENCE-RSI-001(DONE)
 
 ### DELAYED-GAIN-SIM-001 当前批证据与下一批延迟收益模拟
 
-- 状态：`IN_PROGRESS`
+- 状态：`DONE_MIXED`
 - 依赖：OFFICIAL-FLOW-SIM-001
 - 优先级：P0（V1将Prequential结果隔离在ScoreVault，不能驱动当前retain/训练决策，也未在下一批结算上一轮部署真实收益）
 - 目标：在不覆盖V1和冻结RC的前提下，实现`arrival_metric_t -> 当前动作与Gate -> delayed_gain_t+1`十轮序贯闭环，完成A/B/C训练、机器验收、SwanLab离线记录和HTML报告。
 - 完成标准：三任务各10轮；到达指标进入结构化决策证据；上一轮仅在下一批同样本影子比较结算；候选Gate仍与Update隔离；未来不可见、确认只读一次、父链连续；专项和完整回归通过。
 - 停止条件：不得用本地确认调参、不得把Bearing十段代理假设写成官方事实、不得把本地结果称为正式隐藏成绩；性能负结果必须保留。
 - 设计与计划：`docs/superpowers/specs/2026-11-16-delayed-gain-sequential-simulation-design.md`、`docs/superpowers/plans/2026-11-16-delayed-gain-sequential-simulation.md`。
+- 证据：Smoke、A2负结果和A3回滚修复均保留；A3三任务各10轮、父链连续、确认只读一次、到达证据可见，B在第10轮根据`-310.293697`配对延迟收益回滚直接前任。专项59项及完整回归407项通过；报告见`results/DELAYED-GAIN-SIM-001.md`。性能结论为混合：B避免灾难性部署，A/C没有获得新提升。
 
 ### OFFICIAL-FLOW-SIM-001 官方生命周期双层本地模拟
 

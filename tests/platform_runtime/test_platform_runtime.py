@@ -205,6 +205,114 @@ def test_sequential_policy_retains_when_arrival_is_stable_and_delayed_gain_posit
     assert receipt["candidate_trained"] is False
 
 
+def test_sequential_policy_rolls_back_direct_predecessor_after_negative_delayed_gain(
+    tmp_path: Path,
+) -> None:
+    parent = tmp_path / "parent.npz"
+    predecessor = tmp_path / "predecessor.npz"
+    predecessor_source = tmp_path / "predecessor-source.npz"
+    data = tmp_path / "data.jsonl"
+    _write_parent(parent)
+    _write_parent(predecessor_source)
+    predecessor_model = platform_runtime._NativeModel.load(predecessor_source)
+    predecessor_model.params["b2"][0] = 1.0
+    predecessor_model.save(predecessor)
+    _write_data(data)
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    (workspace / "state.json").write_text(
+        json.dumps(
+            {
+                "format": "brace-msi.platform-state.v1",
+                "rounds": [
+                    {
+                        "round_index": 1,
+                        "checkpoint_sha256": platform_runtime._sha256(parent),
+                        "parent_checkpoint_sha256": platform_runtime._sha256(predecessor),
+                        "candidate_trained": True,
+                        "deployed": True,
+                        "decision": {"executed_action": "incremental_update"},
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    receipt = start_round(
+        data,
+        parent,
+        workspace,
+        tmp_path / "output",
+        PlatformRuntimeConfig(policy_mode="sequential"),
+        arrival_evidence=platform_runtime.ArrivalEvidence(
+            metrics={"accuracy": 0.50, "macro_f1": 0.40},
+            previous_metrics={"accuracy": 0.50, "macro_f1": 0.40},
+            sample_count=20,
+            delayed_gain=-0.20,
+        ),
+        rollback_checkpoint=predecessor,
+    )
+
+    assert receipt["decision"]["executed_action"] == "rollback"
+    assert receipt["decision"]["outcome"] == "rollback"
+    assert receipt["candidate_trained"] is False
+    assert receipt["deployed"] is True
+    assert receipt["gate_reason"] == "negative_delayed_gain_rollback"
+    assert receipt["checkpoint_sha256"] == platform_runtime._sha256(predecessor)
+
+
+def test_sequential_policy_rejects_rollback_that_is_not_the_direct_predecessor(
+    tmp_path: Path,
+) -> None:
+    parent = tmp_path / "parent.npz"
+    direct_predecessor = tmp_path / "direct-predecessor.npz"
+    unrelated = tmp_path / "unrelated.npz"
+    unrelated_source = tmp_path / "unrelated-source.npz"
+    data = tmp_path / "data.jsonl"
+    _write_parent(parent)
+    _write_parent(direct_predecessor)
+    _write_parent(unrelated_source)
+    unrelated_model = platform_runtime._NativeModel.load(unrelated_source)
+    unrelated_model.params["b2"][0] = 2.0
+    unrelated_model.save(unrelated)
+    _write_data(data)
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    (workspace / "state.json").write_text(
+        json.dumps(
+            {
+                "format": "brace-msi.platform-state.v1",
+                "rounds": [
+                    {
+                        "checkpoint_sha256": platform_runtime._sha256(parent),
+                        "parent_checkpoint_sha256": platform_runtime._sha256(
+                            direct_predecessor
+                        ),
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="direct predecessor"):
+        start_round(
+            data,
+            parent,
+            workspace,
+            tmp_path / "output",
+            PlatformRuntimeConfig(policy_mode="sequential"),
+            arrival_evidence=platform_runtime.ArrivalEvidence(
+                metrics={"accuracy": 0.50, "macro_f1": 0.40},
+                previous_metrics={"accuracy": 0.50, "macro_f1": 0.40},
+                sample_count=20,
+                delayed_gain=-0.20,
+            ),
+            rollback_checkpoint=unrelated,
+        )
+
+
 @pytest.mark.parametrize("profile", ["A", "B", "C"])
 def test_native_fit_exactly_matches_official_model_state(profile: str) -> None:
     package = PACKAGE_ROOT / PACKAGE_NAMES[profile]

@@ -834,6 +834,7 @@ def run_official_flow_simulation(
             advisor=advisor,
             gate_data_path=round_root / "gate.jsonl",
             arrival_evidence=arrival_evidence,
+            rollback_checkpoint=pending_shadow_parent,
         )
         rounds.append(
             {

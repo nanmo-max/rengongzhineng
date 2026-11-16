@@ -1,5 +1,14 @@
 # 新会话恢复与交接
 
+## 2026-11-16序贯延迟收益模拟恢复入口（当前）
+
+1. `DELAYED-GAIN-SIM-001`已`DONE_MIXED`，当前唯一任务回到`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`。不要重复Smoke/A2/A3或再次使用本地确认调参。
+2. A3产物位于`D:/brace-msi-delayed-gain/DELAYED-GAIN-SIM-001-A3/`；易读报告在`report/official-flow-report.html`，机器JSON同目录。正式隐藏测试未开始，确认已经是第5次历史暴露。
+3. 序贯语义为：稳定模型先预测到达批次，标签开放后到达指标进入策略，候选Gate决定部署，下一批才以直接前任同样本配对结算上一轮收益。B在A3第10轮因`-310.293697`延迟收益回滚直接前任，避免A2的RMSE 993.202677退化。
+4. A3最终本地确认：A Macro-F1 0.380649，B RMSE 241.980799，C RMSE 48.691951。A/C无候选部署，不得声称三任务性能提升；这些也不是官方成绩。
+5. SwanLab仅有A3本地离线聚合目录，未公开同步；PyTRiO本轮Token为0，在线能力继续引用独立`PYTRIO-ONLINE-001`，不要为了重复证明接口消费余额。
+6. 当前HEAD完整回归407项通过。恢复后先读`results/DELAYED-GAIN-SIM-001.md`；只有正式平台生命周期、SDK或新官方数据证据才能创建下一项READY任务。
+
 ## 2026-11-15官方生命周期模拟恢复入口（当前）
 
 1. `OFFICIAL-FLOW-SIM-001`已完成，当前无本地`READY`任务；唯一核心任务回到`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`。不要重复A1/A2或再次读取本地确认集调参。

@@ -672,6 +672,7 @@ def _decision_for_round(
     config: PlatformRuntimeConfig,
     advisor: PlatformAdvisor | None,
     arrival_evidence: ArrivalEvidence | None,
+    rollback_available: bool,
 ) -> tuple[dict[str, Any], Action, int, float]:
     """Choose a bounded action; model text never crosses the effect boundary directly."""
 
@@ -753,11 +754,13 @@ def _decision_for_round(
             "official_parent_continuation": True,
             "incremental_update": True,
             "replay_refit": True,
+            "rollback": rollback_available,
             "retain": True,
             "allowed_actions": [
                 Action.NOOP.value,
                 Action.INCREMENTAL_UPDATE.value,
                 Action.REPLAY_REFIT.value,
+                *([Action.ROLLBACK.value] if rollback_available else []),
             ],
             "allowed_parameters": ["epochs", "learning_rate"],
             "family_switch": False,
@@ -790,12 +793,12 @@ def _decision_for_round(
             and arrival_evidence.delayed_gain is not None
             and arrival_evidence.delayed_gain < 0.0
         )
-        needs_candidate = (
-            cold_start
-            or performance_drop >= config.arrival_drop_trigger
-            or negative_delayed_gain
-        )
-        if candidate_budget_available and needs_candidate:
+        needs_candidate = cold_start or performance_drop >= config.arrival_drop_trigger
+        if negative_delayed_gain and rollback_available:
+            default_action = Action.ROLLBACK
+            epochs = 0
+            learning_rate = base_learning_rate
+        elif candidate_budget_available and (needs_candidate or negative_delayed_gain):
             default_action = Action.REPLAY_REFIT if len(replay_x) else Action.INCREMENTAL_UPDATE
             epochs = config.epochs
             learning_rate = base_learning_rate * config.learning_rate_multiplier
@@ -826,7 +829,7 @@ def _decision_for_round(
     advisor_receipt: dict[str, Any] | None = None
     policy_constraints_applied: list[str] = []
     rationale = "deterministic bounded continuation"
-    if advisor is not None:
+    if advisor is not None and default_action is not Action.ROLLBACK:
         outcome = advisor.advise(context, trigger)
         advisor_source = outcome.source
         advisor_receipt = asdict(outcome.receipt)
@@ -909,7 +912,13 @@ def _decision_for_round(
                     proposal_accepted = True
             except ValueError as exc:
                 fallback_reason = str(exc)
-    outcome = "retain" if action is Action.NOOP else "candidate"
+    outcome = (
+        "retain"
+        if action is Action.NOOP
+        else "rollback"
+        if action is Action.ROLLBACK
+        else "candidate"
+    )
     decision = {
         "format": "brace-msi.platform-decision.v1",
         "source": advisor_source if proposal_accepted else "deterministic_policy",
@@ -943,6 +952,7 @@ def start_round(
     advisor: PlatformAdvisor | None = None,
     gate_data_path: Path | None = None,
     arrival_evidence: ArrivalEvidence | None = None,
+    rollback_checkpoint: Path | None = None,
 ) -> dict[str, Any]:
     """Execute one platform round and atomically publish the selected checkpoint."""
 
@@ -974,6 +984,34 @@ def start_round(
         raise ValueError("platform parent does not match the previous committed round")
 
     parent = _NativeModel.load(parent_path)
+    rollback_path = (
+        Path(rollback_checkpoint).resolve() if rollback_checkpoint is not None else None
+    )
+    rollback_model: _NativeModel | None = None
+    rollback_sha: str | None = None
+    if rollback_path is not None:
+        rollback_model = _NativeModel.load(rollback_path)
+        structural_fields = (
+            "format",
+            "device",
+            "task",
+            "profile",
+            "paths",
+            "classes",
+            "hidden",
+            "parameter_count",
+        )
+        if any(
+            rollback_model.meta.get(field) != parent.meta.get(field)
+            for field in structural_fields
+        ):
+            raise ValueError("rollback checkpoint is incompatible with the current parent")
+        rollback_sha = _sha256(rollback_path)
+        if (
+            not state["rounds"]
+            or state["rounds"][-1].get("parent_checkpoint_sha256") != rollback_sha
+        ):
+            raise ValueError("rollback checkpoint must be the direct predecessor")
     if "base_learning_rate" not in state:
         state["base_learning_rate"] = float(parent.meta["learning_rate"])
     update_batch = _read_rows(Path(data_path), parent, require_answers=True)
@@ -1055,6 +1093,7 @@ def start_round(
         config=config,
         advisor=advisor,
         arrival_evidence=arrival_evidence,
+        rollback_available=rollback_model is not None,
     )
     use_replay = executed_action is Action.REPLAY_REFIT and len(replay_x) > 0
     training_x = (
@@ -1071,7 +1110,7 @@ def start_round(
         bool(row.get("candidate_trained")) for row in state["rounds"]
     )
     candidate_trained = (
-        executed_action is not Action.NOOP
+        executed_action in {Action.INCREMENTAL_UPDATE, Action.REPLAY_REFIT}
         and candidate_events < config.max_training_rounds
     )
     deployed = False
@@ -1084,12 +1123,50 @@ def start_round(
     candidate_sha: str | None = None
     candidate = parent.clone()
     candidate.meta["learning_rate"] = selected_learning_rate
+    gate_reason = "retain_no_candidate"
+    relative_anchor_degradation: float | None = None
+    relative_replay_degradation: float | None = None
 
     staging_parent = output if output_is_mount else workspace
     temporary = Path(tempfile.mkdtemp(prefix=f".{output.name}-", dir=staging_parent))
     try:
         candidate_path = temporary / "candidate.npz"
-        if candidate_trained:
+        if executed_action is Action.ROLLBACK:
+            if rollback_model is None or rollback_path is None or rollback_sha is None:
+                raise ValueError("rollback action requires a compatible direct predecessor")
+            candidate = rollback_model
+            candidate_metrics = _metrics(
+                candidate, batch["x"][gate_indices], batch["y"][gate_indices]
+            )
+            anchor_candidate_metrics = _metrics(candidate, anchor_x, anchor_y)
+            replay_candidate_metrics = (
+                _metrics(candidate, replay_x, replay_y) if len(replay_x) else None
+            )
+            if parent.meta["task"] == "classification":
+                anchor_degradation = (
+                    anchor_before["macro_f1"] - anchor_candidate_metrics["macro_f1"]
+                )
+            else:
+                anchor_degradation = anchor_candidate_metrics["rmse"] - anchor_before["rmse"]
+            relative_improvement = _relative_improvement(
+                parent.meta["task"], before, candidate_metrics
+            )
+            anchor_baseline = (
+                anchor_before["macro_f1"]
+                if parent.meta["task"] == "classification"
+                else anchor_before["rmse"]
+            )
+            relative_anchor_degradation = anchor_degradation / max(
+                abs(anchor_baseline), 1e-12
+            )
+            if replay_before is not None and replay_candidate_metrics is not None:
+                relative_replay_degradation = -_relative_improvement(
+                    parent.meta["task"], replay_before, replay_candidate_metrics
+                )
+            deployed = True
+            gate_reason = "negative_delayed_gain_rollback"
+            candidate_sha = rollback_sha
+        elif candidate_trained:
             losses = candidate.fit(
                 training_x, training_y, selected_epochs
             )
@@ -1152,7 +1229,9 @@ def start_round(
             candidate.save(candidate_path)
             candidate_sha = _sha256(candidate_path)
         checkpoint = temporary / "checkpoint.npz"
-        if deployed:
+        if executed_action is Action.ROLLBACK and deployed:
+            shutil.copy2(rollback_path, checkpoint)
+        elif deployed:
             os.replace(candidate_path, checkpoint)
         else:
             shutil.copy2(parent_path, checkpoint)
@@ -1183,6 +1262,9 @@ def start_round(
             "parent_loaded": True,
             "parent_checkpoint_sha256": parent_sha,
             "candidate_checkpoint_sha256": candidate_sha,
+            "rollback_checkpoint_sha256": (
+                rollback_sha if executed_action is Action.ROLLBACK else None
+            ),
             "checkpoint_sha256": checkpoint_sha,
             "candidate_trained": candidate_trained,
             "decision": decision,
@@ -1200,13 +1282,9 @@ def start_round(
             "replay_metrics_before": replay_before,
             "replay_metrics_candidate": replay_candidate_metrics,
             "anchor_degradation": anchor_degradation,
-            "relative_anchor_degradation": (
-                relative_anchor_degradation if candidate_trained else None
-            ),
-            "relative_replay_degradation": (
-                relative_replay_degradation if candidate_trained else None
-            ),
-            "gate_reason": gate_reason if candidate_trained else "retain_no_candidate",
+            "relative_anchor_degradation": relative_anchor_degradation,
+            "relative_replay_degradation": relative_replay_degradation,
+            "gate_reason": gate_reason,
             "epochs": selected_epochs if candidate_trained else 0,
             "learning_rate": candidate.meta["learning_rate"] if candidate_trained else None,
             "batch_size": parent.meta["batch_size"],
