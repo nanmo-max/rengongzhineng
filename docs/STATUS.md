@@ -1,9 +1,9 @@
 # 当前状态
 
-- 最近同步：2026-11-16 15:20（Asia/Shanghai）
-- 当前阶段：平台草稿适配器被确认有缺陷，尚无有效兼容性结论；正在执行`PLATFORM-BRIDGE-001`加固薄桥接边界
+- 最近同步：2026-11-16 15:49（Asia/Shanghai）
+- 当前阶段：`PLATFORM-BRIDGE-001`本地完成并形成`BRACE-MSI-0.8.1rc1`；等待平台重写薄桥接器并以真实挂载复验
 - 当前路线：**性能优先的证据驱动候选组合 + 下一批延迟收益回滚；保留平台父链、安全内核、受控PyTRiO与SwanLab接口** `[D-061]` `[D-073]`
-- 当前唯一核心任务：`PLATFORM-BRIDGE-001 (IN_PROGRESS)`；只补充显式父哈希、轮次和产物声明，不改训练核心或历史RC。完成后回到`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`。
+- 当前唯一核心任务：`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`；需要平台导入、薄桥接器、在线凭据、真实生命周期和官方评测，不再用本地确认集继续选型。
 - 稳定边界：全部历史RC和实验不改写；`0.5.0rc1`只作研究证据，不得上传。正式线从D-058开始只输出原生官方MLP续训checkpoint。A3之后禁止继续LLM调参 `[D-043]`
 - 官方试运行：已使用1/10次，剩余9/10次；该运行对应旧提交v2，不是RC4，正式评测仍为0/2 `[O-PLATFORM-006]`
 
@@ -25,6 +25,7 @@
 0m. `DELAYED-GAIN-SIM-001`已完成混合结论：A/B/C各10轮，当前到达指标进入策略；仅在上一轮部署后于下一批对同样本运行直接前任影子模型并结算延迟收益。A2暴露B第9轮部署后第10轮延迟收益`-310.293697 RMSE`却继续保留坏模型，确认RMSE退化至`993.202677`；A3新增一轮可审计直接前任回滚后恢复至`241.980799`。A/C候选均被Gate拒绝并保持父模型。完整回归407项，见`results/DELAYED-GAIN-SIM-001.md`。
 0n. `METHOD-PORTFOLIO-PILOT-001`已完成：不读取confirmation/public validation，在A/B/C各9个`t训练→t+1未见评价`上比较7种教师/基线和17种正式MLP候选，再对9种MLP recipe运行连续父链。A的近期窗口3轮、B的当前批3轮×3学习率、C的25%候选权重插值分别形成最强或最稳趋势；A3学习率累乘失败保留，A4修复后全链完成。证据见`results/METHOD-PORTFOLIO-PILOT-001.md`。
 0o. `COMPETITIVE-POLICY-002`已完成：A1—A6筛选并淘汰B灾难性早触发；A5因报告ID失配判无效，最终A6严格隔离Gate。正式`start_round`十轮重放中A/B/C平均有向收益为`+0.319620` Macro-F1、`+21.850812`和`+0.438766` RMSE降低，确认/public validation读取0。`0.8.0rc1`完成421项回归、三任务4核8GB断网容器、PyTRiO失败retain、禁入扫描及`docker save/load`，见`results/COMPETITIVE-POLICY-002.md`。
+0p. `PLATFORM-BRIDGE-001`已完成：`0.8.1rc1`显式校验平台顶层父哈希和期望轮次，部署/拒绝/retain均声明实际`checkpoint.npz`；54项平台专项、424项完整回归、官方A父链两轮、1,244条独立预测及`docker save/load`通过。平台旧草稿适配器无效，正式兼容性仍未判定，见`results/PLATFORM-BRIDGE-001.md`。
 1. `DUAL-DATA-001`已完成：四缓冲区、Gate一轮隔离、Update+Replay候选集合、只读manifest、训练/评估分离句柄和未来诱饵阻断通过4项专项测试；完整回归`275 passed`。
 2. `DUAL-TXN-001`已完成：每批单决策、0至2候选、首候选结果触发升级、十批前缀、原子提交/恢复及影子配对收益通过5项专项测试；完整回归`280 passed`。
 3. `DUAL-VALUE-001`已完成：每任务隔离统计、身份无关证据画像、弱先验、延迟收益专用更新和性能—CPU/RSS/Token/模型体积Pareto前沿通过5项专项测试；完整回归`285 passed`。
@@ -63,7 +64,7 @@
 
 ## 当前执行入口
 
-当前上传候选为`D:/brace-msi-competitive-policy/BRACE-MSI-0.8.0rc1-final/brace-msi-0.8.0rc1-harness.tar`，SHA-256 `CB9F28D16D88EA985598E9E7A5C1ECC2EC36A1CFC15740854E7F977FC232E6EA`。它由`docker save`生成并已重载验证；镜像为249,000,390字节，不含Qwen权重、工业模型权重、数据或密钥。旧`BRACE-MSI-0.8.0rc1/`目录是Gate隔离修正前历史，不得上传。尚未通过平台“镜像可用”、在线模型调用或正式评测。机器证据见`docs/results/RC80_CONTAINER_ACCEPTANCE.json`。
+当前上传候选为`D:/brace-msi-platform-bridge/BRACE-MSI-0.8.1rc1/brace-msi-0.8.1rc1-harness.tar`，SHA-256 `9B1A1822E9062229CF940D0CF9FDBD7D33F1301A94A993FE111B56E36184ED7E`。它由`docker save`生成并已重载验证；镜像为249,004,758字节，不含Qwen权重、工业模型权重、数据或密钥。`0.8.0rc1`及更早版本均为冻结历史，不得代替。尚未通过平台“镜像可用”、薄桥接器真实挂载、在线模型调用或正式评测。机器证据见`docs/results/RC81_CONTAINER_ACCEPTANCE.json`。
 
 正式路线、已知能力与未知边界见[FORMAL_ROUTE.md](FORMAL_ROUTE.md)。实验必须遵守[EXPERIMENT_PROTOCOL.md](EXPERIMENT_PROTOCOL.md)。
 

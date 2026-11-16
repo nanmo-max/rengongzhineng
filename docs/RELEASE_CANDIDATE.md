@@ -1,12 +1,16 @@
 # BRACE-MSI Release Candidate
 
-## 当前构建候选：0.8.0rc1
+## 当前构建候选：0.8.1rc1
 
-`BRACE-MSI-0.8.0rc1`在不改变官方`contest.cpu-mlp.v1`checkpoint schema和父链的前提下，引入证据驱动候选组合：保守父权重插值、分类最近窗口、回归成熟趋势高步长、非单调累计回放和下一批负收益回滚。策略不接收数据集名称；PyTRiO不能覆盖recipe、预算、Gate或回滚。
+`BRACE-MSI-0.8.1rc1`是`0.8.0rc1`的纯平台桥接补丁，不改变官方`contest.cpu-mlp.v1`checkpoint schema、证据驱动候选组合、模型参数、Gate、PyTRiO或SwanLab语义。新增显式父checkpoint哈希和期望轮次校验；所有部署、拒绝和retain轮均声明实际输出的`checkpoint.npz`产物；`describe`暴露无mode argv prefix。
 
-确认/public validation读取0、Gate严格隔离的最终A6重放中，A/B/C平均有向收益均为正；421项回归、三任务4核8GB只读断网容器、PyTRiO两次失败后retain、禁入扫描及`docker save/load`通过。在线非零Token能力沿用未改动适配器的既有证据，新镜像平台在线注入仍待验收。
+性能证据继续引用冻结的`0.8.0rc1` A6，不因补丁重新训练或重新读取确认集。桥接补丁完成54项平台专项、424项完整回归、官方A父checkpoint两轮4核8GB断网只读容器、1,244条独立预测、禁入扫描及`docker save/load`。平台旧草稿适配器被判有缺陷，正式兼容性仍需平台重写桥接器后复验。
 
-上传归档：`D:/brace-msi-competitive-policy/BRACE-MSI-0.8.0rc1-final/brace-msi-0.8.0rc1-harness.tar`；SHA-256 `CB9F28D16D88EA985598E9E7A5C1ECC2EC36A1CFC15740854E7F977FC232E6EA`。旧非`-final`目录是Gate隔离修正前历史，不得上传。机器证据见[竞争策略结果](results/COMPETITIVE-POLICY-002.md)和[RC80容器验收](results/RC80_CONTAINER_ACCEPTANCE.json)。
+上传归档：`D:/brace-msi-platform-bridge/BRACE-MSI-0.8.1rc1/brace-msi-0.8.1rc1-harness.tar`；SHA-256 `9B1A1822E9062229CF940D0CF9FDBD7D33F1301A94A993FE111B56E36184ED7E`。机器证据见[桥接加固结果](results/PLATFORM-BRIDGE-001.md)和[RC81容器验收](results/RC81_CONTAINER_ACCEPTANCE.json)。`0.8.0rc1`与更早归档只作冻结历史，不得替代当前入口。
+
+## 历史性能候选：0.8.0rc1
+
+`BRACE-MSI-0.8.0rc1`保存Gate隔离后的A6性能与容器证据，已由`0.8.1rc1`桥接补丁替代为历史。其归档、哈希和正负实验均不删除、不改写。
 
 ## 历史发布补丁：0.7.1rc1
 

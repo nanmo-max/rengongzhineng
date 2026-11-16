@@ -1,13 +1,13 @@
 # 新会话恢复与交接
 
-## 2026-11-16 0.8.0rc1恢复入口（当前）
+## 2026-11-16 0.8.1rc1平台桥接恢复入口（当前）
 
-1. `METHOD-PORTFOLIO-PILOT-001`和`COMPETITIVE-POLICY-002`均已完成；当前唯一核心任务为`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`。不要重跑A1—A6，不读取已第5次暴露的confirmation/public validation。
-2. 当前运行时代码提交为`2ba965b5e277c22368f1533e5f66a55432ea3c8b`；结果入口为`docs/results/COMPETITIVE-POLICY-002.md`，机器产物位于`D:/brace-msi-competitive-policy/`。
+1. `PLATFORM-BRIDGE-001`已本地完成；当前唯一核心任务为`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`。不要重跑A1—A6，不读取已第5次暴露的confirmation/public validation。
+2. 当前运行时代码提交为`e3b00d1`；桥接结果入口为`docs/results/PLATFORM-BRIDGE-001.md`，性能结果仍引用`docs/results/COMPETITIVE-POLICY-002.md`。
 3. 最终A6经平台原生`start_round`十轮重放：A/B/C平均有向收益`+0.319620` Macro-F1、`+21.850812`和`+0.438766` RMSE降低；A3灾难性提前策略与A5无效ID证据均保留。
-4. 当前上传归档为`D:/brace-msi-competitive-policy/BRACE-MSI-0.8.0rc1-final/brace-msi-0.8.0rc1-harness.tar`，SHA-256 `CB9F28D16D88EA985598E9E7A5C1ECC2EC36A1CFC15740854E7F977FC232E6EA`。旧非`-final`目录不得上传。
-5. `0.8.0rc1`已通过421项回归、三任务4核8GB只读断网容器、PyTRiO失败retain、禁入扫描、`pip check`与`docker save/load`；这些是本地代理/工程证据，不是官方隐藏成绩。
-6. 恢复后先读`STATUS.md`和上述结果；只有平台导入、在线凭据/Token、真实生命周期、SwanLab正式规范或官方评测新证据才能创建下一项READY任务。
+4. 当前上传归档为`D:/brace-msi-platform-bridge/BRACE-MSI-0.8.1rc1/brace-msi-0.8.1rc1-harness.tar`，SHA-256 `9B1A1822E9062229CF940D0CF9FDBD7D33F1301A94A993FE111B56E36184ED7E`。0.8.0及更早目录不得上传代替。
+5. `0.8.1rc1`已通过54项平台专项、424项完整回归、官方A父链两轮、4核8GB只读断网、retain产物声明、1,244条独立预测、禁入扫描、`pip check`与`docker save/load`；这些是本地工程证据，不是官方兼容判定或隐藏成绩。
+6. 平台旧草稿适配器被判有缺陷；平台侧需用无mode argv prefix重写薄桥接器，并映射顶层父哈希、轮次、空输出挂载和模型产物声明。恢复后只处理新的平台桥接/导入/在线Token/SwanLab正式规范或官方评测证据。
 
 ## 2026-11-16序贯延迟收益模拟恢复入口（当前）
 
