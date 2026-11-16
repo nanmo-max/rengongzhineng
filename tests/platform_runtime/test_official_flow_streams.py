@@ -341,3 +341,55 @@ def test_official_flow_predicts_before_feedback_and_confirms_once(
     assert events[:2] == ["prediction_sealed", "feedback_scored"]
     assert events[-2:] == ["prediction_sealed", "confirmation_scored"]
     assert submitted_rounds == list(range(1, 11))
+
+
+def test_sequential_flow_routes_arrival_metrics_and_settles_delayed_gain_next_round(
+    tmp_path: Path,
+) -> None:
+    checkpoint = tmp_path / "checkpoint.npz"
+    _write_parent_checkpoint(checkpoint)
+
+    summary = flow_simulation.run_sequential_adaptation_simulation(
+        _small_plan(),
+        checkpoint,
+        tmp_path / "run",
+        config=PlatformRuntimeConfig(
+            policy_mode="sequential",
+            min_primary_improvement=-1_000_000.0,
+            min_relative_improvement=-1.0,
+            max_anchor_degradation=1_000_000.0,
+            arrival_drop_trigger=0.0,
+        ),
+        export_swanlab=False,
+    )
+
+    assert summary["format"] == "brace-msi.sequential-adaptation-simulation.v1"
+    assert summary["prequential_metrics_visible_to_policy"] is True
+    assert summary["rounds"][0]["delayed_gain"] is None
+    assert summary["rounds"][1]["delayed_gain"]["settles_round_index"] == 1
+    assert summary["rounds"][1]["delayed_gain"]["sample_count"] == 8
+    assert summary["rounds"][1]["delayed_gain"]["paired_sample_ids"] is True
+    assert summary["rounds"][1]["runtime_receipt"]["decision"]["arrival_evidence"][
+        "metrics"
+    ] == summary["rounds"][1]["arrival_metrics"]
+    assert all(
+        row["external_score_visible_to_action_policy"] for row in summary["rounds"]
+    )
+
+
+@pytest.mark.parametrize(
+    ("task", "current", "predecessor", "expected"),
+    [
+        ("classification", {"macro_f1": 0.7}, {"macro_f1": 0.5}, 0.2),
+        ("regression", {"rmse": 8.0}, {"rmse": 10.0}, 2.0),
+    ],
+)
+def test_delayed_gain_is_positive_when_current_model_improves(
+    task: str,
+    current: dict[str, float],
+    predecessor: dict[str, float],
+    expected: float,
+) -> None:
+    assert flow_simulation._paired_delayed_gain(
+        task=task, current=current, predecessor=predecessor
+    ) == pytest.approx(expected)

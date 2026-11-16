@@ -15,12 +15,14 @@ import math
 import os
 from pathlib import Path
 import tempfile
+import time
 from typing import Any, Iterable, Sequence
 
 import numpy as np
 
 from .official_metrics import nasa_asymmetric_score
 from .platform_runtime import (
+    ArrivalEvidence,
     PlatformAdvisor,
     PlatformRuntimeConfig,
     start_round,
@@ -564,6 +566,7 @@ class ScoreVault:
         task: str,
         confirmation: bool,
         profile: str | None = None,
+        visible_to_action_policy: bool = False,
     ) -> dict[str, Any]:
         key = self._key(round_index, confirmation)
         seal_path = self.root / "seals" / f"{key}.json"
@@ -592,7 +595,7 @@ class ScoreVault:
             "prediction_sha256": seal["prediction_sha256"],
             "feedback_sha256": _file_sha256(Path(feedback_path)),
             "metrics": metrics,
-            "visible_to_action_policy": False,
+            "visible_to_action_policy": visible_to_action_policy,
             "prediction_sealed_before_feedback": True,
         }
         _atomic_json(score_path, receipt)
@@ -668,6 +671,16 @@ def _score_predictions(
     return metrics
 
 
+def _paired_delayed_gain(
+    *, task: str, current: dict[str, float], predecessor: dict[str, float]
+) -> float:
+    if task == "classification":
+        return float(current["macro_f1"] - predecessor["macro_f1"])
+    if task == "regression":
+        return float(predecessor["rmse"] - current["rmse"])
+    raise ValueError("unsupported delayed-gain task")
+
+
 def run_official_flow_simulation(
     plan: TaskStreamPlan,
     parent_checkpoint: Path,
@@ -676,6 +689,7 @@ def run_official_flow_simulation(
     config: PlatformRuntimeConfig = PlatformRuntimeConfig(),
     advisor: PlatformAdvisor | None = None,
     export_swanlab: bool = True,
+    policy_feedback: bool = False,
 ) -> dict[str, Any]:
     """Execute the prediction-seal-feedback-gate lifecycle for a frozen plan."""
 
@@ -720,6 +734,10 @@ def run_official_flow_simulation(
     runtime_inputs = root / "runtime-inputs"
     current_parent = Path(parent_checkpoint).resolve()
     rounds: list[dict[str, Any]] = []
+    previous_arrival_metrics: dict[str, float] | None = None
+    pending_shadow_parent: Path | None = None
+    pending_shadow_round: int | None = None
+    total_shadow_cpu_seconds = 0.0
     for round_ in plan.rounds:
         round_root = runtime_inputs / f"round-{round_.index:02d}"
         round_root.mkdir(parents=True)
@@ -745,6 +763,65 @@ def run_official_flow_simulation(
             task=plan.task,
             confirmation=False,
             profile=plan.profile,
+            visible_to_action_policy=policy_feedback,
+        )
+        delayed_gain: dict[str, Any] | None = None
+        if policy_feedback and pending_shadow_parent is not None:
+            shadow_started_cpu = time.process_time()
+            shadow_prediction_path = vault.root / "shadow-predictions" / f"round-{round_.index:02d}.jsonl"
+            submit_predictions(
+                pending_shadow_parent,
+                round_root / "prediction.jsonl",
+                shadow_prediction_path,
+            )
+            shadow_cpu_seconds = time.process_time() - shadow_started_cpu
+            total_shadow_cpu_seconds += shadow_cpu_seconds
+            current_predictions = {
+                str(row["id"]): row for row in _read_prediction_rows(prediction_path)
+            }
+            shadow_predictions = {
+                str(row["id"]): row for row in _read_prediction_rows(shadow_prediction_path)
+            }
+            feedback_by_id = {
+                str(row["id"]): row for row in _read_jsonl(round_root / "feedback.jsonl")
+            }
+            paired_sample_ids = set(current_predictions) == set(shadow_predictions) == set(feedback_by_id)
+            if not paired_sample_ids:
+                raise ValueError("delayed-gain predictions must use identical arrival sample IDs")
+            predecessor_metrics = _score_predictions(
+                shadow_predictions,
+                feedback_by_id,
+                task=plan.task,
+                profile=plan.profile,
+            )
+            delayed_gain = {
+                "settles_round_index": pending_shadow_round,
+                "observed_round_index": round_.index,
+                "sample_count": len(feedback_by_id),
+                "paired_sample_ids": True,
+                "current_metrics": external_score["metrics"],
+                "predecessor_metrics": predecessor_metrics,
+                "gain": _paired_delayed_gain(
+                    task=plan.task,
+                    current=external_score["metrics"],
+                    predecessor=predecessor_metrics,
+                ),
+                "shadow_prediction_sha256": _file_sha256(shadow_prediction_path),
+                "shadow_cpu_seconds": shadow_cpu_seconds,
+            }
+        arrival_evidence = (
+            ArrivalEvidence(
+                metrics=dict(external_score["metrics"]),
+                previous_metrics=(
+                    dict(previous_arrival_metrics)
+                    if previous_arrival_metrics is not None
+                    else None
+                ),
+                sample_count=len(round_.rows),
+                delayed_gain=(delayed_gain["gain"] if delayed_gain is not None else None),
+            )
+            if policy_feedback
+            else None
         )
         output = root / "runtime-rounds" / f"round-{round_.index:02d}"
         output.parent.mkdir(parents=True, exist_ok=True)
@@ -756,6 +833,7 @@ def run_official_flow_simulation(
             config,
             advisor=advisor,
             gate_data_path=round_root / "gate.jsonl",
+            arrival_evidence=arrival_evidence,
         )
         rounds.append(
             {
@@ -763,6 +841,11 @@ def run_official_flow_simulation(
                 "prediction_seal": seal,
                 "prediction_sealed_before_feedback": True,
                 "prequential_metrics": external_score["metrics"],
+                "arrival_metrics": external_score["metrics"],
+                "external_score_visible_to_action_policy": external_score[
+                    "visible_to_action_policy"
+                ],
+                "delayed_gain": delayed_gain,
                 "candidate_gate_metrics": {
                     "stable": runtime_receipt["metrics_before"],
                     "candidate": runtime_receipt["metrics_candidate"],
@@ -770,7 +853,15 @@ def run_official_flow_simulation(
                 "runtime_receipt": runtime_receipt,
             }
         )
+        parent_before_round = current_parent
         current_parent = output / "checkpoint.npz"
+        if policy_feedback and runtime_receipt["deployed"]:
+            pending_shadow_parent = parent_before_round
+            pending_shadow_round = round_.index
+        else:
+            pending_shadow_parent = None
+            pending_shadow_round = None
+        previous_arrival_metrics = dict(external_score["metrics"])
     confirmation_root = runtime_inputs / "confirmation"
     confirmation_root.mkdir(parents=True)
     _write_rows(
@@ -815,7 +906,11 @@ def run_official_flow_simulation(
         )
         swanlab_logdir = str(export.logdir)
     summary = {
-        "format": "brace-msi.official-flow-simulation.v1",
+        "format": (
+            "brace-msi.sequential-adaptation-simulation.v1"
+            if policy_feedback
+            else "brace-msi.official-flow-simulation.v1"
+        ),
         "status": "completed",
         "evidence_scope": "local_protocol_and_task_stream_simulation_not_official_hidden_score",
         "profile": plan.profile,
@@ -823,7 +918,11 @@ def run_official_flow_simulation(
         "stream_plan": materialized,
         "round_count": len(rounds),
         "parent_chain_valid": parent_chain_valid,
-        "prequential_metrics_visible_to_policy": False,
+        "prequential_metrics_visible_to_policy": policy_feedback,
+        "delayed_gain_semantics": (
+            "next_batch_direct_predecessor_pairing" if policy_feedback else "disabled"
+        ),
+        "shadow_cpu_seconds": total_shadow_cpu_seconds,
         "confirmation_read_count": vault.confirmation_read_count,
         "local_final_confirmation": confirmation,
         "final_checkpoint_sha256": rounds[-1]["runtime_receipt"]["checkpoint_sha256"],
@@ -836,6 +935,28 @@ def run_official_flow_simulation(
     return summary
 
 
+def run_sequential_adaptation_simulation(
+    plan: TaskStreamPlan,
+    parent_checkpoint: Path,
+    run_root: Path,
+    *,
+    config: PlatformRuntimeConfig,
+    advisor: PlatformAdvisor | None = None,
+    export_swanlab: bool = True,
+) -> dict[str, Any]:
+    if config.policy_mode != "sequential":
+        raise ValueError("sequential simulation requires sequential policy mode")
+    return run_official_flow_simulation(
+        plan,
+        parent_checkpoint,
+        run_root,
+        config=config,
+        advisor=advisor,
+        export_swanlab=export_swanlab,
+        policy_feedback=True,
+    )
+
+
 __all__ = [
     "ScoreVault",
     "StreamRound",
@@ -845,4 +966,5 @@ __all__ = [
     "build_gas_stream_plan",
     "materialize_stream_plan",
     "run_official_flow_simulation",
+    "run_sequential_adaptation_simulation",
 ]
