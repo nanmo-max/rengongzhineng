@@ -1,9 +1,9 @@
 # 当前状态
 
-- 最近同步：2026-11-16 10:12（Asia/Shanghai）
-- 当前阶段：`DELAYED-GAIN-SIM-001`已完成混合结论；`BRACE-MSI-0.7.1rc1`继续冻结，回到正式平台材料与评测生命周期等待阶段
+- 最近同步：2026-11-16 11:05（Asia/Shanghai）
+- 当前阶段：`METHOD-PORTFOLIO-PILOT-001`已完成；进入`COMPETITIVE-POLICY-002`，将跨批通过的正式MLP候选接入证据驱动双候选Harness
 - 当前路线：**保留平台父链/安全内核，先通过Native逐状态等价门，再迁移冻结日程、尺度适配Gate与受控PyTRiO建议** `[D-061]`
-- 当前唯一核心任务：`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`。不得重复A1/A2/A3或依据已第5次暴露的本地确认集继续调参。
+- 当前唯一核心任务：`COMPETITIVE-POLICY-002 (READY)`；确认集继续关闭，先在同一十轮合法流验证连续父链策略，再生成新RC。
 - 稳定边界：全部历史RC和实验不改写；`0.5.0rc1`只作研究证据，不得上传。正式线从D-058开始只输出原生官方MLP续训checkpoint。A3之后禁止继续LLM调参 `[D-043]`
 - 官方试运行：已使用1/10次，剩余9/10次；该运行对应旧提交v2，不是RC4，正式评测仍为0/2 `[O-PLATFORM-006]`
 
@@ -23,6 +23,7 @@
 0k. `REPORT-EVIDENCE-FIX-001`已完成：确认旧V1没有训练数据直接泄漏证据，但逐轮重复公开validation并据此选轮次，属于选择污染。V1降级为界面演示；V2逐轮只展示Gate稳定/候选指标，冻结后每任务只评估最终checkpoint一次，不再含validation选轮字段。专项7项、完整回归390项通过，见`results/REPORT-EVIDENCE-FIX-001.md`。
 0l. `OFFICIAL-FLOW-SIM-001`已完成：Gas按自然批次/时间、Bearing按寿命进度、Engine按完整unit构造十轮；每轮先预测封存再开放反馈，Prequential与候选Gate分离，未来轮和确认不提前物化。三任务10/10轮、父链与零交叉硬门通过；A/C保持静态，B一次部署后本地确认退化，作为负证据保留。完整回归399项，见`results/OFFICIAL-FLOW-SIM-001.md`。
 0m. `DELAYED-GAIN-SIM-001`已完成混合结论：A/B/C各10轮，当前到达指标进入策略；仅在上一轮部署后于下一批对同样本运行直接前任影子模型并结算延迟收益。A2暴露B第9轮部署后第10轮延迟收益`-310.293697 RMSE`却继续保留坏模型，确认RMSE退化至`993.202677`；A3新增一轮可审计直接前任回滚后恢复至`241.980799`。A/C候选均被Gate拒绝并保持父模型。完整回归407项，见`results/DELAYED-GAIN-SIM-001.md`。
+0n. `METHOD-PORTFOLIO-PILOT-001`已完成：不读取confirmation/public validation，在A/B/C各9个`t训练→t+1未见评价`上比较7种教师/基线和17种正式MLP候选，再对9种MLP recipe运行连续父链。A的近期窗口3轮、B的当前批3轮×3学习率、C的25%候选权重插值分别形成最强或最稳趋势；A3学习率累乘失败保留，A4修复后全链完成。证据见`results/METHOD-PORTFOLIO-PILOT-001.md`。
 1. `DUAL-DATA-001`已完成：四缓冲区、Gate一轮隔离、Update+Replay候选集合、只读manifest、训练/评估分离句柄和未来诱饵阻断通过4项专项测试；完整回归`275 passed`。
 2. `DUAL-TXN-001`已完成：每批单决策、0至2候选、首候选结果触发升级、十批前缀、原子提交/恢复及影子配对收益通过5项专项测试；完整回归`280 passed`。
 3. `DUAL-VALUE-001`已完成：每任务隔离统计、身份无关证据画像、弱先验、延迟收益专用更新和性能—CPU/RSS/Token/模型体积Pareto前沿通过5项专项测试；完整回归`285 passed`。

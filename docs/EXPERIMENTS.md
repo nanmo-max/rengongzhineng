@@ -423,3 +423,43 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 - 报告：`D:/brace-msi-delayed-gain/DELAYED-GAIN-SIM-001-A3/report/official-flow-report.{json,html}`；隐藏状态为未开始，确认暴露指数5。
 - 验证：专项59项、完整回归407项、编译、diff、机器不变量和密钥扫描通过。
 - 边界：本地代理流程、非官方成绩；确认已反复暴露，禁止据此调参；本实验未重复调用PyTRiO或消耗官方试运行。
+
+## METHOD-PORTFOLIO-PILOT-001-A1
+
+- 状态：`COMPLETED_POSITIVE_TEACHER_TREND`。A/B异构教师跨批趋势显著，C异构教师整体不稳；确认读取0、官方试运行0。
+- 研究问题：在完全不使用confirmation/public validation时，哪些成熟CPU方法能在第`t`批训练后，于第`t+1`未见批次稳定优于官方父MLP或原生MLP续训？
+- 数据：只读复用`DELAYED-GAIN-SIM-001-A3`的A/B/C十轮`feedback.jsonl`；每个转移只使用1…t批训练，t+1只评价。确认目录不得打开。
+- 方法：`static_parent`、`native_current`、`native_cumulative`、`linear_cumulative`、`hgb_cumulative`、`extra_trees_cumulative`、`tree_ensemble`。异构方法仅作教师上界，不是正式提交模型。
+- 指标：A Macro-F1/Accuracy；B/C RMSE/MAE，C附NASA；统一记录相对父模型的有向收益、9转移胜率、最差收益、CPU和RSS。
+- 预算：每个方法每任务最多5分钟、4 GiB；固定种子20261116；不运行HPO、PyTRiO、SwanLab或官方试运行。
+- 晋级门：方法至少在一个任务的多数转移胜出且平均有向收益明显为正，或在不少于两个任务超过原生续训；否则停止该方法。教师上界通过后才开发官方MLP蒸馏。
+- 输出：新目录`D:/brace-msi-method-pilot/METHOD-PORTFOLIO-PILOT-001-A1/`；失败和负结果全部保留。
+
+## METHOD-PORTFOLIO-PILOT-001-A2
+
+- 状态：`COMPLETED_POSITIVE_NATIVE_TREND`。17种正式MLP候选×三任务×九转换完成；A累计3轮、B最近窗口3轮、C保守插值晋级连续父链。
+- 依据：A1只使用相邻未见批次，初步显示异构教师在A/B有大幅上限、C仅原生累计续训稳定为正；A1不使用confirmation且不消耗官方试运行。
+- 研究问题：在保持`contest.cpu-mlp.v1`正式checkpoint格式时，多步续训、最近窗口回放及父模型参数插值（SWA/model-soup式稳定化）能否把教师趋势转化为可提交模型，并降低负迁移？
+- 候选：当前批/累计/最近三批 × 1/3/5 epoch；学习率倍率0.3/1/3的有界组合；对最佳多步候选与父模型按0.25/0.5/0.75插值。所有候选从同一父checkpoint独立克隆，禁止读取confirmation。
+- 数据与评估：完全继承A1的1…t合法训练、t+1未见评价和九个相邻转换；只记录Macro-F1/Accuracy或RMSE/MAE、最差收益、胜率、CPU、RSS与模型可加载性。
+- 预算：先低成本筛选；每任务每转换最多18个原生候选，4 GiB，固定种子20261116；不调用PyTRiO、SwanLab或官方试运行。
+- 晋级门：候选在多数转换优于静态父模型且平均收益为正；相对A1原生续训有明确改善，或显著降低最差负迁移。未过门的方法立即停止。
+- 输出：`D:/brace-msi-method-pilot/METHOD-PORTFOLIO-PILOT-001-A2/`；A1产物保持只读。
+
+## METHOD-PORTFOLIO-PILOT-001-A3
+
+- 状态：`FAILED_PRESERVED_LR_MULTIPLIER_COMPOUNDING`。完成A `current_e1`后，`current_e3_lr3`倍率逐轮写回导致checkpoint学习率超过上限；运行停止、目录保留、不得作性能证据。
+- 依据：A2证明A累计3轮、B最近窗口3轮、C保守父权重插值在独立相邻转换上有正向趋势，但A2每个转换均从初始父checkpoint开始，尚未证明连续部署后仍有效。
+- 研究问题：候选在真实父checkpoint连续继承、每轮只访问已开放批次时，九次部署后的逐轮收益、最差阶段与最终父链是否仍优于静态父模型？
+- 候选策略：`current_e1`、`current_e3_lr3`、`cumulative_e1`、`cumulative_e3`、`cumulative_e3_lr0.3`、`recent_e3`、`soup_current_e3_alpha0.25/0.5/0.75`；每项从同一初始父独立跑完整父链，禁止按下一批结果改本轮动作。
+- 数据与边界：只读A1的十轮feedback；第t轮训练仅用1…t，随后在t+1评价并无条件作为该策略的下一父模型。confirmation/public validation读取0次；不调用PyTRiO、SwanLab或官方试运行。
+- 指标：九个到达批次的平均/中位/最差有向收益、胜率、最终checkpoint格式/父链epoch与CPU/RSS；任何非有限、不可加载或步数倒退立即失败。
+- 晋级门：至少一个正式checkpoint策略在任务上多数转换胜出且平均收益为正；正式系统只考虑跨批连续证据通过者。
+- 输出：`D:/brace-msi-method-pilot/METHOD-PORTFOLIO-PILOT-001-A3/`；A1/A2保持只读。
+
+## METHOD-PORTFOLIO-PILOT-001-A4
+
+- 状态：`COMPLETED_POSITIVE_CONTINUOUS_PARENT`。九种recipe×A/B/C连续父链全部完成，最终checkpoint可加载且epoch/step前进；关键结果和哈希见`results/METHOD-PORTFOLIO-PILOT-001.md`。
+- 失败继承：A3完成A的`current_e1`后，在`current_e3_lr3`连续父链中暴露“学习率倍率写入checkpoint并逐轮累乘”的实现缺陷，最终超过checkpoint合法上限而停止；A3目录保留，不作为性能证据。
+- 唯一修复：学习率倍率仅在本轮fit期间生效，候选保存前恢复父checkpoint学习率；新增10轮不累乘回归测试。方法、数据、策略、种子、指标和停止条件全部继承A3。
+- 输出：`D:/brace-msi-method-pilot/METHOD-PORTFOLIO-PILOT-001-A4/`，不得覆盖A3。

@@ -369,6 +369,14 @@
 - D-032/D-034统一策略路线停止为历史研究；81/81开发作业和复杂策略负结果保留，不执行末期测试，也不改写既有RC与训练包证据。
 - 当前任务切换为`PYTRIO-001`。本条只记录路线与文档治理完成，不声称PyTRiO代码、真实服务调用或三任务新增性能已经实现。
 
+## 2026-11-16 METHOD-PORTFOLIO-PILOT-001
+
+- 新增`method_pilot.py`与两套研究runner，在confirmation/public validation读取0次的前提下完成A/B/C各9个相邻未见转换：A1为7种教师/基线，A2为17种正式MLP候选，A4为9种正式MLP recipe连续父链。
+- A1证明A/B存在显著方法上限；C的异构树负迁移。A2/A4证明正式MLP通过累计、最近窗口、临时学习率和父权重插值也可显著跨批改善。
+- A3暴露学习率倍率逐轮累乘缺陷并停止；失败证据保留。修复采用训练期临时倍率，新增10轮不累乘测试，A4全部27条父链完成并保存可加载checkpoint。
+- 专项测试命令：`python -m pytest tests/research/test_method_pilot.py -q`，结果`6 passed`；完整回归`python -m pytest -q`结果`413 passed in 166.18s`，`compileall`与`git diff --check`通过。
+- 结果与边界见`results/METHOD-PORTFOLIO-PILOT-001.md`；不把本地代理收益写成官方隐藏成绩。
+
 ## 2026-11-12：PYTRIO-001完成
 
 - 新增`src/brace_msi/pytrio_agent.py`，按PyTRiO官方Sampler API惰性创建`ServiceClient`与sampling client；默认模型为已确认的`Qwen/Qwen3.5-4B`，模型路径和SDK环境由运行时注入。

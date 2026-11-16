@@ -1,5 +1,14 @@
 # 新会话恢复与交接
 
+## 2026-11-16方法组合筛选恢复入口（当前）
+
+1. `METHOD-PORTFOLIO-PILOT-001`已完成，当前唯一可执行任务为`COMPETITIVE-POLICY-002 (READY)`。不要重跑A1/A2/A4，不读取已经第5次暴露的confirmation/public validation。
+2. 结果入口为`docs/results/METHOD-PORTFOLIO-PILOT-001.md`；机器产物在`D:/brace-msi-method-pilot/`。A1为异构教师上界，A2为独立转换MLP探针，A3是学习率累乘失败，A4才是连续父链有效证据。
+3. A4正式MLP趋势：A `recent_e3`九转换平均Macro-F1有向收益`+0.386974`且9/9胜；B `current_e3_lr3`平均RMSE有向收益`+287.436213`且9/9胜；C `soup_current_e3_alpha0.25`平均RMSE有向收益`+1.007474`、最坏`-0.196010`。
+4. 下一实现不是按A/B/C名称硬编码三套日程。首候选采用保守父权重插值；第二候选根据任务契约、当前证据和历史延迟收益在最近窗口、累计回放、高步长当前更新中选择，并沿用下一批结算及负收益回滚。
+5. 所有结果只使用十轮feedback相邻未见评价，confirmation读取0、PyTRiO/SwanLab/官方试运行使用0；不能写成官方隐藏成绩或新RC已完成。
+6. 恢复后先运行专项测试`python -m pytest tests/research/test_method_pilot.py -q`，再按`COMPETITIVE-POLICY-002`测试先行接入平台原生Harness；冻结`0.7.1rc1`和历史失败证据不改写。
+
 ## 2026-11-16序贯延迟收益模拟恢复入口（当前）
 
 1. `DELAYED-GAIN-SIM-001`已`DONE_MIXED`，当前唯一任务回到`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`。不要重复Smoke/A2/A3或再次使用本地确认调参。

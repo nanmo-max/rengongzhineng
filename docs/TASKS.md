@@ -27,10 +27,31 @@ EVIDENCE-RSI-001(DONE)
   -> REPORT-EVIDENCE-FIX-001(DONE)
   -> OFFICIAL-FLOW-SIM-001(DONE_MIXED)
   -> DELAYED-GAIN-SIM-001(DONE_MIXED)
+  -> METHOD-PORTFOLIO-PILOT-001(DONE)
+  -> COMPETITIVE-POLICY-002(READY)
   -> FORMAL-RELEASE-001(BLOCKED_EXTERNAL)
 ```
 
 以上为当前正式重构图；`0.6.0rc1`及下方历史任务图保持冻结，新竞争候选只在独立分支演进。
+
+### METHOD-PORTFOLIO-PILOT-001 方法级跨批可行性筛选
+
+- 状态：`DONE`
+- 依赖：DELAYED-GAIN-SIM-001
+- 优先级：P0（现有候选仅改变epoch/LR/Replay，A/C可能误拒，B存在小Gate假阳性）
+- 目标：不读取本地确认集，使用十轮训练流的`t训练→t+1未见评价`比较静态父模型、原生MLP当前批/累计续训、线性模型、HGB、ExtraTrees及低成本教师集成；先验证方法是否具有跨批趋势，再决定蒸馏、持续学习或正式集成。
+- 完成标准：A/B/C各完成9个相邻批次转移；所有方法使用相同合法历史；记录主指标收益、胜率、最差转移、CPU和样本数；产物标记为教师上界/研究代理而非可提交checkpoint；至少一个方法在不少于两个任务或一个任务多数转移上明显优于原生续训，才进入下一阶段。
+- 停止条件：不读取任何confirmation/public validation；不消耗官方试运行或PyTRiO；单方法单任务超过5分钟、内存超过4 GiB或连续多数转移退化即停止；无明显趋势则不工程化。
+- 证据：A1教师矩阵、A2正式MLP矩阵、A3失败保留及A4连续父链全部完成；confirmation读取0、官方试运行0。A4中A `recent_e3`九转换对静态9/9胜且平均Macro-F1有向收益`+0.386974`；B `current_e3_lr3`为9/9且平均RMSE有向收益`+287.436213`；C `soup_current_e3_alpha0.25`平均RMSE有向收益`+1.007474`、最坏`-0.196010`。详见`results/METHOD-PORTFOLIO-PILOT-001.md`。
+
+### COMPETITIVE-POLICY-002 证据驱动双候选正式策略
+
+- 状态：`READY`
+- 依赖：METHOD-PORTFOLIO-PILOT-001
+- 优先级：P0
+- 目标：把A4通过的正式MLP recipe接入平台原生Harness；第一候选使用跨任务低风险父权重插值，第二候选仅在当前证据与历史延迟收益支持时，从最近窗口、累计回放或高步长当前更新中选择；不得按数据集名称硬编码。
+- 完成标准：平台父checkpoint真实继承；每轮0至2候选；候选选择只使用当前及历史合法证据；下一批结算与负收益回滚；A/B/C十轮代理流均完成且相对静态平均有向收益为正；全部checkpoint可加载、独立预测、64 MiB、CPU/RSS/Token完整；PyTRiO建议不能覆盖执行边界。
+- 停止条件：任一任务平均收益非正、未来或确认泄漏、父链/step倒退、候选无法从任务契约和数据证据解释，或全量/容器验收失败。
 
 ### DELAYED-GAIN-SIM-001 当前批证据与下一批延迟收益模拟
 
