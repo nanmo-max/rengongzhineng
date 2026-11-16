@@ -23,6 +23,7 @@ import zipfile
 import numpy as np
 import psutil
 
+from .competitive_policy import PortfolioEvidence, build_candidate_plan
 from .policies import Action
 from .pytrio_agent import (
     AdvisorOutcome,
@@ -69,8 +70,10 @@ class PlatformRuntimeConfig:
     arrival_drop_trigger: float = 0.02
 
     def __post_init__(self) -> None:
-        if self.policy_mode not in {"protocol", "competitive", "sequential"}:
-            raise ValueError("policy mode must be protocol, competitive, or sequential")
+        if self.policy_mode not in {"protocol", "competitive", "sequential", "portfolio"}:
+            raise ValueError(
+                "policy mode must be protocol, competitive, sequential, or portfolio"
+            )
         if any(not value.strip() for value in self.protocol_profiles):
             raise ValueError("protocol profiles must be non-empty strings")
         if not 1 <= self.epochs <= 5:
@@ -448,6 +451,47 @@ class _NativeModel:
                 archive.writestr(info, buffer.getvalue())
 
 
+def _fit_portfolio_recipe(
+    parent: _NativeModel,
+    *,
+    recipe: str,
+    replay_x: np.ndarray,
+    replay_y: np.ndarray,
+    update_x: np.ndarray,
+    update_y: np.ndarray,
+) -> _NativeModel:
+    """Fit a bounded recipe while preserving the official checkpoint schema."""
+
+    cumulative_x = np.concatenate((replay_x, update_x), axis=0)
+    cumulative_y = np.concatenate((replay_y, update_y), axis=0)
+    recent_count = min(len(replay_x), 2 * len(update_x))
+    recent_x = np.concatenate((replay_x[-recent_count:], update_x), axis=0)
+    recent_y = np.concatenate((replay_y[-recent_count:], update_y), axis=0)
+    specifications: dict[str, tuple[np.ndarray, np.ndarray, int, float]] = {
+        "current_e3_lr3": (update_x, update_y, 3, 3.0),
+        "cumulative_e3_lr0.3": (cumulative_x, cumulative_y, 3, 0.3),
+        "recent_e3": (recent_x, recent_y, 3, 1.0),
+    }
+    if recipe == "soup_current_e3_alpha0.25":
+        trained = parent.clone()
+        trained.fit(update_x, update_y, 3)
+        result = trained.clone()
+        for name in result.params:
+            result.params[name] = 0.75 * parent.params[name] + 0.25 * trained.params[name]
+        result.validate()
+        return result
+    if recipe not in specifications:
+        raise ValueError("unsupported portfolio recipe")
+    values, targets, epochs, multiplier = specifications[recipe]
+    candidate = parent.clone()
+    parent_rate = float(parent.meta["learning_rate"])
+    candidate.meta["learning_rate"] = parent_rate * multiplier
+    candidate.fit(values, targets, epochs)
+    candidate.meta["learning_rate"] = parent_rate
+    candidate.validate()
+    return candidate
+
+
 def _resolve_data_file(path: Path) -> Path:
     path = Path(path)
     if path.is_file() and not path.is_symlink():
@@ -673,6 +717,7 @@ def _decision_for_round(
     advisor: PlatformAdvisor | None,
     arrival_evidence: ArrivalEvidence | None,
     rollback_available: bool,
+    current_target_mean: float,
 ) -> tuple[dict[str, Any], Action, int, float]:
     """Choose a bounded action; model text never crosses the effect boundary directly."""
 
@@ -786,7 +831,64 @@ def _decision_for_round(
         else None
     )
     candidate_budget_available = candidate_events < config.max_training_rounds
-    if policy_mode == "sequential":
+    portfolio_plan = None
+    portfolio_recipe: str | None = None
+    forward_override = False
+    if policy_mode == "portfolio":
+        target_means = tuple(
+            float(row["target_mean"])
+            for row in history
+            if isinstance(row.get("target_mean"), (int, float))
+        ) + (float(current_target_mean),)
+        consecutive_aggressive = 0
+        for row in reversed(history):
+            if row.get("recipe") != "current_e3_lr3" or not row.get("deployed"):
+                break
+            consecutive_aggressive += 1
+        portfolio_plan = build_candidate_plan(
+            PortfolioEvidence(
+                task_kind=str(parent.meta["task"]),
+                target_batch_means=target_means,
+                target_scale=float(parent.meta["target_scale"]),
+                previous_delayed_gain=(
+                    arrival_evidence.delayed_gain
+                    if arrival_evidence is not None
+                    else None
+                ),
+                failure_streak=failure_streak,
+                consecutive_aggressive=consecutive_aggressive,
+            )
+        )
+        if portfolio_plan.secondary_recipe in {"recent_e3", "current_e3_lr3"}:
+            portfolio_recipe = portfolio_plan.secondary_recipe
+        else:
+            portfolio_recipe = portfolio_plan.primary_recipe
+        forward_override = portfolio_recipe == "current_e3_lr3"
+        negative_delayed_gain = (
+            arrival_evidence is not None
+            and arrival_evidence.delayed_gain is not None
+            and arrival_evidence.delayed_gain < 0.0
+        )
+        if negative_delayed_gain and rollback_available:
+            default_action = Action.ROLLBACK
+            epochs = 0
+            learning_rate = base_learning_rate
+            portfolio_recipe = None
+        elif candidate_budget_available and round_index < 10:
+            default_action = (
+                Action.REPLAY_REFIT
+                if portfolio_recipe in {"recent_e3", "cumulative_e3_lr0.3"}
+                and len(replay_x)
+                else Action.INCREMENTAL_UPDATE
+            )
+            epochs = 3
+            learning_rate = base_learning_rate
+        else:
+            default_action = Action.NOOP
+            epochs = 0
+            learning_rate = base_learning_rate
+            portfolio_recipe = None
+    elif policy_mode == "sequential":
         cold_start = arrival_evidence is not None and arrival_evidence.previous_metrics is None
         negative_delayed_gain = (
             arrival_evidence is not None
@@ -934,6 +1036,9 @@ def _decision_for_round(
         "outcome": outcome,
         "epochs": epochs,
         "learning_rate": learning_rate,
+        "recipe": portfolio_recipe,
+        "portfolio_plan": asdict(portfolio_plan) if portfolio_plan is not None else None,
+        "forward_override": forward_override,
         "arrival_evidence": asdict(arrival_evidence) if arrival_evidence is not None else None,
         "performance_drop": performance_drop,
         "drift_complexity": drift_complexity,
@@ -984,8 +1089,13 @@ def start_round(
         raise ValueError("platform parent does not match the previous committed round")
 
     parent = _NativeModel.load(parent_path)
+    shadow_predecessor_path = workspace / "shadow-predecessor.npz"
     rollback_path = (
-        Path(rollback_checkpoint).resolve() if rollback_checkpoint is not None else None
+        Path(rollback_checkpoint).resolve()
+        if rollback_checkpoint is not None
+        else shadow_predecessor_path.resolve()
+        if config.policy_mode == "portfolio" and shadow_predecessor_path.is_file()
+        else None
     )
     rollback_model: _NativeModel | None = None
     rollback_sha: str | None = None
@@ -1047,6 +1157,30 @@ def start_round(
         feedback_update_count = len(update_batch["ids"])
         feedback_update_sha256 = update_batch["sha256"]
         feedback_gate_sha256 = gate_batch["sha256"]
+    if arrival_evidence is None and config.policy_mode == "portfolio":
+        automatic_metrics = _metrics(parent, batch["x"], batch["y"])
+        predecessor_metrics = (
+            _metrics(rollback_model, batch["x"], batch["y"])
+            if rollback_model is not None
+            else None
+        )
+        arrival_evidence = ArrivalEvidence(
+            metrics=automatic_metrics,
+            previous_metrics=(
+                state["rounds"][-1].get("arrival_metrics")
+                if state["rounds"]
+                and isinstance(state["rounds"][-1].get("arrival_metrics"), dict)
+                else None
+            ),
+            sample_count=len(batch["ids"]),
+            delayed_gain=(
+                _primary_improvement(
+                    parent.meta["task"], predecessor_metrics, automatic_metrics
+                )
+                if predecessor_metrics is not None
+                else None
+            ),
+        )
     _validate_arrival_evidence(
         arrival_evidence,
         task=parent.meta["task"],
@@ -1094,6 +1228,7 @@ def start_round(
         advisor=advisor,
         arrival_evidence=arrival_evidence,
         rollback_available=rollback_model is not None,
+        current_target_mean=float(np.mean(batch["y"])),
     )
     use_replay = executed_action is Action.REPLAY_REFIT and len(replay_x) > 0
     training_x = (
@@ -1167,9 +1302,26 @@ def start_round(
             gate_reason = "negative_delayed_gain_rollback"
             candidate_sha = rollback_sha
         elif candidate_trained:
-            losses = candidate.fit(
-                training_x, training_y, selected_epochs
+            policy_mode = (
+                "protocol"
+                if str(parent.meta.get("profile")) in config.protocol_profiles
+                else config.policy_mode
             )
+            if policy_mode == "portfolio":
+                recipe = decision.get("recipe")
+                if not isinstance(recipe, str):
+                    raise ValueError("portfolio candidate requires a recipe")
+                candidate = _fit_portfolio_recipe(
+                    parent,
+                    recipe=recipe,
+                    replay_x=replay_x,
+                    replay_y=replay_y,
+                    update_x=batch["x"][update_indices],
+                    update_y=batch["y"][update_indices],
+                )
+                losses = []
+            else:
+                losses = candidate.fit(training_x, training_y, selected_epochs)
             candidate_metrics = _metrics(
                 candidate, batch["x"][gate_indices], batch["y"][gate_indices]
             )
@@ -1185,11 +1337,6 @@ def start_round(
                 anchor_degradation = anchor_candidate_metrics["rmse"] - anchor_before["rmse"]
             relative_improvement = _relative_improvement(
                 parent.meta["task"], before, candidate_metrics
-            )
-            policy_mode = (
-                "protocol"
-                if str(parent.meta.get("profile")) in config.protocol_profiles
-                else config.policy_mode
             )
             if policy_mode == "competitive":
                 gate_outcome = _competitive_gate(
@@ -1209,6 +1356,26 @@ def start_round(
                 if not len(replay_x):
                     deployed = False
                     gate_reason = "insufficient_history_for_deployment"
+            elif policy_mode == "portfolio":
+                primary_gain = _primary_improvement(
+                    parent.meta["task"], before, candidate_metrics
+                )
+                deployed = primary_gain > 0.0 or bool(decision.get("forward_override"))
+                gate_reason = (
+                    "portfolio_forward_trend"
+                    if bool(decision.get("forward_override"))
+                    else "portfolio_gate_passed"
+                    if deployed
+                    else "portfolio_gate_rejected"
+                )
+                anchor_baseline = (
+                    anchor_before["macro_f1"]
+                    if parent.meta["task"] == "classification"
+                    else anchor_before["rmse"]
+                )
+                relative_anchor_degradation = anchor_degradation / max(
+                    abs(anchor_baseline), 1e-12
+                )
             else:
                 deployed = (
                     _primary_improvement(parent.meta["task"], before, candidate_metrics)
@@ -1249,6 +1416,7 @@ def start_round(
             "round_index": round_index,
             "task": parent.meta["task"],
             "sample_count": len(batch["ids"]),
+            "target_mean": float(np.mean(batch["y"])),
             "partition_mode": partition_mode,
             "feedback_update_sample_count": feedback_update_count,
             "feedback_update_sha256": feedback_update_sha256,
@@ -1267,7 +1435,11 @@ def start_round(
             ),
             "checkpoint_sha256": checkpoint_sha,
             "candidate_trained": candidate_trained,
+            "recipe": decision.get("recipe"),
             "decision": decision,
+            "arrival_metrics": (
+                arrival_evidence.metrics if arrival_evidence is not None else None
+            ),
             "deployed": deployed,
             "primary_improvement": (
                 _primary_improvement(parent.meta["task"], before, candidate_metrics)
@@ -1313,6 +1485,10 @@ def start_round(
         raise
 
     state["rounds"].append(receipt)
+    if config.policy_mode == "portfolio" and deployed and executed_action is not Action.ROLLBACK:
+        shutil.copy2(parent_path, shadow_predecessor_path)
+    elif shadow_predecessor_path.exists():
+        shadow_predecessor_path.unlink()
     if new_anchor:
         _atomic_npz(anchor_path, x=anchor_x, y=anchor_y)
     next_replay_x = np.concatenate((replay_x, batch["x"][update_indices]), axis=0)

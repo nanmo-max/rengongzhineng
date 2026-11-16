@@ -178,6 +178,61 @@ def test_sequential_policy_trains_when_arrival_performance_drops(tmp_path: Path)
     assert receipt["candidate_trained"] is True
 
 
+def test_portfolio_policy_trains_official_schema_recipe_without_profile_routing(
+    tmp_path: Path,
+) -> None:
+    parent = tmp_path / "parent.npz"
+    data = tmp_path / "data.jsonl"
+    _write_parent(parent, task="regression", profile="renamed-task")
+    _write_data(data, task="regression", count=60)
+
+    receipt = start_round(
+        data,
+        parent,
+        tmp_path / "workspace",
+        tmp_path / "output",
+        PlatformRuntimeConfig(
+            policy_mode="portfolio",
+            min_primary_improvement=-1e9,
+            min_relative_improvement=-1.0,
+            max_anchor_degradation=1e9,
+        ),
+    )
+
+    assert receipt["candidate_trained"] is True
+    assert receipt["decision"]["recipe"] == "soup_current_e3_alpha0.25"
+    candidate = platform_runtime._NativeModel.load(tmp_path / "output" / "checkpoint.npz")
+    assert candidate.meta["format"] == "contest.cpu-mlp.v1"
+    assert candidate.meta["profile"] == "renamed-task"
+    assert receipt["candidate_checkpoint_sha256"] is not None
+    assert candidate.meta["epochs"] in {20, 23}
+
+
+def test_portfolio_policy_derives_arrival_evidence_inside_native_start(
+    tmp_path: Path,
+) -> None:
+    parent = tmp_path / "parent.npz"
+    data = tmp_path / "data.jsonl"
+    workspace = tmp_path / "workspace"
+    _write_parent(parent, task="classification", profile="unknown-classifier")
+    _write_data(data, task="classification", count=80)
+
+    receipt = start_round(
+        data,
+        parent,
+        workspace,
+        tmp_path / "output",
+        PlatformRuntimeConfig(policy_mode="portfolio"),
+    )
+
+    assert receipt["arrival_metrics"] == receipt["decision"]["arrival_evidence"]["metrics"]
+    assert receipt["decision"]["portfolio_plan"]["primary_recipe"] == (
+        "soup_current_e3_alpha0.25"
+    )
+    if receipt["deployed"]:
+        assert (workspace / "shadow-predecessor.npz").is_file()
+
+
 def test_sequential_policy_retains_when_arrival_is_stable_and_delayed_gain_positive(
     tmp_path: Path,
 ) -> None:
@@ -745,9 +800,14 @@ def test_container_defaults_to_native_start_command() -> None:
     assert 'ENTRYPOINT ["python3", "-m", "brace_msi"]' in dockerfile
     assert 'CMD ["start"]' in dockerfile
     assert 'ENV BRACE_ADVISOR=pytrio' in dockerfile
-    assert 'BRACE_POLICY_MODE=competitive' in dockerfile
-    assert 'BRACE_PROTOCOL_PROFILES=B' in dockerfile
+    assert 'BRACE_POLICY_MODE=portfolio' in dockerfile
+    assert 'BRACE_PROTOCOL_PROFILES=' not in dockerfile
     assert 'BRACE_MAX_REPLAY_SAMPLES=100000' in dockerfile
+
+
+def test_release_version_matches_competitive_candidate() -> None:
+    pyproject = Path("pyproject.toml").read_text(encoding="utf-8")
+    assert 'version = "0.8.0rc1"' in pyproject
 
 
 def test_pytrio_advice_is_bounded_and_recorded_without_bypassing_gate(tmp_path: Path) -> None:

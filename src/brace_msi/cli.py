@@ -83,7 +83,7 @@ def _parser() -> argparse.ArgumentParser:
     platform_start.add_argument("--output", type=Path, default=Path("/output"))
     platform_start.add_argument(
         "--policy-mode",
-        choices=("protocol", "competitive"),
+        choices=("protocol", "competitive", "portfolio"),
         default=os.environ.get("BRACE_POLICY_MODE", "protocol"),
     )
     platform_start.add_argument(
