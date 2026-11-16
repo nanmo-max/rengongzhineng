@@ -2,6 +2,15 @@
 
 本文件是全部实验运行的唯一登记处，包括失败和中止实验。
 
+## PLATFORM-MODEL-TRANSPORT-001（COMPLETED_LOCAL_PLATFORM_PENDING）
+
+- 问题：平台Chat Completions模型传输能否不经语义重写直接进入原生`brace_msi start`，并满足训练阶段强制模型调用与非零Token要求？
+- 输入：官方A公开train与父`checkpoint.npz`，不读取公开validation作模型选择；validation仅用于独立`submit`样本数验证。
+- 方法：镜像内构造/解析标准Chat Completions对象；外部只注入可调用`model_transport`；替身响应返回合法受控提案与123/45 Token；4核8GB、断网、只读根、非root运行。
+- 结果：模型传输被实际调用1次；官方A候选训练完成，Gate拒绝后正确发布父checkpoint；独立预测1,244条；传输失败测试两次重试后retain且训练0次。专项73项、完整回归430项通过。
+- 产物：`docs/results/PLATFORM-MODEL-TRANSPORT-001.md`、`docs/results/RC83_CONTAINER_ACCEPTANCE.json`、`D:/brace-msi-platform-bridge/BRACE-MSI-0.8.3rc1/brace-msi-0.8.3rc1-harness.tar`。
+- 边界：模型服务为本地替身，不是平台真实Qwen调用；公开指标不作为新性能结论；正式平台状态仍为待验证。
+
 ## PYTRIO-ONLINE-001（COMPLETED_PASS）
 
 - 研究问题：此前两次有效基础模型响应后出现的连续`RuntimeError`是否主要由过短客户端超时导致；扩大到60秒但保持一次SDK尝试，能否获得至少3次独立非零Token严格提案并由RC7安全执行至少1次？

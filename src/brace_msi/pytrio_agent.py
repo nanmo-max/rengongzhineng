@@ -302,6 +302,76 @@ class SamplingTransport(Protocol):
     ) -> SamplingResult: ...
 
 
+ChatCompletionsCaller = Callable[[Mapping[str, Any]], Mapping[str, Any]]
+
+
+class ChatCompletionsSamplingTransport:
+    """Native OpenAI Chat Completions boundary for platform model transport.
+
+    The platform bridge only supplies a callable.  Request construction,
+    response parsing and token validation remain inside the submitted image,
+    so binding ``workspace_io.model_transport`` does not rewrite Agent
+    semantics.
+    """
+
+    def __init__(self, caller: ChatCompletionsCaller) -> None:
+        if not callable(caller):
+            raise TypeError("chat completions caller must be callable")
+        self._caller = caller
+
+    def sample(
+        self,
+        prompt: str,
+        *,
+        model: str,
+        model_path: str | None,
+        max_tokens: int,
+        temperature: float,
+        seed: int,
+        timeout_seconds: float,
+    ) -> SamplingResult:
+        del timeout_seconds  # lifecycle and timeout are owned by the platform caller
+        request: dict[str, Any] = {
+            "model": model_path or model,
+            "messages": [{"role": "user", "content": prompt}],
+            "max_tokens": max_tokens,
+            "temperature": temperature,
+            "seed": seed,
+        }
+        response = self._caller(request)
+        if not isinstance(response, Mapping):
+            raise ValueError("chat completions response must be an object")
+        choices = response.get("choices")
+        usage = response.get("usage")
+        if (
+            not isinstance(choices, Sequence)
+            or isinstance(choices, (str, bytes))
+            or not choices
+            or not isinstance(choices[0], Mapping)
+            or not isinstance(usage, Mapping)
+        ):
+            raise ValueError("chat completions response is missing choices or usage")
+        message = choices[0].get("message")
+        if not isinstance(message, Mapping) or not isinstance(message.get("content"), str):
+            raise ValueError("chat completions response is missing message content")
+        prompt_tokens = usage.get("prompt_tokens")
+        completion_tokens = usage.get("completion_tokens")
+        if (
+            isinstance(prompt_tokens, bool)
+            or not isinstance(prompt_tokens, int)
+            or prompt_tokens <= 0
+            or isinstance(completion_tokens, bool)
+            or not isinstance(completion_tokens, int)
+            or completion_tokens <= 0
+        ):
+            raise ValueError("chat completions response requires positive token usage")
+        return SamplingResult(
+            text=message["content"],
+            input_tokens=prompt_tokens,
+            output_tokens=completion_tokens,
+        )
+
+
 class PyTrioSamplingTransport:
     """Small adapter around the documented PyTRiO Sampler API.
 

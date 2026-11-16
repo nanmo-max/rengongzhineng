@@ -51,5 +51,6 @@
 | R-047 | P0 | 已部署候选在下一批证实负收益后仍作为父模型继续训练，造成灾难性最终退化 | `delayed_gain_t+1 < 0`但状态机没有回到直接前任的动作 | 保留一轮直接前任；负配对收益触发schema兼容、64 MiB受限的原子回滚；回滚不计作候选，下一批继续验证 | 技术负责人 | MITIGATED_LOCAL：A2复现B确认RMSE退化至993.202677；A3第10轮按`-310.293697`延迟收益回滚，确认恢复至241.980799。正式平台是否允许保留直接前任仍待H-001 |
 | R-048 | P0 | 方法在同批或独立转换有效，但连续父链累积后失效或优化状态异常 | 固定父模型探针优秀，连续部署出现收益崩溃、学习率累乘、Gate标签影响路由或step倒退 | 每种晋级recipe必须从初始父独立跑完整九转换父链；Gate只验证；临时倍率不得写回；保存加载、epoch/step和下一批收益为硬门 | 技术负责人 | MITIGATED_LOCAL：A3保留学习率累乘失败；最终自审发现并修复A4 Gate趋势泄漏，A5因证据ID失配无效，A6三任务十轮平均收益均为正且checkpoint可加载、小于64 MiB；隐藏泛化仍由正式评测确认 |
 | R-049 | P0 | 镜像校验在四挂载就绪前执行默认命令，导致原生训练入口因空`/workspace`或缺父checkpoint提前失败 | Docker默认`CMD start`，平台预检以裸容器或空挂载启动 | 默认命令只显示帮助并退出0；桥接器显式追加`start`/`submit`；同时做空挂载和真实挂载双验收 | 技术负责人 | MITIGATED_LOCAL/OPEN_PLATFORM：0.8.1裸启动稳定复现`PermissionError: /workspace`/退出1；0.8.2恢复`CMD --help`后退出0，显式start/submit仍完成父续训和1,244条预测。平台导入与真实生命周期仍待复验 |
+| R-050 | P0 | 正式训练只有PyTRiO私有Sampler调用，无法绑定平台Chat Completions传输，或失败后零Token继续训练 | 平台判`model_calls_required`不满足 | 镜像原生拥有Chat Completions请求/解析；`start_round`接收平台模型传输；平台模式强制调用和正Token；失败重试一次后retain且不训练 | 技术负责人 | MITIGATED_LOCAL/OPEN_PLATFORM：0.8.3替身`workspace_io.model_transport`在受限容器中真实收到请求并产生123/45 Token，候选训练完成；失败测试2次调用后retain且候选未训练。真实平台服务仍需重新上传验证 |
 
 风险关闭必须在本表填写证据路径，不得仅写“已解决”。

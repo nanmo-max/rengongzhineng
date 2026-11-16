@@ -1,10 +1,18 @@
 # 新会话恢复与交接
 
-## 2026-11-16 0.8.2rc1空挂载预检恢复入口（当前）
+## 2026-11-16 0.8.3rc1平台模型传输恢复入口（当前）
+
+1. `PLATFORM-MODEL-TRANSPORT-001`已本地完成；当前唯一核心任务为`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`。不要重跑A1—A6或重新读取暴露确认集。
+2. 平台原始失败`O-PLATFORM-013`指出0.8.2的PyTRiO私有Sampler无法忠实绑定`workspace_io.model_transport`。0.8.3将标准Chat Completions语义纳入原生入口，平台模式强制模型调用，失败后retain且不训练。
+3. 当前上传归档为`D:/brace-msi-platform-bridge/BRACE-MSI-0.8.3rc1/brace-msi-0.8.3rc1-harness.tar`，SHA-256 `4BE4327D29B8D25A2480427776AC58696FB6A48EA63AB576C35944240EA3A694`。0.8.2及更早版本不得上传代替。
+4. 本地证据：430项回归；4核8GB、断网、只读根、非root容器中替身平台传输实际产生123/45 Token并完成官方A候选训练；独立预测1,244条；`pip check`、禁入扫描及`docker save/load`通过。这不是平台真实兼容通过。
+5. 下一步仅上传0.8.3并保存平台原始结果；若仍失败，先登记新错误，不盲目消耗试运行。训练记录链接为`https://swanlab.cn/@nanmo-max/brace-msi-platform-native`，源码分支为`https://github.com/nanmo-max/rengongzhineng/tree/codex/native-competitive-rc`。
+
+## 2026-11-16 0.8.2rc1空挂载预检恢复入口（历史）
 
 1. `PLATFORM-PREFLIGHT-001`已本地完成；当前唯一核心任务仍为`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`。不要重跑A1—A6，不读取已第5次暴露的confirmation/public validation。
 2. 运行时补丁提交为`8566807`；结果入口为`docs/results/PLATFORM-PREFLIGHT-001.md`。0.8.1裸启动在空挂载时复现`PermissionError: /workspace`/退出1；0.8.2默认`--help`退出0。
-3. 当前上传归档为`D:/brace-msi-platform-bridge/BRACE-MSI-0.8.2rc1/brace-msi-0.8.2rc1-harness.tar`，SHA-256 `7CA09B029946E8D5B94BEFA8A53EDEFC0DF168051750FA0D4CB8C3FFBBE7784F`。0.8.1及更早目录不得上传代替。
+3. 当时上传归档为`D:/brace-msi-platform-bridge/BRACE-MSI-0.8.2rc1/brace-msi-0.8.2rc1-harness.tar`，SHA-256 `7CA09B029946E8D5B94BEFA8A53EDEFC0DF168051750FA0D4CB8C3FFBBE7784F`；现已由本文件顶部0.8.3入口替代。
 4. `0.8.2rc1`已通过424项完整回归、空挂载退出0、官方A父checkpoint显式start、1,244条独立submit、4核8GB只读断网、禁入扫描、`pip check`及`docker save/load`；这些是本地证据，不是官方兼容判定。
 5. 下一动作只能是平台重新上传/导入/校验；若进入真实试运行，必须核对十轮父链、模型产物、非零PyTRiO Token及独立预测。新的平台原始错误先登记SOURCE_REGISTRY，再决定是否修改。
 

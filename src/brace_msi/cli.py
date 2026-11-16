@@ -8,7 +8,8 @@ import os
 import sys
 from dataclasses import asdict
 from pathlib import Path
-from typing import Sequence
+from collections.abc import Callable, Mapping, Sequence
+from typing import Any
 
 import numpy as np
 
@@ -115,7 +116,7 @@ def _parser() -> argparse.ArgumentParser:
     )
     platform_start.add_argument(
         "--advisor",
-        choices=("deterministic", "pytrio"),
+        choices=("deterministic", "pytrio", "platform"),
         default=os.environ.get("BRACE_ADVISOR", "deterministic"),
     )
     platform_start.add_argument(
@@ -258,7 +259,24 @@ def _validate_official_agent_selection(
         raise ValueError("--provider is required unless --validate-only is used")
 
 
-def main(argv: Sequence[str] | None = None) -> int:
+def _workspace_model_transport() -> Callable[[Mapping[str, Any]], Mapping[str, Any]]:
+    try:
+        import workspace_io  # type: ignore[import-not-found]
+    except ImportError as exc:
+        raise RuntimeError(
+            "platform advisor requires workspace_io.model_transport"
+        ) from exc
+    transport = getattr(workspace_io, "model_transport", None)
+    if not callable(transport):
+        raise RuntimeError("workspace_io.model_transport must be callable")
+    return transport
+
+
+def main(
+    argv: Sequence[str] | None = None,
+    *,
+    model_transport: Callable[[Mapping[str, Any]], Mapping[str, Any]] | None = None,
+) -> int:
     args = _parser().parse_args(argv)
     _enforce_formal_release_boundary(args.command)
     if args.command == "describe":
@@ -274,6 +292,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             if args.advisor == "pytrio"
             else None
         )
+        platform_transport = None
+        if args.advisor == "platform":
+            platform_transport = model_transport or _workspace_model_transport()
         result = start_round(
             args.data,
             args.previous_checkpoint,
@@ -296,6 +317,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 max_replay_samples=args.max_replay_samples,
             ),
             advisor=advisor,
+            model_transport=platform_transport,
             expected_parent_sha256=args.expected_parent_sha256,
             expected_round_index=args.expected_round_index,
         )

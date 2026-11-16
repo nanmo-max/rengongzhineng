@@ -486,6 +486,83 @@ def test_describe_declares_native_mount_contract_without_package_root() -> None:
     assert description["checkpoint_format"] == "contest.cpu-mlp.v1"
     assert description["argv_prefix"] == ["python3", "-m", "brace_msi"]
     assert not set(description["argv_prefix"]) & set(description["operations"])
+    assert description["model_transport"] == {
+        "binding": "workspace_io.model_transport",
+        "protocol": "openai.chat.completions.v1",
+        "required_during_start": True,
+    }
+
+
+def _platform_proposal_response() -> dict[str, object]:
+    proposal = {
+        "schema_version": "brace-msi.experiment-proposal.v1",
+        "action": "incremental_update",
+        "tool": "train_incremental",
+        "rationale": "bounded platform model proposal",
+        "parameters": {"epochs": 1, "learning_rate": 0.01},
+        "max_cpu_seconds": 30.0,
+        "max_candidates": 1,
+        "stop_conditions": ["budget_exhausted", "nonfinite_training_state"],
+    }
+    return {
+        "choices": [{"message": {"content": json.dumps(proposal)}}],
+        "usage": {"prompt_tokens": 101, "completion_tokens": 37},
+    }
+
+
+def test_start_round_calls_injected_platform_model_and_records_tokens(tmp_path: Path) -> None:
+    data = tmp_path / "data.jsonl"
+    parent = tmp_path / "checkpoint.npz"
+    calls: list[dict[str, object]] = []
+    _write_data(data, count=60)
+    _write_parent(parent)
+
+    def model_transport(request):
+        calls.append(request)
+        return _platform_proposal_response()
+
+    receipt = start_round(
+        data,
+        parent,
+        tmp_path / "workspace",
+        tmp_path / "output",
+        PlatformRuntimeConfig(min_relative_improvement=-1.0),
+        model_transport=model_transport,
+    )
+
+    assert len(calls) == 1
+    assert calls[0]["model"] == "Qwen/Qwen3.5-4B"
+    assert receipt["decision"]["advisor_source"] == "pytrio"
+    assert receipt["decision"]["advisor_receipt"]["total_input_tokens"] == 101
+    assert receipt["decision"]["advisor_receipt"]["total_output_tokens"] == 37
+    assert receipt["candidate_trained"] is True
+
+
+def test_platform_model_failure_retries_then_retains_without_training(tmp_path: Path) -> None:
+    data = tmp_path / "data.jsonl"
+    parent = tmp_path / "checkpoint.npz"
+    attempts = 0
+    _write_data(data, count=60)
+    _write_parent(parent)
+
+    def model_transport(request):
+        nonlocal attempts
+        attempts += 1
+        raise RuntimeError("platform model unavailable")
+
+    receipt = start_round(
+        data,
+        parent,
+        tmp_path / "workspace",
+        tmp_path / "output",
+        model_transport=model_transport,
+    )
+
+    assert attempts == 2
+    assert receipt["candidate_trained"] is False
+    assert receipt["decision"]["executed_action"] == "noop"
+    assert receipt["decision"]["advisor_source"] == "deterministic_recovery"
+    assert receipt["checkpoint_sha256"] == receipt["parent_checkpoint_sha256"]
 
 
 def test_start_round_rejects_top_level_parent_hash_before_reading_data(
@@ -909,7 +986,7 @@ def test_container_default_is_safe_for_empty_platform_preflight() -> None:
     dockerfile = Path("Dockerfile").read_text(encoding="utf-8")
     assert 'ENTRYPOINT ["python3", "-m", "brace_msi"]' in dockerfile
     assert 'CMD ["--help"]' in dockerfile
-    assert 'ENV BRACE_ADVISOR=pytrio' in dockerfile
+    assert 'ENV BRACE_ADVISOR=platform' in dockerfile
     assert 'BRACE_POLICY_MODE=portfolio' in dockerfile
     assert 'BRACE_PROTOCOL_PROFILES=' not in dockerfile
     assert 'BRACE_MAX_REPLAY_SAMPLES=100000' in dockerfile
@@ -917,7 +994,7 @@ def test_container_default_is_safe_for_empty_platform_preflight() -> None:
 
 def test_release_version_matches_platform_preflight_patch() -> None:
     pyproject = Path("pyproject.toml").read_text(encoding="utf-8")
-    assert 'version = "0.8.2rc1"' in pyproject
+    assert 'version = "0.8.3rc1"' in pyproject
 
 
 def test_pytrio_advice_is_bounded_and_recorded_without_bypassing_gate(tmp_path: Path) -> None:

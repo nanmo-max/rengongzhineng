@@ -1,0 +1,30 @@
+{
+  "release_id": "BRACE-MSI-0.8.3rc1",
+  "status": "PASS_LOCAL_PLATFORM_PENDING",
+  "image": {
+    "tag": "brace-msi:0.8.3rc1",
+    "id": "sha256:f95b49a689d1aeb35d817af02e32c6dadd95ec8e8ec5ccde1db8cee4618522a0",
+    "bytes": 249015083,
+    "platform": "linux/amd64",
+    "user": "brace",
+    "package_version": "0.8.3rc1"
+  },
+  "constraints": {"cpus": 4, "memory_bytes": 8589934592, "network": "none", "read_only_root": true},
+  "model_transport": {
+    "binding": "workspace_io.model_transport",
+    "protocol": "openai.chat.completions.v1",
+    "calls": 1,
+    "input_tokens": 123,
+    "output_tokens": 45,
+    "real_platform_service": false
+  },
+  "training": {"profile": "A", "sample_count": 445, "candidate_trained": true, "safety_gate_preserved": true},
+  "prediction": {"sample_count": 1244, "status": "completed"},
+  "verification": {"pytest_passed": 430, "pip_check": "PASS", "forbidden_file_count": 0, "bare_preflight_exit_code": 0, "docker_load": "PASS"},
+  "archive": {
+    "path": "D:/brace-msi-platform-bridge/BRACE-MSI-0.8.3rc1/brace-msi-0.8.3rc1-harness.tar",
+    "bytes": 249039360,
+    "sha256": "4BE4327D29B8D25A2480427776AC58696FB6A48EA63AB576C35944240EA3A694"
+  },
+  "boundary": "Local stand-in transport proves native call reachability; official platform validation remains external."
+}

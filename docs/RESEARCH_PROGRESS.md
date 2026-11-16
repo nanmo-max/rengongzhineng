@@ -2,6 +2,14 @@
 
 本文件按时间追加，不回写历史记录。当前状态仍以 [STATUS.md](STATUS.md) 为准。
 
+## 2026-11-16：平台Chat Completions原生模型传输修复
+
+- 登记平台失败`O-PLATFORM-013`：0.8.2只提供PyTRiO私有Sampler协议，无法由Chat Completions桥接器忠实绑定，且失败降级可能零模型调用。
+- 以红绿测试新增`ChatCompletionsSamplingTransport`，请求构造、响应解析、Token正值校验由镜像所有；`start_round`可直接注入平台模型传输，平台模式每轮强制触发，失败重试一次后retain且不训练。
+- 完整回归`430 passed`。`brace-msi:0.8.3rc1`在4核8GB、断网、只读根、非root容器中通过替身`workspace_io.model_transport`产生123/45 Token并完成官方A候选训练；独立`submit`生成1,244条预测。
+- 镜像249,015,083字节，`pip check`通过，禁入文件扫描0；`docker save`归档249,039,360字节并重载通过，SHA-256为`4BE4327D29B8D25A2480427776AC58696FB6A48EA63AB576C35944240EA3A694`。
+- 以上只证明本地接口和容器行为；平台真实模型服务、Token结算和最终评测仍为外部验证，不写成通过。
+
 ## 2026-11-13：DUAL-INTEGRATION-001平台无关十轮集成
 
 - 新增`ControlledDualLoopHarness`与`controlled-loop-smoke`入口，贯通十批预测后反馈、四缓冲区生命周期、身份无关证据、动作值排序、0至2候选、SafetyGate、前任影子收益、原子控制器提交、本地审计和干净中断续跑。

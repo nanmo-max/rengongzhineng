@@ -1,7 +1,7 @@
 # 当前状态
 
-- 最近同步：2026-11-16 17:02（Asia/Shanghai）
-- 当前阶段：`PLATFORM-PREFLIGHT-001`本地完成并形成`BRACE-MSI-0.8.2rc1`；等待平台重新导入并以真实挂载/在线PyTRiO复验
+- 最近同步：2026-11-16（Asia/Shanghai）
+- 当前阶段：`PLATFORM-MODEL-TRANSPORT-001`本地完成并形成`BRACE-MSI-0.8.3rc1`；等待平台重新导入并以真实`workspace_io.model_transport`复验
 - 当前路线：**性能优先的证据驱动候选组合 + 下一批延迟收益回滚；保留平台父链、安全内核、受控PyTRiO与SwanLab接口** `[D-061]` `[D-073]`
 - 当前唯一核心任务：`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`；需要平台导入、薄桥接器、在线凭据、真实生命周期和官方评测，不再用本地确认集继续选型。
 - 稳定边界：全部历史RC和实验不改写；`0.5.0rc1`只作研究证据，不得上传。正式线从D-058开始只输出原生官方MLP续训checkpoint。A3之后禁止继续LLM调参 `[D-043]`
@@ -27,6 +27,7 @@
 0o. `COMPETITIVE-POLICY-002`已完成：A1—A6筛选并淘汰B灾难性早触发；A5因报告ID失配判无效，最终A6严格隔离Gate。正式`start_round`十轮重放中A/B/C平均有向收益为`+0.319620` Macro-F1、`+21.850812`和`+0.438766` RMSE降低，确认/public validation读取0。`0.8.0rc1`完成421项回归、三任务4核8GB断网容器、PyTRiO失败retain、禁入扫描及`docker save/load`，见`results/COMPETITIVE-POLICY-002.md`。
 0p. `PLATFORM-BRIDGE-001`已完成：`0.8.1rc1`显式校验平台顶层父哈希和期望轮次，部署/拒绝/retain均声明实际`checkpoint.npz`；54项平台专项、424项完整回归、官方A父链两轮、1,244条独立预测及`docker save/load`通过。平台旧草稿适配器无效，正式兼容性仍未判定，见`results/PLATFORM-BRIDGE-001.md`。
 0q. `PLATFORM-PREFLIGHT-001`已完成：本机确认0.8.1默认`start`在空挂载裸启动时因`/workspace`权限退出1，而历史可运行镜像默认`--help`。0.8.2恢复安全默认命令，裸启动退出0；显式A父checkpoint `start`和1,244条独立`submit`仍通过。424项回归、禁入扫描、`pip check`及`docker save/load`通过；平台真实兼容仍未判定，见`results/PLATFORM-PREFLIGHT-001.md`。
+0r. `PLATFORM-MODEL-TRANSPORT-001`已完成：平台反馈确认0.8.2只有PyTRiO私有Sampler路径，无法忠实绑定`workspace_io.model_transport`的Chat Completions协议。0.8.3将标准Chat Completions请求/解析和Token硬门纳入原生`start_round`，`start`强制调用平台模型传输；两次失败后retain且不训练。替身平台传输在4核8GB断网只读容器内实际收到调用并产生123/45 Token，官方A父checkpoint完成候选训练，`submit`输出1,244条预测；430项回归和`docker save/load`通过。平台真实服务仍待上传复验，见`results/PLATFORM-MODEL-TRANSPORT-001.md`。
 1. `DUAL-DATA-001`已完成：四缓冲区、Gate一轮隔离、Update+Replay候选集合、只读manifest、训练/评估分离句柄和未来诱饵阻断通过4项专项测试；完整回归`275 passed`。
 2. `DUAL-TXN-001`已完成：每批单决策、0至2候选、首候选结果触发升级、十批前缀、原子提交/恢复及影子配对收益通过5项专项测试；完整回归`280 passed`。
 3. `DUAL-VALUE-001`已完成：每任务隔离统计、身份无关证据画像、弱先验、延迟收益专用更新和性能—CPU/RSS/Token/模型体积Pareto前沿通过5项专项测试；完整回归`285 passed`。
@@ -65,11 +66,11 @@
 
 ## 当前执行入口
 
-当前上传候选为`D:/brace-msi-platform-bridge/BRACE-MSI-0.8.2rc1/brace-msi-0.8.2rc1-harness.tar`，SHA-256 `7CA09B029946E8D5B94BEFA8A53EDEFC0DF168051750FA0D4CB8C3FFBBE7784F`。它由`docker save`生成并已重载验证；镜像为248,956,508字节，不含Qwen权重、工业模型权重、数据或密钥。`0.8.1rc1`及更早版本均为冻结历史，不得代替。尚未通过平台“镜像可用”、薄桥接器真实挂载、在线模型调用或正式评测。机器证据见`docs/results/RC82_CONTAINER_ACCEPTANCE.json`。
+当前上传候选为`D:/brace-msi-platform-bridge/BRACE-MSI-0.8.3rc1/brace-msi-0.8.3rc1-harness.tar`，SHA-256 `4BE4327D29B8D25A2480427776AC58696FB6A48EA63AB576C35944240EA3A694`。它由`docker save`生成并已重载验证；镜像为249,015,083字节，不含Qwen权重、工业模型权重、数据或密钥。`0.8.2rc1`及更早版本均为冻结历史，不得代替。尚未通过平台真实模型服务及正式评测。机器证据见`docs/results/RC83_CONTAINER_ACCEPTANCE.json`。
 
 正式路线、已知能力与未知边界见[FORMAL_ROUTE.md](FORMAL_ROUTE.md)。实验必须遵守[EXPERIMENT_PROTOCOL.md](EXPERIMENT_PROTOCOL.md)。
 
-提交材料入口见[SUBMISSION_CHECKLIST.md](SUBMISSION_CHECKLIST.md)。源码分支已推送至`https://github.com/nanmo-max/rengongzhineng/tree/codex/generalist-q1-sprint`；SwanLab项目仍是RC3最终工程记录`https://swanlab.cn/@nanmo-max/brace-msi-final`，0.5.0rc1尚未生成或同步新的比赛记录。
+提交材料入口见[SUBMISSION_CHECKLIST.md](SUBMISSION_CHECKLIST.md)。源码入口为`https://github.com/nanmo-max/rengongzhineng/tree/codex/native-competitive-rc`；公开训练记录为`https://swanlab.cn/@nanmo-max/brace-msi-platform-native`。0.8.3只修复模型传输边界，没有重新训练A/B/C，不伪造新的训练记录。
 
 ## 外部阻塞
 

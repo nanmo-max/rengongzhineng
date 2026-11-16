@@ -2,7 +2,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from brace_msi.pytrio_agent import PyTrioSamplingTransport
+import pytest
+
+from brace_msi.pytrio_agent import (
+    ChatCompletionsSamplingTransport,
+    PyTrioSamplingTransport,
+)
 
 
 class FakeFuture:
@@ -116,3 +121,63 @@ def test_transport_uses_documented_sampler_api_and_reports_token_counts() -> Non
         "sampling_first_chunk_timeout_seconds": 7.5,
         "sampling_chunk_idle_timeout_seconds": 7.5,
     }
+
+
+def test_chat_completions_transport_owns_request_and_response_semantics() -> None:
+    calls: list[dict[str, object]] = []
+
+    def model_transport(request):
+        calls.append(request)
+        return {
+            "choices": [{"message": {"content": '{"action":"noop"}'}}],
+            "usage": {"prompt_tokens": 37, "completion_tokens": 9},
+        }
+
+    result = ChatCompletionsSamplingTransport(model_transport).sample(
+        "choose one bounded action",
+        model="Qwen/Qwen3.5-4B",
+        model_path=None,
+        max_tokens=128,
+        temperature=0.0,
+        seed=20261106,
+        timeout_seconds=12.0,
+    )
+
+    assert calls == [
+        {
+            "model": "Qwen/Qwen3.5-4B",
+            "messages": [{"role": "user", "content": "choose one bounded action"}],
+            "max_tokens": 128,
+            "temperature": 0.0,
+            "seed": 20261106,
+        }
+    ]
+    assert result.text == '{"action":"noop"}'
+    assert result.input_tokens == 37
+    assert result.output_tokens == 9
+
+
+@pytest.mark.parametrize(
+    "response",
+    [
+        {},
+        {"choices": []},
+        {
+            "choices": [{"message": {"content": "{}"}}],
+            "usage": {"prompt_tokens": 0, "completion_tokens": 1},
+        },
+    ],
+)
+def test_chat_completions_transport_rejects_incomplete_receipts(response) -> None:
+    transport = ChatCompletionsSamplingTransport(lambda request: response)
+
+    with pytest.raises(ValueError):
+        transport.sample(
+            "prompt",
+            model="Qwen/Qwen3.5-4B",
+            model_path=None,
+            max_tokens=128,
+            temperature=0.0,
+            seed=1,
+            timeout_seconds=5.0,
+        )

@@ -31,10 +31,21 @@ EVIDENCE-RSI-001(DONE)
   -> COMPETITIVE-POLICY-002(DONE_LOCAL_EXTERNAL_BLOCK)
   -> PLATFORM-BRIDGE-001(DONE_LOCAL_EXTERNAL_BLOCK)
   -> PLATFORM-PREFLIGHT-001(DONE_LOCAL_EXTERNAL_BLOCK)
+  -> PLATFORM-MODEL-TRANSPORT-001(DONE_LOCAL_EXTERNAL_BLOCK)
   -> FORMAL-RELEASE-001(BLOCKED_EXTERNAL)
 ```
 
 以上为当前正式重构图；`0.6.0rc1`及下方历史任务图保持冻结，新竞争候选只在独立分支演进。
+
+### PLATFORM-MODEL-TRANSPORT-001 平台Chat Completions原生模型边界
+
+- 状态：`DONE_LOCAL_EXTERNAL_BLOCK`
+- 依赖：PLATFORM-PREFLIGHT-001、O-PLATFORM-013
+- 优先级：P0
+- 目标：让原生`brace_msi start`通过镜像内定义的标准Chat Completions语义直接调用平台`workspace_io.model_transport`，消除只能由平台语义重写PyTRiO私有Sampler协议的兼容性缺口；正式训练不得在零模型调用时静默继续。
+- 完成标准：请求构造、响应解析和正Token收据由镜像实现；平台传输每轮强制触发；两次失败后retain且不训练；`describe`声明绑定协议；CLI支持依赖注入和`workspace_io`运行时解析；完整回归、4核8GB断网只读容器真实替身调用、独立预测、`pip check`、禁入扫描及`docker save/load`通过。
+- 停止条件：不猜测平台私有frame字段，不改变父checkpoint schema、训练器、性能策略、Gate或历史RC；本地替身调用不得冒充平台真实服务通过。
+- 证据：430项回归；容器替身调用123/45 Token并完成官方A候选训练；独立预测1,244条；镜像249,015,083字节；归档249,039,360字节且SHA-256为`4BE4327D...EA3A694`。见`results/PLATFORM-MODEL-TRANSPORT-001.md`与`results/RC83_CONTAINER_ACCEPTANCE.json`。
 
 ### PLATFORM-PREFLIGHT-001 空挂载镜像预检兼容修复
 

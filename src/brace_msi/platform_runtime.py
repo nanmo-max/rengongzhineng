@@ -17,6 +17,7 @@ from pathlib import Path
 import shutil
 import tempfile
 import time
+from collections.abc import Callable, Mapping
 from typing import Any, Protocol
 import zipfile
 
@@ -144,6 +145,11 @@ def describe_runtime() -> dict[str, Any]:
         "checkpoint_format": "contest.cpu-mlp.v1",
         "operations": ["describe", "start", "submit"],
         "task_kinds": ["classification", "regression"],
+        "model_transport": {
+            "binding": "workspace_io.model_transport",
+            "protocol": "openai.chat.completions.v1",
+            "required_during_start": True,
+        },
         "requires_network": False,
         "requires_gpu": False,
     }
@@ -719,6 +725,7 @@ def _decision_for_round(
     arrival_evidence: ArrivalEvidence | None,
     rollback_available: bool,
     current_target_mean: float,
+    force_model_call: bool = False,
 ) -> tuple[dict[str, Any], Action, int, float]:
     """Choose a bounded action; model text never crosses the effect boundary directly."""
 
@@ -766,6 +773,11 @@ def _decision_for_round(
         action_uncertainty=action_uncertainty,
         pareto_indistinguishable=not history,
     )
+    if force_model_call and "platform_model_call_required" not in trigger.reasons:
+        trigger = AgentTrigger(
+            should_call=True,
+            reasons=(*trigger.reasons, "platform_model_call_required"),
+        )
     context = AgentContext(
         task_kind=parent.meta["task"],
         metric_name="macro_f1" if parent.meta["task"] == "classification" else "rmse",
@@ -1056,6 +1068,7 @@ def start_round(
     config: PlatformRuntimeConfig = PlatformRuntimeConfig(),
     *,
     advisor: PlatformAdvisor | None = None,
+    model_transport: Callable[[Mapping[str, Any]], Mapping[str, Any]] | None = None,
     gate_data_path: Path | None = None,
     arrival_evidence: ArrivalEvidence | None = None,
     rollback_checkpoint: Path | None = None,
@@ -1063,6 +1076,16 @@ def start_round(
     expected_round_index: int | None = None,
 ) -> dict[str, Any]:
     """Execute one platform round and atomically publish the selected checkpoint."""
+
+    if advisor is not None and model_transport is not None:
+        raise ValueError("advisor and model_transport are mutually exclusive")
+    if model_transport is not None:
+        from .platform_advisor import build_platform_advisor
+        from .pytrio_agent import ChatCompletionsSamplingTransport
+
+        advisor = build_platform_advisor(
+            transport=ChatCompletionsSamplingTransport(model_transport)
+        )
 
     started_wall = time.perf_counter()
     started_cpu = time.process_time()
@@ -1248,6 +1271,7 @@ def start_round(
         arrival_evidence=arrival_evidence,
         rollback_available=rollback_model is not None,
         current_target_mean=float(np.mean(batch["y"][update_indices])),
+        force_model_call=model_transport is not None,
     )
     use_replay = executed_action is Action.REPLAY_REFIT and len(replay_x) > 0
     training_x = (

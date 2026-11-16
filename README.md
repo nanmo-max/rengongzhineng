@@ -9,8 +9,9 @@
 - 新会话恢复：[docs/SESSION_HANDOFF.md](docs/SESSION_HANDOFF.md)
 - 作品说明书：[docs/SUBMISSION_DOCUMENT.md](docs/SUBMISSION_DOCUMENT.md)
 - 平台提交清单：[docs/SUBMISSION_CHECKLIST.md](docs/SUBMISSION_CHECKLIST.md)
-- 最终公开训练记录：[SwanLab brace-msi-final](https://swanlab.cn/@nanmo-max/brace-msi-final)
+- 公开训练记录：[SwanLab brace-msi-platform-native](https://swanlab.cn/@nanmo-max/brace-msi-platform-native)
+- 正式源码分支：[GitHub codex/native-competitive-rc](https://github.com/nanmo-max/rengongzhineng/tree/codex/native-competitive-rc)
 
-当前独立研究分支候选发布标识为`BRACE-MSI-0.4.0rc1`；已冻结的`BRACE-MSI-0.1.0rc1`、`0.2.0rc2`与`0.3.0rc3`历史边界不改写。0.4.0rc1在统一BRACE治理下仅为Engine C加入通过门控的PaperFusion训练器，Gas A与Bearing B继续使用RC3安全候选。公开开发指标来自历史暴露验证集，不是隐藏测试或官方成绩；详细边界见[论文融合结果](docs/results/PAPER-FUSION-SPRINT-001.md)和[最终SwanLab记录](docs/results/SWANLAB-FINAL-001.md)。
+当前平台候选发布标识为`BRACE-MSI-0.8.3rc1`；全部历史RC和正负实验保持可追溯。0.8.3原生支持平台Chat Completions模型传输、官方父checkpoint续训、SafetyGate、独立预测和失败retain。公开开发指标不是隐藏测试或官方成绩；当前边界见[发布候选](docs/RELEASE_CANDIDATE.md)和[提交清单](docs/SUBMISSION_CHECKLIST.md)。
 
 本仓库当前没有项目级`LICENSE`文件。依赖许可证与待权利人决定的源码许可证说明见 [开源合规清单](docs/OPEN_SOURCE_COMPLIANCE.md)。

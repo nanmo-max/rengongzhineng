@@ -1,10 +1,14 @@
 # BRACE-MSI Release Candidate
 
-## 当前构建候选：0.8.2rc1
+## 当前构建候选：0.8.3rc1
 
-`BRACE-MSI-0.8.2rc1`是`0.8.1rc1`的空挂载预检兼容补丁。它恢复首个完成平台试运行版本的安全默认启动语义：镜像无参数启动只显示帮助并退出0，不会在平台四挂载尚未提供时误执行训练；平台桥接器仍需显式追加`start`或`submit`。父checkpoint续训、竞争策略、Gate、PyTRiO及SwanLab语义没有改变。
+`BRACE-MSI-0.8.3rc1`修复平台确认的模型传输协议缺口：原生`start_round`现在由镜像自身构造和解析标准Chat Completions对象，可直接接收平台`workspace_io.model_transport`，并在平台模式强制产生模型调用与正Token；失败重试一次后retain且不训练。父checkpoint续训、竞争策略、Gate、预测和历史性能证据不变。
 
-上传归档：`D:/brace-msi-platform-bridge/BRACE-MSI-0.8.2rc1/brace-msi-0.8.2rc1-harness.tar`；SHA-256 `7CA09B029946E8D5B94BEFA8A53EDEFC0DF168051750FA0D4CB8C3FFBBE7784F`。机器证据见[空挂载预检修复](results/PLATFORM-PREFLIGHT-001.md)和[RC82容器验收](results/RC82_CONTAINER_ACCEPTANCE.json)。平台真实兼容性仍待重新导入和试运行。
+上传归档：`D:/brace-msi-platform-bridge/BRACE-MSI-0.8.3rc1/brace-msi-0.8.3rc1-harness.tar`；SHA-256 `4BE4327D29B8D25A2480427776AC58696FB6A48EA63AB576C35944240EA3A694`。430项回归及4核8GB断网替身平台调用通过，机器证据见[模型传输修复](results/PLATFORM-MODEL-TRANSPORT-001.md)和[RC83容器验收](results/RC83_CONTAINER_ACCEPTANCE.json)。真实平台兼容性仍待重新导入和试运行。
+
+## 历史空挂载补丁：0.8.2rc1
+
+`BRACE-MSI-0.8.2rc1`保留为空挂载预检历史证据，已被0.8.3替代，不得上传代替当前候选。
 
 ## 历史平台桥接候选：0.8.1rc1
 

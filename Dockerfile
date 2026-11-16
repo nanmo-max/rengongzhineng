@@ -28,7 +28,7 @@ RUN python3 -m pip install --no-cache-dir --no-deps .
 
 RUN useradd --create-home --uid 10001 brace
 USER brace
-ENV BRACE_ADVISOR=pytrio \
+ENV BRACE_ADVISOR=platform \
     BRACE_POLICY_MODE=portfolio \
     BRACE_MAX_TRAINING_ROUNDS=10 \
     BRACE_MIN_RELATIVE_IMPROVEMENT=0.05 \
