@@ -29,10 +29,21 @@ EVIDENCE-RSI-001(DONE)
   -> DELAYED-GAIN-SIM-001(DONE_MIXED)
   -> METHOD-PORTFOLIO-PILOT-001(DONE)
   -> COMPETITIVE-POLICY-002(DONE_LOCAL_EXTERNAL_BLOCK)
+  -> PLATFORM-BRIDGE-001(IN_PROGRESS)
   -> FORMAL-RELEASE-001(BLOCKED_EXTERNAL)
 ```
 
 以上为当前正式重构图；`0.6.0rc1`及下方历史任务图保持冻结，新竞争候选只在独立分支演进。
+
+### PLATFORM-BRIDGE-001 平台薄桥接边界加固
+
+- 状态：`IN_PROGRESS`
+- 依赖：COMPETITIVE-POLICY-002、O-PLATFORM-011
+- 优先级：P0（平台草稿适配器有缺陷，尚未形成有效兼容性结论）
+- 目标：不实现未知的官方私有frame schema，只为现有Native CLI补充可由外部桥接器可靠调用的显式父哈希、期望轮次和模型产物收据；保留空输出挂载、父链、retain与十轮状态边界。
+- 完成标准：父哈希不符在读取训练数据前失败；期望轮次与持久化workspace历史不符失败；部署、拒绝和retain均返回并实际生成一致的`checkpoint.npz`产物声明；describe暴露无mode命令前缀；现有CLI/父链/空输出测试、全量回归及新镜像构建/重载通过。
+- 停止条件：不得猜测或复制未发布`workspace_io`字段；不得修改训练策略、历史RC、数据或模型参数；若平台不持久化workspace/history，必须继续记录外部阻塞，不能伪造十轮状态。
+- 证据：待完成。
 
 ### METHOD-PORTFOLIO-PILOT-001 方法级跨批可行性筛选
 

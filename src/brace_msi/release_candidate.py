@@ -9,8 +9,8 @@ import zipfile
 
 from .packaging import audit_docker_context
 
-RELEASE_ID = "BRACE-MSI-0.8.0rc1"
-RELEASE_VERSION = "0.8.0rc1"
+RELEASE_ID = "BRACE-MSI-0.8.1rc1"
+RELEASE_VERSION = "0.8.1rc1"
 
 _ROOT_FILES = frozenset(
     {

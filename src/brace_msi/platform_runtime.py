@@ -136,6 +136,7 @@ class CompetitiveGateOutcome:
 def describe_runtime() -> dict[str, Any]:
     return {
         "format": "brace-msi.platform-native.v1",
+        "argv_prefix": ["python3", "-m", "brace_msi"],
         "data_root": "/data",
         "parent_checkpoint": "/previous/checkpoint.npz",
         "workspace_root": "/workspace",
@@ -1058,6 +1059,8 @@ def start_round(
     gate_data_path: Path | None = None,
     arrival_evidence: ArrivalEvidence | None = None,
     rollback_checkpoint: Path | None = None,
+    expected_parent_sha256: str | None = None,
+    expected_round_index: int | None = None,
 ) -> dict[str, Any]:
     """Execute one platform round and atomically publish the selected checkpoint."""
 
@@ -1084,7 +1087,23 @@ def start_round(
     round_index = len(state["rounds"]) + 1
     if round_index > 10:
         raise ValueError("platform runtime supports at most ten rounds")
+    if expected_round_index is not None:
+        if type(expected_round_index) is not int or not 1 <= expected_round_index <= 10:
+            raise ValueError("expected platform round must be an integer in 1..10")
+        if round_index != expected_round_index:
+            raise ValueError(
+                f"expected platform round {expected_round_index}, but persistent workspace proves {round_index}"
+            )
     parent_sha = _sha256(parent_path)
+    if expected_parent_sha256 is not None:
+        normalized_expected = str(expected_parent_sha256).removeprefix("sha256:").lower()
+        if (
+            len(normalized_expected) != 64
+            or any(character not in "0123456789abcdef" for character in normalized_expected)
+        ):
+            raise ValueError("expected parent checkpoint hash must be SHA-256")
+        if normalized_expected != parent_sha:
+            raise ValueError("expected parent checkpoint hash does not match mounted parent")
     if state["rounds"] and state["rounds"][-1].get("checkpoint_sha256") != parent_sha:
         raise ValueError("platform parent does not match the previous committed round")
 
@@ -1434,6 +1453,13 @@ def start_round(
                 rollback_sha if executed_action is Action.ROLLBACK else None
             ),
             "checkpoint_sha256": checkpoint_sha,
+            "model_artifact": {
+                "kind": "checkpoint",
+                "relative_path": "checkpoint.npz",
+                "sha256": checkpoint_sha,
+                "bytes": checkpoint.stat().st_size,
+                "disposition": "deployed_candidate" if deployed else "retained_parent",
+            },
             "candidate_trained": candidate_trained,
             "recipe": decision.get("recipe"),
             "decision": decision,

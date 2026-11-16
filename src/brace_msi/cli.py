@@ -79,6 +79,8 @@ def _parser() -> argparse.ArgumentParser:
         type=Path,
         default=Path("/previous/checkpoint.npz"),
     )
+    platform_start.add_argument("--expected-parent-sha256")
+    platform_start.add_argument("--expected-round-index", type=int)
     platform_start.add_argument("--workspace", type=Path, default=Path("/workspace"))
     platform_start.add_argument("--output", type=Path, default=Path("/output"))
     platform_start.add_argument(
@@ -294,6 +296,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                 max_replay_samples=args.max_replay_samples,
             ),
             advisor=advisor,
+            expected_parent_sha256=args.expected_parent_sha256,
+            expected_round_index=args.expected_round_index,
         )
         print(json.dumps(result, ensure_ascii=False, allow_nan=False))
         return 0

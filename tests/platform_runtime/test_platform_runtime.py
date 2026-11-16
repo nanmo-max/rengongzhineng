@@ -484,6 +484,76 @@ def test_describe_declares_native_mount_contract_without_package_root() -> None:
     assert description["output_root"] == "/output"
     assert "package_root" not in description
     assert description["checkpoint_format"] == "contest.cpu-mlp.v1"
+    assert description["argv_prefix"] == ["python3", "-m", "brace_msi"]
+    assert not set(description["argv_prefix"]) & set(description["operations"])
+
+
+def test_start_round_rejects_top_level_parent_hash_before_reading_data(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    parent = tmp_path / "checkpoint.npz"
+    _write_parent(parent)
+
+    def forbidden_read(*args, **kwargs):
+        raise AssertionError("training data must not be read after a parent hash mismatch")
+
+    monkeypatch.setattr(platform_runtime, "_read_rows", forbidden_read)
+
+    with pytest.raises(ValueError, match="expected parent checkpoint hash"):
+        start_round(
+            tmp_path / "missing-data",
+            parent,
+            tmp_path / "workspace",
+            tmp_path / "output",
+            expected_parent_sha256="0" * 64,
+        )
+
+
+def test_start_round_rejects_expected_round_that_workspace_cannot_prove(
+    tmp_path: Path,
+) -> None:
+    data = tmp_path / "data.jsonl"
+    parent = tmp_path / "checkpoint.npz"
+    _write_data(data)
+    _write_parent(parent)
+
+    with pytest.raises(ValueError, match="expected platform round"):
+        start_round(
+            data,
+            parent,
+            tmp_path / "empty-workspace",
+            tmp_path / "output",
+            expected_round_index=2,
+        )
+
+
+def test_retain_round_declares_the_published_parent_artifact(tmp_path: Path) -> None:
+    data = tmp_path / "data.jsonl"
+    parent = tmp_path / "checkpoint.npz"
+    output = tmp_path / "output"
+    _write_data(data)
+    _write_parent(parent)
+
+    receipt = start_round(
+        data,
+        parent,
+        tmp_path / "workspace",
+        output,
+        PlatformRuntimeConfig(max_training_rounds=0),
+        expected_parent_sha256=platform_runtime._sha256(parent),
+        expected_round_index=1,
+    )
+
+    artifact = receipt["model_artifact"]
+    assert receipt["deployed"] is False
+    assert artifact == {
+        "kind": "checkpoint",
+        "relative_path": "checkpoint.npz",
+        "sha256": receipt["checkpoint_sha256"],
+        "bytes": (output / "checkpoint.npz").stat().st_size,
+        "disposition": "retained_parent",
+    }
+    assert artifact["sha256"] == receipt["parent_checkpoint_sha256"]
 
 
 def test_start_round_continues_parent_without_official_package_tree(tmp_path: Path) -> None:
@@ -677,6 +747,8 @@ def test_second_round_uses_platform_parent_and_appends_atomic_history(tmp_path: 
             min_primary_improvement=-1e9,
             min_relative_improvement=-1.0,
         ),
+        expected_parent_sha256=f"sha256:{platform_runtime._sha256(first_parent)}",
+        expected_round_index=1,
     )
     second_output = tmp_path / "round-2"
     second = start_round(
@@ -689,11 +761,15 @@ def test_second_round_uses_platform_parent_and_appends_atomic_history(tmp_path: 
             min_primary_improvement=-1e9,
             min_relative_improvement=-1.0,
         ),
+        expected_parent_sha256=first["checkpoint_sha256"],
+        expected_round_index=2,
     )
 
     assert first["round_index"] == 1
     assert second["round_index"] == 2
     assert second["parent_checkpoint_sha256"] == first["checkpoint_sha256"]
+    assert second["model_artifact"]["sha256"] == second["checkpoint_sha256"]
+    assert second["model_artifact"]["disposition"] == "deployed_candidate"
     assert first["anchor_count"] > 0
     assert first["replay_count"] == 0
     assert second["replay_count"] > 0
@@ -748,6 +824,10 @@ def test_cli_exposes_describe_start_and_submit(tmp_path: Path, capsys: pytest.Ca
             str(data),
             "--previous-checkpoint",
             str(parent),
+            "--expected-parent-sha256",
+            platform_runtime._sha256(parent),
+            "--expected-round-index",
+            "1",
             "--workspace",
             str(workspace),
             "--output",
@@ -837,7 +917,7 @@ def test_container_defaults_to_native_start_command() -> None:
 
 def test_release_version_matches_competitive_candidate() -> None:
     pyproject = Path("pyproject.toml").read_text(encoding="utf-8")
-    assert 'version = "0.8.0rc1"' in pyproject
+    assert 'version = "0.8.1rc1"' in pyproject
 
 
 def test_pytrio_advice_is_bounded_and_recorded_without_bypassing_gate(tmp_path: Path) -> None:
