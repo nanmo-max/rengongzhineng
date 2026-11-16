@@ -1,13 +1,13 @@
 # 新会话恢复与交接
 
-## 2026-11-16方法组合筛选恢复入口（当前）
+## 2026-11-16 0.8.0rc1恢复入口（当前）
 
-1. `METHOD-PORTFOLIO-PILOT-001`已完成，当前唯一可执行任务为`COMPETITIVE-POLICY-002 (READY)`。不要重跑A1/A2/A4，不读取已经第5次暴露的confirmation/public validation。
-2. 结果入口为`docs/results/METHOD-PORTFOLIO-PILOT-001.md`；机器产物在`D:/brace-msi-method-pilot/`。A1为异构教师上界，A2为独立转换MLP探针，A3是学习率累乘失败，A4才是连续父链有效证据。
-3. A4正式MLP趋势：A `recent_e3`九转换平均Macro-F1有向收益`+0.386974`且9/9胜；B `current_e3_lr3`平均RMSE有向收益`+287.436213`且9/9胜；C `soup_current_e3_alpha0.25`平均RMSE有向收益`+1.007474`、最坏`-0.196010`。
-4. 下一实现不是按A/B/C名称硬编码三套日程。首候选采用保守父权重插值；第二候选根据任务契约、当前证据和历史延迟收益在最近窗口、累计回放、高步长当前更新中选择，并沿用下一批结算及负收益回滚。
-5. 所有结果只使用十轮feedback相邻未见评价，confirmation读取0、PyTRiO/SwanLab/官方试运行使用0；不能写成官方隐藏成绩或新RC已完成。
-6. 恢复后先运行专项测试`python -m pytest tests/research/test_method_pilot.py -q`，再按`COMPETITIVE-POLICY-002`测试先行接入平台原生Harness；冻结`0.7.1rc1`和历史失败证据不改写。
+1. `METHOD-PORTFOLIO-PILOT-001`和`COMPETITIVE-POLICY-002`均已完成；当前唯一核心任务为`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`。不要重跑A1—A4，不读取已第5次暴露的confirmation/public validation。
+2. 当前代码提交为`851a8ad686bca69f13f237d2b4d17a340c6b1763`；结果入口为`docs/results/COMPETITIVE-POLICY-002.md`，机器产物位于`D:/brace-msi-competitive-policy/`。
+3. 正式A4经平台原生`start_round`十轮重放：A/B/C平均有向收益`+0.319620` Macro-F1、`+61.352748`和`+0.438766` RMSE降低；A3的B灾难性提前激进策略已淘汰并保留负证据。
+4. 当前上传归档为`D:/brace-msi-competitive-policy/BRACE-MSI-0.8.0rc1/brace-msi-0.8.0rc1-harness.tar`，SHA-256 `5539632515096B48113098B2E59BBC5CDA943A31DF3B358E26DD32280D438723`。
+5. `0.8.0rc1`已通过419项回归、三任务4核8GB只读断网容器、PyTRiO失败retain、禁入扫描、`pip check`与`docker save/load`；这些是本地代理/工程证据，不是官方隐藏成绩。
+6. 恢复后先读`STATUS.md`和上述结果；只有平台导入、在线凭据/Token、真实生命周期、SwanLab正式规范或官方评测新证据才能创建下一项READY任务。
 
 ## 2026-11-16序贯延迟收益模拟恢复入口（当前）
 

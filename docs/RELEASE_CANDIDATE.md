@@ -1,12 +1,16 @@
 # BRACE-MSI Release Candidate
 
-## 当前构建候选：0.7.1rc1
+## 当前构建候选：0.8.0rc1
 
-`BRACE-MSI-0.7.1rc1`是`0.7.0rc1`的发布补丁：工业模型、竞争参数、候选日程和SafetyGate均未改变；Native PyTRiO默认超时由15秒调整为经在线验收的60秒，并内置7个固定哈希的Qwen3.5-4B Tokenizer/配置资产，不包含大模型权重。
+`BRACE-MSI-0.8.0rc1`在不改变官方`contest.cpu-mlp.v1`checkpoint schema和父链的前提下，引入证据驱动候选组合：保守父权重插值、分类最近窗口、回归成熟趋势高步长、非单调累计回放和下一批负收益回滚。策略不接收数据集名称；PyTRiO不能覆盖recipe、预算、Gate或回滚。
 
-容器内不挂载宿主Tokenizer缓存时，PyTRiO真实调用取得330/184 Token并执行受控候选；断网时两次失败后只retain。383项回归、4核8GB只读容器、禁入扫描及`docker save/load`通过。
+确认/public validation读取0的正式运行时重放中，A/B/C平均有向收益均为正；419项回归、三任务4核8GB只读断网容器、PyTRiO两次失败后retain、禁入扫描及`docker save/load`通过。在线非零Token能力沿用未改动适配器的既有证据，新镜像平台在线注入仍待验收。
 
-上传归档：`D:/brace-msi-native-competitive/RC71-CONTAINER-ACCEPTANCE-FINAL/brace-msi-0.7.1rc1-harness.tar`；SHA-256 `6BA798571F88CC88A6FB298FA63E99CE723DFCC057A3BDEB9EF103E69DCF3CFE`。机器证据见[RC71容器验收](results/RC71_CONTAINER_ACCEPTANCE.json)和[PyTRiO在线验收](results/PYTRIO-ONLINE-001.md)。平台“镜像可用”、模型校验和正式评测仍未完成。
+上传归档：`D:/brace-msi-competitive-policy/BRACE-MSI-0.8.0rc1/brace-msi-0.8.0rc1-harness.tar`；SHA-256 `5539632515096B48113098B2E59BBC5CDA943A31DF3B358E26DD32280D438723`。机器证据见[竞争策略结果](results/COMPETITIVE-POLICY-002.md)和[RC80容器验收](results/RC80_CONTAINER_ACCEPTANCE.json)。平台“镜像可用”、在线模型调用和正式评测仍未完成。
+
+## 历史发布补丁：0.7.1rc1
+
+`BRACE-MSI-0.7.1rc1`保留为历史发布补丁及在线PyTRiO证据，不再是当前性能上传入口。其归档与证据不删除、不改写。
 
 ## 历史竞争候选：0.7.0rc1
 

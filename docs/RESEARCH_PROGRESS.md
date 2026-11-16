@@ -668,3 +668,10 @@
 - A3三任务各10轮、父链有效、确认各读一次；本地确认第5次暴露且正式隐藏状态未开始。SwanLab只生成三个离线聚合运行，PyTRiO本轮未调用。
 - 验证：专项`59 passed in 27.33s`；完整回归`407 passed in 146.63s`；compileall、diff、机器不变量和密钥扫描通过。结果见`results/DELAYED-GAIN-SIM-001.md`。
 
+## 2026-11-16：COMPETITIVE-POLICY-002与0.8.0rc1
+
+- 在确认/public validation读取0的条件下，先完成教师上界、17种原生MLP候选及九种连续父链recipe筛选；学习率倍率累乘和B提前激进更新两类失败均保留并修复/淘汰。
+- A2成熟趋势门在三任务平均有向收益均为正；A3提前触发令B平均收益降至`-92.775049`，因此恢复A2逻辑。A4使用正式`start_round`、真实workspace和父checkpoint重放，A/B/C平均有向收益为`+0.319620` Macro-F1、`+61.352748`和`+0.438766` RMSE降低。
+- 正式运行时新增身份无关Portfolio路由、受控recipe、自动到达证据、直接前任影子比较和负收益回滚；移除容器对B的旧protocol强制覆盖。PyTRiO仍只表达受限动作意图，断网两次失败后retain。
+- `BRACE-MSI-0.8.0rc1`完成419项回归、三任务4核8GB只读断网容器、禁入扫描、`pip check`、版本核验及`docker save/load`。归档SHA-256为`55396325...D438723`。这些均为本地代理/工程证据，不是官方隐藏成绩。
+

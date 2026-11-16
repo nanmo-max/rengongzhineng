@@ -463,3 +463,38 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 - 失败继承：A3完成A的`current_e1`后，在`current_e3_lr3`连续父链中暴露“学习率倍率写入checkpoint并逐轮累乘”的实现缺陷，最终超过checkpoint合法上限而停止；A3目录保留，不作为性能证据。
 - 唯一修复：学习率倍率仅在本轮fit期间生效，候选保存前恢复父checkpoint学习率；新增10轮不累乘回归测试。方法、数据、策略、种子、指标和停止条件全部继承A3。
 - 输出：`D:/brace-msi-method-pilot/METHOD-PORTFOLIO-PILOT-001-A4/`，不得覆盖A3。
+
+## COMPETITIVE-POLICY-002-A1预注册
+
+- 状态：`COMPLETED_POSITIVE_LOW_B_GAIN`。A/B/C平均有向收益分别为`+0.249526` Macro-F1、`+12.218120` RMSE降低和`+0.438766` RMSE降低；三任务均为正，但B未接近固定recipe上限，因此只作为首轮证据。
+- 研究问题：A4晋级recipe进入真实顺序父链后，使用“保守首候选→仅在首候选Gate不足时执行证据路由第二候选→下一批直接前任配对结算→负收益回滚”的策略，能否在A/B/C十轮到达流同时优于静态父模型？
+- 决策输入：任务类型、已开放批次目标均值趋势、父checkpoint目标尺度、历史延迟收益与失败次数；禁止读取profile/数据集名称、未来批次或confirmation。
+- 候选：首候选固定`25% current-e3 + 75% parent`；第二候选由证据选择`recent_e3/current_e3_lr3/cumulative_e3_lr0.3`，只有首候选当前Gate不改善时才训练。第10轮没有未来结算证据，默认retain。
+- 数据：A/B/C十轮显式Update/Gate/feedback；当前Gate只决定本轮安全，下一轮feedback结算延迟收益；confirmation/public validation读取0。
+- 指标：逐轮prequential主/辅指标、相对静态有向收益、候选数/采用/拒绝/回滚、CPU、RSS、最终checkpoint加载/大小/epoch/step。
+- 成功门：三任务平均prequential有向收益均为正；不存在未来读取、父链倒退或不可加载checkpoint；任何负延迟收益下一轮必须回滚或retain直接前任。
+- 输出：`D:/brace-msi-competitive-policy/COMPETITIVE-POLICY-002-A1/`；不调用PyTRiO、SwanLab或官方试运行。
+
+## COMPETITIVE-POLICY-002-A2预注册
+
+- 状态：`COMPLETED_POSITIVE_SELECTED`。A/B/C平均有向收益为`+0.313085`、`+40.869286`和`+0.438766`；B一次负延迟收益触发回滚。成熟四批趋势门晋级正式运行时。
+- A1结果：A/B/C平均prequential有向收益均为正，但B仅降低RMSE`12.218120`，明显低于A4固定recipe上限；逐轮收据显示当前Gate系统性拒绝面向下一寿命阶段的高步长候选。
+- 唯一策略修订：分类在至少3批后同时比较保守插值与最近窗口候选；回归只有至少4批、线性趋势R²≥0.95且每批归一化斜率≥0.10时，将`current_e3_lr3`作为前向候选并允许以趋势证据越过当前Gate，仍由下一批配对收益回滚。其余规则、数据、候选、预算、种子和确认禁用继承A1。
+- 防误判：短期3批趋势不触发；非单调回归仍用保守插值/累计低学习率；策略不接收profile或数据集名称。
+- 输出：`D:/brace-msi-competitive-policy/COMPETITIVE-POLICY-002-A2/`；A1保持只读。
+
+## COMPETITIVE-POLICY-002-A3预注册
+
+- 状态：`COMPLETED_NEGATIVE_DISCARDED`。A/C保持正收益，但B平均有向收益`-92.775049`、最差`-979.518301`并回滚2次；提前趋势触发被淘汰，不进入正式候选。
+- A2结果：A/B/C平均收益继续为正，B由`12.218120`提高到`40.869286`，但连续三轮高步长更新后下一批出现`-159.90`直接前任收益并回滚。
+- 唯一策略修订：三批目标变化同向、相邻变化幅度CV≤0.25且归一化平均变化≥0.10即可提前确认单调趋势；高步长当前更新最多连续2轮，随后强制回到保守候选一轮。四批成熟趋势门仍保留。其他数据、Gate、回滚、候选和预算继承A2。
+- 输出：`D:/brace-msi-competitive-policy/COMPETITIVE-POLICY-002-A3/`；A1/A2保持只读。
+
+## COMPETITIVE-POLICY-002-A4预注册
+
+- 状态：`COMPLETED_POSITIVE_NATIVE_RUNTIME`。正式`start_round`十轮重放中A/B/C平均有向收益为`+0.319620` Macro-F1、`+61.352748`和`+0.438766` RMSE降低；候选/部署/回滚分别为`9/9/0`、`8/8/2`、`9/6/0`。确认/public validation读取0、官方试运行0；摘要SHA-256 `A60A3645...E344317`。
+- 依据：A2三任务平均收益为正；A3提前激进更新导致B平均收益`-92.775049`并触发2次回滚，故淘汰A3并恢复A2成熟四批趋势门。
+- 目的：不再使用研究runner直接训练，改由正式`brace_msi.platform_runtime.start_round`、真实workspace state、显式Update/Gate、父checkpoint和rollback入口重放A2路由，验证正式工程路径等价可用。
+- 数据/候选/门/预算：继承A2；第10轮retain；confirmation/public validation读取0；PyTRiO、SwanLab、官方试运行使用0。
+- 成功门：A/B/C十轮均完成、平均到达收益均为正、负延迟收益触发回滚、最终checkpoint可加载且小于64 MiB；否则不进入RC。
+- 输出：`D:/brace-msi-competitive-policy/COMPETITIVE-POLICY-002-A4/`。

@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "release_id": "BRACE-MSI-0.8.0rc1",
+  "evidence_scope": "competitive_portfolio_and_container_release_acceptance",
+  "official_score": false,
+  "source_commit": "851a8ad686bca69f13f237d2b4d17a340c6b1763",
+  "image": {
+    "tag": "brace-msi:0.8.0rc1",
+    "id": "sha256:aae25bf99f4f5212178a1321b5c5621fa96acf9e7707e71f6c1d1c5a205af25d",
+    "os": "linux",
+    "architecture": "amd64",
+    "size_bytes": 249000349,
+    "under_2gb": true,
+    "runtime_user": "brace",
+    "runtime_uid": 10001,
+    "forbidden_files": [],
+    "embedded_dataset_or_checkpoint": false,
+    "embedded_secret": false,
+    "brace_msi_version": "0.8.0rc1",
+    "pytrio_version": "0.2.9",
+    "swanlab_version": "0.10.4",
+    "pip_check": "PASS"
+  },
+  "runtime_acceptance": {
+    "status": "completed",
+    "network": "none",
+    "cpus": 4,
+    "memory_bytes": 8589934592,
+    "pids_limit": 256,
+    "read_only_root": true,
+    "profiles_completed": ["A", "B", "C"],
+    "parent_checkpoint_loaded": true,
+    "checkpoint_schema": "contest.cpu-mlp.v1",
+    "max_checkpoint_bytes": 132180
+  },
+  "offline_pytrio_failure": {
+    "status": "PASS",
+    "network": "none",
+    "attempts": 2,
+    "executed_action": "noop",
+    "candidate_trained": false,
+    "parent_retained": true,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "silent_training_fallback": false
+  },
+  "archive": {
+    "format": "docker save tar",
+    "path": "D:/brace-msi-competitive-policy/BRACE-MSI-0.8.0rc1/brace-msi-0.8.0rc1-harness.tar",
+    "size_bytes": 249024512,
+    "sha256": "5539632515096b48113098b2e59bbc5cda943a31df3b358e26dd32280d438723",
+    "docker_load_verified": true
+  },
+  "tests": {
+    "pytest": "419 passed in 142.99s",
+    "targeted": "53 passed in 25.63s",
+    "compileall": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "boundaries": [
+    "This is local proxy-stream and container evidence, not an official hidden-test score.",
+    "The image contains tokenizer/configuration assets but no Qwen or industrial model weights.",
+    "No official trial, confirmation set, public validation or formal evaluation opportunity was used.",
+    "Platform import, online PyTRiO credentials, SwanLab competition mapping and official evaluation remain external checks."
+  ]
+}
