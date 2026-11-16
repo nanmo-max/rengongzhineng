@@ -24,7 +24,7 @@
 0l. `OFFICIAL-FLOW-SIM-001`已完成：Gas按自然批次/时间、Bearing按寿命进度、Engine按完整unit构造十轮；每轮先预测封存再开放反馈，Prequential与候选Gate分离，未来轮和确认不提前物化。三任务10/10轮、父链与零交叉硬门通过；A/C保持静态，B一次部署后本地确认退化，作为负证据保留。完整回归399项，见`results/OFFICIAL-FLOW-SIM-001.md`。
 0m. `DELAYED-GAIN-SIM-001`已完成混合结论：A/B/C各10轮，当前到达指标进入策略；仅在上一轮部署后于下一批对同样本运行直接前任影子模型并结算延迟收益。A2暴露B第9轮部署后第10轮延迟收益`-310.293697 RMSE`却继续保留坏模型，确认RMSE退化至`993.202677`；A3新增一轮可审计直接前任回滚后恢复至`241.980799`。A/C候选均被Gate拒绝并保持父模型。完整回归407项，见`results/DELAYED-GAIN-SIM-001.md`。
 0n. `METHOD-PORTFOLIO-PILOT-001`已完成：不读取confirmation/public validation，在A/B/C各9个`t训练→t+1未见评价`上比较7种教师/基线和17种正式MLP候选，再对9种MLP recipe运行连续父链。A的近期窗口3轮、B的当前批3轮×3学习率、C的25%候选权重插值分别形成最强或最稳趋势；A3学习率累乘失败保留，A4修复后全链完成。证据见`results/METHOD-PORTFOLIO-PILOT-001.md`。
-0o. `COMPETITIVE-POLICY-002`已完成：A1/A2/A3/A4筛选并淘汰B灾难性早触发；正式`start_round`十轮重放中A/B/C平均有向收益为`+0.319620` Macro-F1、`+61.352748`和`+0.438766` RMSE降低，确认/public validation读取0。`0.8.0rc1`完成419项回归、三任务4核8GB断网容器、PyTRiO失败retain、禁入扫描及`docker save/load`，见`results/COMPETITIVE-POLICY-002.md`。
+0o. `COMPETITIVE-POLICY-002`已完成：A1—A6筛选并淘汰B灾难性早触发；A5因报告ID失配判无效，最终A6严格隔离Gate。正式`start_round`十轮重放中A/B/C平均有向收益为`+0.319620` Macro-F1、`+21.850812`和`+0.438766` RMSE降低，确认/public validation读取0。`0.8.0rc1`完成421项回归、三任务4核8GB断网容器、PyTRiO失败retain、禁入扫描及`docker save/load`，见`results/COMPETITIVE-POLICY-002.md`。
 1. `DUAL-DATA-001`已完成：四缓冲区、Gate一轮隔离、Update+Replay候选集合、只读manifest、训练/评估分离句柄和未来诱饵阻断通过4项专项测试；完整回归`275 passed`。
 2. `DUAL-TXN-001`已完成：每批单决策、0至2候选、首候选结果触发升级、十批前缀、原子提交/恢复及影子配对收益通过5项专项测试；完整回归`280 passed`。
 3. `DUAL-VALUE-001`已完成：每任务隔离统计、身份无关证据画像、弱先验、延迟收益专用更新和性能—CPU/RSS/Token/模型体积Pareto前沿通过5项专项测试；完整回归`285 passed`。
@@ -63,7 +63,7 @@
 
 ## 当前执行入口
 
-当前上传候选为`D:/brace-msi-competitive-policy/BRACE-MSI-0.8.0rc1/brace-msi-0.8.0rc1-harness.tar`，SHA-256 `5539632515096B48113098B2E59BBC5CDA943A31DF3B358E26DD32280D438723`。它由`docker save`生成并已重载验证；镜像为249,000,349字节，不含Qwen权重、工业模型权重、数据或密钥。尚未通过平台“镜像可用”、在线模型调用或正式评测。`0.7.1rc1`继续保留为历史Protocol/发布补丁证据，不再是当前性能候选。机器证据见`docs/results/RC80_CONTAINER_ACCEPTANCE.json`。
+当前上传候选为`D:/brace-msi-competitive-policy/BRACE-MSI-0.8.0rc1-final/brace-msi-0.8.0rc1-harness.tar`，SHA-256 `CB9F28D16D88EA985598E9E7A5C1ECC2EC36A1CFC15740854E7F977FC232E6EA`。它由`docker save`生成并已重载验证；镜像为249,000,390字节，不含Qwen权重、工业模型权重、数据或密钥。旧`BRACE-MSI-0.8.0rc1/`目录是Gate隔离修正前历史，不得上传。尚未通过平台“镜像可用”、在线模型调用或正式评测。机器证据见`docs/results/RC80_CONTAINER_ACCEPTANCE.json`。
 
 正式路线、已知能力与未知边界见[FORMAL_ROUTE.md](FORMAL_ROUTE.md)。实验必须遵守[EXPERIMENT_PROTOCOL.md](EXPERIMENT_PROTOCOL.md)。
 

@@ -3,13 +3,13 @@
   "release_id": "BRACE-MSI-0.8.0rc1",
   "evidence_scope": "competitive_portfolio_and_container_release_acceptance",
   "official_score": false,
-  "source_commit": "851a8ad686bca69f13f237d2b4d17a340c6b1763",
+  "source_commit": "2ba965b5e277c22368f1533e5f66a55432ea3c8b",
   "image": {
     "tag": "brace-msi:0.8.0rc1",
-    "id": "sha256:aae25bf99f4f5212178a1321b5c5621fa96acf9e7707e71f6c1d1c5a205af25d",
+    "id": "sha256:970bba14c27844abeb1e9ba9795c068b5acd28e9945c6ee73c1df11e395214a4",
     "os": "linux",
     "architecture": "amd64",
-    "size_bytes": 249000349,
+    "size_bytes": 249000390,
     "under_2gb": true,
     "runtime_user": "brace",
     "runtime_uid": 10001,
@@ -46,14 +46,14 @@
   },
   "archive": {
     "format": "docker save tar",
-    "path": "D:/brace-msi-competitive-policy/BRACE-MSI-0.8.0rc1/brace-msi-0.8.0rc1-harness.tar",
+    "path": "D:/brace-msi-competitive-policy/BRACE-MSI-0.8.0rc1-final/brace-msi-0.8.0rc1-harness.tar",
     "size_bytes": 249024512,
-    "sha256": "5539632515096b48113098b2e59bbc5cda943a31df3b358e26dd32280d438723",
+    "sha256": "cb9f28d16d88ea985598e9e7a5c1ecc2ec36a1cfc15740854e7f977fc232e6ea",
     "docker_load_verified": true
   },
   "tests": {
-    "pytest": "419 passed in 142.99s",
-    "targeted": "53 passed in 25.63s",
+    "pytest": "421 passed in 141.63s",
+    "targeted": "Gate isolation and evidence ID tests PASS",
     "compileall": "PASS",
     "git_diff_check": "PASS"
   },

@@ -4,9 +4,9 @@
 
 `BRACE-MSI-0.8.0rc1`在不改变官方`contest.cpu-mlp.v1`checkpoint schema和父链的前提下，引入证据驱动候选组合：保守父权重插值、分类最近窗口、回归成熟趋势高步长、非单调累计回放和下一批负收益回滚。策略不接收数据集名称；PyTRiO不能覆盖recipe、预算、Gate或回滚。
 
-确认/public validation读取0的正式运行时重放中，A/B/C平均有向收益均为正；419项回归、三任务4核8GB只读断网容器、PyTRiO两次失败后retain、禁入扫描及`docker save/load`通过。在线非零Token能力沿用未改动适配器的既有证据，新镜像平台在线注入仍待验收。
+确认/public validation读取0、Gate严格隔离的最终A6重放中，A/B/C平均有向收益均为正；421项回归、三任务4核8GB只读断网容器、PyTRiO两次失败后retain、禁入扫描及`docker save/load`通过。在线非零Token能力沿用未改动适配器的既有证据，新镜像平台在线注入仍待验收。
 
-上传归档：`D:/brace-msi-competitive-policy/BRACE-MSI-0.8.0rc1/brace-msi-0.8.0rc1-harness.tar`；SHA-256 `5539632515096B48113098B2E59BBC5CDA943A31DF3B358E26DD32280D438723`。机器证据见[竞争策略结果](results/COMPETITIVE-POLICY-002.md)和[RC80容器验收](results/RC80_CONTAINER_ACCEPTANCE.json)。平台“镜像可用”、在线模型调用和正式评测仍未完成。
+上传归档：`D:/brace-msi-competitive-policy/BRACE-MSI-0.8.0rc1-final/brace-msi-0.8.0rc1-harness.tar`；SHA-256 `CB9F28D16D88EA985598E9E7A5C1ECC2EC36A1CFC15740854E7F977FC232E6EA`。旧非`-final`目录是Gate隔离修正前历史，不得上传。机器证据见[竞争策略结果](results/COMPETITIVE-POLICY-002.md)和[RC80容器验收](results/RC80_CONTAINER_ACCEPTANCE.json)。
 
 ## 历史发布补丁：0.7.1rc1
 

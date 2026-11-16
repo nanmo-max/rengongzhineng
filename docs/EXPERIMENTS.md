@@ -498,3 +498,17 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 - 数据/候选/门/预算：继承A2；第10轮retain；confirmation/public validation读取0；PyTRiO、SwanLab、官方试运行使用0。
 - 成功门：A/B/C十轮均完成、平均到达收益均为正、负延迟收益触发回滚、最终checkpoint可加载且小于64 MiB；否则不进入RC。
 - 输出：`D:/brace-msi-competitive-policy/COMPETITIVE-POLICY-002-A4/`。
+
+## COMPETITIVE-POLICY-002-A5预注册
+
+- 状态：`INVALID_EVIDENCE_ID_MISMATCH`。三任务十轮完成且A/B/C平均收益仍为正，但报告内部ID仍被旧脚本硬编码为A4；目录保留，不能作为冻结证据。
+- 根因：最终自审发现A4路由趋势使用Update+Gate整批目标均值，虽然Gate未参与fit，但其标签影响了recipe选择，不符合当前Gate仅验证的隔离语义。
+- 唯一修复：趋势统计和收据`target_mean`只读取Anchor剥离后的Update目标；Gate继续仅用于候选与稳定父模型比较。候选、阈值、数据、种子、预算、回滚和确认禁用全部继承A4。
+- 成功门：专项回归证明极端Gate目标不改变趋势均值；A/B/C十轮仍完成且平均有向收益为正；否则撤销0.8.0rc1冻结证据。
+- 输出：`D:/brace-msi-competitive-policy/COMPETITIVE-POLICY-002-A5/`；A1—A4保持只读。
+
+## COMPETITIVE-POLICY-002-A6预注册
+
+- 状态：`COMPLETED_POSITIVE_GATE_ISOLATED_FINAL`。三任务各10轮完成，A/B/C平均有向收益为`+0.319620` Macro-F1、`+21.850812`和`+0.438766` RMSE降低；候选/部署/回滚为`9/9/0`、`9/5/0`、`9/6/0`。确认/public validation读取0、官方试运行0；摘要SHA-256 `680C9AFF...10C9E77`。
+- 唯一修复：报告`experiment_id`必须取不可为空的输出目录名，并由回归测试覆盖；算法、Gate隔离修正、数据、种子、预算和成功门完全继承A5。
+- 输出：`D:/brace-msi-competitive-policy/COMPETITIVE-POLICY-002-A6/`；A1—A5保持只读。

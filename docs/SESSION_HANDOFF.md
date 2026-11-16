@@ -2,11 +2,11 @@
 
 ## 2026-11-16 0.8.0rc1恢复入口（当前）
 
-1. `METHOD-PORTFOLIO-PILOT-001`和`COMPETITIVE-POLICY-002`均已完成；当前唯一核心任务为`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`。不要重跑A1—A4，不读取已第5次暴露的confirmation/public validation。
-2. 当前代码提交为`851a8ad686bca69f13f237d2b4d17a340c6b1763`；结果入口为`docs/results/COMPETITIVE-POLICY-002.md`，机器产物位于`D:/brace-msi-competitive-policy/`。
-3. 正式A4经平台原生`start_round`十轮重放：A/B/C平均有向收益`+0.319620` Macro-F1、`+61.352748`和`+0.438766` RMSE降低；A3的B灾难性提前激进策略已淘汰并保留负证据。
-4. 当前上传归档为`D:/brace-msi-competitive-policy/BRACE-MSI-0.8.0rc1/brace-msi-0.8.0rc1-harness.tar`，SHA-256 `5539632515096B48113098B2E59BBC5CDA943A31DF3B358E26DD32280D438723`。
-5. `0.8.0rc1`已通过419项回归、三任务4核8GB只读断网容器、PyTRiO失败retain、禁入扫描、`pip check`与`docker save/load`；这些是本地代理/工程证据，不是官方隐藏成绩。
+1. `METHOD-PORTFOLIO-PILOT-001`和`COMPETITIVE-POLICY-002`均已完成；当前唯一核心任务为`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`。不要重跑A1—A6，不读取已第5次暴露的confirmation/public validation。
+2. 当前运行时代码提交为`2ba965b5e277c22368f1533e5f66a55432ea3c8b`；结果入口为`docs/results/COMPETITIVE-POLICY-002.md`，机器产物位于`D:/brace-msi-competitive-policy/`。
+3. 最终A6经平台原生`start_round`十轮重放：A/B/C平均有向收益`+0.319620` Macro-F1、`+21.850812`和`+0.438766` RMSE降低；A3灾难性提前策略与A5无效ID证据均保留。
+4. 当前上传归档为`D:/brace-msi-competitive-policy/BRACE-MSI-0.8.0rc1-final/brace-msi-0.8.0rc1-harness.tar`，SHA-256 `CB9F28D16D88EA985598E9E7A5C1ECC2EC36A1CFC15740854E7F977FC232E6EA`。旧非`-final`目录不得上传。
+5. `0.8.0rc1`已通过421项回归、三任务4核8GB只读断网容器、PyTRiO失败retain、禁入扫描、`pip check`与`docker save/load`；这些是本地代理/工程证据，不是官方隐藏成绩。
 6. 恢复后先读`STATUS.md`和上述结果；只有平台导入、在线凭据/Token、真实生命周期、SwanLab正式规范或官方评测新证据才能创建下一项READY任务。
 
 ## 2026-11-16序贯延迟收益模拟恢复入口（当前）

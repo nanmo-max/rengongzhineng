@@ -52,7 +52,7 @@ EVIDENCE-RSI-001(DONE)
 - 目标：把A4通过的正式MLP recipe接入平台原生Harness；第一候选使用跨任务低风险父权重插值，第二候选仅在当前证据与历史延迟收益支持时，从最近窗口、累计回放或高步长当前更新中选择；不得按数据集名称硬编码。
 - 完成标准：平台父checkpoint真实继承；每轮0至2候选；候选选择只使用当前及历史合法证据；下一批结算与负收益回滚；A/B/C十轮代理流均完成且相对静态平均有向收益为正；全部checkpoint可加载、独立预测、64 MiB、CPU/RSS/Token完整；PyTRiO建议不能覆盖执行边界。
 - 停止条件：任一任务平均收益非正、未来或确认泄漏、父链/step倒退、候选无法从任务契约和数据证据解释，或全量/容器验收失败。
-- 证据：A1/A2/A3/A4全部保留；A3激进早触发因B平均收益`-92.775049`淘汰。正式A4经`start_round`完成三任务十轮，A/B/C平均有向收益为`+0.319620` Macro-F1、`+61.352748`和`+0.438766` RMSE降低；419项回归、三任务4核8GB断网容器、PyTRiO失败retain、禁入扫描及`docker save/load`通过。`0.8.0rc1`归档SHA-256 `55396325...D438723`。平台导入、在线凭据和官方评测继续由`FORMAL-RELEASE-001`跟踪。详见`results/COMPETITIVE-POLICY-002.md`与`results/RC80_CONTAINER_ACCEPTANCE.json`。
+- 证据：A1—A6全部保留；A3激进早触发因B平均收益`-92.775049`淘汰，A5因报告ID失配判无效。最终A6严格隔离Gate并经`start_round`完成三任务十轮，A/B/C平均有向收益为`+0.319620` Macro-F1、`+21.850812`和`+0.438766` RMSE降低；421项回归、三任务4核8GB断网容器、PyTRiO失败retain、禁入扫描及`docker save/load`通过。最终归档SHA-256 `CB9F28D1...FC232E6EA`。平台导入、在线凭据和官方评测继续由`FORMAL-RELEASE-001`跟踪。
 
 ### DELAYED-GAIN-SIM-001 当前批证据与下一批延迟收益模拟
 
