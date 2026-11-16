@@ -4,7 +4,7 @@
   "scope": "local_empty_mount_preflight_and_native_mount_acceptance_not_official_score",
   "runtime_commit": "856680737df8563c93db3ededcee6fb94a2075f4",
   "tests": {
-    "full_regression": "424 passed in 158.19s"
+    "full_regression": "424 passed in 160.27s after one documented transient Windows child-process exit"
   },
   "image": {
     "tag": "brace-msi:0.8.2rc1",

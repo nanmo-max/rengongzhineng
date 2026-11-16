@@ -11,7 +11,7 @@
 - 红灯：新测试要求`CMD ["--help"]`，在0.8.1树上按预期失败；本机裸运行0.8.1复现`PermissionError: [Errno 13] Permission denied: '/workspace'`，退出码1。
 - 绿灯：Docker默认命令恢复为`--help`，裸运行0.8.2输出CLI帮助并退出0。
 - 运行提交：`856680737df8563c93db3ededcee6fb94a2075f4`。
-- 完整回归：`424 passed in 158.19s`。
+- 完整回归：首轮`424 passed in 158.19s`；最终复核曾出现一次Windows训练子进程无stderr返回`4294967295`，对应C父链用例立即单测通过，随后完整复跑为`424 passed in 160.27s`。该偶发失败未隐藏，也没有通过修改测试规避。
 
 ## 双路径容器验收
 
