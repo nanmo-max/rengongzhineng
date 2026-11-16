@@ -152,6 +152,59 @@ def _write_data(path: Path, *, task: str = "classification", count: int = 20) ->
     )
 
 
+def test_sequential_policy_trains_when_arrival_performance_drops(tmp_path: Path) -> None:
+    parent = tmp_path / "parent.npz"
+    data = tmp_path / "data.jsonl"
+    _write_parent(parent)
+    _write_data(data)
+
+    receipt = start_round(
+        data,
+        parent,
+        tmp_path / "workspace",
+        tmp_path / "output",
+        PlatformRuntimeConfig(policy_mode="sequential", min_relative_improvement=-1.0),
+        arrival_evidence=platform_runtime.ArrivalEvidence(
+            metrics={"accuracy": 0.55, "macro_f1": 0.40},
+            previous_metrics={"accuracy": 0.80, "macro_f1": 0.75},
+            sample_count=20,
+            delayed_gain=None,
+        ),
+    )
+
+    assert receipt["decision"]["executed_action"] == "incremental_update"
+    assert receipt["decision"]["arrival_evidence"]["metrics"]["macro_f1"] == 0.40
+    assert receipt["decision"]["performance_drop"] > 0.4
+    assert receipt["candidate_trained"] is True
+
+
+def test_sequential_policy_retains_when_arrival_is_stable_and_delayed_gain_positive(
+    tmp_path: Path,
+) -> None:
+    parent = tmp_path / "parent.npz"
+    data = tmp_path / "data.jsonl"
+    _write_parent(parent)
+    _write_data(data)
+
+    receipt = start_round(
+        data,
+        parent,
+        tmp_path / "workspace",
+        tmp_path / "output",
+        PlatformRuntimeConfig(policy_mode="sequential"),
+        arrival_evidence=platform_runtime.ArrivalEvidence(
+            metrics={"accuracy": 0.80, "macro_f1": 0.70},
+            previous_metrics={"accuracy": 0.79, "macro_f1": 0.69},
+            sample_count=20,
+            delayed_gain=0.02,
+        ),
+    )
+
+    assert receipt["decision"]["executed_action"] == "noop"
+    assert receipt["decision"]["outcome"] == "retain"
+    assert receipt["candidate_trained"] is False
+
+
 @pytest.mark.parametrize("profile", ["A", "B", "C"])
 def test_native_fit_exactly_matches_official_model_state(profile: str) -> None:
     package = PACKAGE_ROOT / PACKAGE_NAMES[profile]

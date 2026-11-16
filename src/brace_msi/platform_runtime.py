@@ -66,10 +66,11 @@ class PlatformRuntimeConfig:
     max_training_rounds: int = 10
     max_anchor_degradation: float = 0.0
     max_replay_samples: int = 4096
+    arrival_drop_trigger: float = 0.02
 
     def __post_init__(self) -> None:
-        if self.policy_mode not in {"protocol", "competitive"}:
-            raise ValueError("policy mode must be protocol or competitive")
+        if self.policy_mode not in {"protocol", "competitive", "sequential"}:
+            raise ValueError("policy mode must be protocol, competitive, or sequential")
         if any(not value.strip() for value in self.protocol_profiles):
             raise ValueError("protocol profiles must be non-empty strings")
         if not 1 <= self.epochs <= 5:
@@ -88,6 +89,35 @@ class PlatformRuntimeConfig:
             raise ValueError("maximum anchor degradation must be finite and nonnegative")
         if not 0 <= self.max_replay_samples <= 100_000:
             raise ValueError("maximum replay samples must be in 0..100000")
+        if not math.isfinite(self.arrival_drop_trigger) or not 0 <= self.arrival_drop_trigger <= 1:
+            raise ValueError("arrival drop trigger must be in 0..1")
+
+
+@dataclass(frozen=True)
+class ArrivalEvidence:
+    metrics: dict[str, float]
+    previous_metrics: dict[str, float] | None
+    sample_count: int
+    delayed_gain: float | None
+
+
+def _validate_arrival_evidence(
+    evidence: ArrivalEvidence | None, *, task: str, expected_count: int
+) -> None:
+    if evidence is None:
+        return
+    required = {"macro_f1", "accuracy"} if task == "classification" else {"rmse", "mae"}
+    for metrics in (evidence.metrics, evidence.previous_metrics):
+        if metrics is None:
+            continue
+        if not required.issubset(metrics):
+            raise ValueError("arrival evidence is missing required metrics")
+        if any(not math.isfinite(float(value)) for value in metrics.values()):
+            raise ValueError("arrival evidence metrics must be finite")
+    if evidence.sample_count != expected_count:
+        raise ValueError("arrival evidence sample count does not match the current batch")
+    if evidence.delayed_gain is not None and not math.isfinite(evidence.delayed_gain):
+        raise ValueError("delayed gain must be finite")
 
 
 @dataclass(frozen=True)
@@ -641,13 +671,17 @@ def _decision_for_round(
     round_index: int,
     config: PlatformRuntimeConfig,
     advisor: PlatformAdvisor | None,
+    arrival_evidence: ArrivalEvidence | None,
 ) -> tuple[dict[str, Any], Action, int, float]:
     """Choose a bounded action; model text never crosses the effect boundary directly."""
 
     history = state["rounds"]
-    current_value = _primary_value(parent.meta["task"], before)
+    current_metrics = arrival_evidence.metrics if arrival_evidence is not None else before
+    current_value = _primary_value(parent.meta["task"], current_metrics)
     previous_value = current_value
-    if history:
+    if arrival_evidence is not None and arrival_evidence.previous_metrics is not None:
+        previous_value = _primary_value(parent.meta["task"], arrival_evidence.previous_metrics)
+    elif history:
         previous = history[-1]
         selected = (
             previous.get("metrics_candidate")
@@ -749,7 +783,27 @@ def _decision_for_round(
         else None
     )
     candidate_budget_available = candidate_events < config.max_training_rounds
-    if policy_mode == "competitive" and (
+    if policy_mode == "sequential":
+        cold_start = arrival_evidence is not None and arrival_evidence.previous_metrics is None
+        negative_delayed_gain = (
+            arrival_evidence is not None
+            and arrival_evidence.delayed_gain is not None
+            and arrival_evidence.delayed_gain < 0.0
+        )
+        needs_candidate = (
+            cold_start
+            or performance_drop >= config.arrival_drop_trigger
+            or negative_delayed_gain
+        )
+        if candidate_budget_available and needs_candidate:
+            default_action = Action.REPLAY_REFIT if len(replay_x) else Action.INCREMENTAL_UPDATE
+            epochs = config.epochs
+            learning_rate = base_learning_rate * config.learning_rate_multiplier
+        else:
+            default_action = Action.NOOP
+            epochs = 0
+            learning_rate = base_learning_rate
+    elif policy_mode == "competitive" and (
         not candidate_budget_available
         or (schedule is not None and scheduled is None)
     ):
@@ -871,6 +925,9 @@ def _decision_for_round(
         "outcome": outcome,
         "epochs": epochs,
         "learning_rate": learning_rate,
+        "arrival_evidence": asdict(arrival_evidence) if arrival_evidence is not None else None,
+        "performance_drop": performance_drop,
+        "drift_complexity": drift_complexity,
         "advisor_receipt": advisor_receipt,
     }
     return decision, action, epochs, learning_rate
@@ -885,6 +942,7 @@ def start_round(
     *,
     advisor: PlatformAdvisor | None = None,
     gate_data_path: Path | None = None,
+    arrival_evidence: ArrivalEvidence | None = None,
 ) -> dict[str, Any]:
     """Execute one platform round and atomically publish the selected checkpoint."""
 
@@ -951,6 +1009,11 @@ def start_round(
         feedback_update_count = len(update_batch["ids"])
         feedback_update_sha256 = update_batch["sha256"]
         feedback_gate_sha256 = gate_batch["sha256"]
+    _validate_arrival_evidence(
+        arrival_evidence,
+        task=parent.meta["task"],
+        expected_count=len(batch["ids"]),
+    )
     anchor_path = workspace / "anchor.npz"
     replay_path = workspace / "replay.npz"
     new_anchor = not anchor_path.exists()
@@ -991,6 +1054,7 @@ def start_round(
         round_index=round_index,
         config=config,
         advisor=advisor,
+        arrival_evidence=arrival_evidence,
     )
     use_replay = executed_action is Action.REPLAY_REFIT and len(replay_x) > 0
     training_x = (

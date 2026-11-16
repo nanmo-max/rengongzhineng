@@ -26,10 +26,21 @@ EVIDENCE-RSI-001(DONE)
   -> OFFICIAL-DATA-REPORT-001(DONE)
   -> REPORT-EVIDENCE-FIX-001(DONE)
   -> OFFICIAL-FLOW-SIM-001(DONE_MIXED)
+  -> DELAYED-GAIN-SIM-001(IN_PROGRESS)
   -> FORMAL-RELEASE-001(BLOCKED_EXTERNAL)
 ```
 
 以上为当前正式重构图；`0.6.0rc1`及下方历史任务图保持冻结，新竞争候选只在独立分支演进。
+
+### DELAYED-GAIN-SIM-001 当前批证据与下一批延迟收益模拟
+
+- 状态：`IN_PROGRESS`
+- 依赖：OFFICIAL-FLOW-SIM-001
+- 优先级：P0（V1将Prequential结果隔离在ScoreVault，不能驱动当前retain/训练决策，也未在下一批结算上一轮部署真实收益）
+- 目标：在不覆盖V1和冻结RC的前提下，实现`arrival_metric_t -> 当前动作与Gate -> delayed_gain_t+1`十轮序贯闭环，完成A/B/C训练、机器验收、SwanLab离线记录和HTML报告。
+- 完成标准：三任务各10轮；到达指标进入结构化决策证据；上一轮仅在下一批同样本影子比较结算；候选Gate仍与Update隔离；未来不可见、确认只读一次、父链连续；专项和完整回归通过。
+- 停止条件：不得用本地确认调参、不得把Bearing十段代理假设写成官方事实、不得把本地结果称为正式隐藏成绩；性能负结果必须保留。
+- 设计与计划：`docs/superpowers/specs/2026-11-16-delayed-gain-sequential-simulation-design.md`、`docs/superpowers/plans/2026-11-16-delayed-gain-sequential-simulation.md`。
 
 ### OFFICIAL-FLOW-SIM-001 官方生命周期双层本地模拟
 

@@ -499,3 +499,10 @@ PyTRiO通用接口、Qwen3.5-4B基础模型平台校验和持久化Sampler路线
 - 实现边界：正式隐藏数据尚未开始、不可见；只能模拟协议、数据可见性和任务自然规律，不能承诺数值与正式隐藏评测一致。Gas/Bearing/Engine本地确认集只作一次性本地证据，不是官方隐藏指标。
 - 数据位置：`C:/Users/Administrator/Desktop/官方/Dataset/batch1.dat`至`batch10.dat`；`C:/Users/Administrator/Desktop/人工智能创新大赛/训练包/cpu-{a,b,c}-*/public/*.jsonl`。原始文件保持只读。
 - 实现结果：`OFFICIAL-FLOW-SIM-001`三任务各10轮、父链、自然分组、预测封存和一次本地确认通过；A2为混合/负性能证据，正式隐藏状态仍为未开始/不可用。机器摘要与边界见`results/OFFICIAL-FLOW-SIM-001.md`。
+
+### L-AUTH-015 序贯到达证据与延迟收益完整训练授权
+
+- 类型：用户研究语义与本地执行授权，不是正式SDK事实。
+- 来源：用户2026-11-16明确要求按“旧模型先评价第t批、当前批适应、第t+1批结算上一轮真实收益”重新完成三任务训练、测试和报告。
+- 已锁定：`arrival_metric_t`允许进入决策；`candidate_gate_metric_t`只作上线安全证据；`delayed_gain_t+1`必须使用同批样本配对比较直接前任。
+- 未确认：平台每轮是否先预测后开放标签、历史workspace/Replay是否可用、Bearing正式十轮切法及公开验证指标映射。实现必须保留`proxy_protocol`标记。
