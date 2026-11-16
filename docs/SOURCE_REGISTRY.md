@@ -111,6 +111,13 @@
 - 已知限制：空`/data`和`/previous`无法完成Native行为预检，只能做静态入口检查；平台侧表示将重写薄桥接器并检查镜像digest。
 - 边界：反馈没有提供`workspace_io.py`源码、start frame完整schema、artifact declaration完整schema或正式调用生命周期。仓库只能增加协议无关的显式校验与收据，不能自行实现或声称官方私有桥接协议。
 
+### O-PLATFORM-012 0.8.1rc1二次预检不完整反馈
+
+- 来源：用户2026-11-16复制的平台预检显示文本；平台页面只保留该段，尾部在`Because native PyTR...`处截断，无额外日志或错误码。
+- 已确认：预检明确写出`I stopped without claiming success`；静态检查认可Native包、父checkpoint原生续训、独立预测入口、可配置PyTRiO调用链及替身transport测试，但没有完成真实平台挂载、真实在线PyTRiO或十轮行为运行。
+- 本地可复现差异：首个完成平台试运行的历史镜像默认`CMD ["--help"]`；`0.8.1rc1`默认`CMD ["start"]`。后者在无四挂载裸启动时尝试创建`/workspace`，非root容器以`PermissionError`和退出码1终止。
+- 边界：截断文本不足以证明这就是平台停止的唯一原因；修复无输入启动后仍必须由平台真实导入、挂载、在线模型和试运行判定兼容性。
+
 ### O-PLATFORM-008 旧提交的父检查点续训拒绝提示
 
 - 来源：用户2026-11-15提供的平台截图，并明确说明这是“之前那个”旧提交；整理件见`source_notes/PLATFORM_REJECTION_PARENT_CONTINUATION_2026-11-15.md`。

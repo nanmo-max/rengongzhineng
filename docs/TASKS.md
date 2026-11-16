@@ -30,10 +30,21 @@ EVIDENCE-RSI-001(DONE)
   -> METHOD-PORTFOLIO-PILOT-001(DONE)
   -> COMPETITIVE-POLICY-002(DONE_LOCAL_EXTERNAL_BLOCK)
   -> PLATFORM-BRIDGE-001(DONE_LOCAL_EXTERNAL_BLOCK)
+  -> PLATFORM-PREFLIGHT-001(DONE_LOCAL_EXTERNAL_BLOCK)
   -> FORMAL-RELEASE-001(BLOCKED_EXTERNAL)
 ```
 
 以上为当前正式重构图；`0.6.0rc1`及下方历史任务图保持冻结，新竞争候选只在独立分支演进。
+
+### PLATFORM-PREFLIGHT-001 空挂载镜像预检兼容修复
+
+- 状态：`DONE_LOCAL_EXTERNAL_BLOCK`
+- 依赖：PLATFORM-BRIDGE-001、O-PLATFORM-012
+- 优先级：P0
+- 目标：恢复首个平台可运行版本具备的无输入安全启动语义；平台尚未挂载`/data`、`/previous`、`/workspace`和`/output`时，镜像默认启动必须退出0且不得误触发训练，同时显式`start`/`submit`继续执行原生父checkpoint续训和独立预测。
+- 完成标准：红灯测试能捕获`CMD ["start"]`；补丁恢复`CMD ["--help"]`；裸容器退出0；带官方A父checkpoint的`start`退出0并生成`checkpoint.npz`；独立`submit`生成1,244条预测；完整回归、4核8GB只读断网、禁入扫描、`pip check`及`docker save/load`通过。
+- 停止条件：不修改训练策略、模型参数、SafetyGate、PyTRiO、SwanLab或0.8.1历史证据；不把本地预检写成平台兼容通过；平台真实挂载和在线模型调用仍由FORMAL-RELEASE-001判定。
+- 证据：运行提交`8566807`；424项回归；裸启动由退出1修复为退出0；原生A一轮续训及1,244条独立预测通过；248,980,992字节归档已重载。见`results/PLATFORM-PREFLIGHT-001.md`与`results/RC82_CONTAINER_ACCEPTANCE.json`。
 
 ### PLATFORM-BRIDGE-001 平台薄桥接边界加固
 

@@ -2,7 +2,7 @@
 
 > 本清单不保存任何API Key。表中“已准备”仅表示本地材料存在，不代表官方平台已经校验或正式评测通过。
 
-> 2026-11-16当前镜像：只上传`D:/brace-msi-platform-bridge/BRACE-MSI-0.8.1rc1/brace-msi-0.8.1rc1-harness.tar`。0.8.0及更早版本均为历史证据。
+> 2026-11-16当前镜像：只上传`D:/brace-msi-platform-bridge/BRACE-MSI-0.8.2rc1/brace-msi-0.8.2rc1-harness.tar`。0.8.1及更早版本均为历史证据。
 
 ## 提交表单
 
@@ -10,8 +10,8 @@
 |---|---|---|---|
 | 模型类型 | 基础模型 `Qwen/Qwen3.5-4B` | 已通过历史平台校验 | 持久化Sampler此前未通过平台校验；按D-050使用基础模型，不填写Sampler路径 |
 | 完整Sampler权重路径 | 不适用 | 不填写 | 不把历史A3路径用于本版本 |
-| 训练记录链接 | `https://swanlab.cn/@nanmo-max/brace-msi-platform-native` | 历史公开工程记录 | 不含逐样本数据、检查点或凭据；0.8.1rc1正式平台重训后按官方规范更新，不能把代理A4回填成正式记录 |
-| Harness镜像 | `D:/brace-msi-platform-bridge/BRACE-MSI-0.8.1rc1/brace-msi-0.8.1rc1-harness.tar` | 本地已准备，平台未校验 | SHA-256：`9B1A1822E9062229CF940D0CF9FDBD7D33F1301A94A993FE111B56E36184ED7E`；由`docker save`生成并重载通过，上传后必须等待“镜像可用”并另做薄桥接/模型/续训校验 |
+| 训练记录链接 | `https://swanlab.cn/@nanmo-max/brace-msi-platform-native` | 历史公开工程记录 | 不含逐样本数据、检查点或凭据；0.8.2rc1正式平台重训后按官方规范更新，不能把代理A4回填成正式记录 |
+| Harness镜像 | `D:/brace-msi-platform-bridge/BRACE-MSI-0.8.2rc1/brace-msi-0.8.2rc1-harness.tar` | 本地已准备，平台未校验 | SHA-256：`7CA09B029946E8D5B94BEFA8A53EDEFC0DF168051750FA0D4CB8C3FFBBE7784F`；由`docker save`生成并重载通过，上传后必须等待“镜像可用”并另做薄桥接/模型/续训校验 |
 | 源码仓库链接 | `https://github.com/nanmo-max/rengongzhineng/tree/codex/native-competitive-rc` | 本地分支已冻结；待确认远端推送完成 | 不覆盖远端main或历史RC标签 |
 | PyTRiO API Key | 由队长在平台字段中粘贴 | 人工填写 | 不通过聊天、Git、作品文档或日志传递 |
 | 作品文档 | `D:/brace-msi-release/BRACE-MSI-0.4.0rc1-submission-materials/BRACE-MSI-作品说明书.docx` | 已生成并校验 | 无官方模板；指导教师暂不填写；PDF预览为`BRACE-MSI-作品说明书-最终版.pdf` |
@@ -21,7 +21,8 @@
 ## 镜像上传核对
 
 - 上传的是`docker save`生成的`.tar`，不是源码ZIP或Docker构建上下文；
-- 本地文件大小为249,029,120字节；镜像内部大小为249,004,758字节；
+- 本地文件大小为248,980,992字节；镜像内部大小为248,956,508字节；
+- 镜像无参数启动显示帮助并退出0；平台训练/预测桥接必须显式追加`start`/`submit`；
 - 镜像平台为linux/amd64，默认用户UID 10001；
 - 镜像不含原始数据、A/B/C检查点、Sampler权重、Qwen权重、Embedding或密钥；只包含固定哈希的Tokenizer/配置资产；
 - 平台选择镜像后再执行“校验并保存新版本”；

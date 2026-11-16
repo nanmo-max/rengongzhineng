@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "release_id": "BRACE-MSI-0.8.2rc1",
+  "scope": "local_empty_mount_preflight_and_native_mount_acceptance_not_official_score",
+  "runtime_commit": "856680737df8563c93db3ededcee6fb94a2075f4",
+  "tests": {
+    "full_regression": "424 passed in 158.19s"
+  },
+  "image": {
+    "tag": "brace-msi:0.8.2rc1",
+    "id": "sha256:e639749fbc269cb13643fabdc4193124dd02aca0d225e02dee7cace45ebda4b1",
+    "bytes": 248956508,
+    "user": "brace",
+    "entrypoint": ["python3", "-m", "brace_msi"],
+    "default_command": ["--help"],
+    "package_version": "0.8.2rc1"
+  },
+  "empty_mount_preflight": {
+    "network": "none",
+    "exit_code": 0,
+    "training_started": false
+  },
+  "native_round_smoke": {
+    "profile": "A",
+    "network": "none",
+    "cpus": 4,
+    "memory_bytes": 8589934592,
+    "read_only_root": true,
+    "start_exit_code": 0,
+    "submit_exit_code": 0,
+    "prediction_samples": 1244,
+    "parent_sha256": "fd1e08b2aad08b2e9754f9b2dfdc029481c0da7ecdedca0abb0ec6fcc818c757",
+    "checkpoint_bytes": 132180
+  },
+  "archive": {
+    "path": "D:/brace-msi-platform-bridge/BRACE-MSI-0.8.2rc1/brace-msi-0.8.2rc1-harness.tar",
+    "bytes": 248980992,
+    "sha256": "7ca09b029946e8d5b94befa8a53edefc0df168051750fa0d4cb8c3ffbbe7784f",
+    "docker_save": true,
+    "docker_load_verified": true
+  },
+  "forbidden_artifacts": 0,
+  "pip_check": "PASS",
+  "official_platform_compatibility": "NOT_YET_JUDGED",
+  "official_trial_consumed": false
+}

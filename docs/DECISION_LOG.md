@@ -80,6 +80,7 @@
 | D-073 | 2026-11-16 | LOCKED | 冻结Gate隔离修正后的`BRACE-MSI-0.8.0rc1`为当前本地性能候选，替代`0.7.1rc1`上传入口但不删除旧RC或标签。正式策略使用不含数据集名称的证据路由：保守父权重插值、分类最近窗口、回归成熟单调趋势高步长、非单调累计回放及下一批负收益直接前任回滚。A3提前激进策略永久淘汰；A5因报告ID失配无效，A6为最终证据。PyTRiO不能覆盖recipe/Gate/预算，失联两次后retain；SwanLab只在正式完成品重训时记录。 | `COMPETITIVE-POLICY-002-A1—A6`；421项回归；`results/COMPETITIVE-POLICY-002.md`；`results/RC80_CONTAINER_ACCEPTANCE.json` |
 | D-074 | 2026-11-16 | LOCKED | 冻结`0.8.0rc1`历史归档，不在原归档上覆盖修补。依据O-PLATFORM-011只加固平台薄桥接边界：Native start可显式校验平台顶层父checkpoint哈希和期望轮次；每轮收据无论部署、拒绝或retain都声明实际输出的`checkpoint.npz`产物；argv prefix保持`python3 -m brace_msi`且不把未知平台frame字段写入核心。十轮预算仍由持久化workspace/history执行，若平台不能恢复该状态则失败关闭，不通过改写retain权重或伪造轮次规避。 | O-PLATFORM-011；现有空输出挂载、父链和retain专项测试；平台私有schema仍未知 |
 | D-075 | 2026-11-16 | LOCKED | 冻结`BRACE-MSI-0.8.1rc1`为当前平台桥接候选，替代`0.8.0rc1`上传入口但不改写其性能证据。该补丁只增加显式父哈希/轮次校验、无mode argv prefix描述和全路径模型产物声明；训练策略、模型参数、Gate、PyTRiO和SwanLab语义不变。平台草稿适配器已被判无效，因此`0.8.1rc1`本地通过不等于官方兼容；只有平台重写桥接器并以真实挂载检查digest后才能解除阻塞。 | `PLATFORM-BRIDGE-001`；54项专项、424项回归；`RC81_CONTAINER_ACCEPTANCE.json` |
+| D-076 | 2026-11-16 | LOCKED | 冻结`BRACE-MSI-0.8.2rc1`为空挂载预检补丁，替代`0.8.1rc1`上传入口但不改写其桥接和性能证据。镜像默认命令从`start`恢复为首个平台可运行版本使用的`--help`，防止镜像校验阶段在四挂载尚未提供时误启动训练；平台桥接器仍须显式追加`start`或`submit`。训练策略、父链、模型参数、PyTRiO和SwanLab均不变。 | O-PLATFORM-012；本机复现0.8.1裸启动`PermissionError: /workspace`/退出1；0.8.2裸启动退出0且真实挂载start/submit通过；`PLATFORM-PREFLIGHT-001` |
 
 ## 已被替代的历史决策
 

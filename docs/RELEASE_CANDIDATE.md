@@ -1,12 +1,18 @@
 # BRACE-MSI Release Candidate
 
-## 当前构建候选：0.8.1rc1
+## 当前构建候选：0.8.2rc1
+
+`BRACE-MSI-0.8.2rc1`是`0.8.1rc1`的空挂载预检兼容补丁。它恢复首个完成平台试运行版本的安全默认启动语义：镜像无参数启动只显示帮助并退出0，不会在平台四挂载尚未提供时误执行训练；平台桥接器仍需显式追加`start`或`submit`。父checkpoint续训、竞争策略、Gate、PyTRiO及SwanLab语义没有改变。
+
+上传归档：`D:/brace-msi-platform-bridge/BRACE-MSI-0.8.2rc1/brace-msi-0.8.2rc1-harness.tar`；SHA-256 `7CA09B029946E8D5B94BEFA8A53EDEFC0DF168051750FA0D4CB8C3FFBBE7784F`。机器证据见[空挂载预检修复](results/PLATFORM-PREFLIGHT-001.md)和[RC82容器验收](results/RC82_CONTAINER_ACCEPTANCE.json)。平台真实兼容性仍待重新导入和试运行。
+
+## 历史平台桥接候选：0.8.1rc1
 
 `BRACE-MSI-0.8.1rc1`是`0.8.0rc1`的纯平台桥接补丁，不改变官方`contest.cpu-mlp.v1`checkpoint schema、证据驱动候选组合、模型参数、Gate、PyTRiO或SwanLab语义。新增显式父checkpoint哈希和期望轮次校验；所有部署、拒绝和retain轮均声明实际输出的`checkpoint.npz`产物；`describe`暴露无mode argv prefix。
 
 性能证据继续引用冻结的`0.8.0rc1` A6，不因补丁重新训练或重新读取确认集。桥接补丁完成54项平台专项、424项完整回归、官方A父checkpoint两轮4核8GB断网只读容器、1,244条独立预测、禁入扫描及`docker save/load`。平台旧草稿适配器被判有缺陷，正式兼容性仍需平台重写桥接器后复验。
 
-上传归档：`D:/brace-msi-platform-bridge/BRACE-MSI-0.8.1rc1/brace-msi-0.8.1rc1-harness.tar`；SHA-256 `9B1A1822E9062229CF940D0CF9FDBD7D33F1301A94A993FE111B56E36184ED7E`。机器证据见[桥接加固结果](results/PLATFORM-BRIDGE-001.md)和[RC81容器验收](results/RC81_CONTAINER_ACCEPTANCE.json)。`0.8.0rc1`与更早归档只作冻结历史，不得替代当前入口。
+历史归档：`D:/brace-msi-platform-bridge/BRACE-MSI-0.8.1rc1/brace-msi-0.8.1rc1-harness.tar`；SHA-256 `9B1A1822E9062229CF940D0CF9FDBD7D33F1301A94A993FE111B56E36184ED7E`。它保留追溯，但默认`start`会在空挂载预检阶段失败，不得替代0.8.2上传。
 
 ## 历史性能候选：0.8.0rc1
 

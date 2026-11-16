@@ -1,11 +1,19 @@
 # 新会话恢复与交接
 
-## 2026-11-16 0.8.1rc1平台桥接恢复入口（当前）
+## 2026-11-16 0.8.2rc1空挂载预检恢复入口（当前）
+
+1. `PLATFORM-PREFLIGHT-001`已本地完成；当前唯一核心任务仍为`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`。不要重跑A1—A6，不读取已第5次暴露的confirmation/public validation。
+2. 运行时补丁提交为`8566807`；结果入口为`docs/results/PLATFORM-PREFLIGHT-001.md`。0.8.1裸启动在空挂载时复现`PermissionError: /workspace`/退出1；0.8.2默认`--help`退出0。
+3. 当前上传归档为`D:/brace-msi-platform-bridge/BRACE-MSI-0.8.2rc1/brace-msi-0.8.2rc1-harness.tar`，SHA-256 `7CA09B029946E8D5B94BEFA8A53EDEFC0DF168051750FA0D4CB8C3FFBBE7784F`。0.8.1及更早目录不得上传代替。
+4. `0.8.2rc1`已通过424项完整回归、空挂载退出0、官方A父checkpoint显式start、1,244条独立submit、4核8GB只读断网、禁入扫描、`pip check`及`docker save/load`；这些是本地证据，不是官方兼容判定。
+5. 下一动作只能是平台重新上传/导入/校验；若进入真实试运行，必须核对十轮父链、模型产物、非零PyTRiO Token及独立预测。新的平台原始错误先登记SOURCE_REGISTRY，再决定是否修改。
+
+## 2026-11-16 0.8.1rc1平台桥接恢复入口（历史）
 
 1. `PLATFORM-BRIDGE-001`已本地完成；当前唯一核心任务为`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`。不要重跑A1—A6，不读取已第5次暴露的confirmation/public validation。
 2. 当前运行时代码提交为`e3b00d1`；桥接结果入口为`docs/results/PLATFORM-BRIDGE-001.md`，性能结果仍引用`docs/results/COMPETITIVE-POLICY-002.md`。
 3. 最终A6经平台原生`start_round`十轮重放：A/B/C平均有向收益`+0.319620` Macro-F1、`+21.850812`和`+0.438766` RMSE降低；A3灾难性提前策略与A5无效ID证据均保留。
-4. 当前上传归档为`D:/brace-msi-platform-bridge/BRACE-MSI-0.8.1rc1/brace-msi-0.8.1rc1-harness.tar`，SHA-256 `9B1A1822E9062229CF940D0CF9FDBD7D33F1301A94A993FE111B56E36184ED7E`。0.8.0及更早目录不得上传代替。
+4. 当时上传归档为`D:/brace-msi-platform-bridge/BRACE-MSI-0.8.1rc1/brace-msi-0.8.1rc1-harness.tar`，SHA-256 `9B1A1822E9062229CF940D0CF9FDBD7D33F1301A94A993FE111B56E36184ED7E`；现已由本文件顶部0.8.2入口替代。
 5. `0.8.1rc1`已通过54项平台专项、424项完整回归、官方A父链两轮、4核8GB只读断网、retain产物声明、1,244条独立预测、禁入扫描、`pip check`与`docker save/load`；这些是本地工程证据，不是官方兼容判定或隐藏成绩。
 6. 平台旧草稿适配器被判有缺陷；平台侧需用无mode argv prefix重写薄桥接器，并映射顶层父哈希、轮次、空输出挂载和模型产物声明。恢复后只处理新的平台桥接/导入/在线Token/SwanLab正式规范或官方评测证据。
 

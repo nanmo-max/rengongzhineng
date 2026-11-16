@@ -512,3 +512,12 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 - 状态：`COMPLETED_POSITIVE_GATE_ISOLATED_FINAL`。三任务各10轮完成，A/B/C平均有向收益为`+0.319620` Macro-F1、`+21.850812`和`+0.438766` RMSE降低；候选/部署/回滚为`9/9/0`、`9/5/0`、`9/6/0`。确认/public validation读取0、官方试运行0；摘要SHA-256 `680C9AFF...10C9E77`。
 - 唯一修复：报告`experiment_id`必须取不可为空的输出目录名，并由回归测试覆盖；算法、Gate隔离修正、数据、种子、预算和成功门完全继承A5。
 - 输出：`D:/brace-msi-competitive-policy/COMPETITIVE-POLICY-002-A6/`；A1—A5保持只读。
+
+## PLATFORM-PREFLIGHT-001发布兼容验证
+
+- 状态：`COMPLETED_LOCAL_EXTERNAL_BLOCK`。
+- 问题：0.8.1镜像默认`start`是否会在平台四挂载尚未提供的预检阶段提前失败；恢复历史安全默认命令后，显式原生训练和预测是否保持可用。
+- 数据：仅使用官方A公开train作一轮接口Smoke、公开validation作独立预测行数校验；不计算或比较性能，不进入模型选择。
+- 结果：0.8.1裸启动退出1并报`PermissionError: /workspace`；0.8.2裸启动退出0。显式start/submit均退出0，生成132,180字节checkpoint和1,244条预测。
+- 资源与边界：4核8GB、断网、只读根；在线PyTRiO/SwanLab/隐藏数据/官方试运行均为0。首次PyPI构建因网络超时失败并保留，镜像源重建成功。
+- 输出：`D:/brace-msi-platform-bridge/BRACE-MSI-0.8.2rc1-smoke/`及`docs/results/PLATFORM-PREFLIGHT-001.md`。
