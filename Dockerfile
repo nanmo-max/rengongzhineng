@@ -34,4 +34,4 @@ ENV BRACE_ADVISOR=pytrio \
     BRACE_MIN_RELATIVE_IMPROVEMENT=0.05 \
     BRACE_MAX_REPLAY_SAMPLES=100000
 ENTRYPOINT ["python3", "-m", "brace_msi"]
-CMD ["start"]
+CMD ["--help"]

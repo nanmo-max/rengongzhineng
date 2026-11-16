@@ -905,19 +905,19 @@ def test_formal_runtime_defaults_to_real_candidate_in_all_ten_rounds() -> None:
     assert PlatformRuntimeConfig().min_relative_improvement == 0.05
 
 
-def test_container_defaults_to_native_start_command() -> None:
+def test_container_default_is_safe_for_empty_platform_preflight() -> None:
     dockerfile = Path("Dockerfile").read_text(encoding="utf-8")
     assert 'ENTRYPOINT ["python3", "-m", "brace_msi"]' in dockerfile
-    assert 'CMD ["start"]' in dockerfile
+    assert 'CMD ["--help"]' in dockerfile
     assert 'ENV BRACE_ADVISOR=pytrio' in dockerfile
     assert 'BRACE_POLICY_MODE=portfolio' in dockerfile
     assert 'BRACE_PROTOCOL_PROFILES=' not in dockerfile
     assert 'BRACE_MAX_REPLAY_SAMPLES=100000' in dockerfile
 
 
-def test_release_version_matches_competitive_candidate() -> None:
+def test_release_version_matches_platform_preflight_patch() -> None:
     pyproject = Path("pyproject.toml").read_text(encoding="utf-8")
-    assert 'version = "0.8.1rc1"' in pyproject
+    assert 'version = "0.8.2rc1"' in pyproject
 
 
 def test_pytrio_advice_is_bounded_and_recorded_without_bypassing_gate(tmp_path: Path) -> None:
