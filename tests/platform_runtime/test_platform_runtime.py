@@ -233,6 +233,36 @@ def test_portfolio_policy_derives_arrival_evidence_inside_native_start(
         assert (workspace / "shadow-predecessor.npz").is_file()
 
 
+def test_portfolio_trend_evidence_excludes_current_gate_targets(tmp_path: Path) -> None:
+    parent = tmp_path / "parent.npz"
+    update = tmp_path / "update.jsonl"
+    gate = tmp_path / "gate.jsonl"
+    _write_parent(parent, task="regression", profile="unknown-regressor")
+    update_rows = [
+        {"id": f"update-{index}", "inputs": {"features": [index, 0]}, "answer": 2.0}
+        for index in range(20)
+    ]
+    gate_rows = [
+        {"id": f"gate-{index}", "inputs": {"features": [index, 1]}, "answer": 1000.0}
+        for index in range(10)
+    ]
+    for path, rows in ((update, update_rows), (gate, gate_rows)):
+        path.write_text(
+            "".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8"
+        )
+
+    receipt = start_round(
+        update,
+        parent,
+        tmp_path / "workspace",
+        tmp_path / "output",
+        PlatformRuntimeConfig(policy_mode="portfolio"),
+        gate_data_path=gate,
+    )
+
+    assert receipt["target_mean"] == pytest.approx(2.0)
+
+
 def test_sequential_policy_retains_when_arrival_is_stable_and_delayed_gain_positive(
     tmp_path: Path,
 ) -> None:

@@ -1228,7 +1228,7 @@ def start_round(
         advisor=advisor,
         arrival_evidence=arrival_evidence,
         rollback_available=rollback_model is not None,
-        current_target_mean=float(np.mean(batch["y"])),
+        current_target_mean=float(np.mean(batch["y"][update_indices])),
     )
     use_replay = executed_action is Action.REPLAY_REFIT and len(replay_x) > 0
     training_x = (
@@ -1416,7 +1416,7 @@ def start_round(
             "round_index": round_index,
             "task": parent.meta["task"],
             "sample_count": len(batch["ids"]),
-            "target_mean": float(np.mean(batch["y"])),
+            "target_mean": float(np.mean(batch["y"][update_indices])),
             "partition_mode": partition_mode,
             "feedback_update_sample_count": feedback_update_count,
             "feedback_update_sha256": feedback_update_sha256,

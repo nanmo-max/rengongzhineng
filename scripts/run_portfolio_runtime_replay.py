@@ -31,6 +31,13 @@ PACKAGES = {
 }
 
 
+def _experiment_id(output_root: Path) -> str:
+    value = Path(output_root).name.strip()
+    if not value:
+        raise ValueError("output root must have an experiment ID directory name")
+    return value
+
+
 def _atomic_json(path: Path, value: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_suffix(path.suffix + ".tmp")
@@ -143,7 +150,7 @@ def main() -> int:
     for result in results:
         _atomic_json(args.output_root / result["profile"] / "result.json", result)
     summary = {
-        "experiment_id": "COMPETITIVE-POLICY-002-A4",
+        "experiment_id": _experiment_id(args.output_root),
         "entry": "brace_msi.platform_runtime.start_round",
         "confirmation_files_read": 0,
         "official_trial_count": 0,

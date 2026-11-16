@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from brace_msi.competitive_policy import PortfolioEvidence, build_candidate_plan
+from scripts.run_portfolio_runtime_replay import _experiment_id
 
 
 def test_classification_plan_uses_safe_primary_and_recent_secondary() -> None:
@@ -47,5 +48,11 @@ def test_unstable_or_failed_regression_stays_conservative() -> None:
 
     assert plan.primary_recipe == "soup_current_e3_alpha0.25"
     assert plan.secondary_recipe is None
+
+
+def test_runtime_replay_uses_output_directory_as_experiment_id(tmp_path) -> None:
+    assert _experiment_id(tmp_path / "COMPETITIVE-POLICY-002-A6") == (
+        "COMPETITIVE-POLICY-002-A6"
+    )
 
 
