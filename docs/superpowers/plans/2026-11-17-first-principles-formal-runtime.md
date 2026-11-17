@@ -60,11 +60,11 @@
 
 **Produces:** `TASKS`, `train(rnd)`, `predict(sample, model_dir)`.
 
-- [ ] Write failing transcript tests for train, retain, candidate accept/reject, state save, history citation and predict.
-- [ ] Observe RED.
-- [ ] Implement one candidate maximum, parent retain fallback and platform measurement selection.
-- [ ] Run focused tests, official SDK tests and the full suite.
-- [ ] Commit.
+- [x] Write failing transcript tests for train, retain, candidate accept/reject, state save, history citation and predict.
+- [x] Observe RED.
+- [x] Implement one candidate maximum, parent retain fallback and platform measurement selection.
+- [x] Run focused tests, official SDK tests and the full suite.
+- [x] Commit.
 
 ### Task 4: Ten-round independent simulator and machine report
 

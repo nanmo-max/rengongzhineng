@@ -723,3 +723,4 @@
 - Agent C只读性能审计建议先保留窗口/训练强度与父候选权重融合，复杂回放、异构模型、论文大模块退出正式首版。
 - `FORMAL-MINIMAL-001` Task 1按TDD完成：5项边界测试先因`brace_formal`缺失失败，随后直接宿主模型调用覆盖低Token上限、模型别名、无usage、非法提案retain以及十轮唯一工作目录； focused `5 passed`，完整回归`442 passed in 148.23s`。
 - `FORMAL-MINIMAL-001` Task 2按TDD完成：3项差分测试先因正式模型核心缺失失败；随后最小NumPy续训实现与已验证`_NativeModel`在同一父checkpoint、同一样本顺序和同一超参数下的loss、全部权重、Adam一二阶矩、epoch/step及预测逐项一致，保存重载同预测且产物小于64 MiB。focused `3 passed`，完整回归`445 passed in 149.62s`；未启动新训练或官方试运行。
+- `FORMAL-MINIMAL-001` Task 3按TDD完成：4项入口测试先因`brace_formal.submission`缺失失败；实现每轮先调用宿主模型、最多一个父链候选、公开validation安全门、retain、唯一workspace状态、候选提交和独立预测。另以真实官方`Round`对象验证retain转录顺序为`history_request→model_request→state_request→round_complete`且引用真实call ID。focused `18 passed`，完整回归`450 passed in 148.54s`；正式薄入口已切换至`brace_formal`，未调用平台。
