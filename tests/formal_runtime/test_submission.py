@@ -123,6 +123,22 @@ def test_safe_candidate_is_submitted_and_selected(monkeypatch, tmp_path: Path) -
     _write_rows(tmp_path / "validation.jsonl")
     rnd = FakeRound(tmp_path, parent, {"action": "train", "epochs": 1, "learning_rate_multiplier": 3.0})
     monkeypatch.setenv("CONTEST_WORK", str(tmp_path / "workspace"))
+    monkeypatch.setattr(
+        submission,
+        "cross_validate",
+        lambda *args: {
+            "selected_recipe": "soup_e3_alpha0.25",
+            "recipes": {
+                "soup_e3_alpha0.25": {
+                    "mean_signed_gain": 0.2,
+                    "positive_folds": 3,
+                    "worst_relative_gain": 0.0,
+                    "cpu_seconds": 0.1,
+                    "eligible": True,
+                }
+            },
+        },
+    )
     scores = iter([{"accuracy": 0.5, "macro_f1": 0.4}, {"accuracy": 0.7, "macro_f1": 0.6}])
     monkeypatch.setattr(submission, "evaluate", lambda *args: next(scores))
 
@@ -133,6 +149,8 @@ def test_safe_candidate_is_submitted_and_selected(monkeypatch, tmp_path: Path) -
     assert rnd.submitted["checkpoint_paths"] == ["checkpoint.npz"]
     assert rnd.submitted["predict_argv"] == ["python3", "/app/harness.py", "predict"]
     assert rnd.finished["selected_artifact_id"] == "candidate-1"
+    state = json.loads((rnd.saved_state / "formal-state.json").read_text(encoding="utf-8"))
+    assert state["rounds"][-1]["recipe"] == "soup_e3_alpha0.25"
 
 
 def test_regressing_candidate_is_rejected_without_submission(monkeypatch, tmp_path: Path) -> None:
@@ -144,6 +162,11 @@ def test_regressing_candidate_is_rejected_without_submission(monkeypatch, tmp_pa
     _write_rows(tmp_path / "validation.jsonl")
     rnd = FakeRound(tmp_path, parent, {"action": "train", "epochs": 1, "learning_rate_multiplier": 1.0})
     monkeypatch.setenv("CONTEST_WORK", str(tmp_path / "workspace"))
+    monkeypatch.setattr(
+        submission,
+        "cross_validate",
+        lambda *args: {"selected_recipe": "retain", "recipes": {"retain": {"mean_signed_gain": 0.0, "positive_folds": 3, "worst_relative_gain": 0.0, "cpu_seconds": 0.0, "eligible": True}}},
+    )
     scores = iter([{"accuracy": 0.8, "macro_f1": 0.7}, {"accuracy": 0.7, "macro_f1": 0.6}])
     monkeypatch.setattr(submission, "evaluate", lambda *args: next(scores))
 

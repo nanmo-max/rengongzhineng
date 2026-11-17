@@ -601,7 +601,7 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 
 ## FORMAL-PERF-001-A1预注册
 
-- 状态：`RUNNING`。
+- 状态：`COMPLETED_MIXED_INTEGRATED`。
 - 研究问题：在不改变官方`contest.cpu-mlp.v1`schema、不读取公开validation/历史confirmation的前提下，train内部证据能否从`retain / e1_lr1 / e3_lr3 / soup_e3_alpha0.25`中稳定选择比固定1 epoch更好的父链兼容recipe。
 - 数据：官方A/B/C训练包只读；仅`public/train.jsonl`。数据指纹在运行产物中记录；`public/validation.jsonl`读取次数固定为0。
 - 切分：三折。可从ID可靠提取设备/轨迹组时按组分折；否则分类按类别分层确定性分折、回归按样本ID哈希确定性分折。任何样本不跨train/holdout。
@@ -611,3 +611,6 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 - 种子：`20261117`；分折只由不可逆ID哈希、标签/组和该种子决定。
 - 成功标准：每任务选择的recipe相对retain平均有向收益为正、至少2/3折不劣于retain，且最差折相对退化不超过5%；若复杂recipe未超过e1则保留e1，不为追求复杂度晋级。
 - 预期输出：`D:/brace-msi-first-principles-performance/FORMAL-PERF-001-A1/`中的JSON、资源记录和数据指纹；失败与负结果同样保留。
+- 结果：A选择`e1_lr1`，3折平均Macro-F1有向增益`+0.004902644`、2/3折不劣；B所有续训recipe均在跨轴承组留出退化，选择retain；C选择`soup_e3_alpha0.25`，3/3折改善、平均RMSE降低`0.189824503`。
+- 资源：A/B/C总CPU约`0.125/0.688/11.25`秒；公开validation读取0；在线模型、SwanLab和官方次数均0。摘要SHA-256 `FE5158C0EE76A6179E7641195E9CC394105F0E00AA2389279F81A31787B08968`。
+- 集成：正式每轮仅在Agent选择train时运行同一train内部portfolio；A/C可采用已证实recipe，若内部证据选择retain则执行Agent给定epoch/LR作为唯一候选，最后仍由当前官方validation门控。完整折明细不写入持久状态，只保存紧凑摘要。

@@ -15,6 +15,7 @@ from .agent import AgentDecision, request_proposal
 from .data import _flatten, load_rows
 from .metrics import evaluate
 from .model import FormalModel
+from .portfolio import cross_validate, fit_recipe
 from .workspace import create_round_paths
 
 
@@ -89,6 +90,32 @@ def _context(rnd: Any, model: FormalModel, train_count: int, validation_count: i
     }
 
 
+def _compact_portfolio(evidence: Mapping[str, Any]) -> dict[str, Any]:
+    recipes = evidence.get("recipes")
+    if not isinstance(recipes, Mapping):
+        raise ValueError("portfolio evidence has no recipes")
+    compact: dict[str, Any] = {}
+    for name, record in recipes.items():
+        if not isinstance(name, str) or not isinstance(record, Mapping):
+            raise ValueError("portfolio evidence is invalid")
+        compact[name] = {
+            key: record[key]
+            for key in ("mean_signed_gain", "positive_folds", "worst_relative_gain", "cpu_seconds", "eligible")
+            if key in record
+        }
+    return {"selected_recipe": evidence.get("selected_recipe"), "recipes": compact}
+
+
+def _fit_agent_recipe(parent: FormalModel, training: Any, decision: AgentDecision) -> FormalModel:
+    candidate = parent.clone()
+    parent_rate = float(parent.meta["learning_rate"])
+    candidate.meta["learning_rate"] = parent_rate * decision.learning_rate_multiplier
+    candidate.fit(training.x, training.y, decision.epochs)
+    candidate.meta["learning_rate"] = parent_rate
+    candidate.validate()
+    return candidate
+
+
 def train(rnd: Any) -> None:
     """Execute one bounded decision transaction using the official Round object."""
 
@@ -113,14 +140,22 @@ def train(rnd: Any) -> None:
     selected_artifact = rnd.parent.artifact_id
     candidate_metrics: dict[str, float] | None = None
     losses: list[float] = []
+    recipe: str | None = None
+    portfolio: dict[str, Any] | None = None
     outcome = "retained_by_agent"
     candidate_receipt: Mapping[str, Any] | None = None
     metric, direction = _primary_contract(rnd, parent)
 
     if decision.action == "train":
-        candidate = parent.clone()
-        candidate.meta["learning_rate"] = float(parent.meta["learning_rate"]) * decision.learning_rate_multiplier
-        losses = candidate.fit(training.x, training.y, decision.epochs)
+        portfolio_evidence = cross_validate(parent, training.ids, training.x, training.y)
+        portfolio = _compact_portfolio(portfolio_evidence)
+        selected_recipe = portfolio_evidence["selected_recipe"]
+        if selected_recipe == "retain":
+            recipe = f"agent_e{decision.epochs}_lr{decision.learning_rate_multiplier:g}"
+            candidate = _fit_agent_recipe(parent, training, decision)
+        else:
+            recipe = str(selected_recipe)
+            candidate = fit_recipe(parent, recipe, training.x, training.y)
         candidate_metrics = evaluate(candidate, validation.x, validation.y)
         if _improves(parent_metrics, candidate_metrics, metric, direction):
             paths.candidate.mkdir(parents=True, exist_ok=False)
@@ -133,7 +168,7 @@ def train(rnd: Any) -> None:
                 configuration={
                     "action": "train", "epochs": decision.epochs,
                     "learning_rate_multiplier": decision.learning_rate_multiplier,
-                    "metric": metric, "direction": direction,
+                    "metric": metric, "direction": direction, "recipe": recipe,
                 },
                 seed=_SEED,
                 checkpoint_paths=["checkpoint.npz"],
@@ -162,6 +197,8 @@ def train(rnd: Any) -> None:
         "parent_metrics": parent_metrics,
         "candidate_metrics": candidate_metrics,
         "losses": losses,
+        "recipe": recipe,
+        "portfolio": portfolio,
         "selected_artifact_id": selected_artifact,
     }
     _write_state(state, record)
@@ -175,6 +212,8 @@ def train(rnd: Any) -> None:
         "parent_metrics": parent_metrics,
         "candidate_metrics": candidate_metrics,
         "metric": metric,
+        "recipe": recipe,
+        "portfolio": portfolio,
     }
     rnd.finish(
         selected_artifact_id=selected_artifact,

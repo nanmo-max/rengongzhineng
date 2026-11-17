@@ -35,7 +35,7 @@
 
 #### FORMAL-PERF-001 父链兼容性能候选集成
 
-- 状态：`READY`
+- 状态：`IN_PROGRESS`
 - 依赖：FORMAL-CLEAN-IMAGE-001
 - 优先级：P1
 - 完成标准：只用训练内部证据筛选，至少比较retain、1 epoch和两个成熟父链兼容recipe；无跨轮正趋势的机制不进入正式镜像。
