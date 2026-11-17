@@ -32,11 +32,11 @@
 
 **Produces:** `request_proposal(rnd, context) -> AgentDecision`; `create_round_paths(root, round_index, stage_id) -> RoundPaths`.
 
-- [ ] Write failing tests for all five Review Focus cases owned by this task.
-- [ ] Run the focused tests and confirm expected failures.
-- [ ] Implement direct `rnd.model()` call, strict bounded JSON parsing and unique round paths.
-- [ ] Run focused tests and the full suite.
-- [ ] Commit.
+- [x] Write failing tests for all five Review Focus cases owned by this task.
+- [x] Run the focused tests and confirm expected failures.
+- [x] Implement direct `rnd.model()` call, strict bounded JSON parsing and unique round paths.
+- [x] Run focused tests and the full suite.
+- [x] Commit.
 
 ### Task 2: Minimal parent-compatible training and prediction core
 

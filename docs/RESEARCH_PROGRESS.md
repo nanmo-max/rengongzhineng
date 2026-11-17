@@ -721,3 +721,4 @@
 - 官方SDK 1.0.2逐项核验：每轮真实宿主模型调用、父artifact、候选/retain、状态、历史和逐行预测为最小正式契约。
 - 建立`codex/first-principles-rebuild`分支、取证报告、最小正式运行核规格和实施计划；未训练、未调用付费API、未消耗官方次数。
 - Agent C只读性能审计建议先保留窗口/训练强度与父候选权重融合，复杂回放、异构模型、论文大模块退出正式首版。
+- `FORMAL-MINIMAL-001` Task 1按TDD完成：5项边界测试先因`brace_formal`缺失失败，随后直接宿主模型调用覆盖低Token上限、模型别名、无usage、非法提案retain以及十轮唯一工作目录； focused `5 passed`，完整回归`442 passed in 148.23s`。
