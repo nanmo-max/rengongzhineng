@@ -48,6 +48,16 @@ EVIDENCE-RSI-001(DONE)
 - 停止条件：不得猜测SDK外字段；不得把本地宿主替身或公开验证写成正式成绩；不得内置密钥、数据、权重、测试报告或直接PyTRiO客户端；若真实宿主行为仍未知，只将对应项保留为`BLOCKED_EXTERNAL`。
 - 当前证据：官方归档/说明哈希已登记，vendored九个SDK源文件与官方解压件逐文件SHA-256一致；Linux 4核8GB断网环境运行官方SDK自带测试`15/15 OK`。项目完整回归`435 passed`；A/B/C最终镜像各10轮、30次宿主模型调用、候选提交/retain、状态/父链及15行独立预测通过；平台测量拒绝后的父状态与公开收据对账有红绿测试。镜像151,369,904字节，正式归档SHA-256 `dc0147706e5c20a62360bf309a280b890ac6cea2707eee4aa66f8f7169c57cbc`且重载通过。真实平台状态仍交由`FORMAL-RELEASE-001`，见`results/OFFICIAL-SDK-V2-001.md`。
 
+### WORKSPACE-V2-INDEPENDENT-TEST-001 冻结归档独立平台模拟
+
+- 状态：`DONE_LOCAL_ONLY`
+- 依赖：OFFICIAL-SDK-V2-001、A4正式归档
+- 授权：用户2026-11-17明确要求模拟官方平台独立测试并生成官方风格HTML。
+- 目标：不从工作树构建镜像，直接从A4 `docker save`归档加载全新标签，在全新状态目录以4核8GB、断网、非root条件完成A/B/C各10轮workspace v2宿主事务和独立预测；从机器JSON生成官方页面风格HTML。
+- 完成标准：归档哈希匹配冻结值；三任务各10轮且每轮引用非空模型调用收据；父链、候选/retain、状态恢复、三任务预测均通过；HTML包含30轮并显著标记“本地协议模拟，不计正式成绩”；隐藏指标、正式Token和官方成绩不虚构；专项和完整回归通过。
+- 停止条件：归档哈希变化、镜像加载失败、任一轮缺模型调用/父链中断、预测失败、报告遗漏轮次或把本地结果写成官方成绩时立即判失败并保留证据。
+- 证据：A4归档SHA-256复核一致并删除原标签后重新加载为独立标签；A/B/C各10轮、30次宿主调用、C两次候选提交、A/B retain及15行预测通过，`acceptance.json valid=true`。HTML/JSON机器校验为30/30轮且无“官方评测通过”表述；报告专项2项、完整回归437项通过。详见`results/WORKSPACE-V2-INDEPENDENT-TEST-001.md`。
+
 ### PLATFORM-MODEL-TRANSPORT-001 平台Chat Completions原生模型边界
 
 - 状态：`DONE_LOCAL_EXTERNAL_BLOCK`

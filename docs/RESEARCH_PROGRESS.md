@@ -2,6 +2,13 @@
 
 本文件按时间追加，不回写历史记录。当前状态仍以 [STATUS.md](STATUS.md) 为准。
 
+## 2026-11-17：冻结A4归档独立官方协议模拟
+
+- 用户明确授权后登记`WORKSPACE-V2-INDEPENDENT-TEST-001-A1`；先复核A4归档SHA-256，再删除原镜像标签并由`docker load`恢复、创建独立测试标签，未从工作树重新构建镜像。
+- 在全新状态目录、4核8GB、断网、非root容器中完成A/B/C各10轮；30轮均引用非空宿主模型调用收据，A/B retain，C提交2个候选，最终完成15行独立预测，机器结果`valid=true`。
+- 测试先行新增官方页面风格报告生成器：HTML/JSON展示30/30轮、模型调用、候选/retain、最终artifact和预测样本；隐藏指标、官方Token结算及正式成绩明确不可用。缺少模型调用收据时失败关闭。
+- 产物位于`D:/brace-msi-workspace-v2/WORKSPACE-V2-INDEPENDENT-TEST-001-A1/`；最终完整回归`437 passed in 150.59s`。该结果不消耗官方试运行次数，不是隐藏测试或官方成绩，也不改变A4正式归档。
+
 ## 2026-11-17：官方Workspace V2正式候选0.9.0rc1
 
 - 登记官方`contest_harness` 1.0.2归档和说明哈希，以固定`describe/train/predict`替换0.8.3猜测式Chat Completions桥接；模型只经宿主`rnd.model()`，每轮完成记录必须引用真实`model_call_ids`。

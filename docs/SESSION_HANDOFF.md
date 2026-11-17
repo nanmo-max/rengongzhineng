@@ -6,7 +6,8 @@
 2. 正式协议为官方`contest_harness` 1.0.2：`python3 /app/harness.py describe|train|predict`。模型只经宿主`rnd.model()`调用，完成记录必须引用本轮`model_call_ids`；0.8.3猜测式桥接已废止。
 3. 唯一上传归档为`D:/brace-msi-workspace-v2/BRACE-MSI-0.9.0rc1-A4/brace-msi-0.9.0rc1-harness.tar`，151,393,280字节，SHA-256 `dc0147706e5c20a62360bf309a280b890ac6cea2707eee4aa66f8f7169c57cbc`。A1/A2/A3和更早归档不得上传代替。
 4. 本地证据：官方上游15项、项目435项回归；A/B/C各10轮共30次宿主模型调用、候选/retain、状态/父链及15行预测；平台测量拒绝时状态链和公开收据同步回退父模型；镜像linux/amd64、UID10001、无PyTRiO/SwanLab安装及禁入文件；`docker save/load`通过。详见`results/OFFICIAL-SDK-V2-001.md`。
-5. 下一步由用户上传A4，等待“镜像可用”后只发起一次受控试运行；核对平台非零Token、30轮父链、候选/retain、逐行预测和报告。任何失败先保存原始文本/截图并登记，不盲目重试。SwanLab链接为`https://swanlab.cn/@nanmo-max/brace-msi-platform-native`，源码分支为`https://github.com/nanmo-max/rengongzhineng/tree/codex/native-competitive-rc`。
+5. 用户授权的独立模拟已完成；机器结果与官方风格HTML/JSON位于`D:/brace-msi-workspace-v2/WORKSPACE-V2-INDEPENDENT-TEST-001-A1/`，30/30轮、30次本地宿主调用、15行预测，明确为非官方成绩。不要重复该模拟或用报告数值代替隐藏评测。
+6. 下一步由用户上传A4，等待“镜像可用”后只发起一次受控试运行；核对平台非零Token、30轮父链、候选/retain、逐行预测和报告。任何失败先保存原始文本/截图并登记，不盲目重试。SwanLab链接为`https://swanlab.cn/@nanmo-max/brace-msi-platform-native`，源码分支为`https://github.com/nanmo-max/rengongzhineng/tree/codex/native-competitive-rc`。
 
 ## 2026-11-16 0.8.3rc1平台模型传输恢复入口（历史）
 

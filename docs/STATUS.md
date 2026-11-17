@@ -3,7 +3,7 @@
 - 最近同步：2026-11-17（Asia/Shanghai）
 - 当前阶段：官方`contest_harness` 1.0.2最小正式接入已完成本地验收；等待平台导入和一次受控真实试运行
 - 当前路线：**性能优先的证据驱动候选组合 + 下一批延迟收益回滚；保留平台父链、安全内核、受控PyTRiO与SwanLab接口** `[D-061]` `[D-073]`
-- 当前唯一核心任务：`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`；本地正式候选`BRACE-MSI-0.9.0rc1`已冻结，只等待人工上传、平台“镜像可用”和真实宿主模型/父artifact生命周期验证。
+- 当前唯一核心任务：`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`；用户授权的`WORKSPACE-V2-INDEPENDENT-TEST-001`已完成并生成官方风格HTML，本地正式候选`BRACE-MSI-0.9.0rc1`保持冻结，只等待人工上传、平台“镜像可用”和真实宿主模型/父artifact生命周期验证。
 - 稳定边界：全部历史RC和实验不改写；`0.5.0rc1`只作研究证据，不得上传。正式线从D-058开始只输出原生官方MLP续训checkpoint。A3之后禁止继续LLM调参 `[D-043]`
 - 官方试运行：已使用1/10次，剩余9/10次；该运行对应旧提交v2，不是RC4，正式评测仍为0/2 `[O-PLATFORM-006]`
 
@@ -30,6 +30,7 @@
 0r. `PLATFORM-MODEL-TRANSPORT-001`已完成：平台反馈确认0.8.2只有PyTRiO私有Sampler路径，无法忠实绑定`workspace_io.model_transport`的Chat Completions协议。0.8.3将标准Chat Completions请求/解析和Token硬门纳入原生`start_round`，`start`强制调用平台模型传输；两次失败后retain且不训练。替身平台传输在4核8GB断网只读容器内实际收到调用并产生123/45 Token，官方A父checkpoint完成候选训练，`submit`输出1,244条预测；430项回归和`docker save/load`通过。平台真实服务仍待上传复验，见`results/PLATFORM-MODEL-TRANSPORT-001.md`。
 0s. `O-PLATFORM-014`补齐正式SDK：协议为`contest.harness.workspace.v2`，模型经宿主`rnd.model()`/`rnd.transport()`调用，每轮必须提交真实`model_call_ids`；候选、状态、父产物和逐行预测均有明确契约。D-078据此替代D-077的正式接法；0.8.3保留历史但不再上传。官方SDK在Linux 4核8GB断网容器中15/15测试通过。
 0t. `OFFICIAL-SDK-V2-001`本地完成：vendored官方SDK九个源文件逐哈希一致；正式镜像只含固定入口且未安装PyTRiO/SwanLab；A/B/C各10轮共30次宿主模型调用、候选/retain、父链/状态和15行预测通过；平台测量拒绝时状态链与公开收据同步保留父模型；完整回归435项。正式A4归档151,393,280字节，SHA-256 `dc0147706e5c20a62360bf309a280b890ac6cea2707eee4aa66f8f7169c57cbc`，见`results/OFFICIAL-SDK-V2-001.md`。
+0u. `WORKSPACE-V2-INDEPENDENT-TEST-001`已完成：从A4归档删除原标签后重新加载全新独立标签，在全新状态目录以4核8GB断网容器完成A/B/C各10轮、30次宿主调用、2次候选提交和15行预测；官方风格HTML/JSON包含全部30轮并显著标注“本地协议模拟，不计正式成绩”。完整回归437项；见`results/WORKSPACE-V2-INDEPENDENT-TEST-001.md`。
 1. `DUAL-DATA-001`已完成：四缓冲区、Gate一轮隔离、Update+Replay候选集合、只读manifest、训练/评估分离句柄和未来诱饵阻断通过4项专项测试；完整回归`275 passed`。
 2. `DUAL-TXN-001`已完成：每批单决策、0至2候选、首候选结果触发升级、十批前缀、原子提交/恢复及影子配对收益通过5项专项测试；完整回归`280 passed`。
 3. `DUAL-VALUE-001`已完成：每任务隔离统计、身份无关证据画像、弱先验、延迟收益专用更新和性能—CPU/RSS/Token/模型体积Pareto前沿通过5项专项测试；完整回归`285 passed`。

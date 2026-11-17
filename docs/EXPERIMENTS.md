@@ -2,6 +2,18 @@
 
 本文件是全部实验运行的唯一登记处，包括失败和中止实验。
 
+## WORKSPACE-V2-INDEPENDENT-TEST-001-A1（COMPLETED_PASS_LOCAL_ONLY）
+
+- 研究问题：冻结A4归档在不依赖工作树源码、全新镜像标签和全新状态目录下，能否重复完成官方workspace v2三任务生命周期，并生成不伪造官方指标的完整HTML报告？
+- 输入：`D:/brace-msi-workspace-v2/BRACE-MSI-0.9.0rc1-A4/brace-msi-0.9.0rc1-harness.tar`，预期SHA-256 `dc0147706e5c20a62360bf309a280b890ac6cea2707eee4aa66f8f7169c57cbc`；只读官方A/B/C训练包公开投影和父`checkpoint.npz`；不读取隐藏数据。
+- 隔离：先删除独立测试标签，再从归档加载；使用全新输出根`D:/brace-msi-workspace-v2/WORKSPACE-V2-INDEPENDENT-TEST-001-A1/`；容器4 CPU、8 GiB、`--network none`、非root；模拟宿主固定返回结构化提案与本地调用ID。
+- 预算：A/B/C各10轮、每轮至少一次宿主模型调用；每任务预测5行；官方试运行0次、远程PyTRiO 0次、SwanLab同步0次。
+- 成功标准：三任务30轮、30个非空调用收据、父链/状态/候选或retain连续、15行预测、机器结果`valid=true`；官方风格HTML和JSON包含全部30轮并标记`local_protocol_only_not_official_score`与“本地协议模拟，不计正式成绩”。
+- 停止条件：归档哈希不符、容器或父链失败、模型调用缺失、预测失败、报告缺轮或产生任何虚构隐藏指标/官方结算即停止并保留结果。
+- 结果：A/B/C各10轮、每轮1个宿主模型调用收据；A/B全程retain，C第1、2轮提交并连续选择候选；三任务各完成5行独立预测，`acceptance.json valid=true`。报告汇总30/30轮、30调用、15预测、2候选；隐藏指标显示“正式平台产生，本地不可获得”，没有“官方评测通过”表述。
+- 产物：`D:/brace-msi-workspace-v2/WORKSPACE-V2-INDEPENDENT-TEST-001-A1/`；`acceptance.json` SHA-256 `773bb1895382bbb0033c1d44378b71fdc1001084f9da6c4e3811ec7a8e82c42f`，最终HTML SHA-256 `7d931103855fdeef08d47137e23ef7008b8bef2b18ad1d1dd46d8a3b16c34271`，最终报告JSON SHA-256 `eb8929cfff82f4ac8576421419195f3dbf9ced498073529c35bccdd0b648215c`。最终报告目录为`platform-style-report-v2/`；初版报告保留，不作为当前入口。
+- 验证：报告生成器按TDD完成两个红绿用例；最终完整回归`437 passed in 150.59s`。官方试运行、远程PyTRiO、SwanLab同步和隐藏数据使用均为0。
+
 ## WORKSPACE-V2-ACCEPTANCE-001（COMPLETED_SUPERSEDED_BY_A2）
 
 - 研究问题：正式上传镜像能否仅依赖官方`contest_harness` 1.0.2，在4核8GB、断网、非root容器中完成A/B/C各10轮宿主网关模型调用、真实父checkpoint续训或retain、候选/状态提交及独立预测？
