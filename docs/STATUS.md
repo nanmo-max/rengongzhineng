@@ -7,6 +7,7 @@
 - 稳定边界：全部历史RC和实验不改写；`0.5.0rc1`只作研究证据，不得上传。正式线从D-058开始只输出原生官方MLP续训checkpoint。A3之后禁止继续LLM调参 `[D-043]`
 - 官方试运行：平台当前记录共4条（2成功、2失败），正式评测仍为0/2；剩余试运行次数以平台页面实时显示为准 `[O-PLATFORM-015]`
 - 当前归档：`D:/brace-msi-first-principles-release/BRACE-MSI-0.10.3rc1-FINAL/harness.tar`；SHA-256 `D08535F0...86A`；`0.10.2rc1`已撤回，不得上传 `[D-083]`
+- 当前源码：提交`ed188b3`已推送到`https://github.com/nanmo-max/rengongzhineng/tree/codex/first-principles-rebuild`；尚未合并main。
 
 ## 已确认
 
