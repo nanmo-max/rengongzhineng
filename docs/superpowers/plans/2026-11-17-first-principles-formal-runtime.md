@@ -84,11 +84,11 @@
 
 **Produces:** clean Linux image and `docker save` tar with SHA-256 evidence.
 
-- [ ] Write a failing allowlist test proving the current full wheel is too broad.
-- [ ] Observe RED.
-- [ ] Build the allowlisted image with only SDK, entrypoints, NumPy and `brace_formal`.
-- [ ] Verify 4-core/8-GB/offline ten-round run, independent prediction, artifact size, nonroot, save/load and禁入扫描.
-- [ ] Run the full suite and commit evidence.
+- [x] Write a failing allowlist test proving the current full wheel is too broad.
+- [x] Observe RED.
+- [x] Build the allowlisted image with only SDK, entrypoints, NumPy and `brace_formal`.
+- [x] Verify 4-core/8-GB/offline ten-round run, independent prediction, artifact size, nonroot, save/load and禁入扫描.
+- [x] Run the full suite and commit evidence.
 
 ### Task 6: Performance integration after protocol gate
 

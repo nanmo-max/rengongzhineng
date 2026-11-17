@@ -71,6 +71,6 @@
 ## R-043 研究代码进入正式镜像
 
 - 等级：High
-- 状态：缓解中
+- 状态：本地已关闭，后续新版本持续审计
 - 证据：0.9.0rc1完整wheel含私有PyTRiO、SFT、SwanLab、模拟和论文模块。
-- 缓解：D-081采用文件白名单构建，正式镜像只含官方SDK、入口、NumPy和`brace_formal`；发布前禁入扫描。
+- 缓解：D-081采用文件白名单构建；最终镜像`/app`仅官方SDK、`brace_formal`与固定入口，依赖仅NumPy。禁入扫描确认旧`brace_msi`、PyTRiO、SwanLab、sklearn、SciPy、psutil、数据、权重和报告均未进入；递归`.pyc`也已排除。证据`results/FORMAL-CLEAN-IMAGE-001.md`。

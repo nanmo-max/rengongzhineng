@@ -588,3 +588,13 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 - 数据：脚本独立生成的合成数值表格分类/回归数据；不读取官方数据、隐藏数据、公开validation或历史确认集。
 - 输出：`D:/brace-msi-first-principles-sim-20261117-A2/acceptance.json`与`report.html`；摘要SHA-256 `83834956C7539345B7C83D6A06FC44FB12E8244713BAAAE8373CA2501A68E2EF`。
 - 边界：在线PyTRiO、SwanLab、官方试运行和付费API使用均为0；结果醒目标注“非官方成绩”。
+
+## FORMAL-CLEAN-IMAGE-001-A1/A2容器验收
+
+- 状态：A1 `COMPLETED_SUPERSEDED_BUILD_ID`；A2 `COMPLETED_FINAL_PROTOCOL_RC`。
+- 目的：验证白名单正式镜像在4核8GB、断网、非root、只读数据/父checkpoint挂载下的官方SDK 1.0.2十轮生命周期、候选、retain、状态、父链与独立预测。
+- A1：30轮全部通过，但之后关闭Docker provenance以生成单一稳定linux/amd64归档，因此A1不作为最终镜像证据。
+- A2：对最终镜像ID `sha256:62d4487b...acd8009`重新完成A/B/C各10轮；每任务10个宿主call ID，最终采用候选A1/B2/C1，独立预测各5行，`valid=true`。验收JSON SHA-256 `DE84F00C...ECC326`。
+- 镜像门：81,183,334字节、UID10001、`pip check`通过、禁入模块均不存在、`/app`只有官方SDK/正式包/固定入口；checkpoint最大132,180字节。
+- 归档：`D:/brace-msi-first-principles-release/BRACE-MSI-0.10.0rc1-FINAL-PROVENANCE-OFF/harness.tar`，81,201,152字节，SHA-256 `DC73FAFC73906D1A841BE3AC47DBCBF3A69915C380711B07E28A2C5C0C05C39E`；删tag后`docker load`恢复同一ID。
+- 边界：平台真实模型服务、SwanLab、官方试运行和隐藏评分均未执行；该记录不含性能结论。

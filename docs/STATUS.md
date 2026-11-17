@@ -1,9 +1,9 @@
 # 当前状态
 
 - 最近同步：2026-11-17（Asia/Shanghai）
-- 当前阶段：第一性原理重建；最小正式运行核已完成，正在构建白名单Docker并执行4核8GB正式验收
+- 当前阶段：第一性原理重建；最小正式运行核和白名单Docker已完成，进入父链兼容性能候选集成
 - 当前路线：**官方SDK 1.0.2 + 每轮真实宿主模型调用 + 平台父checkpoint原生续训/retain + 最小白名单镜像** `[D-079]` `[D-080]` `[D-081]`
-- 当前唯一核心任务：`FORMAL-CLEAN-IMAGE-001 (READY)`；`FORMAL-MINIMAL-001`已完成，`0.9.0rc1`和历史RC全部冻结，不再上传或原地修补。
+- 当前唯一核心任务：`FORMAL-PERF-001 (READY)`；`FORMAL-MINIMAL-001`与`FORMAL-CLEAN-IMAGE-001`已完成，`0.9.0rc1`和历史RC全部冻结。
 - 稳定边界：全部历史RC和实验不改写；`0.5.0rc1`只作研究证据，不得上传。正式线从D-058开始只输出原生官方MLP续训checkpoint。A3之后禁止继续LLM调参 `[D-043]`
 - 官方试运行：平台当前记录共4条（2成功、2失败），正式评测仍为0/2；剩余试运行次数以平台页面实时显示为准 `[O-PLATFORM-015]`
 
@@ -69,7 +69,7 @@
 
 ## 当前执行入口
 
-当前没有允许上传的重建候选。`0.9.0rc1`及更早归档全部冻结为历史证据，不得再次上传；只有`FORMAL-MINIMAL-001`、`FORMAL-CLEAN-IMAGE-001`和完整验收全部通过后，才会生成新的唯一上传候选。
+首个第一性原理协议候选为`D:/brace-msi-first-principles-release/BRACE-MSI-0.10.0rc1-FINAL-PROVENANCE-OFF/harness.tar`，81,201,152字节，SHA-256 `DC73FAFC73906D1A841BE3AC47DBCBF3A69915C380711B07E28A2C5C0C05C39E`。它已通过本地协议与容器门，但在`FORMAL-PERF-001`完成前仅作为可恢复协议RC，不上传消耗试运行。`0.9.0rc1`及更早归档不得再次上传。
 
 正式路线、已知能力与未知边界见[FORMAL_ROUTE.md](FORMAL_ROUTE.md)。实验必须遵守[EXPERIMENT_PROTOCOL.md](EXPERIMENT_PROTOCOL.md)。
 

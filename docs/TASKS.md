@@ -25,16 +25,17 @@
 
 #### FORMAL-CLEAN-IMAGE-001 最小正式Docker与十轮验收
 
-- 状态：`READY`
+- 状态：`DONE`
 - 依赖：FORMAL-MINIMAL-001
 - 优先级：P0
 - 完成标准：镜像白名单、4核8GB断网、A/B/C各10轮、30个真实本地宿主回执、独立预测、64MiB、非root和docker save/load全部通过。
 - 停止条件：任一禁入文件、镜像超限、非root/只读/资源门失败或归档无法`docker load`时不得冻结RC。
 - 计划：同上Task 5。
+- 证据：`results/FORMAL-CLEAN-IMAGE-001.md`；最终归档81,201,152字节，SHA-256 `DC73FAFC...C05C39E`；精确镜像A/B/C各10轮、30次宿主调用及独立预测通过。
 
 #### FORMAL-PERF-001 父链兼容性能候选集成
 
-- 状态：`BLOCKED`
+- 状态：`READY`
 - 依赖：FORMAL-CLEAN-IMAGE-001
 - 优先级：P1
 - 完成标准：只用训练内部证据筛选，至少比较retain、1 epoch和两个成熟父链兼容recipe；无跨轮正趋势的机制不进入正式镜像。
