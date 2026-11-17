@@ -722,3 +722,4 @@
 - 建立`codex/first-principles-rebuild`分支、取证报告、最小正式运行核规格和实施计划；未训练、未调用付费API、未消耗官方次数。
 - Agent C只读性能审计建议先保留窗口/训练强度与父候选权重融合，复杂回放、异构模型、论文大模块退出正式首版。
 - `FORMAL-MINIMAL-001` Task 1按TDD完成：5项边界测试先因`brace_formal`缺失失败，随后直接宿主模型调用覆盖低Token上限、模型别名、无usage、非法提案retain以及十轮唯一工作目录； focused `5 passed`，完整回归`442 passed in 148.23s`。
+- `FORMAL-MINIMAL-001` Task 2按TDD完成：3项差分测试先因正式模型核心缺失失败；随后最小NumPy续训实现与已验证`_NativeModel`在同一父checkpoint、同一样本顺序和同一超参数下的loss、全部权重、Adam一二阶矩、epoch/step及预测逐项一致，保存重载同预测且产物小于64 MiB。focused `3 passed`，完整回归`445 passed in 149.62s`；未启动新训练或官方试运行。

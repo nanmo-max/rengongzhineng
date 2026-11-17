@@ -46,11 +46,11 @@
 
 **Produces:** strict load/predict/fit/save, deterministic train/validation parsing and task metrics.
 
-- [ ] Write differential tests against the existing verified native model for load, one epoch, save/reload and prediction.
-- [ ] Observe RED for the missing formal core.
-- [ ] Implement only the required NumPy continuation code.
-- [ ] Run focused tests and the full suite.
-- [ ] Commit.
+- [x] Write differential tests against the existing verified native model for load, one epoch, save/reload and prediction.
+- [x] Observe RED for the missing formal core.
+- [x] Implement only the required NumPy continuation code.
+- [x] Run focused tests and the full suite.
+- [x] Commit.
 
 ### Task 3: One-round workspace v2 orchestration
 
