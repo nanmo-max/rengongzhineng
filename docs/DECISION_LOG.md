@@ -112,3 +112,17 @@
 - 状态：`LOCKED`
 - 决策：正式镜像不安装完整`brace_msi` wheel，只复制官方SDK、固定入口、最小`brace_formal`和NumPy。PyTRiO私有客户端、SwanLab、SFT、模拟器、论文实验、数据、权重、报告和密钥全部禁入。
 - 依据：官方SDK宿主管理模型服务设计和历史复杂镜像故障面。
+
+## D-082 正式模型接入只使用官方宿主网关
+
+- 日期：2026-11-17
+- 状态：`LOCKED`
+- 决策：正式Harness每轮直接使用官方SDK的`rnd.model()`，不在镜像内安装或调用PyTRiO私有`ServiceClient`，不在线训练或保存Sampler权重。账号中已有Sampler只保留为历史研究证据；提交页可选择的基础模型由平台绑定到宿主网关。Agent是否真实工作只由平台非零Token、真实调用ID和轮收据证明。
+- 依据：O-PLATFORM-014、O-PLATFORM-015、O-PLATFORM-016；两次历史成功运行均为0 Token，最近失败明确指出正式入口未产生宿主模型调用。
+
+## D-083 0.10.3rc1取代0.10.2rc1作为本地终审候选
+
+- 日期：2026-11-17
+- 状态：`LOCKED`
+- 决策：`0.10.2rc1`保留为已撤回历史证据，不得上传。`0.10.3rc1`以平台返回测量作为候选部署权威，缺失或不改善时失败关闭；训练声明区分Agent提案与实际recipe；独立组不足时retain；工作区按dataset/stage/round隔离。只有`0.10.3rc1`完成的全量回归、官方SDK离线测试、4核8GB只读断网30轮和`docker save/load`同ID证据可作为下一次平台受控验证的本地准入。
+- 依据：`FORMAL-AUDIT-FIX-001`终审、机器验收及`docs/results/FORMAL-AUDIT-FIX-001.md`。

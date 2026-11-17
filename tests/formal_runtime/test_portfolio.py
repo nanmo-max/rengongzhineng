@@ -47,7 +47,7 @@ def test_group_folds_never_split_one_trajectory() -> None:
 
 
 def test_recipes_preserve_parent_and_checkpoint_schema() -> None:
-    from brace_formal.portfolio import fit_recipe
+    from brace_formal.portfolio import fit_recipe, recipe_settings
 
     parent = _model()
     original = {name: value.copy() for name, value in parent.params.items()}
@@ -55,10 +55,15 @@ def test_recipes_preserve_parent_and_checkpoint_schema() -> None:
     y = np.asarray([0] * 10 + [1] * 10, dtype=np.int64)
 
     for recipe in ("retain", "e1_lr1", "e3_lr3", "soup_e3_alpha0.25"):
+        settings = recipe_settings(parent, recipe)
         candidate = fit_recipe(parent, recipe, x, y)
         candidate.validate()
         assert candidate.meta["format"] == "contest.cpu-mlp.v1"
         assert candidate.meta["learning_rate"] == parent.meta["learning_rate"]
+        assert settings["optimizer_seed"] == 11
+    assert recipe_settings(parent, "soup_e3_alpha0.25")["epochs"] == 3
+    assert recipe_settings(parent, "soup_e3_alpha0.25")["learning_rate_multiplier"] == 1.0
+    assert recipe_settings(parent, "e3_lr3")["learning_rate_multiplier"] == 3.0
     for name in parent.params:
         np.testing.assert_array_equal(parent.params[name], original[name])
 
@@ -78,3 +83,32 @@ def test_cross_validation_records_all_recipes_without_public_validation() -> Non
     assert set(result["recipes"]) == {"retain", "e1_lr1", "e3_lr3", "soup_e3_alpha0.25"}
     assert all(len(record["folds"]) == 3 for record in result["recipes"].values())
     assert all(np.isfinite(record["mean_signed_gain"]) for record in result["recipes"].values())
+
+
+def test_insufficient_independent_groups_returns_auditable_retain() -> None:
+    from brace_formal.portfolio import cross_validate
+
+    parent = _model()
+    x = np.asarray([[float(i), float(i % 2)] for i in range(12)], dtype=np.float64)
+    y = np.asarray([0, 1] * 6, dtype=np.int64)
+    ids = tuple(f"bearing_{group}_s{index:06d}" for group in range(1, 3) for index in range(6))
+
+    result = cross_validate(parent, ids, x, y)
+
+    assert result["selected_recipe"] == "retain"
+    assert result["status"] == "insufficient_independent_groups"
+    assert result["independent_group_count"] == 2
+
+
+def test_sparse_class_strata_returns_auditable_retain() -> None:
+    from brace_formal.portfolio import cross_validate
+
+    parent = _model()
+    x = np.asarray([[float(i), float(i % 2)] for i in range(6)], dtype=np.float64)
+    y = np.asarray([0, 0, 1, 1, 2, 2], dtype=np.int64)
+    ids = tuple(f"row-{index}" for index in range(6))
+
+    result = cross_validate(parent, ids, x, y)
+
+    assert result["selected_recipe"] == "retain"
+    assert result["status"] == "insufficient_independent_folds"

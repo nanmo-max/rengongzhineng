@@ -2,10 +2,10 @@
 
 ## 2026-11-17 第一性原理重建恢复入口（当前）
 
-1. 当前分支为`codex/first-principles-rebuild`；先读`STATUS.md`、`TASKS.md`、D-079至D-081和`results/FORMAL-PERF-001.md`。不要上传或修补`0.9.0rc1`及更早归档。
+1. 当前分支为`codex/first-principles-rebuild`；先读`STATUS.md`、`TASKS.md`、D-079至D-083和`results/FORMAL-AUDIT-FIX-001.md`。不要上传`0.10.2rc1`或更早归档。
 2. 第一性原理本地重建已完成：正式入口为`submission/contest_submission.py → brace_formal.submission`；每轮在任何retain/train分支前直接调用官方`rnd.model()`，最多一个父链兼容候选，train内部portfolio可否决无证据的训练。
-3. 最终本地证据为458项完整回归和精确0.10.2容器A/B/C各10轮：30个唯一call ID、A/B/C候选部署1/0/3次、父链/状态链与独立预测有效；B十轮全部安全retain。
-4. 当前正式候选归档为`D:/brace-msi-first-principles-release/BRACE-MSI-0.10.2rc1-FINAL/harness.tar`，SHA-256 `1F4B4C70061E2228977A98984ED3DF8D6E4C691E23D35DB95517A83173C5C6C0`。协议恢复基线0.10.0继续保留，0.10.1不得上传。
+3. 最终本地证据为465项完整回归和精确0.10.3容器A/B/C各10轮：30个唯一call ID、A/B/C候选提交1/0/3次、父链/状态链与独立预测有效；B十轮安全retain。官方SDK离线15项通过、2项在线条件测试因无平台凭据跳过。
+4. 当前正式候选归档为`D:/brace-msi-first-principles-release/BRACE-MSI-0.10.3rc1-FINAL/harness.tar`，SHA-256 `D08535F0B4A410A9EFF6CBB191505F32B767462B3E42CDC6093E8ABC385CA86A`。0.10.2已撤回，不得上传；0.10.0仅作协议恢复基线。
 5. 当前唯一任务为`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`。只有用户明确决定消耗平台次数后，才上传精确归档并进行一次受控试运行；先核对镜像可用、真实Qwen调用/Token、十轮父链、候选/retain和预测。SwanLab/源码/材料必须引用最终平台运行与同一提交，不得用本地模拟冒充。
 
 ## 2026-11-17 0.9.0rc1官方Workspace V2恢复入口（当前）

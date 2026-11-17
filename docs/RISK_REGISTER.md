@@ -59,25 +59,39 @@
 - 等级：Critical
 - 状态：本地已缓解，平台待确认
 - 证据：O-PLATFORM-015；最近平台失败显示`model_call_ids=[]`。
-- 缓解：D-080要求每轮在任何retain/train/rollback判断之前直接调用`rnd.model()`；低Token上限、模型别名、无usage和retain均建立契约测试。`0.10.2rc1`精确镜像三任务30轮产生30个唯一call ID，真实官方`Round`转录也在retain完成记录引用call ID；平台仍待新RC一次验证。
+- 缓解：D-080要求每轮在任何retain/train/rollback判断之前直接调用`rnd.model()`；低Token上限、模型别名、无usage和retain均建立契约测试。`0.10.3rc1`精确镜像三任务30轮产生30个唯一call ID，真实官方`Round`转录也在retain完成记录引用call ID；平台仍待新RC一次验证。
 
 ## R-042 跨轮固定workspace目录冲突
 
 - 等级：Critical
 - 状态：本地与容器已缓解，平台待确认
 - 证据：O-PLATFORM-015；平台指出第二轮`state_workspace`目的目录已存在。
-- 缓解：每轮使用由round index和stage ID派生的全新目录；`0.10.2rc1`在精确4核8GB容器中完成A/B/C各10轮且状态轮数连续。平台持久workspace行为仍待受控试运行确认。
+- 缓解：每轮使用由dataset key、round index和stage ID共同派生的全新目录；`0.10.3rc1`在同一持久workspace中完成A/B/C各10轮且状态轮数连续。平台持久workspace行为仍待受控试运行确认。
 
 ## R-043 研究代码进入正式镜像
 
 - 等级：High
 - 状态：本地已关闭，后续新版本持续审计
 - 证据：0.9.0rc1完整wheel含私有PyTRiO、SFT、SwanLab、模拟和论文模块。
-- 缓解：D-081采用文件白名单构建；0.10.2最终镜像`/app`仅官方SDK、`brace_formal`与固定入口，依赖仅NumPy。禁入扫描确认旧`brace_msi`、PyTRiO、SwanLab、sklearn、SciPy、psutil、数据、权重和报告均未进入；递归`.pyc`也已排除。证据`results/FORMAL-CLEAN-IMAGE-001.md`与`results/FORMAL-PERF-001.md`。
+- 缓解：D-081采用文件白名单构建；0.10.3最终镜像`/app`仅官方SDK、`brace_formal`与固定入口，依赖仅NumPy。禁入扫描确认旧`brace_msi`、PyTRiO、SwanLab、sklearn、SciPy、psutil、数据、权重和报告均未进入；递归`.pyc`也已排除。证据`results/FORMAL-AUDIT-FIX-001.md`。
 
 ## R-051 Agent建议覆盖训练内负证据
 
 - 等级：High
 - 状态：本地已关闭，平台待确认
 - 证据：0.10.1过渡探针在B三折选择retain时仍执行e1，可能把公开验证偶然改善误当作跨设备泛化。
-- 缓解：0.10.2将训练内retain设为确定性否决；B十轮均记录`train_vetoed_by_internal_cv`且不生成候选。回归和精确容器30轮通过。隐藏分布上的收益仍只能由受控平台试运行确认。
+- 缓解：0.10.3保留训练内retain确定性否决，并在独立组不足时显式记录证据状态；B十轮不生成候选。回归和精确容器30轮通过。隐藏分布上的收益仍只能由受控平台试运行确认。
+
+## R-052 候选由本地指标采用但平台测量不支持
+
+- 等级：Critical
+- 状态：本地已缓解，平台待确认
+- 证据：0.10.2先依据镜像内validation指标选中candidate，未以`candidate_response.summary.metrics`作最终部署权威。
+- 缓解：0.10.3只在平台返回主指标存在、有限且优于父模型时采用候选；缺失、无效或未改善均保留父artifact。回归覆盖平台拒绝和缺指标，A5模拟宿主返回非空实际测量。真实平台字段仍待一次受控验证。
+
+## R-053 训练声明与实际执行recipe不一致
+
+- 等级：High
+- 状态：本地已关闭
+- 证据：0.10.2候选实际由portfolio选recipe，但收据使用Agent请求epoch/LR和分折seed，可能造成复现声明错误。
+- 缓解：0.10.3分别记录proposal与executed参数、有效学习率、父checkpoint优化器seed和fold seed；提交候选与完成记录使用真实执行seed。专项与全量回归通过。

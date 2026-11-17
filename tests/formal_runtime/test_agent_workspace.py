@@ -85,7 +85,7 @@ def test_round_paths_remain_unique_in_a_persistent_workspace(tmp_path: Path) -> 
 
     seen: set[Path] = set()
     for round_index in range(1, 11):
-        paths = create_round_paths(tmp_path, round_index, "stage-A")
+        paths = create_round_paths(tmp_path, round_index, "stage-A", "A")
         assert paths.root not in seen
         assert not paths.state.exists()
         assert not paths.candidate.exists()
@@ -104,8 +104,20 @@ def test_round_paths_reject_an_existing_round_directory(tmp_path: Path) -> None:
 
     from brace_formal.workspace import create_round_paths
 
-    occupied = tmp_path / "round-0003-stage-A"
+    occupied = tmp_path / "dataset-A" / "round-0003-stage-A"
+    occupied.parent.mkdir()
     occupied.mkdir()
 
     with pytest.raises(FileExistsError, match="round workspace already exists"):
-        create_round_paths(tmp_path, 3, "stage-A")
+        create_round_paths(tmp_path, 3, "stage-A", "A")
+
+
+def test_round_paths_are_isolated_by_dataset(tmp_path: Path) -> None:
+    from brace_formal.workspace import create_round_paths
+
+    a = create_round_paths(tmp_path, 1, "shared-stage", "A")
+    b = create_round_paths(tmp_path, 1, "shared-stage", "B")
+
+    assert a.root != b.root
+    assert a.root.parent.name == "dataset-A"
+    assert b.root.parent.name == "dataset-B"

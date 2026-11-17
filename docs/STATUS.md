@@ -1,11 +1,12 @@
 # 当前状态
 
 - 最近同步：2026-11-17（Asia/Shanghai）
-- 当前阶段：第一性原理重建的本地可执行工作已完成；正式候选已冻结，等待平台受控验证
+- 当前阶段：第一性原理正式候选本地终审完成；`0.10.3rc1`等待平台受控验证
 - 当前路线：**官方SDK 1.0.2 + 每轮真实宿主模型调用 + 平台父checkpoint原生续训/retain + 最小白名单镜像** `[D-079]` `[D-080]` `[D-081]`
-- 当前唯一核心任务：`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`；精确`0.10.2rc1`已完成本地30轮、全量回归和镜像重载验收，未经用户确认不上传、不消耗试运行。
+- 当前唯一核心任务：`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`；`0.10.3rc1`已完成本地30轮、全量回归和镜像重载验收。未经用户明确决定消耗次数，不上传、不发起试运行。
 - 稳定边界：全部历史RC和实验不改写；`0.5.0rc1`只作研究证据，不得上传。正式线从D-058开始只输出原生官方MLP续训checkpoint。A3之后禁止继续LLM调参 `[D-043]`
 - 官方试运行：平台当前记录共4条（2成功、2失败），正式评测仍为0/2；剩余试运行次数以平台页面实时显示为准 `[O-PLATFORM-015]`
+- 当前归档：`D:/brace-msi-first-principles-release/BRACE-MSI-0.10.3rc1-FINAL/harness.tar`；SHA-256 `D08535F0...86A`；`0.10.2rc1`已撤回，不得上传 `[D-083]`
 
 ## 已确认
 
@@ -31,6 +32,7 @@
 0s. `O-PLATFORM-014`补齐正式SDK：协议为`contest.harness.workspace.v2`，模型经宿主`rnd.model()`/`rnd.transport()`调用，每轮必须提交真实`model_call_ids`；候选、状态、父产物和逐行预测均有明确契约。D-078据此替代D-077的正式接法；0.8.3保留历史但不再上传。官方SDK在Linux 4核8GB断网容器中15/15测试通过。
 0t. `OFFICIAL-SDK-V2-001`本地完成：vendored官方SDK九个源文件逐哈希一致；正式镜像只含固定入口且未安装PyTRiO/SwanLab；A/B/C各10轮共30次宿主模型调用、候选/retain、父链/状态和15行预测通过；平台测量拒绝时状态链与公开收据同步保留父模型；完整回归435项。正式A4归档151,393,280字节，SHA-256 `dc0147706e5c20a62360bf309a280b890ac6cea2707eee4aa66f8f7169c57cbc`，见`results/OFFICIAL-SDK-V2-001.md`。
 0u. `WORKSPACE-V2-INDEPENDENT-TEST-001`已完成：从A4归档删除原标签后重新加载全新独立标签，在全新状态目录以4核8GB断网容器完成A/B/C各10轮、30次宿主调用、2次候选提交和15行预测；官方风格HTML/JSON包含全部30轮并显著标注“本地协议模拟，不计正式成绩”。完整回归437项；见`results/WORKSPACE-V2-INDEPENDENT-TEST-001.md`。
+0v. `FORMAL-AUDIT-FIX-001`已完成：`0.10.3rc1`改用平台返回测量作部署权威，缺失时失败关闭；区分提案与真实recipe参数；独立组不足retain；workspace按dataset隔离。完整回归465项，官方SDK离线15项通过、2项在线条件测试跳过；A/B/C精确容器各10轮、共30个调用ID、15行预测，`docker save/load`同ID。见`results/FORMAL-AUDIT-FIX-001.md`。
 1. `DUAL-DATA-001`已完成：四缓冲区、Gate一轮隔离、Update+Replay候选集合、只读manifest、训练/评估分离句柄和未来诱饵阻断通过4项专项测试；完整回归`275 passed`。
 2. `DUAL-TXN-001`已完成：每批单决策、0至2候选、首候选结果触发升级、十批前缀、原子提交/恢复及影子配对收益通过5项专项测试；完整回归`280 passed`。
 3. `DUAL-VALUE-001`已完成：每任务隔离统计、身份无关证据画像、弱先验、延迟收益专用更新和性能—CPU/RSS/Token/模型体积Pareto前沿通过5项专项测试；完整回归`285 passed`。
@@ -69,7 +71,7 @@
 
 ## 当前执行入口
 
-当前第一性原理正式候选为`D:/brace-msi-first-principles-release/BRACE-MSI-0.10.2rc1-FINAL/harness.tar`，81,205,248字节，SHA-256 `1F4B4C70061E2228977A98984ED3DF8D6E4C691E23D35DB95517A83173C5C6C0`，镜像ID`sha256:d216a379...fb1001a9`。它已通过本地协议、性能策略、容器与重载门；尚未上传或获得平台真实成绩。`0.10.0rc1`保留为协议恢复基线，`0.10.1`及更早归档不得上传代替。
+当前第一性原理正式候选为`D:/brace-msi-first-principles-release/BRACE-MSI-0.10.3rc1-FINAL/harness.tar`，81,206,272字节，SHA-256 `D08535F0B4A410A9EFF6CBB191505F32B767462B3E42CDC6093E8ABC385CA86A`，镜像ID`sha256:b503c340...33d6a59`。它已通过本地协议、性能策略、容器与重载门；尚未上传或获得平台真实成绩。`0.10.0rc1`保留为协议恢复基线，`0.10.2rc1`及更早归档不得上传代替。
 
 正式路线、已知能力与未知边界见[FORMAL_ROUTE.md](FORMAL_ROUTE.md)。实验必须遵守[EXPERIMENT_PROTOCOL.md](EXPERIMENT_PROTOCOL.md)。
 
@@ -81,7 +83,7 @@
 - 模型由宿主`rnd.model()`网关提供；平台实际Qwen绑定、非零Token计量和故障行为待受控试运行核验 `[H-002]`。
 - 完整评分公式与资源计量实现待发布 `[H-003]`。
 - SwanLab比赛项目、必填字段及无公网同步责任待发布 `[H-004]`。
-- Docker宿主机阻塞已解除；0.10.2rc1真实镜像、体积、禁入文件、非root身份、4核8GB断网训练/预测和可重载归档均有证据，见`results/FORMAL-PERF-001.md`。
+- Docker宿主机阻塞已解除；0.10.3rc1真实镜像、体积、禁入文件、非root身份、4核8GB只读断网训练/预测和可重载归档均有证据，见`results/FORMAL-AUDIT-FIX-001.md`。
 
 这些缺口不阻塞已授权的提交材料与`SWANLAB-FINAL-001`最终记录。A3是最后一次SFT，D-043禁止继续微调或扩大LLM搜索；最终记录只复用冻结Sampler和参数，不用于再选型。
 

@@ -731,3 +731,6 @@
 - 冻结后公开validation描述性诊断为A Macro-F1 0.725695、B RMSE 681.159833、C RMSE 52.331755；该数据历史暴露且不参与选择，不作为独立或官方成绩。
 - 完整回归`458 passed in 143.01s`；镜像依赖、白名单、非root、64MiB、归档哈希和删除tag后同ID重载全部通过。
 - 正式归档：`D:/brace-msi-first-principles-release/BRACE-MSI-0.10.2rc1-FINAL/harness.tar`；SHA-256 `1F4B4C70061E2228977A98984ED3DF8D6E4C691E23D35DB95517A83173C5C6C0`。本阶段未上传、未调用私有PyTRiO/SwanLab、未消耗官方次数。
+- 独立终审随后撤回`0.10.2rc1`上传资格：发现平台测量未作为最终部署权威、请求参数与实际recipe声明混淆、独立组不足降级不安全、跨任务工作区缺少dataset隔离以及验收父哈希/只读范围缺口。历史产物保留，不回写。
+- `FORMAL-AUDIT-FIX-001`完成：`0.10.3rc1`关闭上述缺口。完整回归`465 passed in 143.76s`；官方SDK Linux离线15项通过、2项在线条件测试按缺少凭据跳过；A/B/C各10轮共30个宿主调用、15行独立预测；最大checkpoint 132,180字节。精确镜像linux/amd64、UID10001、81,188,446字节，`pip check`、白名单、4核8GB只读断网及删tag后同ID重载通过。
+- 新归档：`D:/brace-msi-first-principles-release/BRACE-MSI-0.10.3rc1-FINAL/harness.tar`，81,206,272字节，SHA-256 `D08535F0B4A410A9EFF6CBB191505F32B767462B3E42CDC6093E8ABC385CA86A`。本轮未上传、未调用私有PyTRiO/SwanLab、未消耗官方次数。

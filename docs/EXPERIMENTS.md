@@ -625,3 +625,13 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 - 机器证据：`D:/brace-msi-first-principles-performance/FORMAL-PERF-001-A3-FINAL-CONTAINER/acceptance.json`，SHA-256 `B8D613065EE92BC5CD0786745D74D2F4FD3A7AD8E3D884D7FD1641A54739687B`。
 - 冻结归档：`D:/brace-msi-first-principles-release/BRACE-MSI-0.10.2rc1-FINAL/harness.tar`，81,205,248字节，SHA-256 `1F4B4C70061E2228977A98984ED3DF8D6E4C691E23D35DB95517A83173C5C6C0`；删除tag后重载为同一镜像ID。
 - 验证：`458 passed in 143.01s`；`pip check`、白名单、非root、4核8GB断网、64MiB和`docker save/load`通过。PyTRiO私有API、SwanLab、平台上传及官方次数均为0。
+
+## FORMAL-AUDIT-FIX-001-A1至A5终审修复验收
+
+- 状态：A1/A2/A3为失败或被替代的调试证据；A4为预最终镜像验收；A5为`COMPLETED_FINAL_LOCAL_RC`。全部历史目录保留，不用A4冒充最终镜像。
+- 目标：验证平台测量权威门、真实执行声明、独立组不足retain、dataset工作区隔离、父哈希报告和只读容器范围。
+- A5机器结果：`D:/brace-msi-first-principles-performance/FORMAL-AUDIT-FIX-001-A5-FINAL-CONTAINER/acceptance.json`，SHA-256 `6AB82222A3C015F42B07315A103E749CEAF2B8D9FA15D999F75281FB41DBDF35`，`valid=true`。
+- A5结果：A/B/C各10轮、各10个宿主call ID、各5行独立预测；候选数A/B/C为1/0/3；最大checkpoint 132,180字节。
+- 验证：项目完整回归465项；官方SDK Linux离线15项通过、2项在线测试因缺少官方凭据按条件跳过；`pip check`、linux/amd64、UID10001、4核8GB、断网、只读根、白名单及`docker save/load`同ID通过。
+- 冻结归档：`D:/brace-msi-first-principles-release/BRACE-MSI-0.10.3rc1-FINAL/harness.tar`，81,206,272字节，SHA-256 `D08535F0B4A410A9EFF6CBB191505F32B767462B3E42CDC6093E8ABC385CA86A`。
+- 外部使用：PyTRiO私有API、SwanLab、平台上传和官方试运行均为0；下一步只允许受控平台验证。

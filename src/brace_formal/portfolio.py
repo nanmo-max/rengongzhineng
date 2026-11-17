@@ -18,6 +18,13 @@ RECIPES = ("retain", "e1_lr1", "e3_lr3", "soup_e3_alpha0.25")
 _GROUP_SUFFIX = re.compile(r"^(.*)_(?:s|c)\d+$", re.IGNORECASE)
 
 
+class InsufficientFoldEvidence(ValueError):
+    def __init__(self, status: str, independent_group_count: int | None = None) -> None:
+        super().__init__(status)
+        self.status = status
+        self.independent_group_count = independent_group_count
+
+
 def _rank(value: str) -> bytes:
     return hashlib.sha256(("20261117\0" + value).encode("utf-8")).digest()
 
@@ -30,7 +37,9 @@ def fold_assignments(ids: tuple[str, ...], targets: np.ndarray, task: str) -> np
         match = _GROUP_SUFFIX.match(identity)
         if match:
             groups.setdefault(match.group(1), []).append(index)
-    if 3 <= len(groups) <= 1000 and sum(len(value) for value in groups.values()) == len(ids):
+    if groups and sum(len(value) for value in groups.values()) == len(ids):
+        if len(groups) < 3:
+            raise InsufficientFoldEvidence("insufficient_independent_groups", len(groups))
         assignments = np.empty(len(ids), dtype=np.int64)
         for fold, group in enumerate(sorted(groups, key=_rank)):
             assignments[groups[group]] = fold % 3
@@ -41,26 +50,44 @@ def fold_assignments(ids: tuple[str, ...], targets: np.ndarray, task: str) -> np
     if task == "classification":
         for index, target in enumerate(targets.tolist()):
             strata.setdefault(str(int(target)), []).append(index)
+        if any(len(indices) < 3 for indices in strata.values()):
+            raise InsufficientFoldEvidence("insufficient_independent_folds")
     else:
         strata["all"] = list(range(len(ids)))
     for indices in strata.values():
         for fold, index in enumerate(sorted(indices, key=lambda item: _rank(ids[item]))):
             assignments[index] = fold % 3
     if set(assignments.tolist()) != {0, 1, 2}:
-        raise ValueError("could not construct three nonempty folds")
+        raise InsufficientFoldEvidence("insufficient_independent_folds")
     return assignments
 
 
-def fit_recipe(parent: FormalModel, recipe: str, values: np.ndarray, targets: np.ndarray) -> FormalModel:
+def recipe_settings(parent: FormalModel, recipe: str) -> dict[str, Any]:
     if recipe not in RECIPES:
         raise ValueError("unsupported formal recipe")
+    epochs, multiplier, soup_alpha = {
+        "retain": (0, 1.0, None),
+        "e1_lr1": (1, 1.0, None),
+        "e3_lr3": (3, 3.0, None),
+        "soup_e3_alpha0.25": (3, 1.0, 0.25),
+    }[recipe]
+    return {
+        "epochs": epochs,
+        "learning_rate_multiplier": multiplier,
+        "effective_learning_rate": float(parent.meta["learning_rate"]) * multiplier,
+        "optimizer_seed": int(parent.meta["seed"]),
+        "soup_alpha": soup_alpha,
+    }
+
+
+def fit_recipe(parent: FormalModel, recipe: str, values: np.ndarray, targets: np.ndarray) -> FormalModel:
+    settings = recipe_settings(parent, recipe)
     candidate = parent.clone()
     if recipe == "retain":
         return candidate
     parent_rate = float(parent.meta["learning_rate"])
-    epochs, multiplier = (1, 1.0) if recipe == "e1_lr1" else (3, 3.0 if recipe == "e3_lr3" else 1.0)
-    candidate.meta["learning_rate"] = parent_rate * multiplier
-    candidate.fit(values, targets, epochs)
+    candidate.meta["learning_rate"] = float(settings["effective_learning_rate"])
+    candidate.fit(values, targets, int(settings["epochs"]))
     candidate.meta["learning_rate"] = parent_rate
     if recipe == "soup_e3_alpha0.25":
         for name in candidate.params:
@@ -78,8 +105,28 @@ def _gain(before: float, after: float, direction: str) -> float:
 
 
 def cross_validate(parent: FormalModel, ids: tuple[str, ...], values: np.ndarray, targets: np.ndarray) -> dict[str, Any]:
-    assignments = fold_assignments(ids, targets, str(parent.meta["task"]))
     metric, direction = _metric_contract(parent)
+    try:
+        assignments = fold_assignments(ids, targets, str(parent.meta["task"]))
+    except InsufficientFoldEvidence as error:
+        return {
+            "metric": metric,
+            "direction": direction,
+            "status": error.status,
+            "independent_group_count": error.independent_group_count,
+            "fold_strategy": "unavailable",
+            "selected_recipe": "retain",
+            "recipes": {
+                "retain": {
+                    "folds": [],
+                    "mean_signed_gain": 0.0,
+                    "positive_folds": 0,
+                    "worst_relative_gain": 0.0,
+                    "cpu_seconds": 0.0,
+                    "eligible": True,
+                }
+            },
+        }
     records: dict[str, dict[str, Any]] = {recipe: {"folds": []} for recipe in RECIPES}
     for fold in range(3):
         train_mask = assignments != fold
@@ -123,6 +170,7 @@ def cross_validate(parent: FormalModel, ids: tuple[str, ...], values: np.ndarray
     return {
         "metric": metric,
         "direction": direction,
+        "status": "evaluated",
         "fold_strategy": "group_suffix" if any(_GROUP_SUFFIX.match(identity) for identity in ids) else "stratified_or_hash",
         "selected_recipe": selected,
         "recipes": records,

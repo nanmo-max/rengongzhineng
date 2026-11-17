@@ -45,7 +45,14 @@ def _write_rows(path: Path, *, task: str = "classification") -> None:
 
 
 class FakeRound:
-    def __init__(self, root: Path, parent: Path, proposal: dict[str, object]) -> None:
+    def __init__(
+        self,
+        root: Path,
+        parent: Path,
+        proposal: dict[str, object],
+        *,
+        host_metrics: dict[str, float] | None = None,
+    ) -> None:
         self.round_index = 1
         self.stage_id = "stage-A"
         self.dataset_key = "A"
@@ -60,6 +67,7 @@ class FakeRound:
             path=lambda relative: parent if relative == "checkpoint.npz" else None,
         )
         self.proposal = proposal
+        self.host_metrics = {"accuracy": 0.75, "macro_f1": 0.65} if host_metrics is None else host_metrics
         self.call_ids: list[str] = []
         self.submitted: dict[str, object] | None = None
         self.saved_state: Path | None = None
@@ -85,7 +93,7 @@ class FakeRound:
 
     def submit_candidate(self, directory, **kwargs):
         self.submitted = {"directory": Path(directory), **kwargs}
-        return {"artifact_id": "candidate-1"}
+        return {"artifact_id": "candidate-1", "summary": {"metrics": self.host_metrics}}
 
     def finish(self, **kwargs):
         self.finished = kwargs
@@ -148,9 +156,85 @@ def test_safe_candidate_is_submitted_and_selected(monkeypatch, tmp_path: Path) -
     assert (rnd.submitted["directory"] / "checkpoint.npz").is_file()
     assert rnd.submitted["checkpoint_paths"] == ["checkpoint.npz"]
     assert rnd.submitted["predict_argv"] == ["python3", "/app/harness.py", "predict"]
+    assert rnd.submitted["seed"] == 42
+    assert rnd.submitted["configuration"]["executed_recipe"] == "soup_e3_alpha0.25"
+    assert rnd.submitted["configuration"]["executed_epochs"] == 3
+    assert rnd.submitted["configuration"]["executed_learning_rate_multiplier"] == 1.0
+    assert rnd.submitted["configuration"]["optimizer_seed"] == 42
+    assert rnd.submitted["configuration"]["proposal_epochs"] == 1
+    assert rnd.submitted["configuration"]["proposal_learning_rate_multiplier"] == 3.0
     assert rnd.finished["selected_artifact_id"] == "candidate-1"
     state = json.loads((rnd.saved_state / "formal-state.json").read_text(encoding="utf-8"))
     assert state["rounds"][-1]["recipe"] == "soup_e3_alpha0.25"
+    assert state["rounds"][-1]["executed_epochs"] == 3
+    assert state["rounds"][-1]["optimizer_seed"] == 42
+    assert state["rounds"][-1]["platform_metrics"]["macro_f1"] == 0.65
+
+
+def test_host_measurement_can_reject_a_locally_improving_candidate(monkeypatch, tmp_path: Path) -> None:
+    from brace_formal import submission
+
+    parent = tmp_path / "checkpoint.npz"
+    _write_parent(parent)
+    _write_rows(tmp_path / "train.jsonl")
+    _write_rows(tmp_path / "validation.jsonl")
+    rnd = FakeRound(
+        tmp_path,
+        parent,
+        {"action": "train", "epochs": 1, "learning_rate_multiplier": 1.0},
+        host_metrics={"accuracy": 0.45, "macro_f1": 0.3},
+    )
+    monkeypatch.setenv("CONTEST_WORK", str(tmp_path / "workspace"))
+    monkeypatch.setattr(
+        submission,
+        "cross_validate",
+        lambda *args: {
+            "selected_recipe": "e1_lr1",
+            "recipes": {"e1_lr1": {"mean_signed_gain": 0.2, "positive_folds": 3, "worst_relative_gain": 0.0, "cpu_seconds": 0.1, "eligible": True}},
+        },
+    )
+    scores = iter([{"accuracy": 0.5, "macro_f1": 0.4}, {"accuracy": 0.7, "macro_f1": 0.6}])
+    monkeypatch.setattr(submission, "evaluate", lambda *args: next(scores))
+
+    submission.train(rnd)
+
+    assert rnd.submitted is not None
+    assert rnd.finished["selected_artifact_id"] == "parent-1"
+    state = json.loads((rnd.saved_state / "formal-state.json").read_text(encoding="utf-8"))
+    assert state["rounds"][-1]["outcome"] == "candidate_rejected_by_platform"
+    assert state["rounds"][-1]["platform_metrics"]["macro_f1"] == 0.3
+
+
+def test_missing_host_measurement_fails_closed(monkeypatch, tmp_path: Path) -> None:
+    from brace_formal import submission
+
+    parent = tmp_path / "checkpoint.npz"
+    _write_parent(parent)
+    _write_rows(tmp_path / "train.jsonl")
+    _write_rows(tmp_path / "validation.jsonl")
+    rnd = FakeRound(
+        tmp_path,
+        parent,
+        {"action": "train", "epochs": 1, "learning_rate_multiplier": 1.0},
+        host_metrics={},
+    )
+    monkeypatch.setenv("CONTEST_WORK", str(tmp_path / "workspace"))
+    monkeypatch.setattr(
+        submission,
+        "cross_validate",
+        lambda *args: {
+            "selected_recipe": "e1_lr1",
+            "recipes": {"e1_lr1": {"mean_signed_gain": 0.2, "positive_folds": 3, "worst_relative_gain": 0.0, "cpu_seconds": 0.1, "eligible": True}},
+        },
+    )
+    scores = iter([{"accuracy": 0.5, "macro_f1": 0.4}, {"accuracy": 0.7, "macro_f1": 0.6}])
+    monkeypatch.setattr(submission, "evaluate", lambda *args: next(scores))
+
+    submission.train(rnd)
+
+    assert rnd.finished["selected_artifact_id"] == "parent-1"
+    state = json.loads((rnd.saved_state / "formal-state.json").read_text(encoding="utf-8"))
+    assert state["rounds"][-1]["outcome"] == "candidate_rejected_by_platform"
 
 
 def test_regressing_candidate_is_rejected_without_submission(monkeypatch, tmp_path: Path) -> None:
@@ -177,6 +261,34 @@ def test_regressing_candidate_is_rejected_without_submission(monkeypatch, tmp_pa
     state = json.loads((rnd.saved_state / "formal-state.json").read_text(encoding="utf-8"))
     assert state["rounds"][-1]["outcome"] == "train_vetoed_by_internal_cv"
     assert state["rounds"][-1]["recipe"] == "retain"
+
+
+def test_insufficient_cv_evidence_is_preserved_in_round_state(monkeypatch, tmp_path: Path) -> None:
+    from brace_formal import submission
+
+    parent = tmp_path / "checkpoint.npz"
+    _write_parent(parent)
+    _write_rows(tmp_path / "train.jsonl")
+    _write_rows(tmp_path / "validation.jsonl")
+    rnd = FakeRound(tmp_path, parent, {"action": "train", "epochs": 1, "learning_rate_multiplier": 1.0})
+    monkeypatch.setenv("CONTEST_WORK", str(tmp_path / "workspace"))
+    monkeypatch.setattr(
+        submission,
+        "cross_validate",
+        lambda *args: {
+            "status": "insufficient_independent_groups",
+            "fold_strategy": "unavailable",
+            "independent_group_count": 2,
+            "selected_recipe": "retain",
+            "recipes": {"retain": {"mean_signed_gain": 0.0, "positive_folds": 0, "worst_relative_gain": 0.0, "cpu_seconds": 0.0, "eligible": True}},
+        },
+    )
+
+    submission.train(rnd)
+
+    state = json.loads((rnd.saved_state / "formal-state.json").read_text(encoding="utf-8"))
+    assert state["rounds"][-1]["portfolio"]["status"] == "insufficient_independent_groups"
+    assert state["rounds"][-1]["portfolio"]["independent_group_count"] == 2
 
 
 def test_predict_uses_selected_checkpoint(monkeypatch, tmp_path: Path) -> None:

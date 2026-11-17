@@ -15,7 +15,7 @@ from .agent import AgentDecision, request_proposal
 from .data import _flatten, load_rows
 from .metrics import evaluate
 from .model import FormalModel
-from .portfolio import cross_validate, fit_recipe
+from .portfolio import cross_validate, fit_recipe, recipe_settings
 from .workspace import create_round_paths
 
 
@@ -51,6 +51,18 @@ def _improves(parent: Mapping[str, float], candidate: Mapping[str, float], metri
     if before is None or after is None or not math.isfinite(before) or not math.isfinite(after):
         return False
     return after > before if direction == "higher" else after < before
+
+
+def _platform_metrics(receipt: Mapping[str, Any] | None) -> dict[str, float]:
+    summary = receipt.get("summary") if isinstance(receipt, Mapping) else None
+    metrics = summary.get("metrics") if isinstance(summary, Mapping) else None
+    if not isinstance(metrics, Mapping):
+        return {}
+    result: dict[str, float] = {}
+    for key, value in metrics.items():
+        if isinstance(key, str) and isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(float(value)):
+            result[key] = float(value)
+    return result
 
 
 def _state_payload(state_root: Path) -> dict[str, Any]:
@@ -103,7 +115,13 @@ def _compact_portfolio(evidence: Mapping[str, Any]) -> dict[str, Any]:
             for key in ("mean_signed_gain", "positive_folds", "worst_relative_gain", "cpu_seconds", "eligible")
             if key in record
         }
-    return {"selected_recipe": evidence.get("selected_recipe"), "recipes": compact}
+    return {
+        "status": evidence.get("status", "evaluated"),
+        "fold_strategy": evidence.get("fold_strategy"),
+        "independent_group_count": evidence.get("independent_group_count"),
+        "selected_recipe": evidence.get("selected_recipe"),
+        "recipes": compact,
+    }
 
 
 def train(rnd: Any) -> None:
@@ -125,7 +143,13 @@ def train(rnd: Any) -> None:
     )
 
     workspace = Path(os.environ.get("CONTEST_WORK", "/workspace"))
-    paths = create_round_paths(workspace, int(rnd.round_index), str(getattr(rnd, "stage_id", "default")))
+    dataset_key = str(getattr(rnd, "dataset_key", "default"))
+    paths = create_round_paths(
+        workspace,
+        int(rnd.round_index),
+        str(getattr(rnd, "stage_id", "default")),
+        dataset_key,
+    )
     state = Path(rnd.state_workspace(paths.state))
     selected_artifact = rnd.parent.artifact_id
     candidate_metrics: dict[str, float] | None = None
@@ -134,7 +158,9 @@ def train(rnd: Any) -> None:
     portfolio: dict[str, Any] | None = None
     outcome = "retained_by_agent"
     candidate_receipt: Mapping[str, Any] | None = None
+    platform_metrics: dict[str, float] = {}
     metric, direction = _primary_contract(rnd, parent)
+    executed = recipe_settings(parent, "retain")
 
     if decision.action == "train":
         portfolio_evidence = cross_validate(parent, training.ids, training.x, training.y)
@@ -145,6 +171,7 @@ def train(rnd: Any) -> None:
             outcome = "train_vetoed_by_internal_cv"
         else:
             recipe = str(selected_recipe)
+            executed = recipe_settings(parent, recipe)
             candidate = fit_recipe(parent, recipe, training.x, training.y)
             candidate_metrics = evaluate(candidate, validation.x, validation.y)
             if _improves(parent_metrics, candidate_metrics, metric, direction):
@@ -156,28 +183,45 @@ def train(rnd: Any) -> None:
                     hypothesis="A bounded parent-compatible continuation can improve the declared public validation metric.",
                     change_summary="Continued the declared parent checkpoint with a train-internal validated bounded recipe.",
                     configuration={
-                        "action": "train", "epochs": decision.epochs,
-                        "learning_rate_multiplier": decision.learning_rate_multiplier,
-                        "metric": metric, "direction": direction, "recipe": recipe,
+                        "action": "train",
+                        "proposal_epochs": decision.epochs,
+                        "proposal_learning_rate_multiplier": decision.learning_rate_multiplier,
+                        "executed_recipe": recipe,
+                        "executed_epochs": executed["epochs"],
+                        "executed_learning_rate_multiplier": executed["learning_rate_multiplier"],
+                        "effective_learning_rate": executed["effective_learning_rate"],
+                        "optimizer_seed": executed["optimizer_seed"],
+                        "fold_assignment_seed": _SEED,
+                        "metric": metric,
+                        "direction": direction,
                     },
-                    seed=_SEED,
+                    seed=int(executed["optimizer_seed"]),
                     checkpoint_paths=["checkpoint.npz"],
                     code_paths=[],
                     predict_argv=PREDICT_ARGV,
                 )
-                selected_artifact = candidate_receipt["artifact_id"]
-                outcome = "candidate_selected"
+                platform_metrics = _platform_metrics(candidate_receipt)
+                if _improves(parent_metrics, platform_metrics, metric, direction):
+                    selected_artifact = candidate_receipt["artifact_id"]
+                    outcome = "candidate_selected"
+                else:
+                    outcome = "candidate_rejected_by_platform"
             else:
                 outcome = "candidate_rejected"
 
     record = {
         "round_index": int(rnd.round_index),
         "stage_id": str(getattr(rnd, "stage_id", "")),
-        "dataset_key": str(getattr(rnd, "dataset_key", "")),
+        "dataset_key": dataset_key,
         "action": decision.action,
         "outcome": outcome,
-        "epochs": decision.epochs,
-        "learning_rate_multiplier": decision.learning_rate_multiplier,
+        "proposal_epochs": decision.epochs,
+        "proposal_learning_rate_multiplier": decision.learning_rate_multiplier,
+        "executed_epochs": executed["epochs"],
+        "executed_learning_rate_multiplier": executed["learning_rate_multiplier"],
+        "effective_learning_rate": executed["effective_learning_rate"],
+        "optimizer_seed": executed["optimizer_seed"],
+        "fold_assignment_seed": _SEED,
         "rationale": decision.rationale,
         "proposal_parse_error": decision.parse_error,
         "call_id": decision.call_id,
@@ -186,6 +230,7 @@ def train(rnd: Any) -> None:
         "validation_sha256": validation.sha256,
         "parent_metrics": parent_metrics,
         "candidate_metrics": candidate_metrics,
+        "platform_metrics": platform_metrics,
         "losses": losses,
         "recipe": recipe,
         "portfolio": portfolio,
@@ -197,10 +242,16 @@ def train(rnd: Any) -> None:
     configuration = {
         "action": decision.action,
         "outcome": outcome,
-        "epochs": decision.epochs,
-        "learning_rate_multiplier": decision.learning_rate_multiplier,
+        "proposal_epochs": decision.epochs,
+        "proposal_learning_rate_multiplier": decision.learning_rate_multiplier,
+        "executed_epochs": executed["epochs"],
+        "executed_learning_rate_multiplier": executed["learning_rate_multiplier"],
+        "effective_learning_rate": executed["effective_learning_rate"],
+        "optimizer_seed": executed["optimizer_seed"],
+        "fold_assignment_seed": _SEED,
         "parent_metrics": parent_metrics,
         "candidate_metrics": candidate_metrics,
+        "platform_metrics": platform_metrics,
         "metric": metric,
         "recipe": recipe,
         "portfolio": portfolio,
@@ -211,7 +262,7 @@ def train(rnd: Any) -> None:
         change_summary="Executed one parent-compatible candidate at most; retained the parent when the Agent or validation gate declined it.",
         reason=f"{decision.rationale}; outcome={outcome}",
         configuration=configuration,
-        seed=_SEED,
+        seed=int(executed["optimizer_seed"]),
         history_ids=[item["id"] for item in history],
         model_call_ids=[decision.call_id],
     )

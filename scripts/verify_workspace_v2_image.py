@@ -1,7 +1,8 @@
 """Protocol-only Docker acceptance for contest.harness.workspace.v2.
 
-The stand-in host follows the public SDK 1.0.2 frames.  It never represents
-official scoring and deliberately returns an empty public metric summary.
+The stand-in host follows the public SDK 1.0.2 frames and returns locally
+computed candidate measurements through the authoritative host response.
+It never represents official scoring.
 """
 
 from __future__ import annotations
@@ -15,6 +16,10 @@ import shutil
 import subprocess
 import tempfile
 from typing import Any
+
+from brace_formal.data import load_rows
+from brace_formal.metrics import evaluate
+from brace_formal.model import FormalModel
 
 
 PACKAGES = {
@@ -69,6 +74,12 @@ def _artifact_receipt(artifact_id: str, root: Path) -> dict[str, Any]:
         "artifact": descriptor,
         "files": files,
     }
+
+
+def _score_candidate(artifact_root: Path, validation_path: Path) -> dict[str, float]:
+    model = FormalModel.load(artifact_root / "checkpoint.npz")
+    validation = load_rows(validation_path, model, require_answers=True)
+    return evaluate(model, validation.x, validation.y)
 
 
 def _decode_files(items: list[dict[str, Any]], destination: Path) -> None:
@@ -180,11 +191,11 @@ def _run_round(
     history: list[dict[str, Any]],
     artifacts: list[dict[str, Any]],
 ) -> tuple[dict[str, Any], dict[str, Any] | None, Path | None]:
-    workspace = run_root / f"round-{round_index:02d}-workspace"
-    workspace.mkdir()
+    workspace = run_root / "workspace"
+    workspace.mkdir(exist_ok=True)
     command = [
         "docker", "run", "--rm", "-i", "--network", "none", "--cpus", "4",
-        "--memory", "8g",
+        "--memory", "8g", "--read-only", "--tmpfs", "/tmp:rw,noexec,nosuid,size=64m",
         *_docker_mount(package / "public", "/data", True),
         *_docker_mount(parent_root, "/previous", True),
         *_docker_mount(workspace, "/workspace"),
@@ -251,10 +262,13 @@ def _run_round(
             candidate_receipt = _artifact_receipt(
                 f"candidate-{profile}-{round_index}", candidate_root
             )
+            candidate_metrics = _score_candidate(
+                candidate_root, package / "public" / "validation.jsonl"
+            )
             reply = {
                 "type": "candidate_response", "id": message["id"],
                 "artifact_id": candidate_receipt["artifact_id"],
-                "summary": {"metrics": {}},
+                "summary": {"metrics": candidate_metrics},
             }
         else:
             raise RuntimeError(f"unexpected host request: {kind}")
@@ -288,7 +302,8 @@ def _predict(image: str, profile: str, artifact_root: Path, validation: Path) ->
     }
     command = [
         "docker", "run", "--rm", "-i", "--network", "none", "--cpus", "4",
-        "--memory", "8g", *_docker_mount(artifact_root, "/model", True),
+        "--memory", "8g", "--read-only", "--tmpfs", "/tmp:rw,noexec,nosuid,size=64m",
+        *_docker_mount(artifact_root, "/model", True),
         "-e", "CONTEST_ARTIFACT_PATH=/model/checkpoint.npz",
         "-e", "CONTEST_DATASET_KEY=" + profile,
         "-e", "CONTEST_TASK=" + task,
@@ -330,6 +345,7 @@ def run(image: str, package_root: Path, output: Path) -> dict[str, Any]:
         history: list[dict[str, Any]] = []
         rounds = []
         for round_index in range(1, 11):
+            incoming_parent = parent
             record, candidate, next_state = _run_round(
                 image=image, profile=profile, round_index=round_index, package=package,
                 parent_root=parent_root, parent=parent, state_root=state_root,
@@ -351,7 +367,10 @@ def run(image: str, package_root: Path, output: Path) -> dict[str, Any]:
                     "selected_artifact_id": selected,
                     "model_call_ids": record["model_call_ids"],
                     "candidate_submitted": candidate is not None,
-                    "parent_checkpoint_sha256": next(
+                    "incoming_parent_checkpoint_sha256": next(
+                        item["sha256"] for item in incoming_parent["files"] if item["path"] == "checkpoint.npz"
+                    ),
+                    "selected_checkpoint_sha256": next(
                         item["sha256"] for item in parent["files"] if item["path"] == "checkpoint.npz"
                     ),
                 }
