@@ -175,7 +175,8 @@ def test_regressing_candidate_is_rejected_without_submission(monkeypatch, tmp_pa
     assert rnd.submitted is None
     assert rnd.finished["selected_artifact_id"] == "parent-1"
     state = json.loads((rnd.saved_state / "formal-state.json").read_text(encoding="utf-8"))
-    assert state["rounds"][-1]["outcome"] == "candidate_rejected"
+    assert state["rounds"][-1]["outcome"] == "train_vetoed_by_internal_cv"
+    assert state["rounds"][-1]["recipe"] == "retain"
 
 
 def test_predict_uses_selected_checkpoint(monkeypatch, tmp_path: Path) -> None:

@@ -106,16 +106,6 @@ def _compact_portfolio(evidence: Mapping[str, Any]) -> dict[str, Any]:
     return {"selected_recipe": evidence.get("selected_recipe"), "recipes": compact}
 
 
-def _fit_agent_recipe(parent: FormalModel, training: Any, decision: AgentDecision) -> FormalModel:
-    candidate = parent.clone()
-    parent_rate = float(parent.meta["learning_rate"])
-    candidate.meta["learning_rate"] = parent_rate * decision.learning_rate_multiplier
-    candidate.fit(training.x, training.y, decision.epochs)
-    candidate.meta["learning_rate"] = parent_rate
-    candidate.validate()
-    return candidate
-
-
 def train(rnd: Any) -> None:
     """Execute one bounded decision transaction using the official Round object."""
 
@@ -151,34 +141,34 @@ def train(rnd: Any) -> None:
         portfolio = _compact_portfolio(portfolio_evidence)
         selected_recipe = portfolio_evidence["selected_recipe"]
         if selected_recipe == "retain":
-            recipe = f"agent_e{decision.epochs}_lr{decision.learning_rate_multiplier:g}"
-            candidate = _fit_agent_recipe(parent, training, decision)
+            recipe = "retain"
+            outcome = "train_vetoed_by_internal_cv"
         else:
             recipe = str(selected_recipe)
             candidate = fit_recipe(parent, recipe, training.x, training.y)
-        candidate_metrics = evaluate(candidate, validation.x, validation.y)
-        if _improves(parent_metrics, candidate_metrics, metric, direction):
-            paths.candidate.mkdir(parents=True, exist_ok=False)
-            checkpoint = paths.candidate / "checkpoint.npz"
-            candidate.save(checkpoint)
-            candidate_receipt = rnd.submit_candidate(
-                paths.candidate,
-                hypothesis="A bounded parent-compatible continuation can improve the declared public validation metric.",
-                change_summary="Continued the declared parent checkpoint with the host Agent's bounded epoch and learning-rate choice.",
-                configuration={
-                    "action": "train", "epochs": decision.epochs,
-                    "learning_rate_multiplier": decision.learning_rate_multiplier,
-                    "metric": metric, "direction": direction, "recipe": recipe,
-                },
-                seed=_SEED,
-                checkpoint_paths=["checkpoint.npz"],
-                code_paths=[],
-                predict_argv=PREDICT_ARGV,
-            )
-            selected_artifact = candidate_receipt["artifact_id"]
-            outcome = "candidate_selected"
-        else:
-            outcome = "candidate_rejected"
+            candidate_metrics = evaluate(candidate, validation.x, validation.y)
+            if _improves(parent_metrics, candidate_metrics, metric, direction):
+                paths.candidate.mkdir(parents=True, exist_ok=False)
+                checkpoint = paths.candidate / "checkpoint.npz"
+                candidate.save(checkpoint)
+                candidate_receipt = rnd.submit_candidate(
+                    paths.candidate,
+                    hypothesis="A bounded parent-compatible continuation can improve the declared public validation metric.",
+                    change_summary="Continued the declared parent checkpoint with a train-internal validated bounded recipe.",
+                    configuration={
+                        "action": "train", "epochs": decision.epochs,
+                        "learning_rate_multiplier": decision.learning_rate_multiplier,
+                        "metric": metric, "direction": direction, "recipe": recipe,
+                    },
+                    seed=_SEED,
+                    checkpoint_paths=["checkpoint.npz"],
+                    code_paths=[],
+                    predict_argv=PREDICT_ARGV,
+                )
+                selected_artifact = candidate_receipt["artifact_id"]
+                outcome = "candidate_selected"
+            else:
+                outcome = "candidate_rejected"
 
     record = {
         "round_index": int(rnd.round_index),
