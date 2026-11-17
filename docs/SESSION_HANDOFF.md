@@ -229,3 +229,12 @@
 - 结果见`docs/results/OFFICIAL-PACKAGE-DEV-001.md`；内部`performance_triggered`在本次实验中实际是单次固定低成本续训对照。A/B上BRACE与该对照持平但成本更高，C上BRACE公开验证RMSE更低。D-031禁止在同一公开验证集继续调参或重跑。
 - A1 CLI导入失败发生在训练前，Git和运行根事后索引保留；不得删除或伪装成候选训练失败。
 - 当前无后台进程。继续禁止SwanLab、平台提交、隐藏测试、同流算法探索和RC修改；等待正式SDK、评分/许可证或容器运行条件。
+# 2026-11-17 第一性原理重建恢复入口
+
+当前分支为`codex/first-principles-rebuild`。先按本文件原有通用流程读取SSOT，然后执行：
+
+1. 阅读`docs/replans/FIRST-PRINCIPLES-REBUILD-FORENSICS-2026-11-17.md`。
+2. 阅读`docs/superpowers/specs/2026-11-17-first-principles-formal-runtime-design.md`。
+3. 阅读`docs/superpowers/plans/2026-11-17-first-principles-formal-runtime.md`。
+4. 当前任务只能从`FORMAL-MINIMAL-001`继续；`0.9.0rc1`和更早RC全部冻结。
+5. 禁止上传、重跑或消耗平台次数，直到FORMAL-CLEAN-IMAGE-001完成。

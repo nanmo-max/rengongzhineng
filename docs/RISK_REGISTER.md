@@ -54,3 +54,23 @@
 | R-050 | P0 | 正式训练绕过宿主模型网关，或完成记录缺少真实模型调用ID | 平台判`model_calls_required`不满足 | 只经官方SDK `rnd.model()`调用宿主网关；每轮至少一次调用；`finish`引用当前轮全部`model_call_ids`；镜像不直连PyTRiO | 技术负责人 | MITIGATED_LOCAL/OPEN_PLATFORM：0.9.0rc1 A/B/C 30轮各产生一次宿主RPC并在完成记录引用全部30个唯一调用ID；正式镜像未安装PyTRiO。真实平台非零Token和计量仍待一次试运行 |
 
 风险关闭必须在本表填写证据路径，不得仅写“已解决”。
+## R-041 正式模型调用被策略分支跳过
+
+- 等级：Critical
+- 状态：缓解中
+- 证据：O-PLATFORM-015；最近平台失败显示`model_call_ids=[]`。
+- 缓解：D-080要求每轮在任何retain/train/rollback判断之前直接调用`rnd.model()`；低Token上限、模型别名、无usage和retain均建立契约测试。
+
+## R-042 跨轮固定workspace目录冲突
+
+- 等级：Critical
+- 状态：缓解中
+- 证据：O-PLATFORM-015；平台指出第二轮`state_workspace`目的目录已存在。
+- 缓解：每轮使用由round index和stage ID派生的全新目录；十轮持久workspace测试必须覆盖。
+
+## R-043 研究代码进入正式镜像
+
+- 等级：High
+- 状态：缓解中
+- 证据：0.9.0rc1完整wheel含私有PyTRiO、SFT、SwanLab、模拟和论文模块。
+- 缓解：D-081采用文件白名单构建，正式镜像只含官方SDK、入口、NumPy和`brace_formal`；发布前禁入扫描。

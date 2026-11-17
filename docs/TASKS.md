@@ -4,6 +4,42 @@
 
 ## 当前任务图
 
+### 第一性原理重建（2026-11-17当前正式任务图）
+
+#### REBUILD-FORENSICS-001 首次成功与正式失败取证
+
+- 状态：`DONE`
+- 优先级：P0
+- 完成标准：首次成功、最近两次失败、官方SDK硬契约和证据边界均有直接证据；不猜测镜像绑定。
+- 证据：`replans/FIRST-PRINCIPLES-REBUILD-FORENSICS-2026-11-17.md`、O-PLATFORM-015、D-079至D-081。
+
+#### FORMAL-MINIMAL-001 最小workspace v2正式运行核
+
+- 状态：`READY`
+- 依赖：REBUILD-FORENSICS-001
+- 优先级：P0，当前唯一执行任务
+- 完成标准：真实宿主模型调用位于所有分支前；低token上限/模型别名/无usage/retain均有call ID；每轮唯一工作目录；父checkpoint续训或retain；候选提交、状态、历史和预测符合官方SDK。
+- 停止条件：官方SDK与实际平台再次出现不可调和冲突时保存原始证据并失败关闭；不得改官方SDK或伪造call ID。
+- 计划：`superpowers/plans/2026-11-17-first-principles-formal-runtime.md` Task 1-4。
+
+#### FORMAL-CLEAN-IMAGE-001 最小正式Docker与十轮验收
+
+- 状态：`BLOCKED`
+- 依赖：FORMAL-MINIMAL-001
+- 优先级：P0
+- 完成标准：镜像白名单、4核8GB断网、A/B/C各10轮、30个真实本地宿主回执、独立预测、64MiB、非root和docker save/load全部通过。
+- 计划：同上Task 5。
+
+#### FORMAL-PERF-001 父链兼容性能候选集成
+
+- 状态：`BLOCKED`
+- 依赖：FORMAL-CLEAN-IMAGE-001
+- 优先级：P1
+- 完成标准：只用训练内部证据筛选，至少比较retain、1 epoch和两个成熟父链兼容recipe；无跨轮正趋势的机制不进入正式镜像。
+- 计划：同上Task 6。
+
+以下旧任务图保留为历史证据，不决定当前执行顺序。
+
 ```text
 EVIDENCE-RSI-001(DONE)
   -> DUAL-DATA-001(DONE)
