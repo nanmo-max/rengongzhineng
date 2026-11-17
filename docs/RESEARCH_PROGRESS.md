@@ -2,6 +2,14 @@
 
 本文件按时间追加，不回写历史记录。当前状态仍以 [STATUS.md](STATUS.md) 为准。
 
+## 2026-11-17：官方Workspace V2正式候选0.9.0rc1
+
+- 登记官方`contest_harness` 1.0.2归档和说明哈希，以固定`describe/train/predict`替换0.8.3猜测式Chat Completions桥接；模型只经宿主`rnd.model()`，每轮完成记录必须引用真实`model_call_ids`。
+- vendored九个SDK源文件与官方解压件逐文件SHA-256一致；上游Linux 4核8GB断网测试`15/15 OK`。新增薄适配器复用既有原生父checkpoint续训、竞争策略、SafetyGate和预测内核，不重训性能模型、不改变checkpoint schema。
+- 平台测量拒绝候选的分支先以红灯测试复现“父artifact已选中但持久状态/公开收据仍标记候选部署”，随后同步回写父checkpoint哈希、`deployed=false`、`retained_parent`与`platform_measurement_rejected`；官方SDK专项`5/5`、完整代码回归`435 passed in 142.62s`。正式镜像内容审计确认`/app`仅两个固定入口，未安装PyTRiO/SwanLab且无测试、模拟器、数据、权重、密钥或报告。
+- 最终A4镜像在4核8GB、断网、非root真实Docker中完成A/B/C各10轮、30次宿主网关模型RPC、两次候选提交、合法retain和15行独立预测；机器结果`valid=true`且明确标记非官方成绩。
+- 镜像linux/amd64、151,369,904字节；`docker save`归档151,393,280字节，SHA-256 `dc0147706e5c20a62360bf309a280b890ac6cea2707eee4aa66f8f7169c57cbc`，删除tag后`docker load`和`describe`通过。正式平台导入、真实Qwen Token和隐藏评测仍未执行。
+
 ## 2026-11-16：平台Chat Completions原生模型传输修复
 
 - 登记平台失败`O-PLATFORM-013`：0.8.2只提供PyTRiO私有Sampler协议，无法由Chat Completions桥接器忠实绑定，且失败降级可能零模型调用。

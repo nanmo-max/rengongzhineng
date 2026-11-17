@@ -2,7 +2,7 @@
 
 > 本清单不保存任何API Key。表中“已准备”仅表示本地材料存在，不代表官方平台已经校验或正式评测通过。
 
-> 2026-11-16当前镜像：只上传`D:/brace-msi-platform-bridge/BRACE-MSI-0.8.3rc1/brace-msi-0.8.3rc1-harness.tar`。0.8.2及更早版本均为历史证据。
+> 2026-11-17当前唯一镜像：只上传`D:/brace-msi-workspace-v2/BRACE-MSI-0.9.0rc1-A4/brace-msi-0.9.0rc1-harness.tar`。A1/A2/A3、0.8.3及更早版本均为历史证据。
 
 ## 提交表单
 
@@ -10,8 +10,8 @@
 |---|---|---|---|
 | 模型类型 | 基础模型 `Qwen/Qwen3.5-4B` | 已通过历史平台校验 | 持久化Sampler此前未通过平台校验；按D-050使用基础模型，不填写Sampler路径 |
 | 完整Sampler权重路径 | 不适用 | 不填写 | 不把历史A3路径用于本版本 |
-| 训练记录链接 | `https://swanlab.cn/@nanmo-max/brace-msi-platform-native` | 公开工程记录已存在 | 不含逐样本数据、检查点或凭据；0.8.3仅修模型传输边界，不伪造新训练运行；平台正式重训后再按官方规范追加 |
-| Harness镜像 | `D:/brace-msi-platform-bridge/BRACE-MSI-0.8.3rc1/brace-msi-0.8.3rc1-harness.tar` | 本地已准备，平台未校验 | SHA-256：`4BE4327D29B8D25A2480427776AC58696FB6A48EA63AB576C35944240EA3A694`；由`docker save`生成并重载通过，上传后必须等待“镜像可用”并核对非零模型调用 |
+| 训练记录链接 | `https://swanlab.cn/@nanmo-max/brace-msi-platform-native` | 公开工程记录已存在 | 不含逐样本数据、检查点或凭据；0.9.0仅替换官方SDK边界，不伪造为新训练运行；正式评测镜像不安装SwanLab |
+| Harness镜像 | `D:/brace-msi-workspace-v2/BRACE-MSI-0.9.0rc1-A4/brace-msi-0.9.0rc1-harness.tar` | 本地已准备，平台未校验 | 151,393,280字节；SHA-256：`dc0147706e5c20a62360bf309a280b890ac6cea2707eee4aa66f8f7169c57cbc`；由`docker save`生成、删除tag后重载通过 |
 | 源码仓库链接 | `https://github.com/nanmo-max/rengongzhineng/tree/codex/native-competitive-rc` | 本地分支待本次推送 | 不覆盖远端main或历史RC标签 |
 | PyTRiO API Key | 由队长在平台字段中粘贴 | 人工填写 | 不通过聊天、Git、作品文档或日志传递 |
 | 作品文档 | `D:/brace-msi-release/BRACE-MSI-0.4.0rc1-submission-materials/BRACE-MSI-作品说明书.docx` | 已生成并校验 | 无官方模板；指导教师暂不填写；PDF预览为`BRACE-MSI-作品说明书-最终版.pdf` |
@@ -21,13 +21,13 @@
 ## 镜像上传核对
 
 - 上传的是`docker save`生成的`.tar`，不是源码ZIP或Docker构建上下文；
-- 本地文件大小为249,039,360字节；镜像内部大小为249,015,083字节；
-- 镜像无参数启动显示帮助并退出0；平台训练/预测桥接必须显式追加`start`/`submit`；
+- 本地文件大小为151,393,280字节；镜像内部大小为151,369,904字节；
+- 镜像无参数启动显示官方帮助并退出0；平台固定调用`describe`、`train`或`predict`；
 - 镜像平台为linux/amd64，默认用户UID 10001；
-- 镜像不含原始数据、A/B/C检查点、Sampler权重、Qwen权重、Embedding或密钥；只包含固定哈希的Tokenizer/配置资产；
+- 镜像不含原始数据、A/B/C检查点、Sampler/Qwen/Embedding权重、Tokenizer、密钥、测试、模拟脚本或本地报告；未安装PyTRiO或SwanLab；
 - 平台选择镜像后再执行“校验并保存新版本”；
 - 校验失败时先保存平台原始错误文本和时间，不重复盲试消耗正式机会。
-- 平台桥接器的命令前缀应为`python3 -m brace_msi`，不预先附加mode；桥接器再按事件追加`start`或`submit`。训练需把`workspace_io.model_transport`作为标准Chat Completions调用边界注入原生`start`；每轮还需空输出挂载及顶层父哈希/轮次映射。
+- 官方SDK固定入口为`python3 /app/harness.py describe|train|predict`；训练模型调用只经宿主`rnd.model()`，每轮完成记录必须含非空`model_call_ids`，不再使用0.8.3的猜测式桥接。
 
 ## GitHub推送核对
 

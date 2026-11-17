@@ -1,10 +1,14 @@
 # BRACE-MSI Release Candidate
 
-## 当前构建候选：0.8.3rc1
+## 当前正式候选：0.9.0rc1
 
-`BRACE-MSI-0.8.3rc1`修复平台确认的模型传输协议缺口：原生`start_round`现在由镜像自身构造和解析标准Chat Completions对象，可直接接收平台`workspace_io.model_transport`，并在平台模式强制产生模型调用与正Token；失败重试一次后retain且不训练。父checkpoint续训、竞争策略、Gate、预测和历史性能证据不变。
+`BRACE-MSI-0.9.0rc1`直接接入官方`contest_harness` 1.0.2与`contest.harness.workspace.v2`，不再依赖0.8.3猜测式桥接。固定`describe/train/predict`入口经宿主`rnd.model()`调用平台模型，完成记录引用真实`model_call_ids`；父checkpoint续训、竞争策略、SafetyGate、候选测量、状态和独立预测继续复用已验证内核。
 
-上传归档：`D:/brace-msi-platform-bridge/BRACE-MSI-0.8.3rc1/brace-msi-0.8.3rc1-harness.tar`；SHA-256 `4BE4327D29B8D25A2480427776AC58696FB6A48EA63AB576C35944240EA3A694`。430项回归及4核8GB断网替身平台调用通过，机器证据见[模型传输修复](results/PLATFORM-MODEL-TRANSPORT-001.md)和[RC83容器验收](results/RC83_CONTAINER_ACCEPTANCE.json)。真实平台兼容性仍待重新导入和试运行。
+唯一上传归档：`D:/brace-msi-workspace-v2/BRACE-MSI-0.9.0rc1-A4/brace-msi-0.9.0rc1-harness.tar`；大小151,393,280字节；SHA-256 `dc0147706e5c20a62360bf309a280b890ac6cea2707eee4aa66f8f7169c57cbc`。官方上游15项、项目435项回归及A/B/C各10轮4核8GB断网宿主协议复演通过；镜像未安装PyTRiO/SwanLab且不含测试、数据、权重、密钥或报告。证据见[官方SDK V2验收](results/OFFICIAL-SDK-V2-001.md)。平台导入和真实试运行仍待外部验证。
+
+## 历史猜测式桥接：0.8.3rc1
+
+`BRACE-MSI-0.8.3rc1`保留平台Chat Completions桥接修复历史，但已被正式SDK 1.0.2入口替代，不得上传。
 
 ## 历史空挂载补丁：0.8.2rc1
 

@@ -9,8 +9,8 @@ import zipfile
 
 from .packaging import audit_docker_context
 
-RELEASE_ID = "BRACE-MSI-0.8.3rc1"
-RELEASE_VERSION = "0.8.3rc1"
+RELEASE_ID = "BRACE-MSI-0.9.0rc1"
+RELEASE_VERSION = "0.9.0rc1"
 
 _ROOT_FILES = frozenset(
     {
@@ -28,7 +28,7 @@ _ROOT_FILES = frozenset(
         "run.sh",
     }
 )
-_PREFIXES = ("configs/", "docs/", "scripts/", "src/", "tests/")
+_PREFIXES = ("configs/", "docs/", "scripts/", "src/", "submission/", "tests/")
 _FORBIDDEN_SUFFIXES = {
     ".jpg",
     ".jpeg",
@@ -83,6 +83,7 @@ def audit_release_tree(root: Path, tracked_files: tuple[Path, ...]) -> ReleaseTr
         Path("requirements-pytrio.lock"),
         Path("requirements-swanlab.lock"),
         Path("src/brace_msi/cli.py"),
+        Path("src/brace_msi/contest_submission.py"),
         Path("src/brace_msi/official_sdk.py"),
         Path("src/brace_msi/official_trainer.py"),
         Path("src/brace_msi/release_candidate.py"),
@@ -92,6 +93,10 @@ def audit_release_tree(root: Path, tracked_files: tuple[Path, ...]) -> ReleaseTr
         Path("src/brace_msi/paper_fusion.py"),
         Path("src/brace_msi/paper_fusion_runner.py"),
         Path("src/brace_msi/paper_fusion_selection.py"),
+        Path("src/contest_harness/round.py"),
+        Path("src/contest_harness/transport.py"),
+        Path("submission/harness.py"),
+        Path("submission/contest_submission.py"),
         Path("scripts/build_release_candidate.py"),
         Path("docs/RELEASE_CANDIDATE.md"),
         Path("docs/results/LOCAL-FORMAL-SIM-001.md"),

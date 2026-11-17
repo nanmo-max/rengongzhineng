@@ -5,8 +5,6 @@ ARG PIP_INDEX_URL=https://pypi.org/simple
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     BRACE_FORMAL_RELEASE=1 \
-    BRACE_PYTRIO_TOKENIZER_BUNDLE=1 \
-    MODELSCOPE_CACHE=/opt/brace-tokenizer-cache \
     PIP_DEFAULT_TIMEOUT=120 \
     PIP_RETRIES=10 \
     OMP_NUM_THREADS=4 \
@@ -16,22 +14,21 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 RUN tdnf install -y shadow-utils \
     && tdnf clean all
-COPY requirements.lock requirements-swanlab.lock requirements-pytrio.lock pyproject.toml README.md ./
+COPY requirements.lock pyproject.toml README.md ./
 RUN python3 -m pip install --no-cache-dir --index-url "${PIP_INDEX_URL}" --only-binary=:all: -r requirements.lock
-RUN python3 -m pip install --no-cache-dir --index-url "${PIP_INDEX_URL}" -r requirements-swanlab.lock
-RUN python3 -m pip install --no-cache-dir --index-url "${PIP_INDEX_URL}" -r requirements-pytrio.lock
-COPY scripts/fetch_pytrio_tokenizer.py /tmp/fetch_pytrio_tokenizer.py
-RUN python3 /tmp/fetch_pytrio_tokenizer.py \
-    && rm -f /tmp/fetch_pytrio_tokenizer.py
 COPY src ./src
-RUN python3 -m pip install --no-cache-dir --no-deps .
+RUN python3 -m pip install --no-cache-dir --no-deps . \
+    && rm -rf /app/src /app/build /app/pyproject.toml /app/README.md /app/requirements.lock \
+    && find /usr/lib/python3.12/site-packages -type d -name __pycache__ -prune -exec rm -rf '{}' +
+COPY submission/harness.py /app/harness.py
+COPY submission/contest_submission.py /app/contest_submission.py
 
 RUN useradd --create-home --uid 10001 brace
 USER brace
-ENV BRACE_ADVISOR=platform \
+ENV CONTEST_SUBMISSION=contest_submission \
     BRACE_POLICY_MODE=portfolio \
-    BRACE_MAX_TRAINING_ROUNDS=10 \
-    BRACE_MIN_RELATIVE_IMPROVEMENT=0.05 \
-    BRACE_MAX_REPLAY_SAMPLES=100000
-ENTRYPOINT ["python3", "-m", "brace_msi"]
+    BRACE_MAX_TRAINING_ROUNDS=8 \
+    BRACE_MIN_RELATIVE_IMPROVEMENT=0.0 \
+    BRACE_MAX_REPLAY_SAMPLES=4096
+ENTRYPOINT ["python3", "/app/harness.py"]
 CMD ["--help"]

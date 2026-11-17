@@ -82,6 +82,8 @@
 | D-075 | 2026-11-16 | LOCKED | 冻结`BRACE-MSI-0.8.1rc1`为当前平台桥接候选，替代`0.8.0rc1`上传入口但不改写其性能证据。该补丁只增加显式父哈希/轮次校验、无mode argv prefix描述和全路径模型产物声明；训练策略、模型参数、Gate、PyTRiO和SwanLab语义不变。平台草稿适配器已被判无效，因此`0.8.1rc1`本地通过不等于官方兼容；只有平台重写桥接器并以真实挂载检查digest后才能解除阻塞。 | `PLATFORM-BRIDGE-001`；54项专项、424项回归；`RC81_CONTAINER_ACCEPTANCE.json` |
 | D-076 | 2026-11-16 | LOCKED | 冻结`BRACE-MSI-0.8.2rc1`为空挂载预检补丁，替代`0.8.1rc1`上传入口但不改写其桥接和性能证据。镜像默认命令从`start`恢复为首个平台可运行版本使用的`--help`，防止镜像校验阶段在四挂载尚未提供时误启动训练；平台桥接器仍须显式追加`start`或`submit`。训练策略、父链、模型参数、PyTRiO和SwanLab均不变。 | O-PLATFORM-012；本机复现0.8.1裸启动`PermissionError: /workspace`/退出1；0.8.2裸启动退出0且真实挂载start/submit通过；`PLATFORM-PREFLIGHT-001` |
 | D-077 | 2026-11-16 | LOCKED | 正式训练的模型调用协议改为由镜像原生实现`openai.chat.completions.v1`边界并接收`workspace_io.model_transport`，不再要求平台把Chat Completions重写成PyTRiO私有Sampler协议。平台模式每个`start`强制发起模型调用并要求正Token；两次失败后retain父模型且不训练。PyTRiO私有传输保留为本地/历史入口，训练器、父链、Gate和预测不变。 | O-PLATFORM-013；红绿测试；4核8GB断网容器替身传输123/45 Token；`PLATFORM-MODEL-TRANSPORT-001` |
+| D-078 | 2026-11-17 | LOCKED | 正式发布边界改用官方`contest_harness` 1.0.2与`contest.harness.workspace.v2`，替代D-077猜测的`workspace_io`正式接法。新RC保留当前原生父checkpoint续训、性能策略、SafetyGate与预测内核，只新增`/app/harness.py`和薄`contest_submission.py`；每轮模型调用必须经`rnd.model()`/`rnd.transport()`取得真实`model_call_ids`。正式镜像不内置PyTRiO密钥、私有Sampler客户端、本地模拟数据或测试报告。0.8.3保留为历史桥接证据，不再作为上传入口。 | O-PLATFORM-014；官方SDK Linux断网15/15测试；用户要求基于首次可运行版本最小改动 |
+| D-079 | 2026-11-17 | LOCKED | 测试版与正式上传版物理分离：本地测试可包含宿主协议替身、自动测试、模拟器和脱敏报告，但正式`docker save`镜像只能包含运行时依赖、官方SDK及`/app/harness.py`/`contest_submission.py`固定入口；不得安装SwanLab、直连PyTRiO、Tokenizer，不得包含测试、脚本、数据、权重、密钥或本地报告。SwanLab继续作为外部公开训练记录链接，宿主模型由平台管理。任何上传归档必须由最终源码重建并通过内容扫描、三任务协议复演及`docker load`。 | 用户2026-11-17明确要求区分用户目标、官方要求、测试版和正式上传版；`OFFICIAL-SDK-V2-001`镜像审计 |
 
 ## 已被替代的历史决策
 

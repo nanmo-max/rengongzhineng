@@ -49,26 +49,24 @@ def test_repository_docker_context_excludes_data_weights_secrets_and_is_under_li
     assert not any("artifacts" in path.parts for path in audit.included_files)
 
 
-def test_python312_linux_release_uses_binary_compatible_psutil_and_no_source_builds() -> None:
+def test_python312_formal_image_uses_only_binary_runtime_dependencies() -> None:
     root = Path(__file__).resolve().parents[2]
     requirements = (root / "requirements.lock").read_text(encoding="utf-8")
     dockerfile = (root / "Dockerfile").read_text(encoding="utf-8")
 
     assert "psutil==5.9.8" in requirements
     assert "--only-binary=:all:" in dockerfile
-    assert "requirements-swanlab.lock" in dockerfile
-    assert "requirements-pytrio.lock" in dockerfile
+    assert "requirements-swanlab.lock" not in dockerfile
+    assert "requirements-pytrio.lock" not in dockerfile
     assert "pytrio==0.2.9" in (root / "requirements-pytrio.lock").read_text(
         encoding="utf-8"
     )
-    swanlab_install = next(
-        line
-        for line in dockerfile.splitlines()
-        if "pip install" in line and "requirements-swanlab.lock" in line
+    runtime_install = next(
+        line for line in dockerfile.splitlines() if "pip install" in line
     )
-    assert "--no-cache-dir" in swanlab_install
-    assert "--index-url" in swanlab_install
-    assert "-r requirements-swanlab.lock" in swanlab_install
+    assert "--no-cache-dir" in runtime_install
+    assert "--index-url" in runtime_install
+    assert "-r requirements.lock" in runtime_install
 
 
 def test_cli_renders_report_without_network_or_interaction(tmp_path: Path) -> None:

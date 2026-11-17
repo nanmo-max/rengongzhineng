@@ -541,3 +541,15 @@ PyTRiO通用接口、Qwen3.5-4B基础模型平台校验和持久化Sampler路线
 - 来源：用户2026-11-16粘贴的平台失败详情。
 - 已确认：平台桥接只提供Chat Completions风格的`workspace_io.model_transport`；0.8.2原生训练入口唯一LLM路径是PyTRiO私有`ServiceClient`/Sampler协议，平台判定两者无法在不语义重写的情况下忠实桥接；确定性或PyTRiO失败路径会产生零模型调用，不满足`stage_contract model_calls_required`。
 - 未确认：平台`model_transport`实际Python调用签名、真实返回附加字段、服务错误类型及Token结算细节。0.8.3只声明并实现标准OpenAI Chat Completions对象边界；真实平台兼容性仍须上传校验。
+
+### O-PLATFORM-014 官方 Harness SDK 1.0.2
+
+- 类型：官方可运行SDK、协议说明与回归测试；优先级高于O-PLATFORM-009至013中的草稿桥接与平台反馈推断。
+- 来源：用户2026-11-17新增`C:/Users/Administrator/Desktop/人工智能创新大赛/新增/contest-harness-sdk-1.0.2.tar.gz`与同名`.txt`。
+- SHA-256：归档`C676C8BEEEF69CECE9CBEC5A633D05DBB9832EB22B6F761913F2315BD1F85133`；说明文本`0433A8A3C7B6641985B1ABF90C9CE5DE349B1B3EFDAD1C6494ED6680C9EBC99C`。
+- 已确认协议：`contest_harness` 1.0.2、`contest.harness.workspace.v2`、提示版本`industrial-workspace-flexible-v3`；固定入口为`python3 /app/harness.py describe|train|predict`，选手模块默认`/app/contest_submission.py`。
+- 已确认模型访问：每轮必须经`rnd.model()`或`rnd.transport()`调用宿主管理的模型网关；平台持有真实端点、密钥和计费；`finish`必须引用本轮真实且非空的`model_call_ids`。正式镜像不需要也不应内置PyTRiO密钥或私有`ServiceClient`协议。
+- 已确认数据/产物：训练容器只读挂载`/data/train.jsonl`、`/data/validation.jsonl`、`/previous`、可选`/state`，可写`/workspace`；预测挂载`/model`并以`CONTEST_ARTIFACT_PATH`指向确切checkpoint。候选最多64文件、合计64MiB，至少声明一个checkpoint；父文件只能通过清单和摘要校验后的`rnd.parent.path()`读取。
+- 已确认轮事务：SDK提供公开训练/验证行、父产物、历史、状态复制/保存、候选提交及平台公开验证摘要；最终可选择本轮候选、父产物或已声明历史产物。隐藏数据不在训练容器挂载。
+- 已确认预测契约：逐行读取后必须在读取下一行前输出并刷新；分类为唯一最高分的`[{label,score}]`，回归为非负有限`{value}`；任务来自合同而不是数据集代号。
+- 本地核验：官方15项离线测试在Windows出现1项管道差异；同一原包在Linux、4核8GB、断网容器中`15/15 OK`，因此不修改官方SDK。真实宿主模型调用、平台计量、评分公式和比赛SwanLab规范仍须平台运行验证。

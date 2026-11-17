@@ -982,19 +982,21 @@ def test_formal_runtime_defaults_to_real_candidate_in_all_ten_rounds() -> None:
     assert PlatformRuntimeConfig().min_relative_improvement == 0.05
 
 
-def test_container_default_is_safe_for_empty_platform_preflight() -> None:
+def test_container_uses_official_workspace_v2_fixed_entrypoint() -> None:
     dockerfile = Path("Dockerfile").read_text(encoding="utf-8")
-    assert 'ENTRYPOINT ["python3", "-m", "brace_msi"]' in dockerfile
+    assert 'ENTRYPOINT ["python3", "/app/harness.py"]' in dockerfile
     assert 'CMD ["--help"]' in dockerfile
-    assert 'ENV BRACE_ADVISOR=platform' in dockerfile
+    assert 'CONTEST_SUBMISSION=contest_submission' in dockerfile
     assert 'BRACE_POLICY_MODE=portfolio' in dockerfile
     assert 'BRACE_PROTOCOL_PROFILES=' not in dockerfile
-    assert 'BRACE_MAX_REPLAY_SAMPLES=100000' in dockerfile
+    assert 'BRACE_MAX_REPLAY_SAMPLES=4096' in dockerfile
+    assert 'requirements-pytrio.lock' not in dockerfile
+    assert 'fetch_pytrio_tokenizer.py' not in dockerfile
 
 
-def test_release_version_matches_platform_preflight_patch() -> None:
+def test_release_version_matches_official_workspace_v2_patch() -> None:
     pyproject = Path("pyproject.toml").read_text(encoding="utf-8")
-    assert 'version = "0.8.3rc1"' in pyproject
+    assert 'version = "0.9.0rc1"' in pyproject
 
 
 def test_pytrio_advice_is_bounded_and_recorded_without_bypassing_gate(tmp_path: Path) -> None:

@@ -2,6 +2,43 @@
 
 本文件是全部实验运行的唯一登记处，包括失败和中止实验。
 
+## WORKSPACE-V2-ACCEPTANCE-001（COMPLETED_SUPERSEDED_BY_A2）
+
+- 研究问题：正式上传镜像能否仅依赖官方`contest_harness` 1.0.2，在4核8GB、断网、非root容器中完成A/B/C各10轮宿主网关模型调用、真实父checkpoint续训或retain、候选/状态提交及独立预测？
+- 输入：只读官方A/B/C训练包的`public/`投影和初始`checkpoint.npz`；本地宿主替身严格按`contest.harness.workspace.v2`帧响应。不得读取隐藏数据，不计算或反馈公开验证性能。
+- 镜像边界：正式镜像只含运行时代码、官方SDK和固定`describe/train/predict`入口；不得包含测试、模拟器、数据、权重、密钥、本地报告、SwanLab、Tokenizer或直连PyTRiO客户端。
+- 模型边界：每轮宿主替身返回非零Token结构化响应并生成唯一`model_call_id`；该替身仅验证协议，不冒充官方Qwen或正式Token计量。
+- 预算：A/B/C各10轮，每轮最多一个受控候选；4 CPU、8 GiB、无网络；官方试运行0次；不启动新性能搜索或SwanLab同步。
+- 成功标准：三任务各10轮、每轮至少一次真实宿主模型RPC且完成记录引用全部`model_call_ids`；父链与状态连续；候选不超过64 MiB；最终产物各完成5行逐行预测；镜像禁入扫描、项目回归和`docker save/load`通过。
+- 停止条件：任何SDK外字段猜测、模型调用缺失、父链断裂、产物不可加载、未来/隐藏数据接触、正式镜像含禁入内容或资源超限均判失败并保留证据，不上传平台。
+- 输出：`D:/brace-msi-workspace-v2/WORKSPACE-V2-ACCEPTANCE-001/`；结果必须标记`local_protocol_only_not_official_score`。
+- 结果：A/B/C各10轮、30次宿主替身模型调用、15行独立预测全部通过；`acceptance.json`为`valid=true`。随后发现vendored SDK文件仅有结尾空行字节差异，故A1归档保留历史、不上传，由A2按相同协议重跑最终字节版。
+
+## WORKSPACE-V2-ACCEPTANCE-001-A2（COMPLETED_SUPERSEDED_BY_A3）
+
+- 唯一变化：A1后将9个vendored `contest_harness`源文件的结尾字节修正为与官方1.0.2解压件逐文件SHA-256完全一致；运行逻辑、策略、依赖、数据、宿主替身和验收标准不变。
+- 必要性：正式上传归档必须与最终仓库源码及官方SDK字节一致，A1归档因此只保留历史而不上传。
+- 输入/预算/停止条件：完全继承A1；仍为A/B/C各10轮、4核8GB、断网、官方试运行0次，不计算性能分数。
+- 输出：`D:/brace-msi-workspace-v2/WORKSPACE-V2-ACCEPTANCE-001-A2/`与`D:/brace-msi-workspace-v2/BRACE-MSI-0.9.0rc1-A2/`；不得覆盖A1。
+- 结果：`valid=true`；A/B/C各10轮，共30次带唯一`model_call_id`的宿主模型RPC，C提交并连续选择2个候选，A/B合法retain，三任务各完成5行独立预测。完整回归`434 passed`；镜像151,366,375字节、非root、无PyTRiO/SwanLab安装及禁入文件。`docker save/load`通过。
+- 后续审查：发现“内部Gate部署、平台测量拒绝”时持久状态仍记录候选已部署，下一轮可能父哈希冲突。A2归档保留历史、禁止上传；A3仅修复平台拒绝后的状态对账并重新执行全部门。
+
+## WORKSPACE-V2-ACCEPTANCE-001-A3（COMPLETED_SUPERSEDED_BY_A4）
+
+- 唯一变化：平台公开测量拒绝已提交候选时，在`save_state`前将最新轮对账为父artifact（`deployed=false`、父checkpoint哈希、`retained_parent`并移除影子前任）；平台接受、内部retain、训练策略和预测均不改变。
+- 红灯证据：`test_platform_measurement_rejection_commits_parent_state`在修复前得到`deployed=true`而失败；修复后该测试及官方SDK专项`5/5`通过。
+- 输入/预算/成功门：完全继承A2；A/B/C各10轮，4核8GB，断网，官方试运行0次；最终必须重跑完整回归、内容扫描与`docker save/load`。
+- 输出：`D:/brace-msi-workspace-v2/WORKSPACE-V2-ACCEPTANCE-001-A3/`与`D:/brace-msi-workspace-v2/BRACE-MSI-0.9.0rc1-A3/`；A1/A2不得覆盖或上传。
+- 结果：三任务30轮、30次宿主调用和15行预测为`valid=true`；完整回归435项。后续审查发现平台测量拒绝时`state.json`已回退父模型，但`public-spool.jsonl`仍保留内部Gate的`accepted=true`，会造成外部实验记录与真实选中artifact分叉；A3禁止上传。
+
+## WORKSPACE-V2-ACCEPTANCE-001-A4（COMPLETED_PASS_LOCAL_PLATFORM_PENDING）
+
+- 唯一变化：平台测量拒绝候选时，同一对账流程分别原子写入`state.json`与`public-spool.jsonl`，均明确`accepted/deployed=false`、`platform_measurement_rejected`和父checkpoint哈希；任一记录异常即失败关闭，训练策略、模型参数、宿主调用、平台SDK及预测均不改变。
+- 红绿证据：扩展`test_platform_measurement_rejection_commits_parent_state`后，修复前公开收据仍为`accepted=true`而失败；修复后官方SDK专项`5/5`、完整回归`435 passed in 142.62s`。
+- 结果：`D:/brace-msi-workspace-v2/WORKSPACE-V2-ACCEPTANCE-001-A4/acceptance.json`为`valid=true`；A/B/C各10轮，共30次宿主模型调用，C两次候选提交，A/B合法retain，三任务各5行独立预测。镜像linux/amd64、151,369,904字节、UID10001，未安装PyTRiO/SwanLab且`/app`仅两个固定入口。
+- 正式归档：`D:/brace-msi-workspace-v2/BRACE-MSI-0.9.0rc1-A4/brace-msi-0.9.0rc1-harness.tar`，151,393,280字节，SHA-256 `dc0147706e5c20a62360bf309a280b890ac6cea2707eee4aa66f8f7169c57cbc`；删除正式tag后`docker load`恢复相同镜像ID并再次通过`describe`。
+- 边界：该验收只证明本地workspace v2协议与正式镜像准备完成，不是平台真实Qwen、Token结算、公开分数或隐藏评测；外部状态继续由`FORMAL-RELEASE-001`管理。
+
 ## PLATFORM-MODEL-TRANSPORT-001（COMPLETED_LOCAL_PLATFORM_PENDING）
 
 - 问题：平台Chat Completions模型传输能否不经语义重写直接进入原生`brace_msi start`，并满足训练阶段强制模型调用与非零Token要求？

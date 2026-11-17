@@ -39,6 +39,9 @@ def test_release_file_selection_excludes_raw_materials_data_and_model_weights() 
     assert Path("docs/RUNBOOK.md") in selected
     assert Path("configs/formal_simulation.json") in selected
     assert Path("Dockerfile") in selected
+    assert Path("submission/harness.py") in select_release_files(
+        (Path("submission/harness.py"),)
+    )
     assert not any(path.suffix in {".pkl", ".jpg", ".pdf"} for path in selected)
     assert not any(path.parts[:2] == ("docs", "team") for path in selected)
 
@@ -48,7 +51,7 @@ def test_repository_release_audit_preserves_evidence_boundaries() -> None:
 
     audit = audit_release_tree(root, _tracked_files(root))
 
-    assert audit.release_id == RELEASE_ID == "BRACE-MSI-0.8.3rc1"
+    assert audit.release_id == RELEASE_ID == "BRACE-MSI-0.9.0rc1"
     assert audit.blocking_findings == ()
     assert audit.a1_status == "INVALID"
     assert audit.a2_status == "SUCCEEDED"
@@ -76,11 +79,15 @@ def test_source_archive_contains_only_selected_release_files(tmp_path: Path) -> 
     assert not any("dataji/" in name or name.endswith(".pkl") for name in names)
 
 
-def test_formal_image_bundles_tokenizer_without_model_weights() -> None:
+def test_formal_image_uses_official_host_gateway_without_pytrio_assets() -> None:
     root = Path(__file__).resolve().parents[2]
     dockerfile = (root / "Dockerfile").read_text(encoding="utf-8")
 
-    assert "fetch_pytrio_tokenizer.py" in dockerfile
-    assert "BRACE_PYTRIO_TOKENIZER_BUNDLE=1" in dockerfile
-    assert "MODELSCOPE_CACHE=/opt/brace-tokenizer-cache" in dockerfile
+    assert "requirements-swanlab.lock" not in dockerfile
+    assert "fetch_pytrio_tokenizer.py" not in dockerfile
+    assert "requirements-pytrio.lock" not in dockerfile
+    assert "BRACE_PYTRIO_TOKENIZER_BUNDLE" not in dockerfile
+    assert "COPY submission/harness.py /app/harness.py" in dockerfile
+    assert "COPY submission/contest_submission.py /app/contest_submission.py" in dockerfile
     assert "model.safetensors" not in dockerfile
+    assert "rm -rf /app/src /app/build" in dockerfile

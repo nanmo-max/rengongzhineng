@@ -32,10 +32,21 @@ EVIDENCE-RSI-001(DONE)
   -> PLATFORM-BRIDGE-001(DONE_LOCAL_EXTERNAL_BLOCK)
   -> PLATFORM-PREFLIGHT-001(DONE_LOCAL_EXTERNAL_BLOCK)
   -> PLATFORM-MODEL-TRANSPORT-001(DONE_LOCAL_EXTERNAL_BLOCK)
+  -> OFFICIAL-SDK-V2-001(DONE_LOCAL_PLATFORM_PENDING)
   -> FORMAL-RELEASE-001(BLOCKED_EXTERNAL)
 ```
 
 以上为当前正式重构图；`0.6.0rc1`及下方历史任务图保持冻结，新竞争候选只在独立分支演进。
+
+### OFFICIAL-SDK-V2-001 官方Workspace V2最小正式接入
+
+- 状态：`DONE_LOCAL_PLATFORM_PENDING`
+- 依赖：PLATFORM-MODEL-TRANSPORT-001、O-PLATFORM-014
+- 优先级：P0
+- 目标：以首次平台可运行的原生父checkpoint训练/预测内核为稳定边界，接入官方`contest_harness` 1.0.2固定`describe/train/predict`入口；只替换平台协议边界，不改变冻结性能策略、checkpoint schema或历史RC。
+- 完成标准：官方SDK源码与哈希可追溯；`describe`声明workspace v2及host gateway；每轮至少一次真实宿主模型调用并引用非空`model_call_ids`；从声明父checkpoint真实续训或retain；候选由平台测量后选择；prediction逐行输出且使用`CONTEST_ARTIFACT_PATH`；官方15项测试、项目专项/完整回归、三任务宿主替身十轮、4核8GB断网容器、64MiB、禁入扫描和`docker save/load`全部通过。
+- 停止条件：不得猜测SDK外字段；不得把本地宿主替身或公开验证写成正式成绩；不得内置密钥、数据、权重、测试报告或直接PyTRiO客户端；若真实宿主行为仍未知，只将对应项保留为`BLOCKED_EXTERNAL`。
+- 当前证据：官方归档/说明哈希已登记，vendored九个SDK源文件与官方解压件逐文件SHA-256一致；Linux 4核8GB断网环境运行官方SDK自带测试`15/15 OK`。项目完整回归`435 passed`；A/B/C最终镜像各10轮、30次宿主模型调用、候选提交/retain、状态/父链及15行独立预测通过；平台测量拒绝后的父状态与公开收据对账有红绿测试。镜像151,369,904字节，正式归档SHA-256 `dc0147706e5c20a62360bf309a280b890ac6cea2707eee4aa66f8f7169c57cbc`且重载通过。真实平台状态仍交由`FORMAL-RELEASE-001`，见`results/OFFICIAL-SDK-V2-001.md`。
 
 ### PLATFORM-MODEL-TRANSPORT-001 平台Chat Completions原生模型边界
 
