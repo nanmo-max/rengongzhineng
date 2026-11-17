@@ -727,3 +727,7 @@
 - `FORMAL-MINIMAL-001` Task 4完成：先红灯确认十轮模拟器缺失，再以独立合成A/B/C数据执行各10轮。A2为30/30轮、30个唯一宿主call ID、三任务父链与状态链全有效；A候选采用4/10、B/C各10/10，接受与拒绝均被覆盖。A1因源码直跑缺`PYTHONPATH`及遗留默认workspace冲突判失败并保留；A2显式隔离工作目录后通过。机器JSON SHA-256 `83834956...A68E2EF`；完整回归`451 passed in 149.89s`。所有报告均标注本地合成协议测试、非官方成绩。
 - `FORMAL-CLEAN-IMAGE-001`完成：allowlist红灯先确认`Dockerfile.formal`与最小锁文件缺失，随后只复制官方SDK、`brace_formal`和两个固定入口；递归`.pyc`首次进入镜像被审计发现并由新增红绿测试排除。最终镜像linux/amd64、81,183,334字节、UID10001，只含NumPy，无旧`brace_msi`、PyTRiO、SwanLab、sklearn、SciPy或psutil。精确最终镜像在4核8GB断网/只读数据与父模型挂载下完成A/B/C各10轮、30次宿主调用和各5行独立预测；候选最大132,180字节，`pip check`通过。`docker save`归档81,201,152字节、SHA-256 `DC73FAFC...C05C39E`，删除tag后重载ID一致；完整回归`455 passed in 148.45s`。
 - `FORMAL-PERF-001-A1`按预注册只读取官方train内部三折：A的e1平均Macro-F1增益`+0.004902644`并胜出；B跨轴承组留出中e1/e3lr3/soup全部为负，retain胜出；C的0.25父候选融合3/3折改善、平均RMSE降低`0.189824503`。正式入口新增相同身份无关portfolio；若内部证据只能retain，即使Agent要求train也记录安全否决并保留父模型。首次0.10.1容器探针在该否决修正前已生成，现降级为过渡证据，不作为最终RC；尚需0.10.2精确镜像验收。
+- `FORMAL-PERF-001-A3`完成：精确0.10.2镜像在4核8GB断网容器完成A/B/C各10轮，共30个唯一宿主调用和15行独立预测；B十轮全部由训练内负证据否决训练，A/C分别部署1/3次。
+- 冻结后公开validation描述性诊断为A Macro-F1 0.725695、B RMSE 681.159833、C RMSE 52.331755；该数据历史暴露且不参与选择，不作为独立或官方成绩。
+- 完整回归`458 passed in 143.01s`；镜像依赖、白名单、非root、64MiB、归档哈希和删除tag后同ID重载全部通过。
+- 正式归档：`D:/brace-msi-first-principles-release/BRACE-MSI-0.10.2rc1-FINAL/harness.tar`；SHA-256 `1F4B4C70061E2228977A98984ED3DF8D6E4C691E23D35DB95517A83173C5C6C0`。本阶段未上传、未调用私有PyTRiO/SwanLab、未消耗官方次数。

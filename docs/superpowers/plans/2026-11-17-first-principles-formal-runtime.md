@@ -94,10 +94,10 @@
 
 **Files:** only Task 2/3 policy surfaces plus pre-registered train-internal experiments.
 
-- [ ] Use existing A/B/C evidence to define a bounded matrix without reusing exposed confirmation sets for selection.
-- [ ] Compare retain, 1-epoch continuation and at most two mature parent-compatible recipes.
-- [ ] Promote only methods with cross-round positive trend and acceptable CPU cost.
-- [ ] Re-run the complete Task 4/5 acceptance once and freeze the new RC.
+- [x] Use existing A/B/C evidence to define a bounded matrix without reusing exposed confirmation sets for selection.
+- [x] Compare retain, 1-epoch continuation and at most two mature parent-compatible recipes.
+- [x] Promote only methods with cross-round positive trend and acceptable CPU cost.
+- [x] Re-run the complete Task 4/5 acceptance once and freeze the new RC.
 
 ## Execution Ruling
 

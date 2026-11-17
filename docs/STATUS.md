@@ -1,9 +1,9 @@
 # 当前状态
 
 - 最近同步：2026-11-17（Asia/Shanghai）
-- 当前阶段：第一性原理重建；最小正式运行核和白名单Docker已完成，进入父链兼容性能候选集成
+- 当前阶段：第一性原理重建的本地可执行工作已完成；正式候选已冻结，等待平台受控验证
 - 当前路线：**官方SDK 1.0.2 + 每轮真实宿主模型调用 + 平台父checkpoint原生续训/retain + 最小白名单镜像** `[D-079]` `[D-080]` `[D-081]`
-- 当前唯一核心任务：`FORMAL-PERF-001 (IN_PROGRESS)`；train内部A1矩阵完成并已集成，等待精确新镜像30轮验收后决定是否冻结。
+- 当前唯一核心任务：`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`；精确`0.10.2rc1`已完成本地30轮、全量回归和镜像重载验收，未经用户确认不上传、不消耗试运行。
 - 稳定边界：全部历史RC和实验不改写；`0.5.0rc1`只作研究证据，不得上传。正式线从D-058开始只输出原生官方MLP续训checkpoint。A3之后禁止继续LLM调参 `[D-043]`
 - 官方试运行：平台当前记录共4条（2成功、2失败），正式评测仍为0/2；剩余试运行次数以平台页面实时显示为准 `[O-PLATFORM-015]`
 
@@ -69,19 +69,19 @@
 
 ## 当前执行入口
 
-首个第一性原理协议候选为`D:/brace-msi-first-principles-release/BRACE-MSI-0.10.0rc1-FINAL-PROVENANCE-OFF/harness.tar`，81,201,152字节，SHA-256 `DC73FAFC73906D1A841BE3AC47DBCBF3A69915C380711B07E28A2C5C0C05C39E`。它已通过本地协议与容器门，但在`FORMAL-PERF-001`完成前仅作为可恢复协议RC，不上传消耗试运行。`0.9.0rc1`及更早归档不得再次上传。
+当前第一性原理正式候选为`D:/brace-msi-first-principles-release/BRACE-MSI-0.10.2rc1-FINAL/harness.tar`，81,205,248字节，SHA-256 `1F4B4C70061E2228977A98984ED3DF8D6E4C691E23D35DB95517A83173C5C6C0`，镜像ID`sha256:d216a379...fb1001a9`。它已通过本地协议、性能策略、容器与重载门；尚未上传或获得平台真实成绩。`0.10.0rc1`保留为协议恢复基线，`0.10.1`及更早归档不得上传代替。
 
 正式路线、已知能力与未知边界见[FORMAL_ROUTE.md](FORMAL_ROUTE.md)。实验必须遵守[EXPERIMENT_PROTOCOL.md](EXPERIMENT_PROTOCOL.md)。
 
-提交材料入口见[SUBMISSION_CHECKLIST.md](SUBMISSION_CHECKLIST.md)。源码入口为`https://github.com/nanmo-max/rengongzhineng/tree/codex/native-competitive-rc`；公开训练记录为`https://swanlab.cn/@nanmo-max/brace-msi-platform-native`。0.8.3只修复模型传输边界，没有重新训练A/B/C，不伪造新的训练记录。
+提交材料入口见[SUBMISSION_CHECKLIST.md](SUBMISSION_CHECKLIST.md)。现有公开源码`codex/native-competitive-rc`和SwanLab项目`brace-msi-platform-native`都是历史版本证据，尚未与0.10.2冻结提交绑定；正式平台验证后必须更新为同一提交、镜像哈希和真实训练记录，不能把旧链接直接写成0.10.2完成证据。
 
 ## 外部阻塞
 
-- 正式评测入口、挂载目录、批次事件和输出字段仍未知 `[H-001]`；只在适配器中保留配置点。
-- 比赛环境实际Base URL、凭据注入、模型白名单与Token计量待核验 `[H-002]`。
+- 正式入口已由官方SDK 1.0.2确认并实现；平台实际批次生命周期、持久workspace和计量行为仍须一次受控试运行核验 `[H-001]`。
+- 模型由宿主`rnd.model()`网关提供；平台实际Qwen绑定、非零Token计量和故障行为待受控试运行核验 `[H-002]`。
 - 完整评分公式与资源计量实现待发布 `[H-003]`。
 - SwanLab比赛项目、必填字段及无公网同步责任待发布 `[H-004]`。
-- Docker宿主机阻塞已解除；0.5.0rc1真实镜像、体积、禁入文件、非root身份、4核8GB断网训练/预测和可重载归档均有证据，见`results/DUAL_RC_CONTAINER_ACCEPTANCE.json`。
+- Docker宿主机阻塞已解除；0.10.2rc1真实镜像、体积、禁入文件、非root身份、4核8GB断网训练/预测和可重载归档均有证据，见`results/FORMAL-PERF-001.md`。
 
 这些缺口不阻塞已授权的提交材料与`SWANLAB-FINAL-001`最终记录。A3是最后一次SFT，D-043禁止继续微调或扩大LLM搜索；最终记录只复用冻结Sampler和参数，不用于再选型。
 

@@ -614,3 +614,14 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 - 结果：A选择`e1_lr1`，3折平均Macro-F1有向增益`+0.004902644`、2/3折不劣；B所有续训recipe均在跨轴承组留出退化，选择retain；C选择`soup_e3_alpha0.25`，3/3折改善、平均RMSE降低`0.189824503`。
 - 资源：A/B/C总CPU约`0.125/0.688/11.25`秒；公开validation读取0；在线模型、SwanLab和官方次数均0。摘要SHA-256 `FE5158C0EE76A6179E7641195E9CC394105F0E00AA2389279F81A31787B08968`。
 - 集成：正式每轮仅在Agent选择train时运行同一train内部portfolio；只有内部证据通过成功门的recipe才形成候选。若证据选择retain，则将Agent训练提案记录为`train_vetoed_by_internal_cv`并保留父模型，不能用一次宿主建议覆盖三折负证据；最后仍由当前官方validation门控。完整折明细不写入持久状态，只保存紧凑摘要。
+
+## FORMAL-PERF-001-A2/A3正式候选集成
+
+- A2状态：`SUPERSEDED_UNSAFE_FALLBACK`。`0.10.1`在训练内部选择retain时仍执行Agent的e1建议；该行为被新增回归测试捕获，产物和诊断保留但不得上传。
+- A3状态：`COMPLETED_FINAL_LOCAL_RC`。修复后训练内部retain拥有否决权；B十轮全部记录`train_vetoed_by_internal_cv`，不生成候选。A第1轮部署e1、C前三轮部署0.25父候选soup；其余轮次由当前Gate拒绝或训练内证据retain。
+- 数据与选择：recipe选择只读取官方train内部三折；公开validation在策略、参数和轮次冻结后每任务只读取一次作描述性诊断，不能反向选择。
+- 公开暴露诊断：A Macro-F1 `0.714030 → 0.725695`；B RMSE保持`681.159833`；C RMSE `52.868573 → 52.331755`。不是隐藏测试或官方成绩。
+- 协议与资源：A/B/C各10轮、30个唯一宿主call ID、15行独立预测；最大checkpoint 132,180字节；portfolio累计CPU约0.743/3.927/28.980秒。
+- 机器证据：`D:/brace-msi-first-principles-performance/FORMAL-PERF-001-A3-FINAL-CONTAINER/acceptance.json`，SHA-256 `B8D613065EE92BC5CD0786745D74D2F4FD3A7AD8E3D884D7FD1641A54739687B`。
+- 冻结归档：`D:/brace-msi-first-principles-release/BRACE-MSI-0.10.2rc1-FINAL/harness.tar`，81,205,248字节，SHA-256 `1F4B4C70061E2228977A98984ED3DF8D6E4C691E23D35DB95517A83173C5C6C0`；删除tag后重载为同一镜像ID。
+- 验证：`458 passed in 143.01s`；`pip check`、白名单、非root、4核8GB断网、64MiB和`docker save/load`通过。PyTRiO私有API、SwanLab、平台上传及官方次数均为0。

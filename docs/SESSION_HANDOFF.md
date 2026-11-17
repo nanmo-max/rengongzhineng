@@ -2,11 +2,11 @@
 
 ## 2026-11-17 第一性原理重建恢复入口（当前）
 
-1. 当前分支为`codex/first-principles-rebuild`；先读`STATUS.md`、`TASKS.md`、D-079至D-081和`results/FORMAL-MINIMAL-001.md`。不要上传或修补`0.9.0rc1`及更早归档。
-2. `FORMAL-MINIMAL-001`已完成：正式入口为`submission/contest_submission.py → brace_formal.submission`；每轮在任何retain/train分支前直接调用官方`rnd.model()`，最多训练一个父链兼容候选，状态目录含round/stage唯一前缀。
-3. 本地协议证据为451项完整回归、真实官方`Round`转录，以及`D:/brace-msi-first-principles-sim-20261117-A2/`的A/B/C各10轮、30个唯一call ID、父链和状态链全有效。该目录使用合成测试数据，绝非官方成绩。
-4. `FORMAL-CLEAN-IMAGE-001`已完成；协议RC归档为`D:/brace-msi-first-principles-release/BRACE-MSI-0.10.0rc1-FINAL-PROVENANCE-OFF/harness.tar`，SHA-256 `DC73FAFC73906D1A841BE3AC47DBCBF3A69915C380711B07E28A2C5C0C05C39E`。精确镜像A2证据见`results/FORMAL-CLEAN-IMAGE-001.md`。
-5. 当前唯一READY任务为`FORMAL-PERF-001`。只在train内部证据上比较retain、1 epoch和最多两个成熟父链兼容recipe；不重开已暴露confirmation、不添加异构模型或研究框架。协议RC暂不上传；在线PyTRiO、SwanLab和官方次数在本次重建中均未使用。
+1. 当前分支为`codex/first-principles-rebuild`；先读`STATUS.md`、`TASKS.md`、D-079至D-081和`results/FORMAL-PERF-001.md`。不要上传或修补`0.9.0rc1`及更早归档。
+2. 第一性原理本地重建已完成：正式入口为`submission/contest_submission.py → brace_formal.submission`；每轮在任何retain/train分支前直接调用官方`rnd.model()`，最多一个父链兼容候选，train内部portfolio可否决无证据的训练。
+3. 最终本地证据为458项完整回归和精确0.10.2容器A/B/C各10轮：30个唯一call ID、A/B/C候选部署1/0/3次、父链/状态链与独立预测有效；B十轮全部安全retain。
+4. 当前正式候选归档为`D:/brace-msi-first-principles-release/BRACE-MSI-0.10.2rc1-FINAL/harness.tar`，SHA-256 `1F4B4C70061E2228977A98984ED3DF8D6E4C691E23D35DB95517A83173C5C6C0`。协议恢复基线0.10.0继续保留，0.10.1不得上传。
+5. 当前唯一任务为`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`。只有用户明确决定消耗平台次数后，才上传精确归档并进行一次受控试运行；先核对镜像可用、真实Qwen调用/Token、十轮父链、候选/retain和预测。SwanLab/源码/材料必须引用最终平台运行与同一提交，不得用本地模拟冒充。
 
 ## 2026-11-17 0.9.0rc1官方Workspace V2恢复入口（当前）
 
