@@ -57,16 +57,16 @@
 ## R-041 正式模型调用被策略分支跳过
 
 - 等级：Critical
-- 状态：缓解中
+- 状态：本地已缓解，平台待确认
 - 证据：O-PLATFORM-015；最近平台失败显示`model_call_ids=[]`。
-- 缓解：D-080要求每轮在任何retain/train/rollback判断之前直接调用`rnd.model()`；低Token上限、模型别名、无usage和retain均建立契约测试。
+- 缓解：D-080要求每轮在任何retain/train/rollback判断之前直接调用`rnd.model()`；低Token上限、模型别名、无usage和retain均建立契约测试。`FORMAL-MINIMAL-001-A2`三任务30轮产生30个唯一call ID，真实官方`Round`转录也在retain完成记录引用call ID；平台仍待新RC一次验证。
 
 ## R-042 跨轮固定workspace目录冲突
 
 - 等级：Critical
-- 状态：缓解中
+- 状态：本地已缓解，容器待确认
 - 证据：O-PLATFORM-015；平台指出第二轮`state_workspace`目的目录已存在。
-- 缓解：每轮使用由round index和stage ID派生的全新目录；十轮持久workspace测试必须覆盖。
+- 缓解：每轮使用由round index和stage ID派生的全新目录；`FORMAL-MINIMAL-001-A2`在同一持久workspace完成A/B/C各10轮且状态轮数连续。仍需Task 5容器挂载验收。
 
 ## R-043 研究代码进入正式镜像
 

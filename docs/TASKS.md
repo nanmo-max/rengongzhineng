@@ -15,19 +15,21 @@
 
 #### FORMAL-MINIMAL-001 最小workspace v2正式运行核
 
-- 状态：`READY`
+- 状态：`DONE`
 - 依赖：REBUILD-FORENSICS-001
 - 优先级：P0，当前唯一执行任务
 - 完成标准：真实宿主模型调用位于所有分支前；低token上限/模型别名/无usage/retain均有call ID；每轮唯一工作目录；父checkpoint续训或retain；候选提交、状态、历史和预测符合官方SDK。
 - 停止条件：官方SDK与实际平台再次出现不可调和冲突时保存原始证据并失败关闭；不得改官方SDK或伪造call ID。
 - 计划：`superpowers/plans/2026-11-17-first-principles-formal-runtime.md` Task 1-4。
+- 证据：`results/FORMAL-MINIMAL-001.md`；451项完整回归；A/B/C合成协议测试30/30轮、30个唯一宿主call ID、父链与状态链全部有效。
 
 #### FORMAL-CLEAN-IMAGE-001 最小正式Docker与十轮验收
 
-- 状态：`BLOCKED`
+- 状态：`READY`
 - 依赖：FORMAL-MINIMAL-001
 - 优先级：P0
 - 完成标准：镜像白名单、4核8GB断网、A/B/C各10轮、30个真实本地宿主回执、独立预测、64MiB、非root和docker save/load全部通过。
+- 停止条件：任一禁入文件、镜像超限、非root/只读/资源门失败或归档无法`docker load`时不得冻结RC。
 - 计划：同上Task 5。
 
 #### FORMAL-PERF-001 父链兼容性能候选集成

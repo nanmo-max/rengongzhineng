@@ -1,5 +1,13 @@
 # 新会话恢复与交接
 
+## 2026-11-17 第一性原理重建恢复入口（当前）
+
+1. 当前分支为`codex/first-principles-rebuild`；先读`STATUS.md`、`TASKS.md`、D-079至D-081和`results/FORMAL-MINIMAL-001.md`。不要上传或修补`0.9.0rc1`及更早归档。
+2. `FORMAL-MINIMAL-001`已完成：正式入口为`submission/contest_submission.py → brace_formal.submission`；每轮在任何retain/train分支前直接调用官方`rnd.model()`，最多训练一个父链兼容候选，状态目录含round/stage唯一前缀。
+3. 本地协议证据为451项完整回归、真实官方`Round`转录，以及`D:/brace-msi-first-principles-sim-20261117-A2/`的A/B/C各10轮、30个唯一call ID、父链和状态链全有效。该目录使用合成测试数据，绝非官方成绩。
+4. 当前唯一READY任务为`FORMAL-CLEAN-IMAGE-001`：先以测试证明旧完整wheel过宽，再按白名单构建只含官方SDK、`brace_formal`、固定入口和NumPy的镜像；必须完成非root、只读、4核8GB、断网、独立预测、64 MiB、禁入扫描和`docker save/load`。
+5. 当前没有允许上传的候选。只有Task 5全部通过并生成新归档SHA-256后才可讨论一次受控平台试运行；在线PyTRiO、SwanLab和官方次数在本次重建中均未使用。
+
 ## 2026-11-17 0.9.0rc1官方Workspace V2恢复入口（当前）
 
 1. `OFFICIAL-SDK-V2-001`已完成全部本地门；当前唯一核心任务为`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`。不要重跑性能搜索、公开validation或A/B/C宿主协议复演。

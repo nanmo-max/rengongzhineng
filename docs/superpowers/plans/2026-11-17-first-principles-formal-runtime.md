@@ -72,11 +72,11 @@
 
 **Produces:** A/B/C ten-round acceptance JSON and official-style HTML clearly marked local/non-scoring.
 
-- [ ] Write a failing ten-round test that persists state and changes the parent artifact each round.
-- [ ] Observe RED.
-- [ ] Implement the smallest simulator changes needed.
-- [ ] Run A/B/C ten-round protocol tests and verify 30 real model call receipts.
-- [ ] Commit.
+- [x] Write a failing ten-round test that persists state and changes the parent artifact each round.
+- [x] Observe RED.
+- [x] Implement the smallest simulator changes needed.
+- [x] Run A/B/C ten-round protocol tests and verify 30 real model call receipts.
+- [x] Commit.
 
 ### Task 5: Clean formal Docker release
 

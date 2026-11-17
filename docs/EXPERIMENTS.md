@@ -579,3 +579,12 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 - 结果：0.8.1裸启动退出1并报`PermissionError: /workspace`；0.8.2裸启动退出0。显式start/submit均退出0，生成132,180字节checkpoint和1,244条预测。
 - 资源与边界：4核8GB、断网、只读根；在线PyTRiO/SwanLab/隐藏数据/官方试运行均为0。首次PyPI构建因网络超时失败并保留，镜像源重建成功。
 - 输出：`D:/brace-msi-platform-bridge/BRACE-MSI-0.8.2rc1-smoke/`及`docs/results/PLATFORM-PREFLIGHT-001.md`。
+
+## FORMAL-MINIMAL-001-A1/A2本地合成协议测试
+
+- 预注册依据：`docs/superpowers/plans/2026-11-17-first-principles-formal-runtime.md` Task 4；目的仅为验证十轮协议、父链、状态和宿主调用，不评价竞赛性能。
+- A1状态：`FAILED_RETAINED`。直接源码启动未配置`PYTHONPATH=src`，修正启动后又发现默认`C:/workspace`遗留目录冲突；没有生成有效摘要，不作通过证据。
+- A2状态：`COMPLETED_PROTOCOL_ONLY`。脚本为每次运行隔离`CONTEST_WORK`；A/B/C各10轮、合计30个唯一宿主call ID，父链与状态链全有效；A候选采用4次，B/C各10次。
+- 数据：脚本独立生成的合成数值表格分类/回归数据；不读取官方数据、隐藏数据、公开validation或历史确认集。
+- 输出：`D:/brace-msi-first-principles-sim-20261117-A2/acceptance.json`与`report.html`；摘要SHA-256 `83834956C7539345B7C83D6A06FC44FB12E8244713BAAAE8373CA2501A68E2EF`。
+- 边界：在线PyTRiO、SwanLab、官方试运行和付费API使用均为0；结果醒目标注“非官方成绩”。
