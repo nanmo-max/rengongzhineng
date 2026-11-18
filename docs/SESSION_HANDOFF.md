@@ -7,7 +7,7 @@
 3. O-PLATFORM-017已证明正式宿主调用和Token计量有效，但0.10.3的30轮提案全因固定256上限/格式契约失效。D-084禁止参赛者自设Token上限；模型只输出train/retain，执行参数由确定性portfolio控制。
 4. 当前正式候选归档为`D:/brace-msi-first-principles-release/BRACE-MSI-0.10.4rc2-A1/harness.tar`，81,206,784字节，SHA-256 `97948BD45502CFFE6082184DB06799A8E0FD8BE6BB008C048C7CE9DE47B335EA`。`0.10.4rc1`含被否决的1024上限且验收中止，禁止上传。
 5. 最终本地证据为469项完整回归和精确0.10.4rc2容器A/B/C各10轮：30调用、候选1/0/3、父链/状态链与15行预测有效；镜像白名单、依赖和重载同ID通过。
-6. 当前唯一任务为`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`。只有用户明确决定消耗平台次数后，才上传精确归档并进行一次受控试运行；重点核对30轮不再全部`host proposal was invalid`、至少产生真实候选、Token和预测完整。SwanLab/源码/材料必须引用最终平台运行与同一提交，不得用本地模拟冒充。
+6. 对应源码提交为`80537a0`。当前唯一任务为`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`。只有用户明确决定消耗平台次数后，才上传精确归档并进行一次受控试运行；重点核对30轮不再全部`host proposal was invalid`、至少产生真实候选、Token和预测完整。SwanLab/源码/材料必须引用最终平台运行与同一提交，不得用本地模拟冒充。
 
 ## 2026-11-17 0.9.0rc1官方Workspace V2恢复入口（历史）
 

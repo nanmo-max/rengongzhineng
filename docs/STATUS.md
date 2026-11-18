@@ -7,7 +7,7 @@
 - 稳定边界：全部历史RC和实验不改写；`0.5.0rc1`只作研究证据，不得上传。正式线从D-058开始只输出原生官方MLP续训checkpoint。A3之后禁止继续LLM调参 `[D-043]`
 - 官方试运行：新增一次完成报告证明30轮宿主模型调用与非零Token结算，但30轮均因提案非法而retain、候选数0；历史记录数至少5条，精确剩余次数仍以平台页面实时显示为准 `[O-PLATFORM-017]`
 - 当前归档：`D:/brace-msi-first-principles-release/BRACE-MSI-0.10.4rc2-A1/harness.tar`；SHA-256 `97948BD4...35EA`；`0.10.4rc1`含被否决的人为1024上限，禁止上传 `[D-084]`
-- 当前源码：提交`ed188b3`已推送到`https://github.com/nanmo-max/rengongzhineng/tree/codex/first-principles-rebuild`；尚未合并main。
+- 当前源码：提交`80537a0`为`0.10.4rc2`对应实现，分支`codex/first-principles-rebuild`；尚未合并main。
 
 ## 2026-11-18 平台试运行根因
 
