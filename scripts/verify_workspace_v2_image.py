@@ -92,14 +92,10 @@ def _decode_files(items: list[dict[str, Any]], destination: Path) -> None:
 
 def _proposal() -> dict[str, Any]:
     proposal = {
-        "schema_version": "brace-msi.experiment-proposal.v1",
-        "action": "incremental_update",
-        "tool": "train_incremental",
+        "action": "train",
+        "epochs": 3,
+        "learning_rate_multiplier": 3,
         "rationale": "bounded workspace-v2 continuation proposal",
-        "parameters": {"epochs": 1, "learning_rate": 0.001},
-        "max_cpu_seconds": 300.0,
-        "max_candidates": 1,
-        "stop_conditions": ["budget_exhausted", "nonfinite_training_state"],
     }
     return {
         "id": "chatcmpl-local-protocol",
@@ -243,6 +239,12 @@ def _run_round(
             raw_messages = message.get("messages") or []
             if any(PROMPT in str(item.get("content", "")) for item in raw_messages):
                 raise RuntimeError("participant duplicated the official prompt")
+            if message.get("max_tokens") != frame["max_output_tokens"]:
+                raise RuntimeError("participant did not use the expected host token budget")
+            if message.get("enable_thinking") is not False:
+                raise RuntimeError("participant did not disable thinking for the JSON proposal")
+            if message.get("response_format") != {"type": "json_object"}:
+                raise RuntimeError("participant did not request one JSON object")
             call_id = f"call-{profile}-{round_index}-{len(model_calls) + 1}"
             model_calls.append(call_id)
             reply = {

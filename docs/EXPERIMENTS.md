@@ -2,6 +2,20 @@
 
 本文件是全部实验运行的唯一登记处，包括失败和中止实验。
 
+## FORMAL-AGENT-OUTPUT-001-A1（COMPLETED_PASS_LOCAL_PLATFORM_CONFIRMATION_PENDING）
+
+- 研究问题：官方宿主回复在较长输出或JSON外包含说明时，正式Agent能否在官方Token预算内提取唯一合法的有界提案，同时对歧义/非法提案继续安全retain？
+- 直接证据：O-PLATFORM-017的30轮输出合计7,680 Token，恰为30×256；30轮均因提案非法而retain且候选为0。
+- 变量边界：只修改`brace_formal.agent`的输出预算、提示约束和JSON提取；不修改训练器、recipe、SafetyGate、父链、SDK、数据或正式指标。
+- 输入：人工构造的宿主回复，包括纯JSON、围栏JSON、简短说明后唯一JSON、截断/无JSON、多个歧义JSON；不调用远程模型、不读取官方隐藏数据。
+- 预算：专项单元测试与完整本地回归；官方试运行0次、远程Token 0、SwanLab 0。
+- 成功标准：合法唯一提案均被解析并保留白名单约束；参赛代码不传`max_tokens`，由官方SDK自动使用宿主下发的完整`rnd.max_output_tokens`；非法/歧义/越界提案仍retain并保留真实call ID；完整回归通过。
+- 停止条件：测试无法复现固定256上限或放宽解析导致歧义对象被接受时停止，不生成新镜像。
+- 红绿结果：旧代码在固定预算、外包装唯一JSON、歧义JSON和未使用参数四类用例上出现预期失败；修复后Agent专项10项、正式运行与SDK专项37项、完整回归469项通过。
+- A1无效构建：`0.10.4rc1`仍含用户否决的1024本地上限，容器验收被主动终止，禁止上传。
+- 最终本地结果：`0.10.4rc2`不传`max_tokens`；容器宿主核验SDK发出的预算等于frame授权值。A/B/C各10轮、30调用、候选1/0/3、15行预测，`acceptance.json valid=true`；官方试运行新增0次、远程Token 0、SwanLab 0。
+- 产物：`D:/brace-msi-first-principles-release/BRACE-MSI-0.10.4rc2-A1/harness.tar`，SHA-256 `97948BD45502CFFE6082184DB06799A8E0FD8BE6BB008C048C7CE9DE47B335EA`；机器验收SHA-256 `81F31E55802AD00BB5B604FE829744E892218C4E731A5413E51338F0806042B2`。详见`results/FORMAL-AGENT-OUTPUT-001.md`。
+
 ## WORKSPACE-V2-INDEPENDENT-TEST-001-A1（COMPLETED_PASS_LOCAL_ONLY）
 
 - 研究问题：冻结A4归档在不依赖工作树源码、全新镜像标签和全新状态目录下，能否重复完成官方workspace v2三任务生命周期，并生成不伪造官方指标的完整HTML报告？

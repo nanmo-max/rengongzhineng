@@ -2,14 +2,14 @@
 
 ## 2026-11-17 第一性原理重建恢复入口（当前）
 
-1. 当前分支为`codex/first-principles-rebuild`；先读`STATUS.md`、`TASKS.md`、D-079至D-083和`results/FORMAL-AUDIT-FIX-001.md`。不要上传`0.10.2rc1`或更早归档。
+1. 当前分支为`codex/first-principles-rebuild`；先读`STATUS.md`、`TASKS.md`、D-079至D-084和`results/FORMAL-AGENT-OUTPUT-001.md`。不要上传`0.10.4rc1`、`0.10.3rc1`或更早归档。
 2. 第一性原理本地重建已完成：正式入口为`submission/contest_submission.py → brace_formal.submission`；每轮在任何retain/train分支前直接调用官方`rnd.model()`，最多一个父链兼容候选，train内部portfolio可否决无证据的训练。
-3. 最终本地证据为465项完整回归和精确0.10.3容器A/B/C各10轮：30个唯一call ID、A/B/C候选提交1/0/3次、父链/状态链与独立预测有效；B十轮安全retain。官方SDK离线15项通过、2项在线条件测试因无平台凭据跳过。
-4. 当前正式候选归档为`D:/brace-msi-first-principles-release/BRACE-MSI-0.10.3rc1-FINAL/harness.tar`，SHA-256 `D08535F0B4A410A9EFF6CBB191505F32B767462B3E42CDC6093E8ABC385CA86A`。0.10.2已撤回，不得上传；0.10.0仅作协议恢复基线。
-5. 终审修复提交`ed188b3`已推送到`origin/codex/first-principles-rebuild`。正式训练记录仍须由下一次平台受控试运行生成，不能以历史SwanLab链接冒充0.10.3记录。
-6. 当前唯一任务为`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`。只有用户明确决定消耗平台次数后，才上传精确归档并进行一次受控试运行；先核对镜像可用、真实Qwen调用/Token、十轮父链、候选/retain和预测。SwanLab/源码/材料必须引用最终平台运行与同一提交，不得用本地模拟冒充。
+3. O-PLATFORM-017已证明正式宿主调用和Token计量有效，但0.10.3的30轮提案全因固定256上限/格式契约失效。D-084禁止参赛者自设Token上限；模型只输出train/retain，执行参数由确定性portfolio控制。
+4. 当前正式候选归档为`D:/brace-msi-first-principles-release/BRACE-MSI-0.10.4rc2-A1/harness.tar`，81,206,784字节，SHA-256 `97948BD45502CFFE6082184DB06799A8E0FD8BE6BB008C048C7CE9DE47B335EA`。`0.10.4rc1`含被否决的1024上限且验收中止，禁止上传。
+5. 最终本地证据为469项完整回归和精确0.10.4rc2容器A/B/C各10轮：30调用、候选1/0/3、父链/状态链与15行预测有效；镜像白名单、依赖和重载同ID通过。
+6. 当前唯一任务为`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`。只有用户明确决定消耗平台次数后，才上传精确归档并进行一次受控试运行；重点核对30轮不再全部`host proposal was invalid`、至少产生真实候选、Token和预测完整。SwanLab/源码/材料必须引用最终平台运行与同一提交，不得用本地模拟冒充。
 
-## 2026-11-17 0.9.0rc1官方Workspace V2恢复入口（当前）
+## 2026-11-17 0.9.0rc1官方Workspace V2恢复入口（历史）
 
 1. `OFFICIAL-SDK-V2-001`已完成全部本地门；当前唯一核心任务为`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`。不要重跑性能搜索、公开validation或A/B/C宿主协议复演。
 2. 正式协议为官方`contest_harness` 1.0.2：`python3 /app/harness.py describe|train|predict`。模型只经宿主`rnd.model()`调用，完成记录必须引用本轮`model_call_ids`；0.8.3猜测式桥接已废止。

@@ -126,3 +126,10 @@
 - 状态：`LOCKED`
 - 决策：`0.10.2rc1`保留为已撤回历史证据，不得上传。`0.10.3rc1`以平台返回测量作为候选部署权威，缺失或不改善时失败关闭；训练声明区分Agent提案与实际recipe；独立组不足时retain；工作区按dataset/stage/round隔离。只有`0.10.3rc1`完成的全量回归、官方SDK离线测试、4核8GB只读断网30轮和`docker save/load`同ID证据可作为下一次平台受控验证的本地准入。
 - 依据：`FORMAL-AUDIT-FIX-001`终审、机器验收及`docs/results/FORMAL-AUDIT-FIX-001.md`。
+
+## D-084 正式宿主模型预算与决策职责归位
+
+- 日期：2026-11-18
+- 状态：`LOCKED`
+- 决策：正式参赛代码不向`rnd.model()`传`max_tokens`，由官方SDK使用宿主本轮下发的完整`max_output_tokens`；禁止再引入256、1024或其他参赛者自设输出上限。宿主模型只给出`train/retain`意图和理由，实际epoch、学习率与recipe由受控执行层依据训练内部证据选择；未被执行的模型参数不得成为提案非法原因。唯一合法JSON对象可从宿主外包装文字中提取，多个/无对象或非法动作继续retain。
+- 依据：O-PLATFORM-017的输出Token恰为30×256且30轮全部提案非法；用户明确否决任何非官方Token上限；官方SDK 1.0.2缺省行为会自动使用`rnd.max_output_tokens`；`FORMAL-AGENT-OUTPUT-001`红绿测试与容器验收。

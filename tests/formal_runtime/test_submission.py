@@ -77,7 +77,10 @@ class FakeRound:
         return [{"id": "history-0", "selected_artifact_id": "parent-0"}]
 
     def model(self, messages, **options):
-        assert messages and options["max_tokens"] == 128
+        assert messages
+        assert "max_tokens" not in options
+        options = {**options, "max_tokens": self.max_output_tokens}
+        assert options["max_tokens"] == 128
         self.call_ids.append("call-1")
         return SimpleNamespace(call_id="call-1", text=json.dumps(self.proposal), response={})
 
@@ -162,7 +165,7 @@ def test_safe_candidate_is_submitted_and_selected(monkeypatch, tmp_path: Path) -
     assert rnd.submitted["configuration"]["executed_learning_rate_multiplier"] == 1.0
     assert rnd.submitted["configuration"]["optimizer_seed"] == 42
     assert rnd.submitted["configuration"]["proposal_epochs"] == 1
-    assert rnd.submitted["configuration"]["proposal_learning_rate_multiplier"] == 3.0
+    assert rnd.submitted["configuration"]["proposal_learning_rate_multiplier"] == 1.0
     assert rnd.finished["selected_artifact_id"] == "candidate-1"
     state = json.loads((rnd.saved_state / "formal-state.json").read_text(encoding="utf-8"))
     assert state["rounds"][-1]["recipe"] == "soup_e3_alpha0.25"

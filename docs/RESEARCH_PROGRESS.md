@@ -734,3 +734,6 @@
 - 独立终审随后撤回`0.10.2rc1`上传资格：发现平台测量未作为最终部署权威、请求参数与实际recipe声明混淆、独立组不足降级不安全、跨任务工作区缺少dataset隔离以及验收父哈希/只读范围缺口。历史产物保留，不回写。
 - `FORMAL-AUDIT-FIX-001`完成：`0.10.3rc1`关闭上述缺口。完整回归`465 passed in 143.76s`；官方SDK Linux离线15项通过、2项在线条件测试按缺少凭据跳过；A/B/C各10轮共30个宿主调用、15行独立预测；最大checkpoint 132,180字节。精确镜像linux/amd64、UID10001、81,188,446字节，`pip check`、白名单、4核8GB只读断网及删tag后同ID重载通过。
 - 新归档：`D:/brace-msi-first-principles-release/BRACE-MSI-0.10.3rc1-FINAL/harness.tar`，81,206,272字节，SHA-256 `D08535F0B4A410A9EFF6CBB191505F32B767462B3E42CDC6093E8ABC385CA86A`。本轮未上传、未调用私有PyTRiO/SwanLab、未消耗官方次数。
+- 2026-11-18平台报告O-PLATFORM-017证明`0.10.3rc1`完成30次宿主调用并结算21,969 Token，但30轮全部提案非法、候选数0；输出7,680恰为30×256，定位到参赛代码自设上限与严格JSON解析边界，而非模型未调用。
+- `FORMAL-AGENT-OUTPUT-001`按TDD完成：删除所有参赛者`max_tokens`，由官方SDK使用完整宿主授权预算；Agent只提供train/retain意图，执行参数继续由确定性portfolio控制；唯一JSON容错且歧义失败关闭。专项10项、正式运行与SDK专项37项、完整回归`469 passed in 155.18s`。
+- `0.10.4rc2`在4核8GB、只读、断网容器完成A/B/C各10轮、30调用、候选1/0/3及15行预测；`pip check`、19文件白名单和删tag重载同ID通过。归档81,206,784字节，SHA-256 `97948BD45502CFFE6082184DB06799A8E0FD8BE6BB008C048C7CE9DE47B335EA`。本地修复没有自动消耗新平台次数。

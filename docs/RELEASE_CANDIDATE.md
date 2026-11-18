@@ -2,9 +2,9 @@
 
 ## 当前正式候选：0.9.0rc1
 
-`BRACE-MSI-0.9.0rc1`直接接入官方`contest_harness` 1.0.2与`contest.harness.workspace.v2`，不再依赖0.8.3猜测式桥接。固定`describe/train/predict`入口经宿主`rnd.model()`调用平台模型，完成记录引用真实`model_call_ids`；父checkpoint续训、竞争策略、SafetyGate、候选测量、状态和独立预测继续复用已验证内核。
+`BRACE-MSI-0.10.4rc2`直接接入官方`contest_harness` 1.0.2与`contest.harness.workspace.v2`。固定`describe/train/predict`入口经宿主`rnd.model()`调用平台模型；参赛代码不设置`max_tokens`，由官方SDK使用宿主完整授权预算。Agent只表达train/retain意图，实际recipe由训练内部证据和受控执行层选择。
 
-唯一上传归档：`D:/brace-msi-workspace-v2/BRACE-MSI-0.9.0rc1-A4/brace-msi-0.9.0rc1-harness.tar`；大小151,393,280字节；SHA-256 `dc0147706e5c20a62360bf309a280b890ac6cea2707eee4aa66f8f7169c57cbc`。官方上游15项、项目435项回归及A/B/C各10轮4核8GB断网宿主协议复演通过；镜像未安装PyTRiO/SwanLab且不含测试、数据、权重、密钥或报告。证据见[官方SDK V2验收](results/OFFICIAL-SDK-V2-001.md)。平台导入和真实试运行仍待外部验证。
+唯一上传归档：`D:/brace-msi-first-principles-release/BRACE-MSI-0.10.4rc2-A1/harness.tar`；大小81,206,784字节；SHA-256 `97948BD45502CFFE6082184DB06799A8E0FD8BE6BB008C048C7CE9DE47B335EA`。项目469项回归及A/B/C各10轮4核8GB断网宿主协议复演通过；镜像未安装PyTRiO/SwanLab且不含测试、数据、权重、密钥或报告。证据见[正式宿主输出契约修复](results/FORMAL-AGENT-OUTPUT-001.md)。平台是否产生有效提案仍待一次受控试运行确认。
 
 ## 历史猜测式桥接：0.8.3rc1
 

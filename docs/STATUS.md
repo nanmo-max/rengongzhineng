@@ -1,13 +1,20 @@
 # 当前状态
 
-- 最近同步：2026-11-17（Asia/Shanghai）
-- 当前阶段：第一性原理正式候选本地终审完成；`0.10.3rc1`等待平台受控验证
+- 最近同步：2026-11-18（Asia/Shanghai）
+- 当前阶段：正式平台提案失效根因已完成本地最小修复；`0.10.4rc2`等待一次受控平台确认
 - 当前路线：**官方SDK 1.0.2 + 每轮真实宿主模型调用 + 平台父checkpoint原生续训/retain + 最小白名单镜像** `[D-079]` `[D-080]` `[D-081]`
-- 当前唯一核心任务：`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`；`0.10.3rc1`已完成本地30轮、全量回归和镜像重载验收。未经用户明确决定消耗次数，不上传、不发起试运行。
+- 当前唯一核心任务：`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`。未经新的用户明确决定，不上传、不发起试运行。
 - 稳定边界：全部历史RC和实验不改写；`0.5.0rc1`只作研究证据，不得上传。正式线从D-058开始只输出原生官方MLP续训checkpoint。A3之后禁止继续LLM调参 `[D-043]`
-- 官方试运行：平台当前记录共4条（2成功、2失败），正式评测仍为0/2；剩余试运行次数以平台页面实时显示为准 `[O-PLATFORM-015]`
-- 当前归档：`D:/brace-msi-first-principles-release/BRACE-MSI-0.10.3rc1-FINAL/harness.tar`；SHA-256 `D08535F0...86A`；`0.10.2rc1`已撤回，不得上传 `[D-083]`
+- 官方试运行：新增一次完成报告证明30轮宿主模型调用与非零Token结算，但30轮均因提案非法而retain、候选数0；历史记录数至少5条，精确剩余次数仍以平台页面实时显示为准 `[O-PLATFORM-017]`
+- 当前归档：`D:/brace-msi-first-principles-release/BRACE-MSI-0.10.4rc2-A1/harness.tar`；SHA-256 `97948BD4...35EA`；`0.10.4rc1`含被否决的人为1024上限，禁止上传 `[D-084]`
 - 当前源码：提交`ed188b3`已推送到`https://github.com/nanmo-max/rengongzhineng/tree/codex/first-principles-rebuild`；尚未合并main。
+
+## 2026-11-18 平台试运行根因
+
+- 平台完成A/B/C各10轮和14,773条预测，结算输入14,289、输出7,680、合计21,969 Token，证明`rnd.model()`正式链路已工作。
+- 30轮均显示`host proposal was invalid`且候选数为0；输出Token恰为`30 × 256`，与`brace_formal.agent.request_proposal`的固定256上限一致。
+- 当前首要假设为宿主回复在256 Token处截断或包含JSON外说明，而现有解析器只接受整段纯JSON/完整围栏JSON；修复前先以红灯测试验证。该证据不证明训练成功，当前正式结果仍是三个起始模型。
+- 本地修复已完成：参赛代码不传`max_tokens`，由官方SDK使用完整宿主授权预算；Agent只输出训练/保留意图，未被执行层采用的epoch/LR不再构成解析失败；唯一合法JSON可从外包装文字中提取，歧义输出仍失败关闭。`0.10.4rc2`完成469项回归和三任务30轮容器验收，详见`results/FORMAL-AGENT-OUTPUT-001.md`。
 
 ## 已确认
 
@@ -72,7 +79,7 @@
 
 ## 当前执行入口
 
-当前第一性原理正式候选为`D:/brace-msi-first-principles-release/BRACE-MSI-0.10.3rc1-FINAL/harness.tar`，81,206,272字节，SHA-256 `D08535F0B4A410A9EFF6CBB191505F32B767462B3E42CDC6093E8ABC385CA86A`，镜像ID`sha256:b503c340...33d6a59`。它已通过本地协议、性能策略、容器与重载门；尚未上传或获得平台真实成绩。`0.10.0rc1`保留为协议恢复基线，`0.10.2rc1`及更早归档不得上传代替。
+当前第一性原理正式候选为`D:/brace-msi-first-principles-release/BRACE-MSI-0.10.4rc2-A1/harness.tar`，81,206,784字节，SHA-256 `97948BD45502CFFE6082184DB06799A8E0FD8BE6BB008C048C7CE9DE47B335EA`，镜像ID`sha256:db223ed5...2cd02e`。它已通过本地协议、性能策略、容器与重载门；平台提案有效性仍待受控试运行确认。`0.10.4rc1`及更早归档不得上传代替。
 
 正式路线、已知能力与未知边界见[FORMAL_ROUTE.md](FORMAL_ROUTE.md)。实验必须遵守[EXPERIMENT_PROTOCOL.md](EXPERIMENT_PROTOCOL.md)。
 
@@ -84,7 +91,7 @@
 - 模型由宿主`rnd.model()`网关提供；平台实际Qwen绑定、非零Token计量和故障行为待受控试运行核验 `[H-002]`。
 - 完整评分公式与资源计量实现待发布 `[H-003]`。
 - SwanLab比赛项目、必填字段及无公网同步责任待发布 `[H-004]`。
-- Docker宿主机阻塞已解除；0.10.3rc1真实镜像、体积、禁入文件、非root身份、4核8GB只读断网训练/预测和可重载归档均有证据，见`results/FORMAL-AUDIT-FIX-001.md`。
+- Docker宿主机阻塞已解除；0.10.4rc2真实镜像、体积、禁入文件、非root身份、4核8GB只读断网训练/预测和可重载归档均有证据，见`results/FORMAL-AGENT-OUTPUT-001.md`。
 
 这些缺口不阻塞已授权的提交材料与`SWANLAB-FINAL-001`最终记录。A3是最后一次SFT，D-043禁止继续微调或扩大LLM搜索；最终记录只复用冻结Sampler和参数，不用于再选型。
 

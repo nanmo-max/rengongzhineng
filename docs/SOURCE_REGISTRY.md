@@ -570,3 +570,12 @@ PyTRiO通用接口、Qwen3.5-4B基础模型平台校验和持久化Sampler路线
 - 已确认：PyTRiO账号用量页存在历史训练/采样消耗和已保存Sampler，但这些是账号级远程实验产物，不能证明某次官方Harness运行调用了它们。
 - 已确认：O-PLATFORM-014规定正式镜像经宿主`rnd.model()`/`rnd.transport()`访问平台模型；端点、凭据、计量与模型绑定由宿主负责。正式镜像不应内置私有PyTRiO SDK、API Key、Sampler权重或在线保存权重流程。
 - 结论边界：下一次受控试运行必须以平台训练报告的非零Token、真实`model_call_ids`和十轮完成记录共同确认Agent生效；本地替身调用与PyTRiO账号历史用量都不能替代该证据。
+
+### O-PLATFORM-017 0.10.3rc1正式宿主调用成功但提案全失效
+
+- 类型：用户导出的官方平台完整试运行报告；正式平台事实。
+- 来源：`C:/Users/Administrator/.codex/attachments/a9df0453-01de-43dd-b2aa-b4bd071e4a5e/Pasted text.txt`，2026-11-18提供。
+- 已确认：工业模型优化流程完成，A/B/C各10/10轮，预测14,773条；输入14,289 Token、输出7,680 Token、合计21,969 Token，证明正式`rnd.model()`宿主调用和计量链路已工作。
+- 已确认：30轮全部选择“未训练，保留父模型”，每轮原因为`retain because the host proposal was invalid; outcome=retained_by_agent`，候选数全部为0，最终三任务均采用起始模型。
+- 已确认隐藏结果：A Accuracy 0.495907、Macro-F1 0.406823；B MAE 518.721020、RMSE 720.065935；C MAE 41.286567、RMSE 56.225925、NASA 42,594,777,435.81238。它们是本次试运行结果，不得与其他RC成绩混用。
+- 根因证据：输出Token 7,680恰等于30轮乘以源码固定上限256；当前解析器仅接受整段JSON或完整围栏JSON。因此“模型未调用”已被排除，故障范围缩小到输出截断/格式与严格解析契约。尚无原始回复文本，截断与冗余前缀的相对占比仍待本地契约测试，不能臆造。
