@@ -24,6 +24,57 @@ class FakeRound:
         )
 
 
+class SequencedRound(FakeRound):
+    def __init__(self, responses: list[str]) -> None:
+        super().__init__(max_output_tokens=2048, response_text="")
+        self._responses = iter(responses)
+
+    def model(self, messages, **options):
+        self._response_text = next(self._responses)
+        return super().model(messages, **options)
+
+
+def test_agent_selects_a_bounded_training_recipe_then_makes_a_deployment_decision() -> None:
+    from brace_formal.agent import request_deployment_decision, request_training_proposal
+
+    rnd = SequencedRound(
+        [
+            '{"recipe":"soup_e3_alpha0.25","rationale":"reduce update variance"}',
+            '{"decision":"deploy","rationale":"macro F1 improved with finite resource use"}',
+        ]
+    )
+
+    training = request_training_proposal(rnd, {"round_index": 1, "available_recipes": ["e1_lr1", "e3_lr3", "soup_e3_alpha0.25"]})
+    deployment = request_deployment_decision(
+        rnd,
+        {
+            "parent_metrics": {"macro_f1": 0.6, "accuracy": 0.7},
+            "candidate_metrics": {"macro_f1": 0.7, "accuracy": 0.75},
+            "cpu_seconds": 0.2,
+        },
+    )
+
+    assert training.recipe == "soup_e3_alpha0.25"
+    assert training.call_id == "call-1"
+    assert deployment.decision == "deploy"
+    assert deployment.call_id == "call-2"
+    assert rnd.call_ids == ["call-1", "call-2"]
+
+
+def test_invalid_training_or_deployment_output_fails_to_safe_recipe_and_parent() -> None:
+    from brace_formal.agent import request_deployment_decision, request_training_proposal
+
+    rnd = SequencedRound(["not-json", '{"decision":"invent","rationale":"unsupported"}'])
+
+    training = request_training_proposal(rnd, {"round_index": 1})
+    deployment = request_deployment_decision(rnd, {"candidate_metrics": {"rmse": 1.0}})
+
+    assert training.recipe == "e1_lr1"
+    assert training.parse_error is not None
+    assert deployment.decision == "retain"
+    assert deployment.parse_error is not None
+
+
 def test_agent_call_respects_host_token_limit_and_model_alias() -> None:
     """Catches overriding the official SDK's host-authorized token budget."""
 

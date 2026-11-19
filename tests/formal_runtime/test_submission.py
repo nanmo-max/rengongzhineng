@@ -51,6 +51,7 @@ class FakeRound:
         parent: Path,
         proposal: dict[str, object],
         *,
+        deployment: dict[str, object] | None = None,
         host_metrics: dict[str, float] | None = None,
     ) -> None:
         self.round_index = 1
@@ -67,8 +68,10 @@ class FakeRound:
             path=lambda relative: parent if relative == "checkpoint.npz" else None,
         )
         self.proposal = proposal
+        self.deployment = deployment or {"decision": "deploy", "rationale": "candidate evidence supports deployment"}
         self.host_metrics = {"accuracy": 0.75, "macro_f1": 0.65} if host_metrics is None else host_metrics
         self.call_ids: list[str] = []
+        self.model_messages: list[list[dict[str, object]]] = []
         self.submitted: dict[str, object] | None = None
         self.saved_state: Path | None = None
         self.finished: dict[str, object] | None = None
@@ -78,11 +81,14 @@ class FakeRound:
 
     def model(self, messages, **options):
         assert messages
+        self.model_messages.append(messages)
         assert "max_tokens" not in options
         options = {**options, "max_tokens": self.max_output_tokens}
         assert options["max_tokens"] == 128
-        self.call_ids.append("call-1")
-        return SimpleNamespace(call_id="call-1", text=json.dumps(self.proposal), response={})
+        call_id = f"call-{len(self.call_ids) + 1}"
+        payload = self.proposal if not self.call_ids else self.deployment
+        self.call_ids.append(call_id)
+        return SimpleNamespace(call_id=call_id, text=json.dumps(payload), response={})
 
     def state_workspace(self, destination):
         path = Path(destination)
@@ -103,26 +109,38 @@ class FakeRound:
         return {"accepted": True}
 
 
-def test_retain_still_calls_host_and_commits_state(monkeypatch, tmp_path: Path) -> None:
+def test_retain_advice_still_trains_and_submits_one_real_candidate(monkeypatch, tmp_path: Path) -> None:
     from brace_formal.submission import train
 
     parent = tmp_path / "checkpoint.npz"
     _write_parent(parent)
     _write_rows(tmp_path / "train.jsonl")
     _write_rows(tmp_path / "validation.jsonl")
-    rnd = FakeRound(tmp_path, parent, {"action": "retain", "epochs": 1, "learning_rate_multiplier": 1.0})
+    rnd = FakeRound(
+        tmp_path,
+        parent,
+        {"recipe": "e1_lr1", "rationale": "run a low-cost continuation"},
+        deployment={"decision": "retain", "rationale": "candidate evidence does not justify deployment"},
+    )
     monkeypatch.setenv("CONTEST_WORK", str(tmp_path / "workspace"))
 
     train(rnd)
 
-    assert rnd.call_ids == ["call-1"]
-    assert rnd.submitted is None
+    assert rnd.call_ids == ["call-1", "call-2"]
+    prompt = str(rnd.model_messages[0][0]["content"])
+    assert '"candidate_training_required": true' in prompt
+    assert '"current_batch_is_new_training_data": true' in prompt
+    assert '"training_data_summary"' in prompt
+    assert '"feature_count": 2' in prompt
+    assert rnd.submitted is not None
+    assert (rnd.submitted["directory"] / "checkpoint.npz").is_file()
     assert rnd.finished is not None
-    assert rnd.finished["selected_artifact_id"] == "parent-1"
-    assert rnd.finished["model_call_ids"] == ["call-1"]
+    assert rnd.finished["model_call_ids"] == ["call-1", "call-2"]
     assert rnd.finished["history_ids"] == ["history-0"]
     state = json.loads((rnd.saved_state / "formal-state.json").read_text(encoding="utf-8"))
-    assert state["rounds"][-1]["action"] == "retain"
+    assert state["rounds"][-1]["deployment_decision"] == "retain"
+    assert state["rounds"][-1]["action"] == "train"
+    assert state["rounds"][-1]["recipe"] != "retain"
 
 
 def test_safe_candidate_is_submitted_and_selected(monkeypatch, tmp_path: Path) -> None:
@@ -132,24 +150,8 @@ def test_safe_candidate_is_submitted_and_selected(monkeypatch, tmp_path: Path) -
     _write_parent(parent)
     _write_rows(tmp_path / "train.jsonl")
     _write_rows(tmp_path / "validation.jsonl")
-    rnd = FakeRound(tmp_path, parent, {"action": "train", "epochs": 1, "learning_rate_multiplier": 3.0})
+    rnd = FakeRound(tmp_path, parent, {"recipe": "soup_e3_alpha0.25", "rationale": "reduce update variance"})
     monkeypatch.setenv("CONTEST_WORK", str(tmp_path / "workspace"))
-    monkeypatch.setattr(
-        submission,
-        "cross_validate",
-        lambda *args: {
-            "selected_recipe": "soup_e3_alpha0.25",
-            "recipes": {
-                "soup_e3_alpha0.25": {
-                    "mean_signed_gain": 0.2,
-                    "positive_folds": 3,
-                    "worst_relative_gain": 0.0,
-                    "cpu_seconds": 0.1,
-                    "eligible": True,
-                }
-            },
-        },
-    )
     scores = iter([{"accuracy": 0.5, "macro_f1": 0.4}, {"accuracy": 0.7, "macro_f1": 0.6}])
     monkeypatch.setattr(submission, "evaluate", lambda *args: next(scores))
 
@@ -164,8 +166,8 @@ def test_safe_candidate_is_submitted_and_selected(monkeypatch, tmp_path: Path) -
     assert rnd.submitted["configuration"]["executed_epochs"] == 3
     assert rnd.submitted["configuration"]["executed_learning_rate_multiplier"] == 1.0
     assert rnd.submitted["configuration"]["optimizer_seed"] == 42
-    assert rnd.submitted["configuration"]["proposal_epochs"] == 1
-    assert rnd.submitted["configuration"]["proposal_learning_rate_multiplier"] == 1.0
+    assert rnd.submitted["configuration"]["training_call_id"] == "call-1"
+    assert rnd.submitted["configuration"]["deployment_call_id"] == "call-2"
     assert rnd.finished["selected_artifact_id"] == "candidate-1"
     state = json.loads((rnd.saved_state / "formal-state.json").read_text(encoding="utf-8"))
     assert state["rounds"][-1]["recipe"] == "soup_e3_alpha0.25"
@@ -174,7 +176,7 @@ def test_safe_candidate_is_submitted_and_selected(monkeypatch, tmp_path: Path) -
     assert state["rounds"][-1]["platform_metrics"]["macro_f1"] == 0.65
 
 
-def test_host_measurement_can_reject_a_locally_improving_candidate(monkeypatch, tmp_path: Path) -> None:
+def test_platform_measurement_does_not_replace_qwen_deployment_decision(monkeypatch, tmp_path: Path) -> None:
     from brace_formal import submission
 
     parent = tmp_path / "checkpoint.npz"
@@ -184,19 +186,62 @@ def test_host_measurement_can_reject_a_locally_improving_candidate(monkeypatch, 
     rnd = FakeRound(
         tmp_path,
         parent,
-        {"action": "train", "epochs": 1, "learning_rate_multiplier": 1.0},
+        {"recipe": "e1_lr1", "rationale": "test bounded continuation"},
         host_metrics={"accuracy": 0.45, "macro_f1": 0.3},
     )
     monkeypatch.setenv("CONTEST_WORK", str(tmp_path / "workspace"))
-    monkeypatch.setattr(
-        submission,
-        "cross_validate",
-        lambda *args: {
-            "selected_recipe": "e1_lr1",
-            "recipes": {"e1_lr1": {"mean_signed_gain": 0.2, "positive_folds": 3, "worst_relative_gain": 0.0, "cpu_seconds": 0.1, "eligible": True}},
-        },
-    )
     scores = iter([{"accuracy": 0.5, "macro_f1": 0.4}, {"accuracy": 0.7, "macro_f1": 0.6}])
+    monkeypatch.setattr(submission, "evaluate", lambda *args: next(scores))
+
+    submission.train(rnd)
+
+    assert rnd.submitted is not None
+    assert rnd.finished["selected_artifact_id"] == "candidate-1"
+    state = json.loads((rnd.saved_state / "formal-state.json").read_text(encoding="utf-8"))
+    assert state["rounds"][-1]["outcome"] == "candidate_selected_by_agent"
+    assert state["rounds"][-1]["platform_metrics"]["macro_f1"] == 0.3
+
+
+def test_missing_platform_measurement_does_not_block_qwen_deploy(monkeypatch, tmp_path: Path) -> None:
+    from brace_formal import submission
+
+    parent = tmp_path / "checkpoint.npz"
+    _write_parent(parent)
+    _write_rows(tmp_path / "train.jsonl")
+    _write_rows(tmp_path / "validation.jsonl")
+    rnd = FakeRound(
+        tmp_path,
+        parent,
+        {"recipe": "e1_lr1", "rationale": "test bounded continuation"},
+        host_metrics={},
+    )
+    monkeypatch.setenv("CONTEST_WORK", str(tmp_path / "workspace"))
+    scores = iter([{"accuracy": 0.5, "macro_f1": 0.4}, {"accuracy": 0.7, "macro_f1": 0.6}])
+    monkeypatch.setattr(submission, "evaluate", lambda *args: next(scores))
+
+    submission.train(rnd)
+
+    assert rnd.finished["selected_artifact_id"] == "candidate-1"
+    state = json.loads((rnd.saved_state / "formal-state.json").read_text(encoding="utf-8"))
+    assert state["rounds"][-1]["outcome"] == "candidate_selected_by_agent"
+    assert state["rounds"][-1]["platform_metrics"] == {}
+
+
+def test_qwen_rollback_keeps_parent_after_candidate_training(monkeypatch, tmp_path: Path) -> None:
+    from brace_formal import submission
+
+    parent = tmp_path / "checkpoint.npz"
+    _write_parent(parent)
+    _write_rows(tmp_path / "train.jsonl")
+    _write_rows(tmp_path / "validation.jsonl")
+    rnd = FakeRound(
+        tmp_path,
+        parent,
+        {"recipe": "e1_lr1", "rationale": "test a conservative update"},
+        deployment={"decision": "rollback", "rationale": "candidate regressed on measured evidence"},
+    )
+    monkeypatch.setenv("CONTEST_WORK", str(tmp_path / "workspace"))
+    scores = iter([{"accuracy": 0.8, "macro_f1": 0.7}, {"accuracy": 0.7, "macro_f1": 0.6}])
     monkeypatch.setattr(submission, "evaluate", lambda *args: next(scores))
 
     submission.train(rnd)
@@ -204,94 +249,28 @@ def test_host_measurement_can_reject_a_locally_improving_candidate(monkeypatch, 
     assert rnd.submitted is not None
     assert rnd.finished["selected_artifact_id"] == "parent-1"
     state = json.loads((rnd.saved_state / "formal-state.json").read_text(encoding="utf-8"))
-    assert state["rounds"][-1]["outcome"] == "candidate_rejected_by_platform"
-    assert state["rounds"][-1]["platform_metrics"]["macro_f1"] == 0.3
+    assert state["rounds"][-1]["outcome"] == "candidate_rolled_back_by_agent"
+    assert state["rounds"][-1]["recipe"] == "e1_lr1"
 
 
-def test_missing_host_measurement_fails_closed(monkeypatch, tmp_path: Path) -> None:
+def test_post_training_qwen_receives_parent_candidate_resource_and_history_evidence(monkeypatch, tmp_path: Path) -> None:
     from brace_formal import submission
 
     parent = tmp_path / "checkpoint.npz"
     _write_parent(parent)
     _write_rows(tmp_path / "train.jsonl")
     _write_rows(tmp_path / "validation.jsonl")
-    rnd = FakeRound(
-        tmp_path,
-        parent,
-        {"action": "train", "epochs": 1, "learning_rate_multiplier": 1.0},
-        host_metrics={},
-    )
+    rnd = FakeRound(tmp_path, parent, {"recipe": "e1_lr1", "rationale": "test bounded continuation"})
     monkeypatch.setenv("CONTEST_WORK", str(tmp_path / "workspace"))
-    monkeypatch.setattr(
-        submission,
-        "cross_validate",
-        lambda *args: {
-            "selected_recipe": "e1_lr1",
-            "recipes": {"e1_lr1": {"mean_signed_gain": 0.2, "positive_folds": 3, "worst_relative_gain": 0.0, "cpu_seconds": 0.1, "eligible": True}},
-        },
-    )
-    scores = iter([{"accuracy": 0.5, "macro_f1": 0.4}, {"accuracy": 0.7, "macro_f1": 0.6}])
-    monkeypatch.setattr(submission, "evaluate", lambda *args: next(scores))
 
     submission.train(rnd)
 
-    assert rnd.finished["selected_artifact_id"] == "parent-1"
-    state = json.loads((rnd.saved_state / "formal-state.json").read_text(encoding="utf-8"))
-    assert state["rounds"][-1]["outcome"] == "candidate_rejected_by_platform"
-
-
-def test_regressing_candidate_is_rejected_without_submission(monkeypatch, tmp_path: Path) -> None:
-    from brace_formal import submission
-
-    parent = tmp_path / "checkpoint.npz"
-    _write_parent(parent)
-    _write_rows(tmp_path / "train.jsonl")
-    _write_rows(tmp_path / "validation.jsonl")
-    rnd = FakeRound(tmp_path, parent, {"action": "train", "epochs": 1, "learning_rate_multiplier": 1.0})
-    monkeypatch.setenv("CONTEST_WORK", str(tmp_path / "workspace"))
-    monkeypatch.setattr(
-        submission,
-        "cross_validate",
-        lambda *args: {"selected_recipe": "retain", "recipes": {"retain": {"mean_signed_gain": 0.0, "positive_folds": 3, "worst_relative_gain": 0.0, "cpu_seconds": 0.0, "eligible": True}}},
-    )
-    scores = iter([{"accuracy": 0.8, "macro_f1": 0.7}, {"accuracy": 0.7, "macro_f1": 0.6}])
-    monkeypatch.setattr(submission, "evaluate", lambda *args: next(scores))
-
-    submission.train(rnd)
-
-    assert rnd.submitted is None
-    assert rnd.finished["selected_artifact_id"] == "parent-1"
-    state = json.loads((rnd.saved_state / "formal-state.json").read_text(encoding="utf-8"))
-    assert state["rounds"][-1]["outcome"] == "train_vetoed_by_internal_cv"
-    assert state["rounds"][-1]["recipe"] == "retain"
-
-
-def test_insufficient_cv_evidence_is_preserved_in_round_state(monkeypatch, tmp_path: Path) -> None:
-    from brace_formal import submission
-
-    parent = tmp_path / "checkpoint.npz"
-    _write_parent(parent)
-    _write_rows(tmp_path / "train.jsonl")
-    _write_rows(tmp_path / "validation.jsonl")
-    rnd = FakeRound(tmp_path, parent, {"action": "train", "epochs": 1, "learning_rate_multiplier": 1.0})
-    monkeypatch.setenv("CONTEST_WORK", str(tmp_path / "workspace"))
-    monkeypatch.setattr(
-        submission,
-        "cross_validate",
-        lambda *args: {
-            "status": "insufficient_independent_groups",
-            "fold_strategy": "unavailable",
-            "independent_group_count": 2,
-            "selected_recipe": "retain",
-            "recipes": {"retain": {"mean_signed_gain": 0.0, "positive_folds": 0, "worst_relative_gain": 0.0, "cpu_seconds": 0.0, "eligible": True}},
-        },
-    )
-
-    submission.train(rnd)
-
-    state = json.loads((rnd.saved_state / "formal-state.json").read_text(encoding="utf-8"))
-    assert state["rounds"][-1]["portfolio"]["status"] == "insufficient_independent_groups"
-    assert state["rounds"][-1]["portfolio"]["independent_group_count"] == 2
+    deployment_prompt = str(rnd.model_messages[1][0]["content"])
+    assert '"parent_metrics"' in deployment_prompt
+    assert '"candidate_metrics"' in deployment_prompt
+    assert '"cpu_seconds"' in deployment_prompt
+    assert '"peak_rss_bytes"' in deployment_prompt
+    assert '"history"' in deployment_prompt
 
 
 def test_predict_uses_selected_checkpoint(monkeypatch, tmp_path: Path) -> None:
@@ -343,8 +322,10 @@ def test_real_official_round_transcript_for_retain(monkeypatch, tmp_path: Path) 
     }
     responses = [
         {"type": "history_response", "id": 0, "records": [{"id": "history-0"}]},
-        {"type": "model_response", "id": 1, "call_id": "call-real-1", "response": {"choices": [{"message": {"content": '{"action":"retain","epochs":1,"learning_rate_multiplier":1}'}}]}},
-        {"type": "state_response", "id": 2, "state_sha256": "sha256:" + "1" * 64},
+        {"type": "model_response", "id": 1, "call_id": "call-real-1", "response": {"choices": [{"message": {"content": '{"recipe":"e1_lr1","rationale":"bounded continuation"}'}}]}},
+        {"type": "model_response", "id": 2, "call_id": "call-real-2", "response": {"choices": [{"message": {"content": '{"decision":"deploy","rationale":"candidate metrics improved"}'}}]}},
+            {"type": "candidate_response", "id": 3, "artifact_id": "candidate-real-1", "summary": {"metrics": {"accuracy": 0.8, "macro_f1": 0.7}}},
+            {"type": "state_response", "id": 4, "state_sha256": "sha256:" + "1" * 64},
         {"type": "round_ack", "accepted": True},
     ]
     reader = io.StringIO("".join(json.dumps(item) + "\n" for item in responses))
@@ -356,6 +337,6 @@ def test_real_official_round_transcript_for_retain(monkeypatch, tmp_path: Path) 
     train(rnd)
 
     emitted = [json.loads(line) for line in writer.getvalue().splitlines()]
-    assert [item["type"] for item in emitted] == ["history_request", "model_request", "state_request", "round_complete"]
-    assert emitted[-1]["record"]["model_call_ids"] == ["call-real-1"]
-    assert emitted[-1]["record"]["selected_artifact_id"] == "parent-1"
+    assert [item["type"] for item in emitted] == ["history_request", "model_request", "model_request", "candidate_request", "state_request", "round_complete"]
+    assert emitted[-1]["record"]["model_call_ids"] == ["call-real-1", "call-real-2"]
+    assert emitted[-1]["record"]["selected_artifact_id"] == "candidate-real-1"

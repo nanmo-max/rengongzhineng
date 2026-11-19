@@ -54,7 +54,7 @@
 #### FORMAL-RELEASE-001 正式平台受控验证与最终记录
 
 - 状态：`BLOCKED_EXTERNAL`
-- 依赖：FORMAL-AUDIT-FIX-001
+- 依赖：FORMAL-EVERY-ROUND-TRAIN-001
 - 优先级：P0（只在用户明确决定消耗平台次数后执行）
 - 完成标准：平台导入通过终审的新RC归档并显示镜像可用；受控试运行证明真实宿主Qwen调用、十轮父链、候选/retain、逐行预测和平台训练报告；正式训练记录、源码分支和作品材料引用同一冻结提交与镜像哈希。
 - 停止条件：未经用户确认不得上传或消耗试运行；平台失败时先保存原始报告并定位根因，不盲目重试；本地模拟不得冒充平台通过或隐藏成绩。
@@ -68,6 +68,15 @@
 - 停止条件：无法以平台Token结算和本地红绿测试证明根因时不得修改；不得直连PyTRiO、内置密钥、强制训练或绕过提案白名单；不得自动发起新的平台试运行。
 - 预注册：`FORMAL-AGENT-OUTPUT-001-A1`。
 - 证据：O-PLATFORM-017、`results/FORMAL-AGENT-OUTPUT-001.md`；专项10项、正式运行与SDK专项37项、完整回归469项；`0.10.4rc2`容器三任务30轮、30调用、候选1/0/3、15行预测及重载同ID通过。
+
+#### FORMAL-EVERY-ROUND-TRAIN-001 每轮候选训练与部署决策分离
+
+- 状态：`DONE_LOCAL_PLATFORM_CONFIRMATION_PENDING`
+- 依赖：FORMAL-AGENT-OUTPUT-001、O-PLATFORM-018、D-085、D-086
+- 优先级：P0
+- 完成标准：A/B/C每轮都由Qwen选择受控recipe并真实续训一个候选；Harness本地计算主辅指标与资源；第二次Qwen调用决定deploy/retain/rollback；SafetyGate只执行硬约束；平台逐轮指标缺失时流程仍完整。专项、完整回归、三任务30轮容器、4核8GB、白名单、64 MiB和`docker save/load`通过。
+- 停止条件：任一轮无真实候选、平台指标影响内部选择、父链/双模型调用/预测被破坏，或需要读取隐藏标签调参时不得冻结；不得自动发起平台试运行。
+- 预注册与结果：A1无效、A2中止、A3通过、A4为最终本地RC验收；证据见`results/FORMAL-EVERY-ROUND-TRAIN-001.md`。
 
 以下旧任务图保留为历史证据，不决定当前执行顺序。
 

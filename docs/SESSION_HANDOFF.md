@@ -1,6 +1,15 @@
 # 新会话恢复与交接
 
-## 2026-11-17 第一性原理重建恢复入口（当前）
+## 2026-11-19 D-086双阶段Qwen正式候选恢复入口（当前）
+
+1. 当前分支为`codex/first-principles-rebuild`；先读`STATUS.md`、`TASKS.md`、D-085/D-086、O-PLATFORM-018和`results/FORMAL-EVERY-ROUND-TRAIN-001.md`。
+2. 正式语义：每轮Qwen先选择受控recipe，Harness真实续训并本地评估，Qwen再根据父/候选主辅指标、资源和历史决定deploy/retain/rollback；SafetyGate只管硬约束。平台逐轮指标不参与训练或部署。
+3. 本地候选为`0.10.6rc1`；A/B/C共30轮、60次宿主调用、30个候选，平台指标30/30为空，Qwen本地部署4次、回滚26次，硬安全失败0。
+4. 唯一可考虑上传的归档为`D:/brace-msi-first-principles-release/BRACE-MSI-0.10.6rc1-A1/harness.tar`，81,208,320字节，SHA-256 `F7518609974EAB3C156C07F6D0AA7CBFE6CF9253B43C5D20B3DC71B4C91D89CB`。旧0.10.4及A1/A2无效产物不得上传代替。
+5. 当前唯一任务为`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`。只有用户明确决定消耗平台次数后才能上传并进行一次受控试运行；需核对每轮两个真实call ID、非零Token、30个候选、部署/回滚收据和14,773条预测。
+6. 已暴露公开validation的A/B/C描述性结果只用于诊断，不得称为独立或隐藏成绩。SwanLab、源码与作品材料必须在正式平台运行后绑定同一提交、镜像哈希和真实记录。
+
+## 2026-11-17 第一性原理重建恢复入口（历史）
 
 1. 当前分支为`codex/first-principles-rebuild`；先读`STATUS.md`、`TASKS.md`、D-079至D-084和`results/FORMAL-AGENT-OUTPUT-001.md`。不要上传`0.10.4rc1`、`0.10.3rc1`或更早归档。
 2. 第一性原理本地重建已完成：正式入口为`submission/contest_submission.py → brace_formal.submission`；每轮在任何retain/train分支前直接调用官方`rnd.model()`，最多一个父链兼容候选，train内部portfolio可否决无证据的训练。

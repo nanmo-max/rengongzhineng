@@ -2,6 +2,38 @@
 
 本文件是全部实验运行的唯一登记处，包括失败和中止实验。
 
+## FORMAL-EVERY-ROUND-TRAIN-001-A1（INVALID_WRONG_DECISION_OWNER）
+
+- 依据：O-PLATFORM-018、D-085。平台已证明宿主调用和提案解析有效，但30/30主动retain导致候选数0。
+- 假设：将Agent建议与执行层训练职责分离，让每轮基于当前父checkpoint执行一个现有白名单recipe，再由平台权威指标决定部署或保留，能够在不牺牲安全性的前提下恢复真实实验覆盖并发现可部署增益。
+- 修改边界：只修改`brace_formal`每轮候选执行、上下文和收据真值；不修改官方SDK、模型schema、数据、预测入口、平台测量方向或历史RC。
+- 验证：先用连续retain宿主写红灯测试；再验证10轮候选数10、平台负指标保留父模型、正指标部署候选、真实执行参数可审计；随后运行完整回归和三任务4核8GB容器验收。
+- 资源：本地CPU/Docker；PyTRiO远程、SwanLab、官方试运行、隐藏测试使用均为0。
+- 结果：469项回归通过；`0.10.5rc1`本地容器A/B/C各10轮且30/30候选提交，在连续retain建议下验证“每轮训练”成立。但部署仍由平台返回指标控制，违反D-086职责边界，因此该镜像和归档只保留为无效设计证据，禁止上传。
+
+## FORMAL-EVERY-ROUND-TRAIN-001-A2（ABORTED_SIMULATOR_ASSUMED_PLATFORM_METRICS）
+
+- 依据：D-086。修复A1把平台误作每轮部署决策者的问题。
+- 假设：Qwen分别执行训练方案选择和训练后部署判断，Harness只负责受控训练、评估与硬安全门，可以形成每轮真实“历史—假设—训练—评估—决策”闭环，同时保持父链和平台协议有效。
+- 变量：新增训练提案与部署决策两种严格JSON契约；每轮两次宿主调用；平台候选测量只审计；不修改模型schema、数据、预测入口、官方SDK或历史RC。
+- 验证：红灯覆盖Qwen recipe选择、训练后指标输入、deploy/retain/rollback、非法决策失败保留父模型和两个call ID；完整回归后以连续retain训练提案/混合部署决策运行三任务30轮容器验收。
+- 资源：本地CPU/Docker；远程PyTRiO、SwanLab、官方试运行和隐藏测试均为0。
+- 结果：471项代码回归通过并构建`0.10.6rc1`，但首个容器验收仍让模拟平台在`candidate_response`返回指标。用户澄清平台只在全部流程结束后隐藏评测；本次容器验收主动终止，部分目录保留且不作通过证据。代码的部署判断已经使用本地父/候选指标，不依赖该字段。
+
+## FORMAL-EVERY-ROUND-TRAIN-001-A3（REGISTERED_NOT_RUN）
+
+- 依据：D-086及用户2026-11-19补充：平台过程中不返回评分，Harness必须自行计算官方关注的指标并交给Qwen；最终隐藏评分不参与训练决策。
+- 唯一验证修订：模拟平台的`candidate_response`只返回artifact ID，不返回summary/metrics；父/候选指标只能由镜像内部评估产生。算法、镜像代码和0.10.6rc1构建内容不变。
+- 成功标准：A/B/C各10轮、每轮2次宿主调用、1次候选训练；Qwen依据本地指标决定deploy/retain；平台回执指标始终为空；父链、预测、4核8GB、白名单、64 MiB和归档重载通过。
+- 结果：`COMPLETED_PASS_NO_PLATFORM_METRICS`。三任务30轮、60次宿主调用、30次真实候选；平台指标30/30为空；Qwen本地决定deploy 4次、retain 26次。协议、父链和预测全部通过。为显式覆盖真实rollback分支，A4只修改本地模拟Qwen对“严格退化”的回答，不改变镜像。
+
+## FORMAL-EVERY-ROUND-TRAIN-001-A4（COMPLETED_FINAL_LOCAL_RC）
+
+- 唯一验证修订：本地模拟Qwen对主指标改善返回deploy、相同返回retain、严格退化返回rollback；平台仍只返回artifact ID且无指标。镜像与训练代码保持精确`0.10.6rc1`不变。
+- 成功标准：继承A3并要求容器证据同时覆盖deploy、retain和rollback三条决策路径。
+- 结果：A/B/C共30轮、60次宿主调用、30个真实候选；平台指标30/30为空，Qwen依据本地指标部署4次、回滚26次，未出现数值完全相同的候选，因此本次自然运行未触发retain。硬安全失败0，三任务父链、状态、预测、4核8GB、非root、白名单、64 MiB和归档重载通过。机器JSON SHA-256 `307581D27589AD17A90BEF69A1283D86B51AEF553238D5F34AEB08400CDF2CD8`。
+- 归档：`D:/brace-msi-first-principles-release/BRACE-MSI-0.10.6rc1-A1/harness.tar`，81,208,320字节，SHA-256 `F7518609974EAB3C156C07F6D0AA7CBFE6CF9253B43C5D20B3DC71B4C91D89CB`。远程PyTRiO、SwanLab、平台上传和官方试运行均为0。
+
 ## FORMAL-AGENT-OUTPUT-001-A1（COMPLETED_PASS_LOCAL_PLATFORM_CONFIRMATION_PENDING）
 
 - 研究问题：官方宿主回复在较长输出或JSON外包含说明时，正式Agent能否在官方Token预算内提取唯一合法的有界提案，同时对歧义/非法提案继续安全retain？

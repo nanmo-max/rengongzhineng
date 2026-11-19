@@ -1,13 +1,13 @@
 # 当前状态
 
-- 最近同步：2026-11-18（Asia/Shanghai）
-- 当前阶段：正式平台提案失效根因已完成本地最小修复；`0.10.4rc2`等待一次受控平台确认
-- 当前路线：**官方SDK 1.0.2 + 每轮真实宿主模型调用 + 平台父checkpoint原生续训/retain + 最小白名单镜像** `[D-079]` `[D-080]` `[D-081]`
-- 当前唯一核心任务：`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`。未经新的用户明确决定，不上传、不发起试运行。
+- 最近同步：2026-11-19（Asia/Shanghai）
+- 当前阶段：D-086双阶段Qwen闭环已完成本地正式候选验收；等待一次受控平台确认
+- 当前路线：**官方SDK 1.0.2 + 每轮Qwen训练提案 + 真实父checkpoint续训 + 本地指标工具 + Qwen部署/保留/回滚 + 硬SafetyGate** `[D-079]` `[D-080]` `[D-086]`
+- 当前唯一核心任务：`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`。未经用户明确决定，不上传、不发起试运行。
 - 稳定边界：全部历史RC和实验不改写；`0.5.0rc1`只作研究证据，不得上传。正式线从D-058开始只输出原生官方MLP续训checkpoint。A3之后禁止继续LLM调参 `[D-043]`
-- 官方试运行：新增一次完成报告证明30轮宿主模型调用与非零Token结算，但30轮均因提案非法而retain、候选数0；历史记录数至少5条，精确剩余次数仍以平台页面实时显示为准 `[O-PLATFORM-017]`
-- 当前归档：`D:/brace-msi-first-principles-release/BRACE-MSI-0.10.4rc2-A1/harness.tar`；SHA-256 `97948BD4...35EA`；`0.10.4rc1`含被否决的人为1024上限，禁止上传 `[D-084]`
-- 当前源码：提交`80537a0`为`0.10.4rc2`对应实现，分支`codex/first-principles-rebuild`；尚未合并main。
+- 官方试运行：O-PLATFORM-018证明`0.10.4rc2`的正式提案有效且结算15,146 Token，但30/30主动retain造成零候选；精确剩余次数仍以平台页面实时显示为准。
+- 当前本地候选归档：`D:/brace-msi-first-principles-release/BRACE-MSI-0.10.6rc1-A1/harness.tar`；SHA-256 `F7518609...D89CB`；旧`0.10.4rc2`不得替代上传。
+- 当前源码：分支`codex/first-principles-rebuild`；新提交完成后在此登记，尚未合并main。
 
 ## 2026-11-18 平台试运行根因
 

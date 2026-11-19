@@ -90,13 +90,27 @@ def _decode_files(items: list[dict[str, Any]], destination: Path) -> None:
         target.write_bytes(base64.b64decode(item["data_base64"], validate=True))
 
 
-def _proposal() -> dict[str, Any]:
-    proposal = {
-        "action": "train",
-        "epochs": 3,
-        "learning_rate_multiplier": 3,
-        "rationale": "bounded workspace-v2 continuation proposal",
-    }
+def _proposal(messages: list[dict[str, Any]]) -> dict[str, Any]:
+    content = str(messages[0].get("content", "")) if messages else ""
+    if "Required fields: recipe" in content:
+        proposal = {
+            "recipe": "e1_lr1",
+            "rationale": "run one low-cost parent-compatible continuation before evaluating deployment",
+        }
+    else:
+        context = json.loads(content.split(" Context: ", 1)[1])
+        metric = context["metric"]
+        before = float(context["parent_metrics"][metric])
+        after = float(context["candidate_metrics"][metric])
+        improved = after > before if context["metric_direction"] == "higher" else after < before
+        unchanged = abs(after - before) <= 1e-12
+        decision = "deploy" if improved else ("retain" if unchanged else "rollback")
+        rationale = {
+            "deploy": "deploy because the locally measured primary metric improved",
+            "retain": "retain the parent because the candidate was equivalent on the primary metric",
+            "rollback": "rollback to the parent because the candidate regressed on the primary metric",
+        }[decision]
+        proposal = {"decision": decision, "rationale": rationale}
     return {
         "id": "chatcmpl-local-protocol",
         "model": "Qwen/Qwen3.5-4B",
@@ -249,7 +263,7 @@ def _run_round(
             model_calls.append(call_id)
             reply = {
                 "type": "model_response", "id": message["id"], "call_id": call_id,
-                "response": _proposal(),
+                "response": _proposal(raw_messages),
             }
         elif kind == "state_request":
             next_state = run_root / f"round-{round_index:02d}-state"
@@ -264,13 +278,9 @@ def _run_round(
             candidate_receipt = _artifact_receipt(
                 f"candidate-{profile}-{round_index}", candidate_root
             )
-            candidate_metrics = _score_candidate(
-                candidate_root, package / "public" / "validation.jsonl"
-            )
             reply = {
                 "type": "candidate_response", "id": message["id"],
                 "artifact_id": candidate_receipt["artifact_id"],
-                "summary": {"metrics": candidate_metrics},
             }
         else:
             raise RuntimeError(f"unexpected host request: {kind}")
