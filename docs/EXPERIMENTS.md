@@ -692,3 +692,15 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 - 停止条件：若修复必须改变recipe、训练数值、父链、官方SDK或读取公开确认集，则停止A1并拆分任务；不得在本阶段生成上传镜像。
 - 结果：MetricContract、同作用域有向收益、requested/applied部署事实、NaN失败关闭、state v2血缘、显式NASA合同和脱敏阶段计时均完成。正式运行核50项、全量487项通过；独立复审无剩余P0/P1。提交`afa9038`。
 - 资源与边界：未运行模型训练、远程PyTRiO、SwanLab同步、Docker构建、官方上传或试运行；不得把本结果写成性能或平台通过。
+
+## GENERALIZATION-MATRIX-001-A1（COMPLETED_PASS_ZERO_TRAINING_REPLAY）
+
+- 研究问题：四种身份无关的选择策略能否在不训练模型、不读取公开确认集的前提下，正确处理O-PLATFORM-019已确认的三类错误部署，并保持作用域、恢复能力和资源预算边界？
+- 冻结输入：O-PLATFORM-019中已核实的Gas第5轮、Bearing第2轮和Engine第4轮父/候选主指标关系；原始报告只以已登记SHA-256引用，不在本实验重新解释未确认轮次。
+- 策略：`strict_parent_gate`、`bounded_exploration`、`conditional_champion`、`recipe_feedback`。四者共享有向收益、验证作用域、候选可加载性、历史产物可恢复性和显式探索预算；禁止读取数据集名称决定动作。
+- 成功标准：三条已确认退化候选在严格门下100%不部署；历史冠军仅在同作用域且产物可恢复时可选；有限探索仅在显式容忍度、剩余预算和可回滚条件同时满足时允许；性能退化只产生有限冷却，硬失败才永久隔离recipe；任务重命名不改变结果。
+- 停止条件：任何跨作用域比较、不可恢复产物选择、非有限指标放行、按任务名称分支或预算外探索立即判该策略失败，不进入训练矩阵。
+- 预算与边界：CPU单元测试与纯JSON重放；训练0次、公开validation/confirmation读取0次、PyTRiO远程0次、SwanLab同步0次、官方试运行0次。
+- 预期产物：`D:/brace-msi-generalization/GENERALIZATION-MATRIX-001-A1/decision-replay.json`和仓库内脱敏结果摘要；失败结果同样保留。
+- 结果：三条已确认退化反例在`strict_parent_gate`下3/3保留父模型；四策略在冻结反例上均未部署退化候选。作用域、可恢复冠军、有限探索、非有限值和recipe有限冷却共11项测试通过。
+- 机器证据：`D:/brace-msi-generalization/GENERALIZATION-MATRIX-001-A1/decision-replay.json`，SHA-256 `CDD3D5C98BE12F899E85C207AAD9D3C714659ECF191AD51D66D6616B6516C170`；训练、公开确认读取、PyTRiO远程、SwanLab同步和官方试运行均为0。

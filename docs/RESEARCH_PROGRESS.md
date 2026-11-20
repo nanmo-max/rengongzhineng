@@ -757,3 +757,9 @@
 - `SELECTION-RELIABILITY-001-A1`按TDD完成：5个初始红灯覆盖错误方向、未知指标回退、退化deploy和硬门后提交；随后补充scope双指纹、NaN整轮完成、历史过滤、v1迁移、requested/applied、显式NASA方向和计时边界。
 - 运行核专项最终`50 passed in 1.43s`，完整回归`487 passed in 143.52s`；独立代码复审第一轮提出6个P1、第二轮提出1个P1，全部修复后复审无剩余P0/P1。代码提交`afa9038`。
 - 本阶段没有训练、远程服务、SwanLab、Docker或平台次数；下一步是GENERALIZATION-MATRIX-001的零训练重放和预注册本地矩阵。
+# 2026-11-20 GENERALIZATION-MATRIX-001-A1
+
+- 完成四策略零训练重放及11项专项测试。
+- O-PLATFORM-019三条确认退化反例3/3在严格门下保留父模型；四策略均未部署这些退化候选。
+- 机器产物SHA-256：`CDD3D5C98BE12F899E85C207AAD9D3C714659ECF191AD51D66D6616B6516C170`。
+- 本阶段训练、确认集读取、PyTRiO远程、SwanLab同步和官方试运行均为0。
