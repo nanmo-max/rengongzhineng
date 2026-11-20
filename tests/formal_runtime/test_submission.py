@@ -170,10 +170,37 @@ def test_safe_candidate_is_submitted_and_selected(monkeypatch, tmp_path: Path) -
     assert rnd.submitted["configuration"]["deployment_call_id"] == "call-2"
     assert rnd.finished["selected_artifact_id"] == "candidate-1"
     state = json.loads((rnd.saved_state / "formal-state.json").read_text(encoding="utf-8"))
+    assert state["format"] == "brace-formal-state.v2"
     assert state["rounds"][-1]["recipe"] == "soup_e3_alpha0.25"
     assert state["rounds"][-1]["executed_epochs"] == 3
     assert state["rounds"][-1]["optimizer_seed"] == 42
     assert state["rounds"][-1]["platform_metrics"]["macro_f1"] == 0.65
+    assert state["rounds"][-1]["parent_artifact_id"] == "parent-1"
+    assert state["rounds"][-1]["candidate_artifact_id"] == "candidate-1"
+    assert state["rounds"][-1]["selected_artifact_id"] == "candidate-1"
+    assert state["rounds"][-1]["best_stable_artifact_id"] is None
+    assert state["rounds"][-1]["candidate_checkpoint_sha256"].startswith("sha256:")
+    assert state["rounds"][-1]["selected_checkpoint_sha256"] == state["rounds"][-1]["candidate_checkpoint_sha256"]
+    assert state["rounds"][-1]["metric_evidence"]["metrics"]["accuracy"]["direction"] == "higher"
+
+
+def test_state_v1_is_explicitly_migrated_as_legacy(tmp_path: Path) -> None:
+    from brace_formal.submission import _state_payload
+
+    state_root = tmp_path / "state"
+    state_root.mkdir()
+    (state_root / "formal-state.json").write_text(
+        json.dumps({"format": "brace-formal-state.v1", "rounds": [{"round_index": 1, "selected_artifact_id": "parent-1"}]}),
+        encoding="utf-8",
+    )
+
+    payload = _state_payload(state_root)
+
+    assert payload["format"] == "brace-formal-state.v2"
+    record = payload["rounds"][0]
+    assert record["legacy_source_format"] == "brace-formal-state.v1"
+    assert record["candidate_artifact_id"] is None
+    assert record["best_stable_artifact_id"] is None
 
 
 def test_platform_measurement_does_not_replace_qwen_deployment_decision(monkeypatch, tmp_path: Path) -> None:
@@ -253,6 +280,119 @@ def test_qwen_rollback_keeps_parent_after_candidate_training(monkeypatch, tmp_pa
     assert state["rounds"][-1]["recipe"] == "e1_lr1"
 
 
+def test_qwen_cannot_deploy_candidate_that_regresses_on_same_scope(monkeypatch, tmp_path: Path) -> None:
+    from brace_formal import submission
+
+    parent = tmp_path / "checkpoint.npz"
+    _write_parent(parent)
+    _write_rows(tmp_path / "train.jsonl")
+    _write_rows(tmp_path / "validation.jsonl")
+    rnd = FakeRound(
+        tmp_path,
+        parent,
+        {"recipe": "e1_lr1", "rationale": "test bounded continuation"},
+        deployment={"decision": "deploy", "rationale": "candidate should be deployed"},
+    )
+    monkeypatch.setenv("CONTEST_WORK", str(tmp_path / "workspace"))
+    scores = iter([{"accuracy": 0.85, "macro_f1": 0.80}, {"accuracy": 0.80, "macro_f1": 0.75}])
+    monkeypatch.setattr(submission, "evaluate", lambda *args: next(scores))
+
+    submission.train(rnd)
+
+    assert rnd.submitted is not None
+    assert rnd.finished["selected_artifact_id"] == "parent-1"
+    state = json.loads((rnd.saved_state / "formal-state.json").read_text(encoding="utf-8"))
+    record = state["rounds"][-1]
+    assert record["primary_evidence"]["relation"] == "regressed"
+    assert record["requested_deployment_decision"] == "deploy"
+    assert record["applied_deployment_decision"] == "retain"
+    assert record["deployment_decision"] == "retain"
+    assert record["outcome"] == "candidate_rejected_by_metric_contract"
+
+
+def test_hard_gate_failure_never_submits_candidate(monkeypatch, tmp_path: Path) -> None:
+    from brace_formal import submission
+
+    parent = tmp_path / "checkpoint.npz"
+    _write_parent(parent)
+    _write_rows(tmp_path / "train.jsonl")
+    _write_rows(tmp_path / "validation.jsonl")
+    rnd = FakeRound(tmp_path, parent, {"recipe": "e1_lr1", "rationale": "test bounded continuation"})
+    monkeypatch.setenv("CONTEST_WORK", str(tmp_path / "workspace"))
+    monkeypatch.setattr(submission, "_hard_gate", lambda *args: ["checkpoint_unloadable:ValueError"])
+
+    submission.train(rnd)
+
+    assert rnd.submitted is None
+    assert rnd.finished["selected_artifact_id"] == "parent-1"
+    state = json.loads((rnd.saved_state / "formal-state.json").read_text(encoding="utf-8"))
+    assert state["rounds"][-1]["outcome"] == "candidate_rejected_by_safety_gate"
+
+
+def test_nonfinite_candidate_metric_fails_closed_but_finishes_round(monkeypatch, tmp_path: Path) -> None:
+    from brace_formal import submission
+
+    parent = tmp_path / "checkpoint.npz"
+    _write_parent(parent)
+    _write_rows(tmp_path / "train.jsonl")
+    _write_rows(tmp_path / "validation.jsonl")
+    rnd = FakeRound(tmp_path, parent, {"recipe": "e1_lr1", "rationale": "test bounded continuation"})
+    monkeypatch.setenv("CONTEST_WORK", str(tmp_path / "workspace"))
+    scores = iter([{"accuracy": 0.8, "macro_f1": 0.7}, {"accuracy": 0.7, "macro_f1": float("nan")}])
+    monkeypatch.setattr(submission, "evaluate", lambda *args, **kwargs: next(scores))
+
+    submission.train(rnd)
+
+    assert rnd.call_ids == ["call-1", "call-2"]
+    assert rnd.submitted is None
+    assert rnd.finished["selected_artifact_id"] == "parent-1"
+    state = json.loads((rnd.saved_state / "formal-state.json").read_text(encoding="utf-8"))
+    record = state["rounds"][-1]
+    assert record["primary_evidence"]["relation"] == "unavailable"
+    assert "candidate_metrics_nonfinite" in record["safety_failures"]
+
+
+def test_incomparable_history_does_not_expose_old_metrics_to_qwen(monkeypatch, tmp_path: Path) -> None:
+    from brace_formal import submission
+
+    parent = tmp_path / "checkpoint.npz"
+    _write_parent(parent)
+    _write_rows(tmp_path / "train.jsonl")
+    _write_rows(tmp_path / "validation.jsonl")
+    rnd = FakeRound(tmp_path, parent, {"recipe": "e1_lr1", "rationale": "test bounded continuation"})
+    monkeypatch.setenv("CONTEST_WORK", str(tmp_path / "workspace"))
+    original_state_payload = submission._state_payload
+
+    def prior_state(_state_root):
+        return {
+            "format": "brace-formal-state.v2",
+            "rounds": [
+                {
+                    "round_index": 0,
+                    "recipe": "e1_lr1",
+                    "validation_sha256": "sha256:different-scope",
+                    "parent_metrics": {"macro_f1": 0.99},
+                    "candidate_metrics": {"macro_f1": 0.01},
+                    "outcome": "candidate_retained_parent_by_agent",
+                }
+            ],
+        }
+
+    monkeypatch.setattr(submission, "_state_payload", prior_state)
+    try:
+        submission.train(rnd)
+    finally:
+        monkeypatch.setattr(submission, "_state_payload", original_state_payload)
+
+    prompt = str(rnd.model_messages[0][0]["content"])
+    context = json.loads(prompt.split(" Context: ", 1)[1])
+    history_item = context["recent_experiment_history"][0]
+    assert history_item["comparable_to_current_scope"] is False
+    assert "parent_metrics" not in history_item
+    assert "candidate_metrics" not in history_item
+    assert "primary_evidence" not in history_item
+
+
 def test_post_training_qwen_receives_parent_candidate_resource_and_history_evidence(monkeypatch, tmp_path: Path) -> None:
     from brace_formal import submission
 
@@ -271,6 +411,96 @@ def test_post_training_qwen_receives_parent_candidate_resource_and_history_evide
     assert '"cpu_seconds"' in deployment_prompt
     assert '"peak_rss_bytes"' in deployment_prompt
     assert '"history"' in deployment_prompt
+
+
+def test_training_qwen_receives_explicit_metric_directions_for_rmse_nasa(monkeypatch, tmp_path: Path) -> None:
+    from brace_formal import submission
+
+    parent = tmp_path / "checkpoint.npz"
+    _write_parent(parent, task="regression")
+    _write_rows(tmp_path / "train.jsonl", task="regression")
+    _write_rows(tmp_path / "validation.jsonl", task="regression")
+    rnd = FakeRound(tmp_path, parent, {"recipe": "e1_lr1", "rationale": "test bounded continuation"})
+    rnd.task = {"task": "regression", "metric": "rmse_nasa", "metric_direction": "lower"}
+    monkeypatch.setenv("CONTEST_WORK", str(tmp_path / "workspace"))
+
+    submission.train(rnd)
+
+    prompt = str(rnd.model_messages[0][0]["content"])
+    context = json.loads(prompt.split(" Context: ", 1)[1])
+    assert context["metric_contract"]["metric"] == "rmse"
+    assert context["metric_directions"] == {
+        "rmse": "lower",
+        "mae": "lower",
+        "nasa_score": "lower",
+        "nasa_score_mean": "lower",
+    }
+
+
+def test_round_records_scoped_non_overlapping_timings_without_raw_payloads(monkeypatch, tmp_path: Path) -> None:
+    from brace_formal import submission
+
+    parent = tmp_path / "checkpoint.npz"
+    _write_parent(parent)
+    _write_rows(tmp_path / "train.jsonl")
+    _write_rows(tmp_path / "validation.jsonl")
+    rnd = FakeRound(tmp_path, parent, {"recipe": "e1_lr1", "rationale": "test bounded continuation"})
+    monkeypatch.setenv("CONTEST_WORK", str(tmp_path / "workspace"))
+    scores = iter([{"accuracy": 0.5, "macro_f1": 0.4}, {"accuracy": 0.7, "macro_f1": 0.6}])
+    monkeypatch.setattr(submission, "evaluate", lambda *args: next(scores))
+
+    submission.train(rnd)
+
+    state = json.loads((rnd.saved_state / "formal-state.json").read_text(encoding="utf-8"))
+    timing = state["rounds"][-1]["timing_receipt"]
+    assert timing["scope"] == "participant_train_callback_before_state"
+    assert timing["complete"] is False
+    assert set(timing["excluded"]) == {
+        "state_rpc",
+        "finish_ack",
+        "platform_prediction",
+        "platform_evaluation",
+        "process_startup_shutdown",
+    }
+    stages = timing["stages"]
+    assert set(stages) == {
+        "history_rpc_seconds",
+        "local_setup_seconds",
+        "training_model_call_seconds",
+        "candidate_train_eval_save_seconds",
+        "deployment_model_call_seconds",
+        "candidate_submit_seconds",
+    }
+    assert all(isinstance(value, float) and value >= 0.0 for value in stages.values())
+    assert timing["candidate_submit_attempted"] is True
+    assert timing["stage_sum_seconds"] <= timing["observed_seconds"]
+    assert timing["unattributed_seconds"] >= 0.0
+    final_timing = rnd.finished["configuration"]["timing_receipt"]
+    assert final_timing["scope"] == "participant_train_callback_before_finish"
+    assert "state_serialize_seconds" in final_timing["stages"]
+    assert "state_rpc_seconds" in final_timing["stages"]
+    serialized = json.dumps({"state": state, "configuration": rnd.finished["configuration"]}).lower()
+    for forbidden in ("messages", "raw_prompt", '"answer"', '"inputs"'):
+        assert forbidden not in serialized
+
+
+def test_skipped_candidate_submit_is_not_reported_as_fast_submit(monkeypatch, tmp_path: Path) -> None:
+    from brace_formal import submission
+
+    parent = tmp_path / "checkpoint.npz"
+    _write_parent(parent)
+    _write_rows(tmp_path / "train.jsonl")
+    _write_rows(tmp_path / "validation.jsonl")
+    rnd = FakeRound(tmp_path, parent, {"recipe": "e1_lr1", "rationale": "test bounded continuation"})
+    monkeypatch.setenv("CONTEST_WORK", str(tmp_path / "workspace"))
+    monkeypatch.setattr(submission, "_hard_gate", lambda *args: ["checkpoint_unloadable:ValueError"])
+
+    submission.train(rnd)
+
+    state = json.loads((rnd.saved_state / "formal-state.json").read_text(encoding="utf-8"))
+    timing = state["rounds"][-1]["timing_receipt"]
+    assert timing["candidate_submit_attempted"] is False
+    assert timing["stages"]["candidate_submit_seconds"] is None
 
 
 def test_predict_uses_selected_checkpoint(monkeypatch, tmp_path: Path) -> None:

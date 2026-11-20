@@ -10,7 +10,7 @@ from typing import Any
 
 import numpy as np
 
-from .metrics import evaluate
+from .metrics import evaluate, resolve_metric_contract
 from .model import FormalModel
 
 
@@ -97,7 +97,8 @@ def fit_recipe(parent: FormalModel, recipe: str, values: np.ndarray, targets: np
 
 
 def _metric_contract(model: FormalModel) -> tuple[str, str]:
-    return ("macro_f1", "higher") if model.meta["task"] == "classification" else ("rmse", "lower")
+    contract = resolve_metric_contract(None, str(model.meta["task"]))
+    return contract.name, contract.direction
 
 
 def _gain(before: float, after: float, direction: str) -> float:

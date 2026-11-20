@@ -15,7 +15,7 @@ import numpy as np
 
 from .agent import request_deployment_decision, request_training_proposal
 from .data import _flatten, load_rows
-from .metrics import evaluate
+from .metrics import evaluate, metric_evidence_bundle, primary_evidence, resolve_metric_contract
 from .model import FormalModel
 from .portfolio import fit_recipe, recipe_settings
 from .workspace import create_round_paths
@@ -36,15 +36,8 @@ def _parent_checkpoint(rnd: Any) -> Path:
 
 
 def _primary_contract(rnd: Any, model: FormalModel) -> tuple[str, str]:
-    contract = getattr(rnd, "task", None)
-    metric = contract.get("metric") if isinstance(contract, Mapping) else None
-    direction = contract.get("metric_direction") if isinstance(contract, Mapping) else None
-    defaults = ("macro_f1", "higher") if model.meta["task"] == "classification" else ("rmse", "lower")
-    if metric not in ({"accuracy", "macro_f1"} if model.meta["task"] == "classification" else {"mae", "rmse"}):
-        metric = defaults[0]
-    if direction not in {"higher", "lower"}:
-        direction = defaults[1]
-    return str(metric), str(direction)
+    contract = resolve_metric_contract(getattr(rnd, "task", None), str(model.meta["task"]))
+    return contract.name, contract.direction
 
 
 def _platform_metrics(receipt: Mapping[str, Any] | None) -> dict[str, float]:
@@ -62,12 +55,20 @@ def _platform_metrics(receipt: Mapping[str, Any] | None) -> dict[str, float]:
 def _state_payload(state_root: Path) -> dict[str, Any]:
     path = state_root / "formal-state.json"
     if not path.exists():
-        return {"format": "brace-formal-state.v1", "rounds": []}
+        return {"format": "brace-formal-state.v2", "rounds": []}
     if path.is_symlink() or not path.is_file():
         raise ValueError("formal state must be a regular file")
     payload = json.loads(path.read_text(encoding="utf-8"))
-    if not isinstance(payload, dict) or payload.get("format") != "brace-formal-state.v1" or not isinstance(payload.get("rounds"), list):
+    if not isinstance(payload, dict) or payload.get("format") not in {"brace-formal-state.v1", "brace-formal-state.v2"} or not isinstance(payload.get("rounds"), list):
         raise ValueError("formal state is invalid")
+    source_format = payload["format"]
+    if source_format == "brace-formal-state.v1":
+        for record in payload["rounds"]:
+            if isinstance(record, dict):
+                record.setdefault("legacy_source_format", source_format)
+                record.setdefault("candidate_artifact_id", None)
+                record.setdefault("best_stable_artifact_id", None)
+    payload["format"] = "brace-formal-state.v2"
     return payload
 
 
@@ -138,6 +139,57 @@ def _training_data_summary(model: FormalModel, values: np.ndarray, targets: np.n
     return summary
 
 
+def _serializable_metrics(metrics: Mapping[str, float]) -> dict[str, float | None]:
+    return {
+        str(key): float(value) if math.isfinite(float(value)) else None
+        for key, value in metrics.items()
+    }
+
+
+def _unavailable_primary_evidence(
+    metric: str,
+    direction: str,
+    validation_sha256: str,
+    reason: str,
+) -> dict[str, Any]:
+    return {
+        "metric": metric,
+        "direction": direction,
+        "parent_value": None,
+        "candidate_value": None,
+        "signed_gain": None,
+        "relation": "unavailable",
+        "validation_sha256": validation_sha256,
+        "reason": reason,
+    }
+
+
+def _timing_receipt(
+    stages: Mapping[str, float | None],
+    *,
+    observed_seconds: float,
+    scope: str,
+    excluded: list[str],
+    candidate_submit_attempted: bool,
+) -> dict[str, Any]:
+    normalized = {
+        name: None if value is None else float(max(0.0, value))
+        for name, value in stages.items()
+    }
+    stage_sum = sum(value for value in normalized.values() if value is not None)
+    observed = float(max(observed_seconds, stage_sum))
+    return {
+        "scope": scope,
+        "complete": False,
+        "excluded": list(excluded),
+        "candidate_submit_attempted": candidate_submit_attempted,
+        "stages": normalized,
+        "stage_sum_seconds": float(stage_sum),
+        "observed_seconds": observed,
+        "unattributed_seconds": float(max(0.0, observed - stage_sum)),
+    }
+
+
 def _peak_rss_bytes() -> int | None:
     try:
         import resource
@@ -150,14 +202,19 @@ def _peak_rss_bytes() -> int | None:
 def train(rnd: Any) -> None:
     """Execute one bounded decision transaction using the official Round object."""
 
+    round_wall_started = time.monotonic()
+    history_started = time.monotonic()
     history = rnd.history()
     if not isinstance(history, list):
         raise ValueError("history must be a list")
+    history_rpc_seconds = time.monotonic() - history_started
+    local_setup_started = time.monotonic()
     parent_path = _parent_checkpoint(rnd)
     parent = FormalModel.load(parent_path)
+    metric_contract = resolve_metric_contract(getattr(rnd, "task", None), str(parent.meta["task"]))
     training = load_rows(rnd.data.train_path, parent, require_answers=True)
     validation = load_rows(rnd.data.validation_path, parent, require_answers=True)
-    parent_metrics = evaluate(parent, validation.x, validation.y)
+    parent_metrics = evaluate(parent, validation.x, validation.y, metric_contract)
 
     workspace = Path(os.environ.get("CONTEST_WORK", "/workspace"))
     dataset_key = str(getattr(rnd, "dataset_key", "default"))
@@ -169,42 +226,84 @@ def train(rnd: Any) -> None:
     )
     state = Path(rnd.state_workspace(paths.state))
     prior_state = _state_payload(state)
-    recent_history = [
-        {
+    recent_history: list[dict[str, Any]] = []
+    for row in prior_state["rounds"][-5:]:
+        if not isinstance(row, Mapping):
+            continue
+        comparable = row.get("validation_sha256") == validation.sha256
+        item = {
             key: row.get(key)
             for key in (
-                "round_index", "recipe", "parent_metrics", "candidate_metrics",
-                "deployment_decision", "outcome", "cpu_seconds",
+                "round_index", "recipe", "requested_deployment_decision",
+                "applied_deployment_decision", "deployment_decision", "outcome",
+                "cpu_seconds", "selected_artifact_id",
             )
         }
-        for row in prior_state["rounds"][-5:]
-        if isinstance(row, Mapping)
-    ]
+        item["comparable_to_current_scope"] = comparable
+        if comparable:
+            item["metric_contract"] = row.get("metric_contract")
+            item["primary_evidence"] = row.get("primary_evidence")
+        recent_history.append(item)
     training_context = _context(
         rnd, parent, len(training.ids), len(validation.ids), parent_metrics, history
     )
     training_context.update(
         {
             "available_recipes": ["e1_lr1", "e3_lr3", "soup_e3_alpha0.25"],
+            "metric_contract": metric_contract.as_dict(),
+            "metric_directions": metric_contract.metric_directions,
             "training_data_summary": _training_data_summary(parent, training.x, training.y),
             "recent_experiment_history": recent_history,
         }
     )
+    local_setup_seconds = time.monotonic() - local_setup_started
+    training_call_started = time.monotonic()
     training_decision = request_training_proposal(rnd, training_context)
+    training_model_call_seconds = time.monotonic() - training_call_started
 
     selected_artifact = rnd.parent.artifact_id
     recipe = training_decision.recipe
     executed = recipe_settings(parent, recipe)
+    candidate_started = time.monotonic()
     started = time.process_time()
     candidate = fit_recipe(parent, recipe, training.x, training.y)
     cpu_seconds = time.process_time() - started
-    candidate_metrics = evaluate(candidate, validation.x, validation.y)
+    candidate_metrics = evaluate(candidate, validation.x, validation.y, metric_contract)
     paths.candidate.mkdir(parents=True, exist_ok=False)
     checkpoint = paths.candidate / "checkpoint.npz"
     candidate.save(checkpoint)
     safety_failures = _hard_gate(parent, checkpoint, candidate_metrics)
+    candidate_train_eval_save_seconds = time.monotonic() - candidate_started
 
-    metric, direction = _primary_contract(rnd, parent)
+    metric, direction = metric_contract.name, metric_contract.direction
+    try:
+        measured_evidence = primary_evidence(
+            metric_contract,
+            parent_metrics,
+            candidate_metrics,
+            parent_validation_sha256=validation.sha256,
+            candidate_validation_sha256=validation.sha256,
+        )
+    except ValueError as exc:
+        measured_evidence = _unavailable_primary_evidence(
+            metric,
+            direction,
+            validation.sha256,
+            f"{type(exc).__name__}: {exc}",
+        )
+    evidence_bundle = metric_evidence_bundle(
+        metric_contract,
+        parent_metrics,
+        candidate_metrics,
+        parent_validation_sha256=validation.sha256,
+        candidate_validation_sha256=validation.sha256,
+    )
+    allowed_decisions = (
+        ["retain", "rollback"]
+        if safety_failures or measured_evidence["relation"] != "improved"
+        else ["deploy", "retain", "rollback"]
+    )
+    deployment_call_started = time.monotonic()
     deployment_decision = request_deployment_decision(
         rnd,
         {
@@ -213,8 +312,12 @@ def train(rnd: Any) -> None:
             "metric": metric,
             "metric_direction": direction,
             "recipe": recipe,
-            "parent_metrics": parent_metrics,
-            "candidate_metrics": candidate_metrics,
+            "parent_metrics": _serializable_metrics(parent_metrics),
+            "candidate_metrics": _serializable_metrics(candidate_metrics),
+            "metric_directions": metric_contract.metric_directions,
+            "primary_evidence": measured_evidence,
+            "metric_evidence": evidence_bundle,
+            "allowed_decisions": allowed_decisions,
             "resource_evidence": {
                 "cpu_seconds": cpu_seconds,
                 "checkpoint_bytes": checkpoint.stat().st_size,
@@ -225,42 +328,86 @@ def train(rnd: Any) -> None:
             "hard_safety_failures": safety_failures,
         },
     )
+    deployment_model_call_seconds = time.monotonic() - deployment_call_started
 
     outcome = "candidate_retained_parent_by_agent"
     candidate_receipt: Mapping[str, Any] | None = None
     platform_metrics: dict[str, float] = {}
-    candidate_receipt = rnd.submit_candidate(
-        paths.candidate,
-        hypothesis=training_decision.rationale,
-        change_summary="Qwen selected a controlled parent-compatible recipe; the candidate was trained and evaluated before a separate Qwen deployment decision.",
-        configuration={
-            "action": "train",
-            "training_call_id": training_decision.call_id,
-            "deployment_call_id": deployment_decision.call_id,
-            "deployment_decision": deployment_decision.decision,
-            "executed_recipe": recipe,
-            "executed_epochs": executed["epochs"],
-            "executed_learning_rate_multiplier": executed["learning_rate_multiplier"],
-            "effective_learning_rate": executed["effective_learning_rate"],
-            "optimizer_seed": executed["optimizer_seed"],
-            "fold_assignment_seed": _SEED,
-            "metric": metric,
-            "direction": direction,
-        },
-        seed=int(executed["optimizer_seed"]),
-        checkpoint_paths=["checkpoint.npz"],
-        code_paths=[],
-        predict_argv=PREDICT_ARGV,
+    requested_deployment_decision = deployment_decision.decision
+    applied_deployment_decision = (
+        requested_deployment_decision
+        if not safety_failures and requested_deployment_decision in allowed_decisions
+        else "retain"
     )
-    platform_metrics = _platform_metrics(candidate_receipt)
+    candidate_submit_attempted = not safety_failures
+    submit_started = time.monotonic()
+    if not safety_failures:
+        candidate_receipt = rnd.submit_candidate(
+            paths.candidate,
+            hypothesis=training_decision.rationale,
+            change_summary="Qwen selected a controlled parent-compatible recipe; the candidate was trained and evaluated before a separate Qwen deployment decision.",
+            configuration={
+                "action": "train",
+                "training_call_id": training_decision.call_id,
+                "deployment_call_id": deployment_decision.call_id,
+                "requested_deployment_decision": requested_deployment_decision,
+                "applied_deployment_decision": applied_deployment_decision,
+                "deployment_decision": applied_deployment_decision,
+                "executed_recipe": recipe,
+                "executed_epochs": executed["epochs"],
+                "executed_learning_rate_multiplier": executed["learning_rate_multiplier"],
+                "effective_learning_rate": executed["effective_learning_rate"],
+                "optimizer_seed": executed["optimizer_seed"],
+                "fold_assignment_seed": _SEED,
+                "metric": metric,
+                "direction": direction,
+                "primary_evidence": measured_evidence,
+                "metric_evidence": evidence_bundle,
+                "allowed_decisions": allowed_decisions,
+            },
+            seed=int(executed["optimizer_seed"]),
+            checkpoint_paths=["checkpoint.npz"],
+            code_paths=[],
+            predict_argv=PREDICT_ARGV,
+        )
+        platform_metrics = _platform_metrics(candidate_receipt)
+    candidate_submit_seconds = time.monotonic() - submit_started if candidate_submit_attempted else None
     if safety_failures:
         outcome = "candidate_rejected_by_safety_gate"
-    elif deployment_decision.decision == "deploy":
+    elif requested_deployment_decision not in allowed_decisions:
+        outcome = "candidate_rejected_by_metric_contract"
+    elif applied_deployment_decision == "deploy":
+        assert candidate_receipt is not None
         selected_artifact = candidate_receipt["artifact_id"]
         outcome = "candidate_selected_by_agent"
-    elif deployment_decision.decision == "rollback":
+    elif applied_deployment_decision == "rollback":
         outcome = "candidate_rolled_back_by_agent"
 
+    candidate_checkpoint_sha256 = "sha256:" + hashlib.sha256(checkpoint.read_bytes()).hexdigest()
+    selected_checkpoint_sha256 = (
+        candidate_checkpoint_sha256
+        if selected_artifact != rnd.parent.artifact_id
+        else str(rnd.parent.checkpoint_sha256)
+    )
+
+    pre_state_stages: dict[str, float | None] = {
+        "history_rpc_seconds": float(history_rpc_seconds),
+        "local_setup_seconds": float(local_setup_seconds),
+        "training_model_call_seconds": float(training_model_call_seconds),
+        "candidate_train_eval_save_seconds": float(candidate_train_eval_save_seconds),
+        "deployment_model_call_seconds": float(deployment_model_call_seconds),
+        "candidate_submit_seconds": None if candidate_submit_seconds is None else float(candidate_submit_seconds),
+    }
+    pre_state_timing = _timing_receipt(
+        pre_state_stages,
+        observed_seconds=time.monotonic() - round_wall_started,
+        scope="participant_train_callback_before_state",
+        excluded=[
+            "state_rpc", "finish_ack", "platform_prediction", "platform_evaluation",
+            "process_startup_shutdown",
+        ],
+        candidate_submit_attempted=candidate_submit_attempted,
+    )
     record = {
         "round_index": int(rnd.round_index),
         "stage_id": str(getattr(rnd, "stage_id", "")),
@@ -270,7 +417,9 @@ def train(rnd: Any) -> None:
         "training_rationale": training_decision.rationale,
         "training_parse_error": training_decision.parse_error,
         "deployment_call_id": deployment_decision.call_id,
-        "deployment_decision": deployment_decision.decision,
+        "requested_deployment_decision": requested_deployment_decision,
+        "applied_deployment_decision": applied_deployment_decision,
+        "deployment_decision": applied_deployment_decision,
         "deployment_rationale": deployment_decision.rationale,
         "deployment_parse_error": deployment_decision.parse_error,
         "outcome": outcome,
@@ -282,17 +431,45 @@ def train(rnd: Any) -> None:
         "cpu_seconds": cpu_seconds,
         "checkpoint_bytes": checkpoint.stat().st_size,
         "safety_failures": safety_failures,
+        "parent_artifact_id": str(rnd.parent.artifact_id),
         "parent_checkpoint_sha256": str(rnd.parent.checkpoint_sha256),
+        "candidate_checkpoint_sha256": candidate_checkpoint_sha256,
+        "selected_checkpoint_sha256": selected_checkpoint_sha256,
         "train_sha256": training.sha256,
         "validation_sha256": validation.sha256,
-        "parent_metrics": parent_metrics,
-        "candidate_metrics": candidate_metrics,
+        "parent_metrics": _serializable_metrics(parent_metrics),
+        "candidate_metrics": _serializable_metrics(candidate_metrics),
+        "metric_contract": metric_contract.as_dict(),
+        "primary_evidence": measured_evidence,
+        "metric_evidence": evidence_bundle,
+        "allowed_decisions": allowed_decisions,
+        "candidate_artifact_id": candidate_receipt.get("artifact_id") if candidate_receipt else None,
+        "best_stable_artifact_id": None,
         "platform_metrics": platform_metrics,
         "recipe": recipe,
         "selected_artifact_id": selected_artifact,
+        "timing_receipt": pre_state_timing,
     }
+    state_serialize_started = time.monotonic()
     _write_state(state, record)
+    state_serialize_seconds = time.monotonic() - state_serialize_started
+    state_save_started = time.monotonic()
     rnd.save_state(state)
+    state_rpc_seconds = time.monotonic() - state_save_started
+    finish_timing = _timing_receipt(
+        {
+            **pre_state_stages,
+            "state_serialize_seconds": state_serialize_seconds,
+            "state_rpc_seconds": state_rpc_seconds,
+        },
+        observed_seconds=time.monotonic() - round_wall_started,
+        scope="participant_train_callback_before_finish",
+        excluded=[
+            "finish_ack", "platform_prediction", "platform_evaluation",
+            "process_startup_shutdown",
+        ],
+        candidate_submit_attempted=candidate_submit_attempted,
+    )
 
     configuration = {
         "action": "train",
@@ -300,7 +477,9 @@ def train(rnd: Any) -> None:
         "training_rationale": training_decision.rationale,
         "training_parse_error": training_decision.parse_error,
         "deployment_call_id": deployment_decision.call_id,
-        "deployment_decision": deployment_decision.decision,
+        "requested_deployment_decision": requested_deployment_decision,
+        "applied_deployment_decision": applied_deployment_decision,
+        "deployment_decision": applied_deployment_decision,
         "deployment_rationale": deployment_decision.rationale,
         "deployment_parse_error": deployment_decision.parse_error,
         "outcome": outcome,
@@ -309,15 +488,21 @@ def train(rnd: Any) -> None:
         "effective_learning_rate": executed["effective_learning_rate"],
         "optimizer_seed": executed["optimizer_seed"],
         "fold_assignment_seed": _SEED,
-        "parent_metrics": parent_metrics,
-        "candidate_metrics": candidate_metrics,
+        "parent_metrics": _serializable_metrics(parent_metrics),
+        "candidate_metrics": _serializable_metrics(candidate_metrics),
+        "metric_contract": metric_contract.as_dict(),
+        "primary_evidence": measured_evidence,
+        "metric_evidence": evidence_bundle,
+        "allowed_decisions": allowed_decisions,
         "platform_metrics": platform_metrics,
         "metric": metric,
         "recipe": recipe,
         "cpu_seconds": cpu_seconds,
         "checkpoint_bytes": checkpoint.stat().st_size,
         "safety_failures": safety_failures,
+        "timing_receipt": finish_timing,
     }
+    finish_started = time.monotonic()
     rnd.finish(
         selected_artifact_id=selected_artifact,
         hypothesis=training_decision.rationale,
@@ -327,6 +512,21 @@ def train(rnd: Any) -> None:
         seed=int(executed["optimizer_seed"]),
         history_ids=[item["id"] for item in history],
         model_call_ids=[training_decision.call_id, deployment_decision.call_id],
+    )
+    finish_ack_seconds = time.monotonic() - finish_started
+    print(
+        "BRACE_TIMING "
+        + json.dumps(
+            {
+                "scope": "participant_finish_ack_only",
+                "dataset_key": dataset_key,
+                "round_index": int(rnd.round_index),
+                "finish_ack_seconds": float(max(0.0, finish_ack_seconds)),
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+        ),
+        file=sys.stderr,
     )
 
 
