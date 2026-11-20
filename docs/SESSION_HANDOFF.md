@@ -261,6 +261,7 @@
 
 1. 实时状态以`STATUS.md`和`TASKS.md`顶部的`SELECTION-RELIABILITY-001`为准；`FORMAL-RELEASE-001`继续外部阻塞，不是当前可执行任务。
 2. 阅读O-PLATFORM-019和D-087，再阅读`superpowers/specs/2026-11-20-selection-generalization-runtime-design.md`及对应plan。
-3. `SELECTION-RELIABILITY-001`已在提交`afa9038`完成；下一任务为`GENERALIZATION-MATRIX-001 (READY)`，先做零训练重放与矩阵预注册，不得直接生成正式RC。
+3. `SELECTION-RELIABILITY-001`和`GENERALIZATION-MATRIX-001`已完成开发策略筛选；A6只保留`bounded_exploration`为开发候选。当前唯一READY任务为`PERFORMANCE-METHOD-PILOT-001`。
 4. 现有`0.10.6rc1`归档冻结为Protocol RC，不原地改写；新正式候选必须在独立提交与归档中生成。
 5. 正式镜像只走`rnd.model()`；PyTRiO训练和SwanLab记录在镜像外，且只有本地证据通过后才影响新候选。
+6. 方法冻结后必须执行`FINAL-GENERALIZATION-VALIDATION-001`的独立替代流/任务留出；A6不得直接解锁正式RC。

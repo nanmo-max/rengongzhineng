@@ -113,16 +113,16 @@
 ## R-055 Qwen数值判断错误导致部署退化候选
 
 - 等级：Critical
-- 状态：`MITIGATED_CODE_LOCAL_MATRIX_PENDING`
+- 状态：`MITIGATED_CODE_DEVELOPMENT_MATRIX_PASSED_FINAL_HOLDOUT_PENDING`
 - 证据：O-PLATFORM-019中Gas第5轮、Bearing第2轮、Engine第4轮的父/候选主指标关系与deploy动作冲突；当前`agent.py`只校验枚举和非空理由，`submission.py`未校验结构化决定与指标方向。
-- 缓解：SELECTION-RELIABILITY-001按D-087建立唯一MetricContract和同作用域有向收益；Qwen只能在可行集合内选择，矛盾时失败保留父模型。冻结反例与全量回归通过；仍需GENERALIZATION-MATRIX-001验证不会过度阻断有效探索。
+- 缓解：SELECTION-RELIABILITY-001建立唯一MetricContract；A1冻结反例3/3失败保留。A6关闭末轮探索、路径失败关闭和最终checkpoint绑定缺陷，有限探索开发矩阵无5%灾难任务。D-088的独立替代流门仍是正式RC前置。
 
 ## R-056 跨轮评价作用域变化导致伪历史最优
 
 - 等级：High
-- 状态：`MITIGATED_BASELINE_HISTORY_RESTORE_DEFERRED`
+- 状态：`MITIGATED_HISTORY_STRATEGY_EXCLUDED`
 - 证据：O-PLATFORM-019中同一artifact在不同轮展示值变化，逐轮报告不支持直接全局排名。
-- 缓解：所有比较携带validation作用域指纹；不同作用域历史只保留动作/资源摘要，不向Qwen暴露旧指标。best_stable当前保持null；历史artifact恢复与同口径重评留待GENERALIZATION-MATRIX-001独立验证。
+- 缓解：所有比较携带validation作用域指纹；不同作用域历史只保留动作/资源摘要。A6明确使`conditional_champion`在正式SDK历史artifact持久化/恢复未验证时无条件不得晋级；开发候选不依赖该能力。
 
 ## R-057 墙钟耗时优化破坏决策信息或正式协议
 

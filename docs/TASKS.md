@@ -10,7 +10,7 @@
 
 - 状态：`DONE`
 - 依赖：O-PLATFORM-019、D-087、FORMAL-EVERY-ROUND-TRAIN-001
-- 优先级：P0，当前唯一执行任务
+- 优先级：P0
 - 完成标准：建立唯一`MetricContract`并拒绝指标—方向冲突；Harness计算同一验证作用域内父/候选有向收益；Qwen决策与确定性数值事实冲突时失败保留父模型；硬门失败不提交候选；轮收据记录父、候选、选择产物及验证作用域；阶段计时覆盖history/call1/train-eval-save/call2/submit-state-finish且不记录原始数据或prompt；用最新官方报告反例形成冻结测试夹具。
 - 停止条件：不得解析自然语言理由来建立第二套真相；不得跨不同validation哈希比较历史“最佳”；不得改变训练recipe、父checkpoint schema、官方SDK、预测入口或调用次数；不得上传平台。
 - 计划：`superpowers/plans/2026-11-20-selection-generalization-runtime.md` Task 1-3。
@@ -18,35 +18,54 @@
 
 #### GENERALIZATION-MATRIX-001 多策略跨任务本地验证
 
-- 状态：`IN_PROGRESS`
+- 状态：`DONE_DEVELOPMENT_STRATEGY_SCREENING`
 - 依赖：SELECTION-RELIABILITY-001
 - 优先级：P0
 - 完成标准：在不读取公开确认集作选择的前提下，比较严格父子门、有限探索、合法历史冠军和recipe反馈四种策略；A/B/C使用各自合法组/时间顺序，但共享契约、证据和资源治理；报告平均、最差阶段、恢复、CPU、墙钟、RSS、Token和模型体积；至少保留一套稳定优于当前正式策略的候选，否则维持冻结RC。
 - 停止条件：任一未来/确认泄漏、跨作用域选优、按数据集名称硬编码动作、或任何任务明显灾难性退化时停止该候选；不消耗官方试运行。
 - 计划：同上Task 4-5。
-- 当前证据：A1零训练重放已通过，11项专项测试；三条O-PLATFORM-019确认退化反例3/3失败保留父模型。下一步为预注册并运行train内部十轮跨任务矩阵。
+- 证据：A1零训练反例重放11项通过；A2四策略因B灾难门全部淘汰；A3实验ID失配无效；A4/A5的独立复审缺陷均保留。A6精确复演120/120轮，symlink/junction与最终checkpoint绑定门通过；只保留`bounded_exploration`为开发候选。摘要SHA-256 `BA850904...B126F68`；本任务不代替D-088的最终独立泛化门。
+
+#### PERFORMANCE-METHOD-PILOT-001 原生checkpoint兼容方法趋势筛选
+
+- 状态：`READY`
+- 依赖：GENERALIZATION-MATRIX-001、METHOD-PORTFOLIO-PILOT-001
+- 优先级：P0，当前唯一执行任务
+- 完成标准：基于合法相邻未见阶段，针对A类别不平衡/近期回放、B高尺度异质回归、C稳健与非对称RUL损失分别运行有界方法pilot；每项先独立对照，只有平均、最差阶段和资源同时满足门才与A4策略组合；至少保留一套不劣于A4双候选且改善C RMSE/NASA趋势的父checkpoint兼容方法，否则维持A4策略候选。
+- 停止条件：不得改变checkpoint schema、从头训练替代父模型、读取公开confirmation作选择、按A/B/C名称在正式动作中硬编码方法，或把论文/成熟方法名称当作已验证收益；任一方法连续父链出现非有限值、不可加载或5%灾难退化立即停止。
+- 计划：`superpowers/plans/2026-11-20-selection-generalization-runtime.md` Task 5。
 
 #### PYTRIO-ADVISOR-OPT-001 镜像外Advisor训练与SwanLab聚合记录
 
-- 状态：`BLOCKED_BY_GENERALIZATION_MATRIX_001`
-- 依赖：GENERALIZATION-MATRIX-001
+- 状态：`BLOCKED_BY_PERFORMANCE_METHOD_PILOT_001`
+- 依赖：GENERALIZATION-MATRIX-001、PERFORMANCE-METHOD-PILOT-001
 - 优先级：P1
 - 完成标准：先验证基础Qwen在冻结反例集的结构化有效率和数值关系正确率；只有仍存在系统性错误时才用获授权、脱敏轨迹训练PyTRiO Advisor，并在未参与训练的轨迹上证明优于基础模型；SwanLab只同步聚合配置、指标、资源、Token和失败类别，敏感扫描为零。
 - 停止条件：不得把PyTRiO私有SDK、Sampler、Tokenizer、API Key或SwanLab依赖放入正式镜像；不得用隐藏标签、逐样本数据或已暴露确认集训练Advisor；未显著改善则保持基础模型。
 - 计划：同上Task 6。
 
+#### FINAL-GENERALIZATION-VALIDATION-001 冻结方法后独立替代流/任务留出验收
+
+- 状态：`BLOCKED_BY_PERFORMANCE_METHOD_PILOT_001`
+- 依赖：PERFORMANCE-METHOD-PILOT-001；如PYTRIO-ADVISOR-OPT-001的产物改变最终决策逻辑，则其也是依赖
+- 优先级：P0
+- 完成标准：在不参与触发阈值、recipe或方法选择的替代流/任务留出上，对冻结策略+方法一次性评估；平均、最差阶段、恢复、CPU/墙钟/RSS/模型体积和泄漏门均通过；失败时维持冻结Protocol RC。
+- 停止条件：禁止使用已暴露confirmation/public validation；打开留出后禁止调阈值或方法；禁止用同一开发代理流重命名冒充独立证据；不消耗官方试运行。
+
 #### FORMAL-RC-NEXT-001 新正式候选冻结
 
 - 状态：`BLOCKED_BY_LOCAL_GATES`
-- 依赖：SELECTION-RELIABILITY-001、GENERALIZATION-MATRIX-001；PYTRIO-ADVISOR-OPT-001只有在证明有效时才是依赖
+- 依赖：SELECTION-RELIABILITY-001、GENERALIZATION-MATRIX-001、PERFORMANCE-METHOD-PILOT-001、FINAL-GENERALIZATION-VALIDATION-001；PYTRIO-ADVISOR-OPT-001只有在证明有效且被采用时才是依赖
 - 优先级：P0
 - 完成标准：仅集成已证明稳定的策略与方法；完整回归、官方SDK、A/B/C十轮、60次宿主调用、30个真实候选、父链、预测、4核8GB、64MiB、禁入扫描及docker save/load全部通过；形成唯一归档、源码提交和脱敏实验记录。
 - 停止条件：任一任务、协议、资源或禁入门失败时不得替换冻结归档；平台上传继续由FORMAL-RELEASE-001单独授权。
 
 ```text
-SELECTION-RELIABILITY-001(IN_PROGRESS)
-  -> GENERALIZATION-MATRIX-001(BLOCKED)
+SELECTION-RELIABILITY-001(DONE)
+  -> GENERALIZATION-MATRIX-001(DONE_DEVELOPMENT_STRATEGY_SCREENING)
+  -> PERFORMANCE-METHOD-PILOT-001(READY)
   -> PYTRIO-ADVISOR-OPT-001(BLOCKED, CONDITIONAL)
+  -> FINAL-GENERALIZATION-VALIDATION-001(BLOCKED)
   -> FORMAL-RC-NEXT-001(BLOCKED)
   -> FORMAL-RELEASE-001(BLOCKED_EXTERNAL)
 ```

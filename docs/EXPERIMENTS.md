@@ -704,3 +704,68 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 - 预期产物：`D:/brace-msi-generalization/GENERALIZATION-MATRIX-001-A1/decision-replay.json`和仓库内脱敏结果摘要；失败结果同样保留。
 - 结果：三条已确认退化反例在`strict_parent_gate`下3/3保留父模型；四策略在冻结反例上均未部署退化候选。作用域、可恢复冠军、有限探索、非有限值和recipe有限冷却共11项测试通过。
 - 机器证据：`D:/brace-msi-generalization/GENERALIZATION-MATRIX-001-A1/decision-replay.json`，SHA-256 `CDD3D5C98BE12F899E85C207AAD9D3C714659ECF191AD51D66D6616B6516C170`；训练、公开确认读取、PyTRiO远程、SwanLab同步和官方试运行均为0。
+
+## GENERALIZATION-MATRIX-001-A2（COMPLETED_NEGATIVE_NO_PROMOTION）
+
+- 研究问题：在相同父checkpoint、相同合法十轮流和相同身份无关候选recipe下，严格父子门、有限探索、当前作用域重评历史模型、recipe有限反馈中，哪种策略能同时改善三任务平均到达表现、最差阶段与恢复速度，而不引入灾难性退化？
+- 数据：只读`OFFICIAL-FLOW-SIM-001-A2/{A,B,C}/runtime-inputs/round-01..10`中的Update/Gate/feedback；禁止访问其`confirmation`目录。A按自然批次/时间、B按轴承寿命阶段、C按完整unit构造；这些是已登记的本地代理流，不冒充官方隐藏生命周期。
+- 父模型：官方训练包A/B/C原始`checkpoint.npz`；不得从历史最佳或公开validation选择起点。
+- 候选：每轮至少训练一个真实原生MLP候选；候选集合只由任务类型、已开放Update历史、延迟收益和趋势证据生成，最多两种，来自`current_e1 / soup_current_e3_alpha0.25 / recent_e3 / current_e3_lr3 / cumulative_e3_lr0.3`。禁止按A/B/C名称选动作。
+- 四策略：`strict_parent_gate`只部署当前Gate严格改善候选；`bounded_exploration`仅在候选硬合法、父模型可恢复、尚有预算且回退幅度不超过分类0.002或回归父指标1%时探索；`conditional_champion`只在当前Gate重新评价可恢复历史模型后比较；`recipe_feedback`对性能退化冷却2轮、对训练/产物硬失败永久隔离。
+- 延迟收益与回滚：第t轮部署候选后，第t+1轮在同一到达批次同时评价候选和直接前任；候选变差时先恢复直接前任，再执行本轮训练。第10轮仍训练和作Gate决策，但没有伪造下一轮延迟收益。
+- 指标：A Macro-F1/Accuracy；B/C RMSE/MAE；报告每策略每任务平均/最差到达有向收益、胜率、负阶段数、回滚数、恢复轮数、候选/部署数、CPU、墙钟、RSS、Token=0、checkpoint大小。自然滚动转换作为多起点，目标/指标变化幅度作为观察到的漂移强度，不合成额外隐藏分布。
+- 成功标准：三任务平均有向收益均非负且至少两个为正；任一任务最差相对退化不超过其静态指标5%；零未来/confirmation读取、零跨作用域选优、所有checkpoint可加载且小于64 MiB。至少一策略在三任务聚合和最差任务上优于当前正式严格策略才可晋级。
+- 停止条件：检测到确认集访问、未来轮访问、身份硬编码、非有限指标、父链不可加载或任一任务超过5%灾难性退化，立即停止对应策略并保留失败证据。
+- 资源：本机CPU；每策略×任务10轮、每轮1—2候选；单策略墙钟上限20分钟，总矩阵上限60分钟。PyTRiO远程、SwanLab同步、Docker和官方试运行均为0。
+- 预期输出：`D:/brace-msi-generalization/GENERALIZATION-MATRIX-001-A2/`，不得覆盖A1和既有流。
+- 结果：12/12策略—任务运行均完成，每轮均训练真实候选；但四策略全部因B最差阶段超过5%灾难门而不得晋级。严格门A/B/C平均有向收益为`+0.313085 / -10.860323 / +0.128450`；recipe反馈为`+0.313085 / +29.449707 / +0.524004`，但B最差相对退化`-109.33%`。
+- 诊断：B代理流不同轴承的绝对RUL尺度交替，当前单组Gate与下一阶段分布不一致；当前策略在第7或第9轮把单组Gate高收益候选部署后，下一批出现大幅负延迟收益。该结果不能证明官方隐藏B必然失败，但足以淘汰A2本地候选。
+- 机器证据：`D:/brace-msi-generalization/GENERALIZATION-MATRIX-001-A2/summary.json`，SHA-256 `517AA24C2064A1231A13D06A27CDD7458E50262CE671BB52C070DDEB8C138223`。JSON中的`valid=true`仅表示执行完整；晋级门为0/4通过，后续runner显式增加`promotion_pass`字段。
+
+## GENERALIZATION-MATRIX-001-A3（INVALID_EVIDENCE_ID_MISMATCH）
+
+- 唯一变更：当回归任务已开放Update目标均值跨度/父`target_scale ≥ 1.0`、无负延迟收益且失败连续少于2轮时，把`current_e3_lr3`加入第二候选。该条件只依赖任务契约和已开放数值证据，不接收A/B/C或数据集名称。
+- 依据：A4连续父链中B的`current_e3_lr3`在9/9相邻未见阶段优于静态，平均RMSE降低287.436；A2的B已开放目标跨度约1.79，而C约0.47，因此该门预期只处理高尺度异质回归，不改变C保守路线。
+- 其余冻结：A2四策略、父checkpoint、十轮流、每轮训练、Gate、延迟收益、回滚、预算、指标、5%灾难门和零confirmation/官方调用全部不变。
+- 成功标准：至少一个策略三任务平均有向收益均非负、至少两个为正、无任务最差相对退化超过5%；否则淘汰该触发条件，不再调阈值。
+- 输出：`D:/brace-msi-generalization/GENERALIZATION-MATRIX-001-A3/`，不得覆盖A1/A2。
+- 运行结果：有限探索和条件冠军的三任务数值均通过预注册性能门，但`summary.json`内部`experiment_id`仍硬编码为A2，因此A3只保留为趋势证据，不作为冻结机器证据。
+
+## GENERALIZATION-MATRIX-001-A4（COMPLETED_TECHNICAL_AUDIT_BLOCKED）
+
+- 唯一修复：`experiment_id`必须从不可为空的输出目录名取得，并由单元测试覆盖。
+- 算法、数据、父checkpoint、四策略、尺度异质触发、候选、预算、阈值、成功门和零confirmation/外部调用全部逐项继承A3，不允许其他变更。
+- 输出：`D:/brace-msi-generalization/GENERALIZATION-MATRIX-001-A4/`；A3保持只读。
+- 结果：12/12策略—任务链完成、120/120轮均训练真实候选。原始机器门将有限探索与条件历史冠军标为通过，但独立复审确认该结论不能用于晋级：有限探索在第10轮仍错误声称可用下一轮延迟收益回滚；条件历史冠军没有验证正式artifact持久化和恢复。A4是有效技术运行证据，不是稳定泛化通过证据。
+- 有限探索A/B/C平均有向收益：`+0.312990 Macro-F1 / +89.198667 RMSE降低 / +0.173614 RMSE降低`；全局最差相对退化`-1.3983%`，0个灾难任务。
+- 条件历史冠军A/B/C平均有向收益：`+0.313085 / +63.414421 / +0.147862`；B十轮最差收益0、全局最差相对退化同为`-1.3983%`，0个灾难任务。
+- 资源：完整矩阵墙钟42.17秒，各策略累计CPU约2.23—3.38秒，峰值RSS每任务不超过约152 MiB，Token=0；checkpoint 28,848—132,184字节且均可加载。
+- 机器证据：`D:/brace-msi-generalization/GENERALIZATION-MATRIX-001-A4/summary.json`，SHA-256 `AB1870F5710CF9499B13B17D4466ABF5FEA9946A4E8E31F28F14DAEE69FFFB31`。
+
+## GENERALIZATION-MATRIX-001-A5（COMPLETED_TECHNICAL_AUDIT_BLOCKED）
+
+- 研究问题：在不改变A4数据、候选recipe、训练参数和选择阈值的前提下，修正末轮不存在延迟回滚证据、输入路径未失败关闭、最终checkpoint未入晋级门和历史冠军artifact未证明恢复的缺陷后，是否仍有策略超过严格父子门？
+- 唯一允许变更：第10轮不允许`bounded_exploration`依赖不存在的下一轮回滚；输入只允许已物化的`feedback/update/gate`且拒绝越界或符号链接；记录Update/Gate样本数；晋级门检查最后一轮选择安全、每轮真实训练、零confirmation读取并且不劣于`strict_parent_gate`聚合值/最差值。`conditional_champion`在正式artifact持久化与恢复未验证前固定不得晋级。
+- 冻结项：官方A/B/C父checkpoint、A4同一代理十轮流、四策略、候选recipe、尺度异质触发、阈值、CPU预算、指标方向和零外部调用。不读取confirmation/public validation，不使用官方试运行。
+- 成功标准：12条链、120轮都完整；末轮不部署退化探索候选；所有路径与样本数可审计；至少一个非冠军策略在三任务平均收益均非负、至少两项为正、无5%灾难退化，且聚合相对收益和最差相对收益均不劣于严格父子门。
+- 停止条件：任何路径逃逸、第10轮虚假回滚、最终退化候选仍部署、不可加载checkpoint、非有限指标或任一任务超过5%灾难门时该策略不得晋级；不继续调阈值。
+- 资源：本机CPU，预计不超过60分钟；PyTRiO远程、SwanLab同步、Docker和官方试运行均为0。
+- 预期输出：`D:/brace-msi-generalization/GENERALIZATION-MATRIX-001-A5/`，不覆盖A1—A4。
+- 结果：12/12策略—任务链、120/120轮真实候选完成，无运行失败。`bounded_exploration`是唯一通过修正后机器门的策略；A/B/C平均有向收益为`+0.312990 / +89.198667 / +0.173614`，最差相对收益`-1.3983%`，0个5%灾难任务。
+- 末轮验证：B/C第10轮候选退化时均保留父模型，未消耗探索预算；12条链的`final_selection_safe=true`。`conditional_champion`即使数值正向也因正式artifact恢复未验证而`promotion_pass=false`。
+- 资源与边界：矩阵墙钟42.27秒；各策略累计CPU约2.33—3.03秒；confirmation/public validation读取0，PyTRiO、SwanLab和官方试运行均为0。A5仍是用于形成尺度异质触发条件的同一开发代理流，只能产生开发候选，不是独立泛化或正式RC准入证据。
+- 独立复审：本次实际目录未发现reparse point，因此没有实际泄漏证据；但runner先`resolve()`再检查链接，同根symlink/junction可绕过输入边界。同时晋级门只检查末轮选择安全，没有把重新加载的最终checkpoint状态与选中模型绑定。因此A5数值保留，但不得作为开发候选晋级证据。
+- 机器证据：`D:/brace-msi-generalization/GENERALIZATION-MATRIX-001-A5/summary.json`，SHA-256 `9903249414FE93D6B4708A348D7E00CDF2DC73F0E9F683BB4C52FED55070B252`。
+
+## GENERALIZATION-MATRIX-001-A6（COMPLETED_DEVELOPMENT_CANDIDATE）
+
+- 唯一修复：在解析路径前拒绝`runtime-inputs`根和轮目录的symlink/junction，并用对抗测试覆盖同根链接；最终模型保存前计算选中内存状态指纹，重新加载后比较全部参数、Adam一/二阶矩、预处理、元数据和末轮Gate预测，且`promotion_pass`必须检查该绑定。
+- 冻结项：A5数据、父checkpoint、候选recipe、选择策略、预算、阈值、指标和成功标准均不变；不读取confirmation/public validation，不调用PyTRiO/SwanLab，不使用官方试运行。
+- 成功标准：三类真实symlink/junction对抗测试通过；12条链的`final_checkpoint_verified=true`；该字段缺失或为false时晋级门必须失败；A5其余数值趋势可复算。
+- 预期输出：`D:/brace-msi-generalization/GENERALIZATION-MATRIX-001-A6/`，不覆盖A1—A5。
+- 结果：12/12策略—任务链、120/120轮真实候选完成；所有最终checkpoint重新加载后的全状态指纹与末轮Gate预测都与选中内存模型一致，12/12`final_checkpoint_verified=true`。
+- 策略结果：`bounded_exploration`为唯一`promotion_pass=true`的开发候选，A/B/C平均有向收益`+0.312990 / +89.198667 / +0.173614`，最差相对收益`-1.3983%`，0个5%灾难任务。历史冠军仍因artifact恢复未验证而不得晋级。
+- 安全证据：内部目录symlink、`runtime-inputs`根symlink和Windows junction三类对抗测试均先红后绿；A6实际输入根的reparse point为0。
+- 资源与边界：墙钟42.41秒；confirmation/public validation读取0，PyTRiO、SwanLab和官方试运行均为0。A6只是开发流候选，仍需D-088规定的方法冻结后独立替代流/任务留出验收。
+- 机器证据：`D:/brace-msi-generalization/GENERALIZATION-MATRIX-001-A6/summary.json`，SHA-256 `BA850904FFE1A839CD839F87C0F6999A53751FE786E5BC12296A8E9F6B126F68`。
+- 独立复审：修复后无剩余技术P0/P1；只批准`bounded_exploration`作为开发候选，不把A6视为独立泛化或正式RC证据。

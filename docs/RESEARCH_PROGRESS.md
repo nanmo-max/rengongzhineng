@@ -763,3 +763,13 @@
 - O-PLATFORM-019三条确认退化反例3/3在严格门下保留父模型；四策略均未部署这些退化候选。
 - 机器产物SHA-256：`CDD3D5C98BE12F899E85C207AAD9D3C714659ECF191AD51D66D6616B6516C170`。
 - 本阶段训练、确认集读取、PyTRiO远程、SwanLab同步和官方试运行均为0。
+- `GENERALIZATION-MATRIX-001-A2`完成12条十轮链，但四策略均因B最差阶段超过5%门而淘汰；A2技术执行完整不等于性能晋级。摘要SHA-256 `517AA24C2064A1231A13D06A27CDD7458E50262CE671BB52C070DDEB8C138223`。
+- A3仅预注册一个身份无关修订：高尺度异质回归加入`current_e3_lr3`第二候选；不改数据、选择策略或阈值，不读取confirmation。
+- A3取得正向数值但`experiment_id`错误，按无效证据保留；A4只修ID并精确复跑。
+- A4 120/120轮真实训练技术完成，但独立复审发现有限探索在第10轮仍依赖不存在的延迟回滚，条件历史冠军未证明正式artifact恢复。摘要SHA-256 `AB1870F5710CF9499B13B17D4466ABF5FEA9946A4E8E31F28F14DAEE69FFFB31`保留，不再作为晋级证据。
+- A5已预注册：只修末轮探索、输入路径失败关闭、最终checkpoint门和历史artifact恢复证据；不改数据、recipe、训练参数或选择阈值。
+- A5数值复演完成，有限探索原始机器门为true；但独立复审的P0链接边界和P1最终checkpoint绑定阻止该结论晋级。A5摘要SHA-256 `9903249414FE93D6B4708A348D7E00CDF2DC73F0E9F683BB4C52FED55070B252`保留。
+- A6已预注册为只修链接/junction失败关闭与最终checkpoint全状态/预测绑定；其余数据和算法冻结。
+- A6 120/120轮完成，12/12最终checkpoint状态指纹与预测绑定通过；symlink/junction三类对抗测试均先红后绿。`bounded_exploration`是唯一开发候选；摘要SHA-256 `BA850904FFE1A839CD839F87C0F6999A53751FE786E5BC12296A8E9F6B126F68`。
+- 独立二次复审确认无剩余技术P0/P1；GENERALIZATION-MATRIX-001只以“开发策略筛选完成”收尾。D-088的方法冻结后独立替代流/任务留出已在TASKS中编码为正式RC前置。
+- A6收口验证：专项`24 passed`，完整回归`511 passed in 145.39s`；开发候选之外不作隐藏泛化或正式RC主张。
