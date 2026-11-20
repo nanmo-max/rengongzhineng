@@ -754,3 +754,6 @@
 - 用户批准分阶段设计后追加D-087：Qwen在确定性指标事实和合法证据可行集合内决策；正式镜像继续只使用宿主`rnd.model()`，PyTRiO训练和SwanLab只在镜像外研究/记录层。
 - 新增设计与实施计划：`superpowers/specs/2026-11-20-selection-generalization-runtime-design.md`、`superpowers/plans/2026-11-20-selection-generalization-runtime.md`；预注册`SELECTION-RELIABILITY-001-A1`，尚未运行训练、远程调用、SwanLab同步或官方试运行。
 - 验证：`git diff --check`通过；下一步按TDD实现MetricContract与选择一致性。
+- `SELECTION-RELIABILITY-001-A1`按TDD完成：5个初始红灯覆盖错误方向、未知指标回退、退化deploy和硬门后提交；随后补充scope双指纹、NaN整轮完成、历史过滤、v1迁移、requested/applied、显式NASA方向和计时边界。
+- 运行核专项最终`50 passed in 1.43s`，完整回归`487 passed in 143.52s`；独立代码复审第一轮提出6个P1、第二轮提出1个P1，全部修复后复审无剩余P0/P1。代码提交`afa9038`。
+- 本阶段没有训练、远程服务、SwanLab、Docker或平台次数；下一步是GENERALIZATION-MATRIX-001的零训练重放和预注册本地矩阵。

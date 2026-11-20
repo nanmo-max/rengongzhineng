@@ -113,20 +113,20 @@
 ## R-055 Qwen数值判断错误导致部署退化候选
 
 - 等级：Critical
-- 状态：`OPEN_IN_PROGRESS`
+- 状态：`MITIGATED_CODE_LOCAL_MATRIX_PENDING`
 - 证据：O-PLATFORM-019中Gas第5轮、Bearing第2轮、Engine第4轮的父/候选主指标关系与deploy动作冲突；当前`agent.py`只校验枚举和非空理由，`submission.py`未校验结构化决定与指标方向。
-- 缓解：SELECTION-RELIABILITY-001按D-087建立唯一MetricContract和同作用域有向收益；Qwen只能在可行集合内选择，矛盾时失败保留父模型。禁止解析自然语言rationale替代结构化事实。
+- 缓解：SELECTION-RELIABILITY-001按D-087建立唯一MetricContract和同作用域有向收益；Qwen只能在可行集合内选择，矛盾时失败保留父模型。冻结反例与全量回归通过；仍需GENERALIZATION-MATRIX-001验证不会过度阻断有效探索。
 
 ## R-056 跨轮评价作用域变化导致伪历史最优
 
 - 等级：High
-- 状态：`OPEN_IN_PROGRESS`
+- 状态：`MITIGATED_BASELINE_HISTORY_RESTORE_DEFERRED`
 - 证据：O-PLATFORM-019中同一artifact在不同轮展示值变化，逐轮报告不支持直接全局排名。
-- 缓解：所有比较携带validation作用域指纹；历史artifact只有恢复后在当前合法作用域重评才能成为best_stable，否则保持null并只保留当前父模型。
+- 缓解：所有比较携带validation作用域指纹；不同作用域历史只保留动作/资源摘要，不向Qwen暴露旧指标。best_stable当前保持null；历史artifact恢复与同口径重评留待GENERALIZATION-MATRIX-001独立验证。
 
 ## R-057 墙钟耗时优化破坏决策信息或正式协议
 
 - 等级：High
-- 状态：`OPEN_MEASUREMENT_FIRST`
+- 状态：`INSTRUMENTED_LOCAL_OFFICIAL_ATTRIBUTION_OPEN`
 - 证据：O-PLATFORM-019三任务墙钟约10,442秒而CPU约1,692秒，但无逐阶段耗时，不能归因。
-- 缓解：先增加聚合阶段计时；只允许删除重复自然语言且保留父/候选数值、方向和硬风险。任何减少调用、缩短证据窗口或改变训练行为都必须独立实验，墙钟改善不足15%不得进入正式线。
+- 缓解：已增加互斥、脱敏且明确scope/excluded的history、两次模型调用、训练评估保存、候选提交、state序列化/RPC和finish ACK计时。仍未用平台运行验证归因；任何减少调用、缩短证据窗口或改变训练行为都必须独立实验，墙钟改善不足15%不得进入正式线。

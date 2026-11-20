@@ -8,16 +8,17 @@
 
 #### SELECTION-RELIABILITY-001 指标事实、选择一致性与阶段计时
 
-- 状态：`IN_PROGRESS`
+- 状态：`DONE`
 - 依赖：O-PLATFORM-019、D-087、FORMAL-EVERY-ROUND-TRAIN-001
 - 优先级：P0，当前唯一执行任务
 - 完成标准：建立唯一`MetricContract`并拒绝指标—方向冲突；Harness计算同一验证作用域内父/候选有向收益；Qwen决策与确定性数值事实冲突时失败保留父模型；硬门失败不提交候选；轮收据记录父、候选、选择产物及验证作用域；阶段计时覆盖history/call1/train-eval-save/call2/submit-state-finish且不记录原始数据或prompt；用最新官方报告反例形成冻结测试夹具。
 - 停止条件：不得解析自然语言理由来建立第二套真相；不得跨不同validation哈希比较历史“最佳”；不得改变训练recipe、父checkpoint schema、官方SDK、预测入口或调用次数；不得上传平台。
 - 计划：`superpowers/plans/2026-11-20-selection-generalization-runtime.md` Task 1-3。
+- 证据：提交`afa9038`；正式运行核`50 passed`，完整回归`487 passed in 143.52s`；独立复审无剩余P0/P1。详见`results/SELECTION-RELIABILITY-001.md`。
 
 #### GENERALIZATION-MATRIX-001 多策略跨任务本地验证
 
-- 状态：`BLOCKED_BY_SELECTION_RELIABILITY_001`
+- 状态：`READY`
 - 依赖：SELECTION-RELIABILITY-001
 - 优先级：P0
 - 完成标准：在不读取公开确认集作选择的前提下，比较严格父子门、有限探索、合法历史冠军和recipe反馈四种策略；A/B/C使用各自合法组/时间顺序，但共享契约、证据和资源治理；报告平均、最差阶段、恢复、CPU、墙钟、RSS、Token和模型体积；至少保留一套稳定优于当前正式策略的候选，否则维持冻结RC。

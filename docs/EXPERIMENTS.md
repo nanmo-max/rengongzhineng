@@ -682,7 +682,7 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 - 冻结归档：`D:/brace-msi-first-principles-release/BRACE-MSI-0.10.3rc1-FINAL/harness.tar`，81,206,272字节，SHA-256 `D08535F0B4A410A9EFF6CBB191505F32B767462B3E42CDC6093E8ABC385CA86A`。
 - 外部使用：PyTRiO私有API、SwanLab、平台上传和官方试运行均为0；下一步只允许受控平台验证。
 
-## SELECTION-RELIABILITY-001-A1（REGISTERED_NOT_RUN）
+## SELECTION-RELIABILITY-001-A1（COMPLETED_PASS_CODE_ONLY）
 
 - 研究问题：在不改变训练recipe、父checkpoint schema、官方SDK和双Qwen调用次数的前提下，能否消除指标方向错误、数值关系与部署字段冲突、跨作用域历史选优和硬门后提交风险，并生成可用于后续泛化矩阵的可信收据？
 - 输入：O-PLATFORM-019冻结反例摘要；现有`brace_formal`代码和单元测试；本地构造的相同/不同validation指纹、合法/非法Qwen结构化决策和硬门失败产物。不读取隐藏标签，不重开公开validation。
@@ -690,3 +690,5 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 - 预算：先只运行专项单元测试和完整代码回归；本阶段官方试运行0次、PyTRiO远程0次、SwanLab同步0次、正式训练0次。
 - 成功标准：冻结反例的指标方向判断100%正确；`macro_f1+lower`、`rmse+higher`和未知不兼容组合失败关闭；不同作用域不得选历史最佳；Qwen矛盾deploy保留父模型；硬门失败不调用`submit_candidate`；计时字段完整且不含原始数据/prompt；完整回归通过。
 - 停止条件：若修复必须改变recipe、训练数值、父链、官方SDK或读取公开确认集，则停止A1并拆分任务；不得在本阶段生成上传镜像。
+- 结果：MetricContract、同作用域有向收益、requested/applied部署事实、NaN失败关闭、state v2血缘、显式NASA合同和脱敏阶段计时均完成。正式运行核50项、全量487项通过；独立复审无剩余P0/P1。提交`afa9038`。
+- 资源与边界：未运行模型训练、远程PyTRiO、SwanLab同步、Docker构建、官方上传或试运行；不得把本结果写成性能或平台通过。

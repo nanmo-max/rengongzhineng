@@ -261,6 +261,6 @@
 
 1. 实时状态以`STATUS.md`和`TASKS.md`顶部的`SELECTION-RELIABILITY-001`为准；`FORMAL-RELEASE-001`继续外部阻塞，不是当前可执行任务。
 2. 阅读O-PLATFORM-019和D-087，再阅读`superpowers/specs/2026-11-20-selection-generalization-runtime-design.md`及对应plan。
-3. 当前只执行MetricContract、同作用域选择一致性、产物血缘和阶段计时；不得同时改变训练recipe、SDK、父checkpoint schema、预测入口或调用次数。
+3. `SELECTION-RELIABILITY-001`已在提交`afa9038`完成；下一任务为`GENERALIZATION-MATRIX-001 (READY)`，先做零训练重放与矩阵预注册，不得直接生成正式RC。
 4. 现有`0.10.6rc1`归档冻结为Protocol RC，不原地改写；新正式候选必须在独立提交与归档中生成。
 5. 正式镜像只走`rnd.model()`；PyTRiO训练和SwanLab记录在镜像外，且只有本地证据通过后才影响新候选。
