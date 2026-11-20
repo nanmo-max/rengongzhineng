@@ -30,7 +30,7 @@
 
 - 状态：`DONE_DEVELOPMENT_METHOD_SCREENING`
 - 依赖：GENERALIZATION-MATRIX-001、METHOD-PORTFOLIO-PILOT-001
-- 优先级：P0，当前唯一执行任务
+- 优先级：P0
 - 完成标准：基于合法相邻未见阶段，针对A类别不平衡/近期回放、B高尺度异质回归、C稳健与非对称RUL损失分别运行有界方法pilot；每项先独立对照，只有平均、最差阶段和资源同时满足门才与A4策略组合；至少保留一套不劣于A4双候选且改善C RMSE/NASA趋势的父checkpoint兼容方法，否则维持A4策略候选。
 - 停止条件：不得改变checkpoint schema、从头训练替代父模型、读取公开confirmation作选择、按A/B/C名称在正式动作中硬编码方法，或把论文/成熟方法名称当作已验证收益；任一方法连续父链出现非有限值、不可加载或5%灾难退化立即停止。
 - 计划：`superpowers/plans/2026-11-20-selection-generalization-runtime.md` Task 5。
@@ -40,7 +40,7 @@
 
 - 状态：`DONE_EXTERNAL_ADVISOR_CANDIDATE`
 - 依赖：GENERALIZATION-MATRIX-001、PERFORMANCE-METHOD-PILOT-001
-- 优先级：P0，当前唯一执行任务
+- 优先级：P0
 - 完成标准：先验证基础Qwen在冻结反例集的结构化有效率和数值关系正确率；只有仍存在系统性错误时才用获授权、脱敏轨迹训练PyTRiO Advisor，并在未参与训练的轨迹上证明优于基础模型；SwanLab只同步聚合配置、指标、资源、Token和失败类别，敏感扫描为零。
 - 停止条件：不得把PyTRiO私有SDK、Sampler、Tokenizer、API Key或SwanLab依赖放入正式镜像；不得用隐藏标签、逐样本数据或已暴露确认集训练Advisor；未显著改善则保持基础模型。
 - 计划：同上Task 6。
@@ -48,11 +48,12 @@
 
 #### FINAL-GENERALIZATION-VALIDATION-001 冻结方法后独立替代流/任务留出验收
 
-- 状态：`READY`
+- 状态：`DONE_INVALID_PROTOCOL_AND_NEGATIVE_NO_FORMAL_PROMOTION`
 - 依赖：PERFORMANCE-METHOD-PILOT-001；如PYTRIO-ADVISOR-OPT-001的产物改变最终决策逻辑，则其也是依赖
 - 优先级：P0
 - 完成标准：在不参与触发阈值、recipe或方法选择的替代流/任务留出上，对冻结策略+方法一次性评估；平均、最差阶段、恢复、CPU/墙钟/RSS/模型体积和泄漏门均通过；失败时维持冻结Protocol RC。
 - 停止条件：禁止使用已暴露confirmation/public validation；打开留出后禁止调阈值或方法；禁止用同一开发代理流重命名冒充独立证据；不消耗官方试运行。
+- 证据：A1在提交`5f03a17`冻结后一次性打开XJTU三个密封轴承；密封全局RMSE/MAE分别改善9.35%/8.75%，2/3轴承改善。但开发第10轮最差相对收益`-99.61%`，且独立审查发现延迟收益复用当前Gate标签、峰值RSS和恢复未验证。A1不得晋级或针对密封结果调参；密封数值只保留描述性证据。摘要SHA-256 `22D4143B...38AA05`，详见`results/FINAL-GENERALIZATION-VALIDATION-001.md`。
 
 #### FORMAL-RC-NEXT-001 新正式候选冻结
 
@@ -67,8 +68,8 @@ SELECTION-RELIABILITY-001(DONE)
   -> GENERALIZATION-MATRIX-001(DONE_DEVELOPMENT_STRATEGY_SCREENING)
   -> PERFORMANCE-METHOD-PILOT-001(DONE_DEVELOPMENT_METHOD_SCREENING)
   -> PYTRIO-ADVISOR-OPT-001(DONE_EXTERNAL_ADVISOR_CANDIDATE)
-  -> FINAL-GENERALIZATION-VALIDATION-001(READY)
-  -> FORMAL-RC-NEXT-001(BLOCKED)
+  -> FINAL-GENERALIZATION-VALIDATION-001(DONE_INVALID_PROTOCOL_AND_NEGATIVE)
+  -> FORMAL-RC-NEXT-001(BLOCKED_BY_LOCAL_GATES)
   -> FORMAL-RELEASE-001(BLOCKED_EXTERNAL)
 ```
 

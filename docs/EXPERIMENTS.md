@@ -835,7 +835,7 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 - 记录：SwanLab公开聚合运行`https://swanlab.cn/@nanmo-max/BRACE-MSI/runs/k4jvqkuj`；仅20条训练step/评估聚合记录，spool SHA-256 `6FBB96626BE8E829C9BC0C469C25A43D3D23B28EEEB836923182D247D51BF694`，密钥、`trio://`、原始提示/响应、父候选指标对象、特征和标签扫描零匹配。首次sync在远端创建后因Windows GBK打印emoji中止，随后以同一run ID和UTF-8确认上传完成；未重复创建正式记录。
 - 边界：Sampler路径保存在本地受控产物中用于平台提交页校验，不进入Git或镜像；比赛提交页尚未验证该新Sampler，因此只标记镜像外候选。官方试运行使用0次。
 
-## FINAL-GENERALIZATION-VALIDATION-001-A1（PREREGISTERED_NOT_OPENED）
+## FINAL-GENERALIZATION-VALIDATION-001-A1（COMPLETED_INVALID_PROTOCOL_AND_FAIL_GATE）
 
 - 研究问题：冻结的`bounded_exploration`选择策略及A6原生回归recipe，在一个没有参与阈值、recipe或方法选择的真实工业退化任务上，能否同时保持平均收益、最差阶段与资源安全，并在一次性密封轴承留出上优于同源静态父模型？
 - 数据：XJTU-SY固定9/3/3轴承切分。9个初训轴承建立静态父模型；3个开发轴承仅按各自寿命进度形成10轮开发流；`Bearing1_5/Bearing2_5/Bearing3_5`在本条登记时尚无特征缓存，全部开发决策冻结后才允许一次性提取并仅作预测确认。
@@ -843,3 +843,5 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 - 冻结验收：开发流平均有向收益不低于0、最差相对收益不低于-5%；密封全局RMSE和MAE均不劣于静态父模型，至少2/3密封轴承RMSE改善，最差单轴承相对收益不低于-5%；CPU<=600秒、墙钟<=900秒、RSS<=8GiB、checkpoint<=64MiB；样本ID三分区零交叉，最终checkpoint保存加载预测一致。
 - 一次性边界：打开密封数据后不得修改阈值、recipe、模型结构或本条验收标准；失败只允许保留既有Protocol RC或回退冻结A6，不得针对密封结果继续调参。公开validation/confirmation读取0次、官方试运行0次、PyTRiO远程0次、SwanLab同步0次。
 - 预期产物：`D:/brace-msi-final/FINAL-GENERALIZATION-VALIDATION-001-A1/summary.json`、一次性打开锁、密封派生缓存清单、开发轮收据、静态/候选密封预测指标和仓库内脱敏结果摘要。
+- 结果：开发10轮、16候选、10部署、2回滚；平均RMSE有向收益`+188.967744`，但最差相对收益`-99.61%`，未通过冻结的最差阶段门。密封全局RMSE `243.718016→220.922262`、MAE `184.328347→168.207564`，2/3轴承改善，最差轴承退化2.04%；资源、泄漏和checkpoint门通过。
+- 判定：机器promotion=false并直接失败`development_worst_relative_gain_min`；独立审查进一步发现开发延迟收益复用当前Gate、A1峰值RSS和恢复未验证。密封最终预测只保留描述性证据；根据D-091不晋级、不重跑、不基于密封结果调参。摘要SHA-256 `22D4143B53074CE6A3CF8C913937157EE42403400FA462E0C2AE66ACEF38AA05`。

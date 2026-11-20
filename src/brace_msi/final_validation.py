@@ -8,6 +8,7 @@ import json
 import math
 import os
 from pathlib import Path
+import sys
 import tempfile
 import time
 from typing import Any
@@ -80,6 +81,22 @@ def assert_sealed_not_cached(cache_root: Path, bearings: tuple[str, ...]) -> Non
         raise FinalValidationError(
             "sealed holdout was already cached: " + ", ".join(sorted(existing))
         )
+
+
+def peak_rss_bytes() -> int:
+    """Return the process high-water resident set, never an endpoint sample."""
+
+    memory = psutil.Process(os.getpid()).memory_info()
+    peak_wset = getattr(memory, "peak_wset", None)
+    if isinstance(peak_wset, int) and peak_wset > 0:
+        return peak_wset
+    try:
+        import resource
+
+        maximum = int(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
+        return maximum if sys.platform == "darwin" else maximum * 1024
+    except (ImportError, OSError, ValueError):
+        return int(memory.rss)
 
 
 def build_progress_rounds(
@@ -338,6 +355,24 @@ def _regression_recipes(
     return tuple(dict.fromkeys(filter(None, (plan.primary_recipe, secondary))))
 
 
+def delayed_gain_on_update(
+    predecessor: _NativeModel, deployed: _NativeModel, current: ProgressRound
+) -> float:
+    """Settle a prior deployment on Update only, leaving current Gate untouched."""
+
+    predecessor_metrics = _metrics(
+        "regression",
+        current.update_y,
+        _native_prediction(predecessor, current.update_x),
+    )
+    deployed_metrics = _metrics(
+        "regression",
+        current.update_y,
+        _native_prediction(deployed, current.update_x),
+    )
+    return _signed_gain("regression", predecessor_metrics, deployed_metrics)
+
+
 def _adapt(
     initial: _NativeModel,
     rounds: tuple[ProgressRound, ...],
@@ -364,10 +399,7 @@ def _adapt(
         delayed_gain: float | None = None
         rolled_back = False
         if direct_predecessor is not None:
-            predecessor_metrics = _metrics(
-                "regression", arrival_y, _native_prediction(direct_predecessor, arrival_x)
-            )
-            delayed_gain = _signed_gain("regression", predecessor_metrics, arrival_metrics)
+            delayed_gain = delayed_gain_on_update(direct_predecessor, parent, current)
             previous_delayed_gain = delayed_gain
             if delayed_gain < 0.0:
                 parent = direct_predecessor
@@ -451,6 +483,7 @@ def _adapt(
                 "static_metrics": static_metrics,
                 "arrival_gain_vs_static": arrival_gain,
                 "delayed_gain": delayed_gain,
+                "delayed_evidence_scope": "update_only" if delayed_gain is not None else None,
                 "rolled_back_before_training": rolled_back,
                 "update_sample_count": len(current.update_y),
                 "gate_sample_count": len(current.gate_y),
@@ -528,6 +561,25 @@ def _evaluate_batches(
     }
 
 
+def _preopen_id_sets(
+    initial_batches: tuple[tuple[np.ndarray, np.ndarray, tuple[str, ...]], ...],
+    development_batches: tuple[tuple[np.ndarray, np.ndarray, tuple[str, ...]], ...],
+) -> tuple[set[str], set[str]]:
+    initial_sequence = [str(value) for batch in initial_batches for value in batch[2]]
+    development_sequence = [
+        str(value) for batch in development_batches for value in batch[2]
+    ]
+    if len(initial_sequence) != len(set(initial_sequence)):
+        raise FinalValidationError("initial sample IDs overlap internally")
+    if len(development_sequence) != len(set(development_sequence)):
+        raise FinalValidationError("development sample IDs overlap internally")
+    initial_ids = set(initial_sequence)
+    development_ids = set(development_sequence)
+    if initial_ids & development_ids:
+        raise FinalValidationError("initial and development sample IDs overlap")
+    return initial_ids, development_ids
+
+
 def run_one_time_validation(
     *,
     initial_batches: tuple[tuple[np.ndarray, np.ndarray, tuple[str, ...]], ...],
@@ -535,16 +587,22 @@ def run_one_time_validation(
     open_sealed: Any,
     output_root: Path,
     config: dict[str, Any],
+    claim_path: Path | None = None,
+    preopen_receipt: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Run all development decisions before atomically opening a virgin holdout."""
 
     output_root = Path(output_root)
     if output_root.exists():
         raise FinalValidationError("output root must be new")
+    initial_ids, development_ids = _preopen_id_sets(
+        initial_batches, development_batches
+    )
     output_root.mkdir(parents=True)
+    if preopen_receipt is not None:
+        _atomic_json(output_root / "preopen-receipt.json", preopen_receipt)
     wall_started = time.monotonic()
     cpu_started = time.process_time()
-    process = psutil.Process(os.getpid())
     parent_config = {**config["parent"], "seed": int(config["seed"])}
     static = _build_parent(initial_batches, parent_config)
     static_path = output_root / "static-parent.npz"
@@ -567,17 +625,26 @@ def run_one_time_validation(
         },
     )
 
-    claim_one_time_holdout(
-        output_root / "sealed-opened.json", experiment_id=str(config["experiment_id"])
-    )
+    canonical_claim = Path(claim_path) if claim_path is not None else output_root / "sealed-opened.json"
+    claim_one_time_holdout(canonical_claim, experiment_id=str(config["experiment_id"]))
+    if canonical_claim != output_root / "sealed-opened.json":
+        _atomic_json(
+            output_root / "sealed-opened.json",
+            {
+                "experiment_id": config["experiment_id"],
+                "canonical_claim": str(canonical_claim.resolve()),
+                "post_open_tuning_allowed": False,
+            },
+        )
     sealed_batches = tuple(open_sealed())
     if not sealed_batches:
         raise FinalValidationError("sealed holdout is empty")
     sealed = _evaluate_batches(static, candidate, sealed_batches)
 
-    initial_ids = {value for batch in initial_batches for value in batch[2]}
-    development_ids = {value for batch in development_batches for value in batch[2]}
     sealed_ids = {value for batch in sealed_batches for value in batch[2]}
+    sealed_sequence = [value for batch in sealed_batches for value in batch[2]]
+    if len(sealed_sequence) != len(sealed_ids):
+        raise FinalValidationError("sealed sample IDs overlap internally")
     overlap = len(initial_ids & development_ids) + len(initial_ids & sealed_ids) + len(
         development_ids & sealed_ids
     )
@@ -595,7 +662,7 @@ def run_one_time_validation(
         "sealed_improved_bearings": sealed["improved_bearings"],
         "cpu_seconds": time.process_time() - cpu_started,
         "wall_seconds": time.monotonic() - wall_started,
-        "peak_rss_bytes": int(process.memory_info().rss),
+        "peak_rss_bytes": peak_rss_bytes(),
         "checkpoint_bytes": candidate_path.stat().st_size,
         "leakage_free": overlap == 0,
         "checkpoint_verified": checkpoint_verified,
@@ -626,6 +693,7 @@ def run_one_time_validation(
             "cpu_seconds": observed["cpu_seconds"],
             "wall_seconds": observed["wall_seconds"],
             "peak_rss_bytes": observed["peak_rss_bytes"],
+            "peak_rss_scope": "process_high_water",
             "checkpoint_bytes": observed["checkpoint_bytes"],
         },
         "promotion": promotion,

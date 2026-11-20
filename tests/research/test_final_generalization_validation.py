@@ -7,10 +7,14 @@ import pytest
 
 from brace_msi.final_validation import (
     FinalValidationError,
+    ProgressRound,
+    _build_parent,
     assert_sealed_not_cached,
     build_progress_rounds,
     claim_one_time_holdout,
+    delayed_gain_on_update,
     load_cache_batch,
+    peak_rss_bytes,
     promotion_decision,
     run_one_time_validation,
 )
@@ -173,3 +177,128 @@ def test_cache_loader_and_virgin_guard_fail_closed(tmp_path: Path) -> None:
     (tmp_path / "Bearing1_5.npz").write_bytes(b"opened")
     with pytest.raises(FinalValidationError, match="already cached"):
         assert_sealed_not_cached(tmp_path, ("Bearing1_5",))
+
+
+def test_shared_claim_blocks_second_output_directory(tmp_path: Path) -> None:
+    def batch(name: str):
+        x = np.column_stack((np.arange(40, dtype=float), np.ones(40)))
+        y = np.arange(39, -1, -1, dtype=float)
+        return x, y, tuple(f"{name}:{index}" for index in range(40))
+
+    initial = tuple(batch(f"initial-{index}") for index in range(3))
+    development = tuple(batch(f"development-{index}") for index in range(3))
+    sealed = tuple(batch(f"sealed-{index}") for index in range(3))
+    opened = 0
+
+    def open_sealed():
+        nonlocal opened
+        opened += 1
+        return sealed
+
+    config = {
+        "experiment_id": "shared-claim-test",
+        "seed": 7,
+        "parent": {"hidden": 4, "epochs": 1, "learning_rate": 0.003, "batch_size": 16},
+        "adaptation": {
+            "rounds": 10,
+            "update_fraction": 0.8,
+            "strategy": "bounded_exploration",
+            "exploration_budget": 2,
+            "relative_regression_tolerance": 0.01,
+        },
+        "promotion_gate": {
+            "development_mean_gain_min": -1e9,
+            "development_worst_relative_gain_min": -1e9,
+            "sealed_global_rmse_gain_min": -1e9,
+            "sealed_global_mae_gain_min": -1e9,
+            "sealed_worst_bearing_relative_gain_min": -1e9,
+            "sealed_minimum_improved_bearings": 0,
+            "max_cpu_seconds": 600.0,
+            "max_wall_seconds": 900.0,
+            "max_rss_bytes": 8589934592,
+            "max_checkpoint_bytes": 67108864,
+        },
+    }
+    claim = tmp_path / "dataset-claims" / "xjtu-frozen-split-v1.json"
+    run_one_time_validation(
+        initial_batches=initial,
+        development_batches=development,
+        open_sealed=open_sealed,
+        output_root=tmp_path / "run-one",
+        config=config,
+        claim_path=claim,
+    )
+
+    with pytest.raises(FinalValidationError, match="already claimed"):
+        run_one_time_validation(
+            initial_batches=initial,
+            development_batches=development,
+            open_sealed=open_sealed,
+            output_root=tmp_path / "run-two",
+            config=config,
+            claim_path=claim,
+        )
+    assert opened == 1
+
+
+def test_overlapping_development_ids_fail_before_holdout_is_opened(tmp_path: Path) -> None:
+    x = np.column_stack((np.arange(40, dtype=float), np.ones(40)))
+    y = np.arange(39, -1, -1, dtype=float)
+    shared = tuple(f"shared:{index}" for index in range(40))
+    opened = False
+
+    def open_sealed():
+        nonlocal opened
+        opened = True
+        raise AssertionError("holdout must remain closed")
+
+    config = {
+        "experiment_id": "overlap-test",
+        "seed": 7,
+        "parent": {"hidden": 4, "epochs": 1, "learning_rate": 0.003, "batch_size": 16},
+        "adaptation": {"rounds": 10, "update_fraction": 0.8},
+        "promotion_gate": {},
+    }
+    with pytest.raises(FinalValidationError, match="overlap"):
+        run_one_time_validation(
+            initial_batches=((x, y, shared),),
+            development_batches=((x, y, shared),),
+            open_sealed=open_sealed,
+            output_root=tmp_path / "result",
+            config=config,
+        )
+    assert opened is False
+    assert not (tmp_path / "result").exists()
+
+
+def test_delayed_gain_uses_update_only_and_peak_rss_is_high_water() -> None:
+    initial = (
+        np.column_stack((np.arange(20, dtype=float), np.ones(20))),
+        np.linspace(0.0, 10.0, 20),
+        tuple(f"initial:{index}" for index in range(20)),
+    )
+    base = _build_parent(
+        (initial,),
+        {"hidden": 2, "epochs": 1, "learning_rate": 0.003, "batch_size": 8, "seed": 4},
+    )
+    predecessor = base.clone()
+    deployed = base.clone()
+    for model, prediction in ((predecessor, 0.0), (deployed, 10.0)):
+        model.params["w1"].fill(0.0)
+        model.params["b1"].fill(0.0)
+        model.params["w2"].fill(0.0)
+        model.params["b2"].fill(
+            (prediction - float(model.meta["target_mean"]))
+            / float(model.meta["target_scale"])
+        )
+    current = ProgressRound(
+        update_x=np.ones((4, 2)),
+        update_y=np.full(4, 10.0),
+        update_ids=("u1", "u2", "u3", "u4"),
+        gate_x=np.ones((20, 2)),
+        gate_y=np.zeros(20),
+        gate_ids=tuple(f"g{index}" for index in range(20)),
+    )
+
+    assert delayed_gain_on_update(predecessor, deployed, current) > 0.0
+    assert peak_rss_bytes() >= 1

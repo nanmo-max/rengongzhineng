@@ -790,3 +790,11 @@
 - A2完成18/18步，最终loss `0.001425805`；新留出基础policy 66.67%/安全91.67%，Sampler四项100%，重新加载复评仍四项100%。
 - SwanLab只同步20条聚合记录；敏感扫描零命中，公开链接为`https://swanlab.cn/@nanmo-max/BRACE-MSI/runs/k4jvqkuj`。首次同步仅在Windows GBK打印链接阶段失败，随后同run ID UTF-8确认137条底层记录上传完成。
 - 未修改或构建正式镜像，未上传比赛平台，未消耗官方试运行。下一任务为D-088独立泛化验收。
+
+# 2026-11-20 FINAL-GENERALIZATION-VALIDATION-001
+
+- 在提交`5f03a17`冻结配置与代码后，首次且唯一一次提取`Bearing1_5/Bearing2_5/Bearing3_5`；原持久缓存目录打开前无密封缓存，三分区样本ID交叉0。
+- 开发流10/10轮、16候选、10部署、2延迟回滚；平均RMSE有向收益`+188.967744`，但第10轮最差相对收益`-99.61%`，违反预注册最差阶段门。
+- 密封预测总体为正：RMSE `243.718016→220.922262`（改善9.35%），MAE `184.328347→168.207564`（改善8.75%）；2/3轴承改善、最差轴承仅退化2.04%。
+- CPU `17.97s`、墙钟`12.49s`、结束时RSS约108.3MiB、checkpoint 42,320字节；A1峰值RSS和右截尾恢复未验证。checkpoint重载预测一致；公开确认读取、PyTRiO、SwanLab、官方试运行均0。
+- 独立审查发现A1延迟收益使用当前Update+Gate后又以同一Gate评价候选，不满足Gate单一验证用途；未来执行器改为Update-only，但密封不重开。依据D-088/D-091判`DONE_INVALID_PROTOCOL_AND_NEGATIVE_NO_FORMAL_PROMOTION`。摘要SHA-256 `22D4143B53074CE6A3CF8C913937157EE42403400FA462E0C2AE66ACEF38AA05`。

@@ -1,6 +1,14 @@
 # 新会话恢复与交接
 
-## 2026-11-20 Advisor完成后的当前恢复入口
+## 2026-11-20 一次性泛化验收后的当前恢复入口
+
+1. 当前分支`codex/first-principles-rebuild`；`FINAL-GENERALIZATION-VALIDATION-001`以协议无效且数值门失败结束，没有新的本地READY任务。
+2. XJTU密封摘要位于`D:/brace-msi-final/FINAL-GENERALIZATION-VALIDATION-001-A1/summary.json`，SHA-256 `22D4143B...38AA05`。密封RMSE/MAE改善，但开发最差阶段`-99.61%`，且A1延迟收益复用当前Gate、峰值RSS/恢复未验证。
+3. 密封组已经打开，禁止用其结果调整阈值、recipe、模型结构或重跑；A4分类复合方法仍没有新的真实独立分类证明。
+4. 保持历史Protocol RC冻结；`FORMAL-RC-NEXT-001`继续`BLOCKED_BY_LOCAL_GATES`。只有新的未暴露数据或官方材料才能创建下一性能任务。
+5. 镜像外Advisor与SwanLab证据不变：公开运行`https://swanlab.cn/@nanmo-max/BRACE-MSI/runs/k4jvqkuj`，Sampler未通过提交页校验前不得声称正式采用。
+
+## 2026-11-20 Advisor完成后的历史恢复入口
 
 1. 当前分支`codex/first-principles-rebuild`；选择可靠性、A6开发策略、A4原生方法和镜像外Advisor均已收口。当前唯一READY任务是`FINAL-GENERALIZATION-VALIDATION-001`。
 2. 冻结开发候选：A6 `bounded_exploration` + A4分类`balanced_current_e3/native_recent_e3`；回归保持A6原生recipe。它们仍不是正式RC，必须通过D-088一次性独立替代流/任务留出。

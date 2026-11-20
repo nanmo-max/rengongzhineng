@@ -78,7 +78,10 @@ def main() -> int:
     parser.add_argument("--output-root", type=Path, required=True)
     args = parser.parse_args()
 
-    config = json.loads(args.config.read_text(encoding="utf-8"))
+    config_bytes = args.config.read_bytes()
+    config_sha256 = hashlib.sha256(config_bytes).hexdigest()
+    config = json.loads(config_bytes.decode("utf-8"))
+    source_commit = _git_head()
     if args.output_root.name != config["experiment_id"]:
         parser.error("output directory name must equal experiment_id")
     for key, split_key in (
@@ -105,6 +108,23 @@ def main() -> int:
         )
         for bearing in config["development_bearings"]
     )
+    input_cache_fingerprints = {
+        bearing: _sha256(args.existing_cache_root / f"{bearing}.npz")
+        for bearing in (*config["initial_bearings"], *config["development_bearings"])
+    }
+    canonical_claim = (
+        args.existing_cache_root.parent
+        / ".holdout-claims"
+        / "xjtu-frozen-split-v1.json"
+    )
+    preopen_receipt = {
+        "experiment_id": config["experiment_id"],
+        "config_sha256": config_sha256,
+        "source_commit": source_commit,
+        "input_cache_fingerprints": input_cache_fingerprints,
+        "sealed_split": list(sealed_bearings),
+        "sealed_opened": False,
+    }
 
     def open_sealed():
         feature_root = args.output_root / "sealed-features"
@@ -145,12 +165,15 @@ def main() -> int:
         open_sealed=open_sealed,
         output_root=args.output_root,
         config=config,
+        claim_path=canonical_claim,
+        preopen_receipt=preopen_receipt,
     )
     evidence = {
         "experiment_id": config["experiment_id"],
         "config": str(args.config.resolve()),
-        "config_sha256": _sha256(args.config),
-        "source_commit": _git_head(),
+        "config_sha256": config_sha256,
+        "source_commit": source_commit,
+        "preopen_receipt_sha256": _sha256(args.output_root / "preopen-receipt.json"),
         "sealed_feature_manifest_sha256": _sha256(
             args.output_root / "sealed-feature-manifest.json"
         ),
