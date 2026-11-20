@@ -1,9 +1,9 @@
 # 当前状态
 
 - 最近同步：2026-11-20（Asia/Shanghai）
-- 当前阶段：一次性独立泛化验收已完成但未通过完整晋级门；既有正式归档保持冻结，不从密封结果反向调参
-- 当前路线：**官方SDK 1.0.2 + 每轮Qwen训练提案 + 真实父checkpoint续训 + Harness确定性指标事实 + Qwen在合法可行集合内部署/保留/回滚 + 硬SafetyGate** `[D-079]` `[D-080]` `[D-086]` `[D-087]`
-- 当前唯一核心任务：无`READY`任务。`RELEASE-COMPATIBILITY-AUDIT-001`已完成并判`DONE_AUDIT_FAIL_RELEASE`：`0.10.6rc1`本地协议/容器链通过，但精确归档会接受明确退化候选的错误deploy决定，禁止作为最终正式提交。当前源码的选择一致性修复已通过533项测试，但尚无匹配正式归档且最终泛化门失败；`FORMAL-RC-NEXT-001`继续被本地门阻塞，不上传、不消耗官方试运行。
+- 当前阶段：唯一Competition Core正式架构规格已完成并等待用户书面审阅；既有正式归档与失败/负结果保持冻结
+- 当前路线：**官方SDK 1.0.2 + 未知同格式任务自动识别 + 每轮至少一次真实父checkpoint候选训练 + 双阶段Qwen实验决策 + 同作用域确定性指标事实 + 历史数据/历史模型 + PyTRiO镜像外Agent训练 + 本地测试/正式上传双镜像分离** `[D-079]` `[D-086]` `[D-087]` `[D-093]`
+- 当前唯一核心任务：`COMPETITION-CORE-DESIGN-001 (DONE_SPEC_PENDING_USER_REVIEW)`。书面规格位于`docs/superpowers/specs/2026-11-20-competition-core-design.md`；用户批准书面规格后才进入实施计划。当前无代码或训练`READY`任务。
 - 稳定边界：全部历史RC和实验不改写；`0.5.0rc1`只作研究证据，不得上传。正式线从D-058开始只输出原生官方MLP续训checkpoint。D-090仅授权一次镜像外正式部署Advisor SFT，不把Sampler或私有SDK装入正式镜像。
 - 官方试运行：O-PLATFORM-018证明`0.10.4rc2`的正式提案有效且结算15,146 Token，但30/30主动retain造成零候选；精确剩余次数仍以平台页面实时显示为准。
 - 当前冻结本地归档：`D:/brace-msi-first-principles-release/BRACE-MSI-0.10.6rc1-A1/harness.tar`；SHA-256 `F7518609...D89CB`。它是历史Protocol RC，不因本轮研究原地改写，也不是下一次上传入口。

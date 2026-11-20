@@ -1,5 +1,12 @@
 # 新会话恢复与交接
 
+## 2026-11-20 Competition Core规格审阅入口
+
+1. 当前唯一任务是`COMPETITION-CORE-DESIGN-001`；先读取`docs/superpowers/specs/2026-11-20-competition-core-design.md`、D-093和L-AUTH-017。
+2. 规格已经用户口头确认方向并形成书面版本，但按设计流程必须等待用户审阅书面规格；审阅前不得编写实施计划、修改产品代码或启动训练。
+3. 新核心保留官方SDK、父checkpoint、预测和Docker边界；每轮真实训练，双阶段Qwen，历史数据/模型同作用域选择，PyTRiO/SwanLab位于镜像外。
+4. 本地测试镜像和正式上传镜像必须使用独立构建清单；冻结`0.10.6rc1`继续`DO_NOT_UPLOAD_AS_FINAL`。
+
 ## 2026-11-20 独立发布准入审计后的当前恢复入口
 
 1. 当前分支`codex/first-principles-rebuild`；先读`STATUS.md`、`TASKS.md`和`results/RELEASE-COMPATIBILITY-AUDIT-001.md`。当前无本地`READY`任务。

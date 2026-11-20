@@ -4,6 +4,17 @@
 
 ## 当前任务图
 
+### COMPETITION-CORE-DESIGN-001 赛题语义重审与唯一正式架构规格
+
+- 状态：`DONE_SPEC_PENDING_USER_REVIEW`
+- 授权：用户于2026-11-20逐项确认：隐藏评测可出现A/B/C之外但与官方训练包同格式的新工业任务；平台直接调用正式镜像；每轮必须至少完成一次真实候选训练后再部署、保留或回滚；历史数据可用；本地测试镜像与正式上传镜像必须分离；不增加非官方硬限制；PyTRiO训练的Qwen Agent必须进入正式方案。
+- 依赖：O-PLATFORM-014、O-PLATFORM-019、RELEASE-COMPATIBILITY-AUDIT-001。
+- 优先级：P0，当前唯一执行任务。
+- 工作范围：只形成一套经用户确认的正式架构规格；保留已验证官方SDK、父checkpoint、预测和Docker边界；定义未知同格式任务识别、每轮真实训练、双阶段Qwen、历史数据、同作用域模型选择、PyTRiO/SwanLab镜像外训练记录、本地测试镜像与正式上传镜像分离。
+- 完成标准：设计不存在并列路线、未决占位或与官方SDK冲突；明确组件、轮次数据流、任务泛化、训练与选择、PyTRiO、两镜像、验证和发布边界；通过自审、链接检查和`git diff --check`；形成独立Git提交。
+- 停止条件：本任务不得修改产品代码、启动训练、调用PyTRiO/SwanLab、构建镜像、上传平台或消耗试运行；用户审阅并批准书面规格后，才可进入实施计划。
+- 证据：`superpowers/specs/2026-11-20-competition-core-design.md`；D-093、L-AUTH-017、R-059；文档自审、相对链接检查和`git diff --check`通过。等待用户审阅书面规格。
+
 ### RELEASE-COMPATIBILITY-AUDIT-001 独立本地效果与官方平台准入审计
 
 - 状态：`DONE_AUDIT_FAIL_RELEASE`

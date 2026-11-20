@@ -195,3 +195,11 @@
 - 决策：`0.10.6rc1`继续保留为已验证的官方SDK/容器Protocol RC，但标记`DO_NOT_UPLOAD_AS_FINAL`。其精确归档可以完成A/B/C十轮、60次宿主调用、30个候选和预测，却会在宿主错误要求deploy时采用主指标明确退化的候选；协议成功不得替代选择可靠性准入。
 - 后续边界：`afa9038`之后的当前源码修复只有在不携带D-091失败研究组合的前提下，构建新的独立正式归档并重新通过错误决策、30轮、官方SDK、Docker及材料绑定门，才可产生新的上传候选。当前HEAD通过测试但没有正式镜像，不得冒充已修复发布物。
 - 依据：`RELEASE-COMPATIBILITY-AUDIT-001`；精确归档SHA-256 `F7518609...D89CB`；C父/候选RMSE `52.868573/55.629944`且`wrong_deploy_accepted=true`；当前源码完整回归533项。
+
+## D-093：Competition Core成为唯一待实施正式架构（2026-11-20，LOCKED）
+
+- 决策：正式系统采用`OfficialRoundAdapter → TaskProfiler → 双阶段QwenExperimentAgent → CandidateTrainer → LocalEvaluator → ArtifactSelector → RoundRecorder`唯一运行链。隐藏评测可包含A/B/C之外但与官方训练包同格式的新任务；算法依靠任务合同、父checkpoint、数据画像和历史，不按数据集名称路由。
+- 轮次语义：每轮必须从父checkpoint至少训练一个真实候选，训练后才允许部署、保留或回滚。历史数据与历史模型可用；历史模型必须可恢复并在当前同一验证作用域重评后才能参与选择。Harness核对指标方向、数值关系与官方硬约束，不设置非官方Token、候选数、epoch、提升比例或固定安全阈值。
+- Agent与发布：PyTRiO在镜像外训练Qwen Agent并由SwanLab记录；只有提交页校验通过的Sampler才可由平台绑定。正式镜像只经`rnd.model()`访问宿主模型，不包含PyTRiO/SwanLab客户端、Sampler、Tokenizer或凭据。本地测试镜像与正式上传镜像使用独立构建清单。
+- 替代关系：保留D-079至D-087已经验证的官方SDK、父链、双阶段调用和指标一致性原则；旧四缓冲区、Bandit、影子收益、固定动作日程、固定提升门、Anchor零退化和任意代码补丁不进入新核心。D-088至D-091保留为历史研究证据，不作为新架构必须机制。
+- 依据：用户2026-11-20对赛题语义、每轮训练、未知同格式任务、历史数据、双镜像、非官方限制和PyTRiO组成的逐项确认；书面规格`docs/superpowers/specs/2026-11-20-competition-core-design.md`。
