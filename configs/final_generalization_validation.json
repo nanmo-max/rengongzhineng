@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "experiment_id": "FINAL-GENERALIZATION-VALIDATION-001-A1",
+  "seed": 20261120,
+  "evidence_scope": "one-time-virgin-xjtu-bearing-holdout",
+  "task_kind": "regression",
+  "initial_bearings": [
+    "Bearing1_1", "Bearing1_2", "Bearing1_3",
+    "Bearing2_1", "Bearing2_2", "Bearing2_3",
+    "Bearing3_1", "Bearing3_2", "Bearing3_3"
+  ],
+  "development_bearings": ["Bearing1_4", "Bearing2_4", "Bearing3_4"],
+  "sealed_bearings": ["Bearing1_5", "Bearing2_5", "Bearing3_5"],
+  "parent": {
+    "hidden": 32,
+    "epochs": 30,
+    "learning_rate": 0.003,
+    "batch_size": 32
+  },
+  "adaptation": {
+    "rounds": 10,
+    "update_fraction": 0.8,
+    "strategy": "bounded_exploration",
+    "exploration_budget": 2,
+    "relative_regression_tolerance": 0.01,
+    "method_portfolio": false,
+    "classification_balance_only": false
+  },
+  "promotion_gate": {
+    "development_mean_gain_min": 0.0,
+    "development_worst_relative_gain_min": -0.05,
+    "sealed_global_rmse_gain_min": 0.0,
+    "sealed_global_mae_gain_min": 0.0,
+    "sealed_worst_bearing_relative_gain_min": -0.05,
+    "sealed_minimum_improved_bearings": 2,
+    "max_cpu_seconds": 600.0,
+    "max_wall_seconds": 900.0,
+    "max_rss_bytes": 8589934592,
+    "max_checkpoint_bytes": 67108864
+  },
+  "official_trial_count": 0,
+  "public_validation_reads": 0,
+  "post_open_tuning_allowed": false
+}
