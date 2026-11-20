@@ -820,3 +820,10 @@
 - 计划从冻结平台边界测试开始，依次实现任务画像、历史、注册recipe、Qwen提案、同作用域选择、正式轮编排、双镜像、本地模拟、性能实验、PyTRiO/SwanLab及最终发布验收。
 - 每项任务均包含精确接口、红灯测试、验证命令和Git提交边界；计划未增加非官方Token、候选、epoch或提升阈值。
 - 本阶段未修改产品代码、未训练模型、未调用远程服务、未构建镜像或使用官方试运行。
+
+# 2026-11-20 COMPETITION-CORE Task 1
+
+- 新增5项Competition Core平台边界特征测试，分别覆盖分类/回归单轮真实续训与预测，以及空模型收据、父checkpoint哈希不匹配、候选checkpoint不可加载三类负向边界。
+- 专项命令：`D:\anaconda3\python.exe -m pytest tests/competition_core/test_platform_boundary.py tests/competition_core/test_current_round_characterization.py -q`，结果`5 passed in 0.21s`。
+- 全量命令：`D:\anaconda3\python.exe -m pytest -q`，结果`538 passed in 163.22s`。
+- 本任务只冻结已验证平台边界，未修改产品代码，未训练模型、调用远程服务、构建镜像或消耗官方试运行。

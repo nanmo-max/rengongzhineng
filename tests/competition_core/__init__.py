@@ -1,0 +1,1 @@
+"""Competition Core integration tests."""
