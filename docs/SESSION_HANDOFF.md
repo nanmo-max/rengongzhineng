@@ -2,8 +2,8 @@
 
 ## 2026-11-20 Competition Core规格审阅入口
 
-1. 当前唯一任务是`COMPETITION-CORE-DESIGN-001`；先读取`docs/superpowers/specs/2026-11-20-competition-core-design.md`、D-093和L-AUTH-017。
-2. 规格已经用户口头确认方向并形成书面版本，但按设计流程必须等待用户审阅书面规格；审阅前不得编写实施计划、修改产品代码或启动训练。
+1. 规格已获用户批准；先读取`docs/superpowers/specs/2026-11-20-competition-core-design.md`、`docs/superpowers/plans/2026-11-20-competition-core.md`、D-093和L-AUTH-017。
+2. 用户已指定当前会话实行；下一步使用`executing-plans`从计划Task 1开始，严格按TDD和任务级提交执行。
 3. 新核心保留官方SDK、父checkpoint、预测和Docker边界；每轮真实训练，双阶段Qwen，历史数据/模型同作用域选择，PyTRiO/SwanLab位于镜像外。
 4. 本地测试镜像和正式上传镜像必须使用独立构建清单；冻结`0.10.6rc1`继续`DO_NOT_UPLOAD_AS_FINAL`。
 

@@ -4,6 +4,17 @@
 
 ## 当前任务图
 
+### COMPETITION-CORE-PLAN-001 Competition Core实施计划
+
+- 状态：`DONE_PLAN_PENDING_EXECUTION`
+- 授权：用户于2026-11-20批准Competition Core书面规格并要求实行。
+- 依赖：COMPETITION-CORE-DESIGN-001、D-093。
+- 优先级：P0，当前唯一执行任务。
+- 工作范围：依据已批准规格，映射现有`brace_formal`、官方SDK、PyTRiO/SwanLab和双镜像代码，形成测试先行、任务级提交、可连续执行的实施计划。
+- 完成标准：计划覆盖任务画像、历史数据、注册recipe、双阶段Qwen、同作用域选择、正式轮编排、本地与正式镜像、A/B/C与未知任务训练、PyTRiO/SwanLab、Docker与发布验收；每项给出精确文件、接口、红绿测试、命令和提交边界；完成自审并独立提交。
+- 停止条件：计划完成前不得修改产品代码、启动训练、调用远程服务或构建镜像。
+- 证据：`superpowers/plans/2026-11-20-competition-core.md`；12项顺序任务覆盖正式运行核、性能实验、PyTRiO/SwanLab、双镜像与发布验收；计划自审、相对链接及`git diff --check`通过。用户已指定在当前会话连续执行，下一步使用`executing-plans`从Task 1开始。
+
 ### COMPETITION-CORE-DESIGN-001 赛题语义重审与唯一正式架构规格
 
 - 状态：`DONE_SPEC_PENDING_USER_REVIEW`
