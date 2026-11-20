@@ -782,3 +782,11 @@
 - A4只接入`balanced_current_e3 + native_recent_e3`复合分类候选：120/120轮、12/12最终checkpoint绑定、0个5%灾难任务；A平均收益`0.312990→0.360481`、最差相对收益`-0.5470%→0`，B/C checkpoint与A6完全相同。因为训练范围与损失同时变化，不作类平衡单因素因果主张。机器摘要SHA-256 `4237A9F445E2E42456D3FD434B579D246046274A0B956278E36D764E110637BD`。
 - confirmation/public validation、远程PyTRiO、SwanLab同步和官方试运行使用均为0；下一步按冻结轨迹验收基础Qwen，最终仍需D-088独立替代流。
 - 收口验证：方法/矩阵专项`26 passed`，完整回归`518 passed in 142.91s`；独立复审无技术P0，P1证据措辞已修正。
+
+# 2026-11-20 PYTRIO-ADVISOR-OPT-001
+
+- A1使用12个冻结、脱敏的正式deployment场景验收基础Qwen：schema/非零Token 12/12，但2个硬风险场景仍请求deploy；精确标签6/12中另有4例为无害`rollback`替代`retain`。
+- 用户明确授权训练与预算后，以D-090替代D-043的停止调参边界，仅允许一次镜像外有界SFT。24条训练与12条全新留出按风险类型和历史组合隔离，语料哈希在远程调用前冻结。
+- A2完成18/18步，最终loss `0.001425805`；新留出基础policy 66.67%/安全91.67%，Sampler四项100%，重新加载复评仍四项100%。
+- SwanLab只同步20条聚合记录；敏感扫描零命中，公开链接为`https://swanlab.cn/@nanmo-max/BRACE-MSI/runs/k4jvqkuj`。首次同步仅在Windows GBK打印链接阶段失败，随后同run ID UTF-8确认137条底层记录上传完成。
+- 未修改或构建正式镜像，未上传比赛平台，未消耗官方试运行。下一任务为D-088独立泛化验收。

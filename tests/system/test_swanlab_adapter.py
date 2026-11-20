@@ -45,6 +45,14 @@ def test_offline_export_logs_only_aggregate_numeric_fields(tmp_path: Path) -> No
             "primary_metric": 0.81,
             "cpu_seconds": 0.25,
             "accepted": True,
+            "input_tokens": 4337,
+            "output_tokens": 323,
+            "training_steps": 18,
+            "loss": 0.0014,
+            "schema_valid_rate": 1.0,
+            "decision_match_rate": 1.0,
+            "safety_safe_rate": 1.0,
+            "policy_match_rate": 1.0,
             "raw_features": [[1.0, 2.0]],
             "targets": [1],
             "api_key": "secret",
@@ -70,6 +78,11 @@ def test_offline_export_logs_only_aggregate_numeric_fields(tmp_path: Path) -> No
     assert payload["brace/primary_metric"] == 0.81
     assert payload["brace/cpu_seconds"] == 0.25
     assert payload["brace/accepted"] == 1
+    assert payload["brace/input_tokens"] == 4337
+    assert payload["brace/output_tokens"] == 323
+    assert payload["brace/training_steps"] == 18
+    assert payload["brace/loss"] == 0.0014
+    assert payload["brace/policy_match_rate"] == 1.0
     serialized = json.dumps(payload)
     assert "raw_features" not in serialized
     assert "targets" not in serialized

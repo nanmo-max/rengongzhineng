@@ -812,3 +812,25 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 - 结果：120/120轮、12/12最终checkpoint绑定、0个5%灾难任务；A平均有向收益`0.312990→0.360481`且最差相对收益`-0.5470%→0`，B/C checkpoint与A6相同；`bounded_exploration`开发门通过。
 - 机器证据：摘要SHA-256 `4237A9F445E2E42456D3FD434B579D246046274A0B956278E36D764E110637BD`；不替代D-088独立留出。
 - 独立复审：无技术P0；B/C四策略8条链及checkpoint与A6逐项一致。唯一P1为禁止把复合候选收益归因于类平衡单因素，文档已修正；无需A5重跑。
+
+## PYTRIO-ADVISOR-OPT-001-A1（REGISTERED）
+
+- 目的：在不训练新Sampler前，使用正式`brace_formal.agent.request_deployment_decision`提示与冻结脱敏反例，检验基础`Qwen/Qwen3.5-4B`的JSON结构有效率、指标方向/数值关系正确率、硬风险一致性、Token、延迟和费用证据。
+- 数据：仅使用合成聚合指标与已登记反例的数值形态；不包含工业逐样本特征、标签、数据集名称、隐藏数据、公开confirmation或凭据。分类/回归均覆盖改善、退化、持平、硬风险与历史场景。
+- 预算：基础模型每个冻结场景恰好一次temperature=0调用；不重试以免选择性重采样；输出长度仅采用现有研究客户端的已验证JSON上限，不改变正式镜像或平台调用限制。官方试运行0次。
+- 成功标准：全部调用有非零Token收据；schema有效率至少95%；所有候选明确退化或硬风险场景均不得建议deploy；总体预期决策正确率至少90%。任一安全关键错误，或至少两个同类结构/数值错误，判定存在系统性缺陷并进入A2有界SFT；否则保留基础模型，不训练新Sampler。
+- 产物：`D:/brace-msi-pytrio/PYTRIO-ADVISOR-OPT-001-A1/`，仅保存case ID、提示/响应哈希、结构化决策、错误类别、Token、延迟和聚合统计；原始响应与提示不落盘。
+- SwanLab：A1完成后仅从脱敏聚合摘要生成离线记录；通过敏感扫描后才允许显式同步。正式镜像保持无PyTRiO/SwanLab/Tokenizer/Sampler/密钥。
+- 结果：`COMPLETED_BASE_FAILED`。12/12响应均为严格schema且Token非零，但精确预期决策仅6/12；两个“候选指标更好但存在硬安全失败”的场景仍建议deploy，触发安全关键失败门。输入/输出Token为4,337/323，总采样延迟7.00秒；结果SHA-256 `61D7FC88F568E24A44F6B23A3736464A1A75F5567397C413EA0E8E98906CE6CB`。按预注册进入A2。
+
+## PYTRIO-ADVISOR-OPT-001-A2（REGISTERED）
+
+- 目的：针对A1已证实的硬风险忽略与数值决策不稳定，训练一个镜像外、只负责正式deployment JSON的Qwen3.5-4B LoRA Sampler；不修改工业模型、正式Harness或平台调用协议。
+- 语料：24条训练和12条全新留出，均为身份无关的合成聚合指标场景；使用与正式`request_deployment_decision`逐字同源的提示，训练/留出数值与A1冻结反例不重合。assistant-only loss，prompt权重0，completion及EOS权重1。
+- 固定训练：Qwen3.5-4B、rank 8、3 epoch、batch 4、learning rate `1e-4`、固定seed；18个远程优化步。训练前固化语料哈希；不依据训练loss提前选择轮次或追加搜索。
+- 成功标准：持久化`trio://` Sampler成功；新留出schema有效率100%、硬风险安全率100%、总体决策正确率至少90%，并严格优于同一留出基础模型；否则保留基础模型和确定性Harness，不采用Sampler。
+- 预算/边界：累计费用上限10元，官方试运行0次；不含原始数据、隐藏标签、公开confirmation、API Key或逐样本信息。原始失败与负结果均保留。
+- 预期产物：`D:/brace-msi-pytrio/PYTRIO-ADVISOR-OPT-001-A2/`与脱敏聚合SwanLab离线记录。
+- 结果：`COMPLETED_EXTERNAL_CANDIDATE`。18/18远程优化步完成，最终监督Token损失`0.001425805`；同一全新留出上基础Qwen的schema/decision/safety/policy为`100%/66.67%/91.67%/66.67%`，新Sampler为`100%/100%/100%/100%`并通过采用门。持久化Sampler重新创建客户端复评仍四项100%。结果SHA-256 `E192DB1FE667087F9D104971B18E30868AF5A62A5BEC38BB2595227A6703B5DF`；重载摘要SHA-256 `179F6BEC8CA28AC163F36F79D994990E0BEA0956D4D0D7D95B8A28B849CCC09D`。
+- 记录：SwanLab公开聚合运行`https://swanlab.cn/@nanmo-max/BRACE-MSI/runs/k4jvqkuj`；仅20条训练step/评估聚合记录，spool SHA-256 `6FBB96626BE8E829C9BC0C469C25A43D3D23B28EEEB836923182D247D51BF694`，密钥、`trio://`、原始提示/响应、父候选指标对象、特征和标签扫描零匹配。首次sync在远端创建后因Windows GBK打印emoji中止，随后以同一run ID和UTF-8确认上传完成；未重复创建正式记录。
+- 边界：Sampler路径保存在本地受控产物中用于平台提交页校验，不进入Git或镜像；比赛提交页尚未验证该新Sampler，因此只标记镜像外候选。官方试运行使用0次。

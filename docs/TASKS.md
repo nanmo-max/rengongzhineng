@@ -38,16 +38,17 @@
 
 #### PYTRIO-ADVISOR-OPT-001 镜像外Advisor训练与SwanLab聚合记录
 
-- 状态：`READY`
+- 状态：`DONE_EXTERNAL_ADVISOR_CANDIDATE`
 - 依赖：GENERALIZATION-MATRIX-001、PERFORMANCE-METHOD-PILOT-001
 - 优先级：P0，当前唯一执行任务
 - 完成标准：先验证基础Qwen在冻结反例集的结构化有效率和数值关系正确率；只有仍存在系统性错误时才用获授权、脱敏轨迹训练PyTRiO Advisor，并在未参与训练的轨迹上证明优于基础模型；SwanLab只同步聚合配置、指标、资源、Token和失败类别，敏感扫描为零。
 - 停止条件：不得把PyTRiO私有SDK、Sampler、Tokenizer、API Key或SwanLab依赖放入正式镜像；不得用隐藏标签、逐样本数据或已暴露确认集训练Advisor；未显著改善则保持基础模型。
 - 计划：同上Task 6。
+- 证据：A1基础Qwen 12例schema/Token门100%，但2个硬风险场景仍请求deploy；A2按D-090完成唯一一次24训练/12全新留出、18步LoRA，基础同留出policy 66.67%/安全91.67%，新Sampler四项100%，重新加载复评仍四项100%。结果SHA-256 `E192DB1F...703B5DF`，重载摘要`179F6BEC...CCC09D`。SwanLab聚合包敏感扫描零命中并同步到公开运行`k4jvqkuj`。新Sampler仅为镜像外候选，平台提交页未校验前不声称正式采用。
 
 #### FINAL-GENERALIZATION-VALIDATION-001 冻结方法后独立替代流/任务留出验收
 
-- 状态：`BLOCKED_BY_PERFORMANCE_METHOD_PILOT_001`
+- 状态：`READY`
 - 依赖：PERFORMANCE-METHOD-PILOT-001；如PYTRIO-ADVISOR-OPT-001的产物改变最终决策逻辑，则其也是依赖
 - 优先级：P0
 - 完成标准：在不参与触发阈值、recipe或方法选择的替代流/任务留出上，对冻结策略+方法一次性评估；平均、最差阶段、恢复、CPU/墙钟/RSS/模型体积和泄漏门均通过；失败时维持冻结Protocol RC。
@@ -65,8 +66,8 @@
 SELECTION-RELIABILITY-001(DONE)
   -> GENERALIZATION-MATRIX-001(DONE_DEVELOPMENT_STRATEGY_SCREENING)
   -> PERFORMANCE-METHOD-PILOT-001(DONE_DEVELOPMENT_METHOD_SCREENING)
-  -> PYTRIO-ADVISOR-OPT-001(READY, CONDITIONAL)
-  -> FINAL-GENERALIZATION-VALIDATION-001(BLOCKED)
+  -> PYTRIO-ADVISOR-OPT-001(DONE_EXTERNAL_ADVISOR_CANDIDATE)
+  -> FINAL-GENERALIZATION-VALIDATION-001(READY)
   -> FORMAL-RC-NEXT-001(BLOCKED)
   -> FORMAL-RELEASE-001(BLOCKED_EXTERNAL)
 ```

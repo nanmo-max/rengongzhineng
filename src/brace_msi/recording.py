@@ -33,6 +33,15 @@ PUBLIC_FIELDS = frozenset(
         "deployed_version",
         "status",
         "training_started",
+        "input_tokens",
+        "output_tokens",
+        "training_steps",
+        "loss",
+        "schema_valid_rate",
+        "decision_match_rate",
+        "safety_safe_rate",
+        "policy_match_rate",
+        "error_count",
     }
 )
 

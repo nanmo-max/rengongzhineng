@@ -1,5 +1,13 @@
 # 新会话恢复与交接
 
+## 2026-11-20 Advisor完成后的当前恢复入口
+
+1. 当前分支`codex/first-principles-rebuild`；选择可靠性、A6开发策略、A4原生方法和镜像外Advisor均已收口。当前唯一READY任务是`FINAL-GENERALIZATION-VALIDATION-001`。
+2. 冻结开发候选：A6 `bounded_exploration` + A4分类`balanced_current_e3/native_recent_e3`；回归保持A6原生recipe。它们仍不是正式RC，必须通过D-088一次性独立替代流/任务留出。
+3. Advisor结果见`results/PYTRIO-ADVISOR-OPT-001.md`。新Sampler镜像外留出与重载四项100%，SwanLab运行`https://swanlab.cn/@nanmo-max/BRACE-MSI/runs/k4jvqkuj`；平台提交页未校验前不得声称正式采用，Sampler路径不得写入Git或镜像。
+4. 不再重跑Advisor语料、增加epoch或做LLM HPO；不读取已暴露公开confirmation。独立留出一旦打开，禁止根据结果调阈值/方法。
+5. 历史Protocol RC `0.10.6rc1`和归档保持冻结；未获用户单独上传授权前不得消耗官方次数。
+
 ## 2026-11-19 D-086双阶段Qwen正式候选恢复入口（当前）
 
 1. 当前分支为`codex/first-principles-rebuild`；先读`STATUS.md`、`TASKS.md`、D-085/D-086、O-PLATFORM-018和`results/FORMAL-EVERY-ROUND-TRAIN-001.md`。
