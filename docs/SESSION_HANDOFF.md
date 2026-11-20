@@ -256,3 +256,11 @@
 3. 阅读`docs/superpowers/plans/2026-11-17-first-principles-formal-runtime.md`。
 4. 当前任务只能从`FORMAL-MINIMAL-001`继续；`0.9.0rc1`和更早RC全部冻结。
 5. 禁止上传、重跑或消耗平台次数，直到FORMAL-CLEAN-IMAGE-001完成。
+
+## 2026-11-20 选择可靠性与泛化恢复入口
+
+1. 实时状态以`STATUS.md`和`TASKS.md`顶部的`SELECTION-RELIABILITY-001`为准；`FORMAL-RELEASE-001`继续外部阻塞，不是当前可执行任务。
+2. 阅读O-PLATFORM-019和D-087，再阅读`superpowers/specs/2026-11-20-selection-generalization-runtime-design.md`及对应plan。
+3. 当前只执行MetricContract、同作用域选择一致性、产物血缘和阶段计时；不得同时改变训练recipe、SDK、父checkpoint schema、预测入口或调用次数。
+4. 现有`0.10.6rc1`归档冻结为Protocol RC，不原地改写；新正式候选必须在独立提交与归档中生成。
+5. 正式镜像只走`rnd.model()`；PyTRiO训练和SwanLab记录在镜像外，且只有本地证据通过后才影响新候选。

@@ -4,6 +4,51 @@
 
 ## 当前任务图
 
+### 选择可靠性与跨任务泛化（2026-11-20当前正式任务图）
+
+#### SELECTION-RELIABILITY-001 指标事实、选择一致性与阶段计时
+
+- 状态：`IN_PROGRESS`
+- 依赖：O-PLATFORM-019、D-087、FORMAL-EVERY-ROUND-TRAIN-001
+- 优先级：P0，当前唯一执行任务
+- 完成标准：建立唯一`MetricContract`并拒绝指标—方向冲突；Harness计算同一验证作用域内父/候选有向收益；Qwen决策与确定性数值事实冲突时失败保留父模型；硬门失败不提交候选；轮收据记录父、候选、选择产物及验证作用域；阶段计时覆盖history/call1/train-eval-save/call2/submit-state-finish且不记录原始数据或prompt；用最新官方报告反例形成冻结测试夹具。
+- 停止条件：不得解析自然语言理由来建立第二套真相；不得跨不同validation哈希比较历史“最佳”；不得改变训练recipe、父checkpoint schema、官方SDK、预测入口或调用次数；不得上传平台。
+- 计划：`superpowers/plans/2026-11-20-selection-generalization-runtime.md` Task 1-3。
+
+#### GENERALIZATION-MATRIX-001 多策略跨任务本地验证
+
+- 状态：`BLOCKED_BY_SELECTION_RELIABILITY_001`
+- 依赖：SELECTION-RELIABILITY-001
+- 优先级：P0
+- 完成标准：在不读取公开确认集作选择的前提下，比较严格父子门、有限探索、合法历史冠军和recipe反馈四种策略；A/B/C使用各自合法组/时间顺序，但共享契约、证据和资源治理；报告平均、最差阶段、恢复、CPU、墙钟、RSS、Token和模型体积；至少保留一套稳定优于当前正式策略的候选，否则维持冻结RC。
+- 停止条件：任一未来/确认泄漏、跨作用域选优、按数据集名称硬编码动作、或任何任务明显灾难性退化时停止该候选；不消耗官方试运行。
+- 计划：同上Task 4-5。
+
+#### PYTRIO-ADVISOR-OPT-001 镜像外Advisor训练与SwanLab聚合记录
+
+- 状态：`BLOCKED_BY_GENERALIZATION_MATRIX_001`
+- 依赖：GENERALIZATION-MATRIX-001
+- 优先级：P1
+- 完成标准：先验证基础Qwen在冻结反例集的结构化有效率和数值关系正确率；只有仍存在系统性错误时才用获授权、脱敏轨迹训练PyTRiO Advisor，并在未参与训练的轨迹上证明优于基础模型；SwanLab只同步聚合配置、指标、资源、Token和失败类别，敏感扫描为零。
+- 停止条件：不得把PyTRiO私有SDK、Sampler、Tokenizer、API Key或SwanLab依赖放入正式镜像；不得用隐藏标签、逐样本数据或已暴露确认集训练Advisor；未显著改善则保持基础模型。
+- 计划：同上Task 6。
+
+#### FORMAL-RC-NEXT-001 新正式候选冻结
+
+- 状态：`BLOCKED_BY_LOCAL_GATES`
+- 依赖：SELECTION-RELIABILITY-001、GENERALIZATION-MATRIX-001；PYTRIO-ADVISOR-OPT-001只有在证明有效时才是依赖
+- 优先级：P0
+- 完成标准：仅集成已证明稳定的策略与方法；完整回归、官方SDK、A/B/C十轮、60次宿主调用、30个真实候选、父链、预测、4核8GB、64MiB、禁入扫描及docker save/load全部通过；形成唯一归档、源码提交和脱敏实验记录。
+- 停止条件：任一任务、协议、资源或禁入门失败时不得替换冻结归档；平台上传继续由FORMAL-RELEASE-001单独授权。
+
+```text
+SELECTION-RELIABILITY-001(IN_PROGRESS)
+  -> GENERALIZATION-MATRIX-001(BLOCKED)
+  -> PYTRIO-ADVISOR-OPT-001(BLOCKED, CONDITIONAL)
+  -> FORMAL-RC-NEXT-001(BLOCKED)
+  -> FORMAL-RELEASE-001(BLOCKED_EXTERNAL)
+```
+
 ### 第一性原理重建（2026-11-17当前正式任务图）
 
 #### REBUILD-FORENSICS-001 首次成功与正式失败取证

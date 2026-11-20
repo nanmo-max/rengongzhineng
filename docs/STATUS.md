@@ -1,13 +1,21 @@
 # 当前状态
 
-- 最近同步：2026-11-19（Asia/Shanghai）
-- 当前阶段：D-086双阶段Qwen闭环已完成本地正式候选验收；等待一次受控平台确认
-- 当前路线：**官方SDK 1.0.2 + 每轮Qwen训练提案 + 真实父checkpoint续训 + 本地指标工具 + Qwen部署/保留/回滚 + 硬SafetyGate** `[D-079]` `[D-080]` `[D-086]`
-- 当前唯一核心任务：`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`。未经用户明确决定，不上传、不发起试运行。
+- 最近同步：2026-11-20（Asia/Shanghai）
+- 当前阶段：最新官方试运行证据已登记；进入选择可靠性与跨任务泛化修复，冻结既有正式归档
+- 当前路线：**官方SDK 1.0.2 + 每轮Qwen训练提案 + 真实父checkpoint续训 + Harness确定性指标事实 + Qwen在合法可行集合内部署/保留/回滚 + 硬SafetyGate** `[D-079]` `[D-080]` `[D-086]` `[D-087]`
+- 当前唯一核心任务：`SELECTION-RELIABILITY-001 (IN_PROGRESS)`。先完成指标契约、数值一致性、同口径比较和阶段计时；不上传、不发起试运行。
 - 稳定边界：全部历史RC和实验不改写；`0.5.0rc1`只作研究证据，不得上传。正式线从D-058开始只输出原生官方MLP续训checkpoint。A3之后禁止继续LLM调参 `[D-043]`
 - 官方试运行：O-PLATFORM-018证明`0.10.4rc2`的正式提案有效且结算15,146 Token，但30/30主动retain造成零候选；精确剩余次数仍以平台页面实时显示为准。
-- 当前本地候选归档：`D:/brace-msi-first-principles-release/BRACE-MSI-0.10.6rc1-A1/harness.tar`；SHA-256 `F7518609...D89CB`；旧`0.10.4rc2`不得替代上传。
+- 当前冻结本地归档：`D:/brace-msi-first-principles-release/BRACE-MSI-0.10.6rc1-A1/harness.tar`；SHA-256 `F7518609...D89CB`。它是历史Protocol RC，不因本轮研究原地改写，也不是下一次上传入口。
 - 当前源码：分支`codex/first-principles-rebuild`；新提交完成后在此登记，尚未合并main。
+
+## 2026-11-20 最新试运行与修复边界
+
+- O-PLATFORM-019登记了Gas与Bearing/Engine两份官方训练报告原文及SHA-256；报告标签为“镜像14v16”，未提供精确镜像digest/commit，因此不得直接归因给某个本地RC。
+- 试运行完成A/B/C各10轮、14,773条预测和74,418 Token。最终隐藏指标为A Macro-F1 0.861027、B RMSE 354.669933、C RMSE 56.187077；只有最终产物有隐藏结果，不能事后按逐轮展示值挑模型。
+- 已确认Gas第5轮、Bearing第2轮、Engine第4轮存在数值关系与部署动作冲突；但逐轮展示值的评价作用域并非固定，不能据此直接宣布Gas第9轮是合法“全局最佳”。
+- 三任务墙钟约10,442秒、CPU约1,692秒，只能确认大量时间处于非CPU等待；具体由模型网关、RPC、平台编排、评测或I/O中的哪一项主导仍未知。
+- D-087只把指标方向、数值关系、证据作用域和硬风险收回确定性Harness；Qwen继续选择recipe并在可行集合内做部署判断。正式镜像继续只走`rnd.model()`，不内置PyTRiO、SwanLab、Tokenizer、密钥或Sampler。
 
 ## 2026-11-18 平台试运行根因
 

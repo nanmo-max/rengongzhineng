@@ -746,3 +746,11 @@
 - A1因错误平台决策权判无效，A2因模拟器仍返回平台指标中止；A3在平台指标30/30为空时通过；A4显式覆盖严格退化rollback。
 - 精确0.10.6rc1容器A/B/C共30轮、60次宿主调用、30个真实候选，Qwen本地部署4次、回滚26次，硬安全失败0。镜像81,190,622字节，归档81,208,320字节且重载同ID，SHA-256 `F7518609974EAB3C156C07F6D0AA7CBFE6CF9253B43C5D20B3DC71B4C91D89CB`。
 - 历史暴露公开validation仅作描述性诊断：A Macro-F1 `0.714030→0.725695`，B RMSE `681.159833→656.351785`，C RMSE `52.868573→52.350178`。不作为独立泛化或官方成绩。本阶段未调用远程PyTRiO/SwanLab、未上传、未消耗新平台次数。
+
+## 2026-11-20：选择可靠性与泛化重构启动
+
+- 重新核验两份官方试运行报告及一份临时分析附件的SHA-256，登记O-PLATFORM-019；未把“镜像14v16”猜成任一本地RC。
+- 多Agent只读审计确认：Gas第5轮、Bearing第2轮、Engine第4轮存在确定性数值关系与deploy冲突；当前rollback等同retain；正式路径缺少唯一MetricContract、作用域指纹和合法历史best；墙钟/CPU差缺少阶段归因。
+- 用户批准分阶段设计后追加D-087：Qwen在确定性指标事实和合法证据可行集合内决策；正式镜像继续只使用宿主`rnd.model()`，PyTRiO训练和SwanLab只在镜像外研究/记录层。
+- 新增设计与实施计划：`superpowers/specs/2026-11-20-selection-generalization-runtime-design.md`、`superpowers/plans/2026-11-20-selection-generalization-runtime.md`；预注册`SELECTION-RELIABILITY-001-A1`，尚未运行训练、远程调用、SwanLab同步或官方试运行。
+- 验证：`git diff --check`通过；下一步按TDD实现MetricContract与选择一致性。
