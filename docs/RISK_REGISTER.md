@@ -113,9 +113,9 @@
 ## R-055 Qwen数值判断错误导致部署退化候选
 
 - 等级：Critical
-- 状态：`MITIGATED_CODE_DEVELOPMENT_MATRIX_PASSED_FINAL_HOLDOUT_PENDING`
+- 状态：`REALIZED_IN_FROZEN_RC_MITIGATED_IN_HEAD_NOT_RELEASED`
 - 证据：O-PLATFORM-019中Gas第5轮、Bearing第2轮、Engine第4轮的父/候选主指标关系与deploy动作冲突；当前`agent.py`只校验枚举和非空理由，`submission.py`未校验结构化决定与指标方向。
-- 缓解：SELECTION-RELIABILITY-001建立唯一MetricContract；A1冻结反例3/3失败保留。A6关闭末轮探索、路径失败关闭和最终checkpoint绑定缺陷，有限探索开发矩阵无5%灾难任务。D-088的独立替代流门仍是正式RC前置。
+- 缓解：RELEASE-COMPATIBILITY-AUDIT-001对精确`0.10.6rc1`黑盒复现：C候选RMSE `55.629944`劣于父模型`52.868573`仍因错误deploy被采用，因此该归档禁止最终上传。当前HEAD的SELECTION-RELIABILITY-001已建立唯一MetricContract和允许决定集合，冻结反例与533项回归通过；但修复尚未进入正式镜像，且D-088/D-091门未通过，风险在发布层仍开放。
 
 ## R-056 跨轮评价作用域变化导致伪历史最优
 

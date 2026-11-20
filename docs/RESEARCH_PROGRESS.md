@@ -798,3 +798,11 @@
 - 密封预测总体为正：RMSE `243.718016→220.922262`（改善9.35%），MAE `184.328347→168.207564`（改善8.75%）；2/3轴承改善、最差轴承仅退化2.04%。
 - CPU `17.97s`、墙钟`12.49s`、结束时RSS约108.3MiB、checkpoint 42,320字节；A1峰值RSS和右截尾恢复未验证。checkpoint重载预测一致；公开确认读取、PyTRiO、SwanLab、官方试运行均0。
 - 独立审查发现A1延迟收益使用当前Update+Gate后又以同一Gate评价候选，不满足Gate单一验证用途；未来执行器改为Update-only，但密封不重开。依据D-088/D-091判`DONE_INVALID_PROTOCOL_AND_NEGATIVE_NO_FORMAL_PROMOTION`。摘要SHA-256 `22D4143B53074CE6A3CF8C913937157EE42403400FA462E0C2AE66ACEF38AA05`。
+
+# 2026-11-20 RELEASE-COMPATIBILITY-AUDIT-001
+
+- 精确复核`0.10.6rc1`归档SHA-256为`F7518609974EAB3C156C07F6D0AA7CBFE6CF9253B43C5D20B3DC71B4C91D89CB`，从`docker save`归档重载后镜像ID为`sha256:52333ab1...ca7504`；镜像19个运行文件与源码提交`c653e0e`逐文件SHA-256一致。
+- 4核8GB、断网、只读、非root复演A/B/C各10轮；总计60个宿主调用ID、30个真实候选和15行独立预测，父链/状态链有效；机器摘要SHA-256 `307581D27589AD17A90BEF69A1283D86B51AEF553238D5F34AEB08400CDF2CD8`。
+- 公开validation只作描述性复算：A Macro-F1 `0.714030→0.725695`，B RMSE `681.159833→656.351785`，C RMSE `52.868573→52.350178`；这些不是独立泛化或官方成绩。
+- 负向测试证明冻结镜像会接受错误deploy：C候选RMSE `55.629944`劣于父模型`52.868573`仍被选中。当前源码已修但没有新正式归档，D-091亦阻止研究组合晋级；结论为`DONE_AUDIT_FAIL_RELEASE`。
+- 新鲜验证：正式运行专项`62 passed`；官方SDK离线`15 passed, 2 skipped`；当前源码完整回归`533 passed in 157.64s`。没有上传、官方试运行、远程PyTRiO/SwanLab写入或密封数据重开。

@@ -2,6 +2,14 @@
 
 本文件是全部实验运行的唯一登记处，包括失败和中止实验。
 
+## RELEASE-COMPATIBILITY-AUDIT-001-A1/A2（PROTOCOL_PASS_RELEASE_FAIL）
+
+- 研究问题：冻结`0.10.6rc1`是否能在官方SDK 1.0.2契约下完成本地三任务正式生命周期，并在错误宿主部署判断下保持性能方向安全？
+- 输入：精确`docker save`归档、官方A/B/C训练包公开投影与初始checkpoint；公开validation只作描述性复算和同作用域负向测试，隐藏/密封数据未读取。
+- A1：归档重载后在4核8GB、断网、只读根、非root下完成A/B/C各10轮、60调用、30候选和15行预测，`acceptance.json valid=true`。
+- A2：固定C父checkpoint，训练`e3_lr3`退化候选，并让宿主第二次回答错误`deploy`；父RMSE `52.868573`、候选`55.629944`，冻结镜像实际选择候选，`wrong_deploy_accepted=true`。
+- 结论：协议与容器通过，发布准入失败；不消耗官方次数，不修改代码，不重新打开密封数据。证据见`results/RELEASE-COMPATIBILITY-AUDIT-001.md`与`D:/brace-msi-release-audit/`。
+
 ## FORMAL-EVERY-ROUND-TRAIN-001-A1（INVALID_WRONG_DECISION_OWNER）
 
 - 依据：O-PLATFORM-018、D-085。平台已证明宿主调用和提案解析有效，但30/30主动retain导致候选数0。

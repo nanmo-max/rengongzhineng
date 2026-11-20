@@ -3,7 +3,7 @@
 - 最近同步：2026-11-20（Asia/Shanghai）
 - 当前阶段：一次性独立泛化验收已完成但未通过完整晋级门；既有正式归档保持冻结，不从密封结果反向调参
 - 当前路线：**官方SDK 1.0.2 + 每轮Qwen训练提案 + 真实父checkpoint续训 + Harness确定性指标事实 + Qwen在合法可行集合内部署/保留/回滚 + 硬SafetyGate** `[D-079]` `[D-080]` `[D-086]` `[D-087]`
-- 当前唯一核心任务：无本地`READY`任务。`FINAL-GENERALIZATION-VALIDATION-001`为`DONE_INVALID_PROTOCOL_AND_NEGATIVE_NO_FORMAL_PROMOTION`；`FORMAL-RC-NEXT-001`继续被本地门阻塞。不得用已打开XJTU密封结果继续调参，不上传、不发起官方试运行。
+- 当前唯一核心任务：无`READY`任务。`RELEASE-COMPATIBILITY-AUDIT-001`已完成并判`DONE_AUDIT_FAIL_RELEASE`：`0.10.6rc1`本地协议/容器链通过，但精确归档会接受明确退化候选的错误deploy决定，禁止作为最终正式提交。当前源码的选择一致性修复已通过533项测试，但尚无匹配正式归档且最终泛化门失败；`FORMAL-RC-NEXT-001`继续被本地门阻塞，不上传、不消耗官方试运行。
 - 稳定边界：全部历史RC和实验不改写；`0.5.0rc1`只作研究证据，不得上传。正式线从D-058开始只输出原生官方MLP续训checkpoint。D-090仅授权一次镜像外正式部署Advisor SFT，不把Sampler或私有SDK装入正式镜像。
 - 官方试运行：O-PLATFORM-018证明`0.10.4rc2`的正式提案有效且结算15,146 Token，但30/30主动retain造成零候选；精确剩余次数仍以平台页面实时显示为准。
 - 当前冻结本地归档：`D:/brace-msi-first-principles-release/BRACE-MSI-0.10.6rc1-A1/harness.tar`；SHA-256 `F7518609...D89CB`。它是历史Protocol RC，不因本轮研究原地改写，也不是下一次上传入口。
@@ -93,7 +93,7 @@
 
 ## 当前执行入口
 
-当前第一性原理正式候选为`D:/brace-msi-first-principles-release/BRACE-MSI-0.10.4rc2-A1/harness.tar`，81,206,784字节，SHA-256 `97948BD45502CFFE6082184DB06799A8E0FD8BE6BB008C048C7CE9DE47B335EA`，镜像ID`sha256:db223ed5...2cd02e`。它已通过本地协议、性能策略、容器与重载门；平台提案有效性仍待受控试运行确认。`0.10.4rc1`及更早归档不得上传代替。
+当前没有获准上传的正式候选。冻结`0.10.6rc1`归档`D:/brace-msi-first-principles-release/BRACE-MSI-0.10.6rc1-A1/harness.tar`仅作为Protocol RC保留，SHA-256 `F7518609974EAB3C156C07F6D0AA7CBFE6CF9253B43C5D20B3DC71B4C91D89CB`；其本地协议链通过但选择一致性负向测试失败，标记`DO_NOT_UPLOAD_AS_FINAL`。完整结论见[RELEASE-COMPATIBILITY-AUDIT-001](results/RELEASE-COMPATIBILITY-AUDIT-001.md)。
 
 正式路线、已知能力与未知边界见[FORMAL_ROUTE.md](FORMAL_ROUTE.md)。实验必须遵守[EXPERIMENT_PROTOCOL.md](EXPERIMENT_PROTOCOL.md)。
 

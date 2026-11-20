@@ -1,5 +1,13 @@
 # 新会话恢复与交接
 
+## 2026-11-20 独立发布准入审计后的当前恢复入口
+
+1. 当前分支`codex/first-principles-rebuild`；先读`STATUS.md`、`TASKS.md`和`results/RELEASE-COMPATIBILITY-AUDIT-001.md`。当前无本地`READY`任务。
+2. `0.10.6rc1`归档哈希、SDK 1.0.2、Docker、A/B/C十轮、60次宿主调用、30候选、父链/状态和预测均独立复验通过；它具备本地协议兼容性。
+3. 该精确归档的错误部署黑盒测试失败：C候选RMSE `55.629944`劣于父模型`52.868573`仍被选择。因此标记`DO_NOT_UPLOAD_AS_FINAL`，不要再把Protocol RC误写为正式候选。
+4. 当前HEAD已含`afa9038`选择一致性修复并通过533项测试，但相对远程领先9个提交、没有匹配Docker归档；且D-091最终泛化门失败。不得直接构建并上传，也不得顺带加入失败研究组合。
+5. 只有新的独立数据/官方材料或用户另行授权一个“仅集成发布必要修复”的正式RC任务，才能创建下一项READY任务。上传、官方试运行、PyTRiO/SwanLab写入和密封重开仍为0。
+
 ## 2026-11-20 一次性泛化验收后的当前恢复入口
 
 1. 当前分支`codex/first-principles-rebuild`；`FINAL-GENERALIZATION-VALIDATION-001`以协议无效且数值门失败结束，没有新的本地READY任务。
