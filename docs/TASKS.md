@@ -28,18 +28,19 @@
 
 #### PERFORMANCE-METHOD-PILOT-001 原生checkpoint兼容方法趋势筛选
 
-- 状态：`READY`
+- 状态：`DONE_DEVELOPMENT_METHOD_SCREENING`
 - 依赖：GENERALIZATION-MATRIX-001、METHOD-PORTFOLIO-PILOT-001
 - 优先级：P0，当前唯一执行任务
 - 完成标准：基于合法相邻未见阶段，针对A类别不平衡/近期回放、B高尺度异质回归、C稳健与非对称RUL损失分别运行有界方法pilot；每项先独立对照，只有平均、最差阶段和资源同时满足门才与A4策略组合；至少保留一套不劣于A4双候选且改善C RMSE/NASA趋势的父checkpoint兼容方法，否则维持A4策略候选。
 - 停止条件：不得改变checkpoint schema、从头训练替代父模型、读取公开confirmation作选择、按A/B/C名称在正式动作中硬编码方法，或把论文/成熟方法名称当作已验证收益；任一方法连续父链出现非有限值、不可加载或5%灾难退化立即停止。
 - 计划：`superpowers/plans/2026-11-20-selection-generalization-runtime.md` Task 5。
+- 证据：A1/A2完成有界方法筛选，A3完整组合按无效/负结果保留；A4只接入`balanced_current_e3 + native_recent_e3`复合分类候选，A平均有向收益`0.312990→0.360481`且最差阶段`-0.5470%→0`，B/C checkpoint与A6完全相同。该比较不能把收益归因于类平衡单因素。摘要SHA-256 `4237A9F4...10637BD`；仍需D-088独立门。
 
 #### PYTRIO-ADVISOR-OPT-001 镜像外Advisor训练与SwanLab聚合记录
 
-- 状态：`BLOCKED_BY_PERFORMANCE_METHOD_PILOT_001`
+- 状态：`READY`
 - 依赖：GENERALIZATION-MATRIX-001、PERFORMANCE-METHOD-PILOT-001
-- 优先级：P1
+- 优先级：P0，当前唯一执行任务
 - 完成标准：先验证基础Qwen在冻结反例集的结构化有效率和数值关系正确率；只有仍存在系统性错误时才用获授权、脱敏轨迹训练PyTRiO Advisor，并在未参与训练的轨迹上证明优于基础模型；SwanLab只同步聚合配置、指标、资源、Token和失败类别，敏感扫描为零。
 - 停止条件：不得把PyTRiO私有SDK、Sampler、Tokenizer、API Key或SwanLab依赖放入正式镜像；不得用隐藏标签、逐样本数据或已暴露确认集训练Advisor；未显著改善则保持基础模型。
 - 计划：同上Task 6。
@@ -63,8 +64,8 @@
 ```text
 SELECTION-RELIABILITY-001(DONE)
   -> GENERALIZATION-MATRIX-001(DONE_DEVELOPMENT_STRATEGY_SCREENING)
-  -> PERFORMANCE-METHOD-PILOT-001(READY)
-  -> PYTRIO-ADVISOR-OPT-001(BLOCKED, CONDITIONAL)
+  -> PERFORMANCE-METHOD-PILOT-001(DONE_DEVELOPMENT_METHOD_SCREENING)
+  -> PYTRIO-ADVISOR-OPT-001(READY, CONDITIONAL)
   -> FINAL-GENERALIZATION-VALIDATION-001(BLOCKED)
   -> FORMAL-RC-NEXT-001(BLOCKED)
   -> FORMAL-RELEASE-001(BLOCKED_EXTERNAL)

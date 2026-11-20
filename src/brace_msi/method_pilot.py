@@ -470,6 +470,337 @@ def fit_native_recipe(
     return candidate
 
 
+def fit_native_objective(
+    parent: _NativeModel,
+    *,
+    values: np.ndarray,
+    targets: np.ndarray,
+    epochs: int,
+    objective: str,
+    learning_rate_multiplier: float = 1.0,
+    huber_delta: float = 1.0,
+    overprediction_weight: float = 1.0,
+    prior_calibration_strength: float = 0.0,
+    bias_correction_strength: float = 0.0,
+) -> _NativeModel:
+    """Research-only native continuation with bounded loss/calibration variants.
+
+    The returned object keeps the official checkpoint schema and inherited Adam
+    state.  The helper deliberately lives outside ``_NativeModel.fit`` until a
+    method proves useful on unseen adjacent stages.
+    """
+
+    values = np.asarray(values, dtype=np.float64)
+    targets = np.asarray(targets)
+    if type(epochs) is not int or epochs < 1:
+        raise ValueError("epochs must be a positive integer")
+    if not math.isfinite(learning_rate_multiplier) or learning_rate_multiplier <= 0:
+        raise ValueError("learning-rate multiplier must be positive")
+    if not math.isfinite(huber_delta) or huber_delta <= 0:
+        raise ValueError("Huber delta must be positive")
+    if not math.isfinite(overprediction_weight) or overprediction_weight < 1.0:
+        raise ValueError("overprediction weight must be at least one")
+    for name, strength in (
+        ("prior calibration", prior_calibration_strength),
+        ("bias correction", bias_correction_strength),
+    ):
+        if not math.isfinite(strength) or not 0.0 <= strength <= 1.0:
+            raise ValueError(f"{name} strength must be within [0, 1]")
+
+    candidate = parent.clone()
+    normalized = candidate._normalized(values)
+    if targets.shape != (len(normalized),) or not len(normalized):
+        raise ValueError("target shape is invalid")
+    task = str(candidate.meta["task"])
+    allowed = (
+        {"cross_entropy", "balanced_cross_entropy"}
+        if task == "classification"
+        else {"mse", "huber", "asymmetric_huber"}
+    )
+    if objective not in allowed:
+        raise ValueError("objective is incompatible with the task")
+
+    if task == "classification":
+        expected = targets.astype(np.int64, copy=False)
+        class_count = len(candidate.meta["classes"])
+        if np.any(expected < 0) or np.any(expected >= class_count):
+            raise ValueError("classification target is unknown")
+        sample_weights = np.ones(len(expected), dtype=np.float64)
+        if objective == "balanced_cross_entropy":
+            counts = np.bincount(expected, minlength=class_count).astype(np.float64)
+            observed = counts > 0
+            class_weights = np.zeros(class_count, dtype=np.float64)
+            class_weights[observed] = len(expected) / (
+                float(np.sum(observed)) * counts[observed]
+            )
+            sample_weights = class_weights[expected]
+    else:
+        expected = (
+            targets.astype(np.float64, copy=False)
+            - float(candidate.meta["target_mean"])
+        ) / float(candidate.meta["target_scale"])
+        if not np.all(np.isfinite(expected)):
+            raise ValueError("regression target contains nonfinite values")
+        sample_weights = np.ones(len(expected), dtype=np.float64)
+
+    original_rate = float(candidate.meta["learning_rate"])
+    candidate.meta["learning_rate"] = original_rate * learning_rate_multiplier
+    if not 0 < candidate.meta["learning_rate"] <= 1.0:
+        raise ValueError("temporary learning rate is outside checkpoint limits")
+    for _ in range(epochs):
+        rng = np.random.default_rng(
+            np.random.SeedSequence([candidate.meta["seed"], candidate.meta["epochs"]])
+        )
+        order = rng.permutation(len(normalized))
+        for start in range(0, len(order), candidate.meta["batch_size"]):
+            indices = order[start : start + candidate.meta["batch_size"]]
+            batch = normalized[indices]
+            target = expected[indices]
+            weights = sample_weights[indices]
+            hidden = np.tanh(batch @ candidate.params["w1"] + candidate.params["b1"])
+            logits = hidden @ candidate.params["w2"] + candidate.params["b2"]
+            if task == "classification":
+                logits -= logits.max(axis=1, keepdims=True)
+                probabilities = np.exp(logits)
+                probabilities /= probabilities.sum(axis=1, keepdims=True)
+                delta = probabilities
+                delta[np.arange(len(indices)), target] -= 1.0
+                delta *= (weights / max(float(np.sum(weights)), 1e-12))[:, None]
+            else:
+                error = logits[:, 0] - target
+                if objective == "mse":
+                    derivative = 2.0 * error
+                else:
+                    derivative = 2.0 * np.clip(error, -huber_delta, huber_delta)
+                    if objective == "asymmetric_huber":
+                        derivative = derivative * np.where(
+                            error > 0.0, overprediction_weight, 1.0
+                        )
+                delta = (derivative / len(indices))[:, None]
+            gradients = {"w2": hidden.T @ delta, "b2": delta.sum(axis=0)}
+            hidden_delta = (delta @ candidate.params["w2"].T) * (1.0 - hidden**2)
+            gradients.update(w1=batch.T @ hidden_delta, b1=hidden_delta.sum(axis=0))
+            norm = math.sqrt(
+                sum(float(np.sum(gradient * gradient)) for gradient in gradients.values())
+            )
+            if not math.isfinite(norm):
+                raise ValueError("nonfinite gradient")
+            candidate.meta["steps"] += 1
+            for name, gradient in gradients.items():
+                gradient *= min(1.0, 5.0 / max(norm, 1e-12))
+                candidate.first[name] = 0.9 * candidate.first[name] + 0.1 * gradient
+                candidate.second[name] = (
+                    0.999 * candidate.second[name] + 0.001 * gradient**2
+                )
+                first = candidate.first[name] / (
+                    1.0 - 0.9 ** candidate.meta["steps"]
+                )
+                second = candidate.second[name] / (
+                    1.0 - 0.999 ** candidate.meta["steps"]
+                )
+                candidate.params[name] -= (
+                    candidate.meta["learning_rate"]
+                    * first
+                    / (np.sqrt(second) + 1e-8)
+                )
+        candidate.meta["epochs"] += 1
+
+    candidate.meta["learning_rate"] = original_rate
+    if task == "classification" and prior_calibration_strength > 0.0:
+        probabilities = candidate.predict_raw(values)
+        empirical = np.bincount(expected, minlength=len(candidate.meta["classes"]))
+        empirical = (empirical + 1.0) / (len(expected) + len(empirical))
+        predicted = np.maximum(np.mean(probabilities, axis=0), 1e-9)
+        shift = np.log(empirical) - np.log(predicted)
+        shift -= float(np.mean(shift))
+        candidate.params["b2"] += prior_calibration_strength * shift
+    if task == "regression" and bias_correction_strength > 0.0:
+        predicted = candidate.predict_raw(values)
+        residual = np.asarray(targets, dtype=np.float64) - predicted
+        normalized_shift = float(np.median(residual)) / float(
+            candidate.meta["target_scale"]
+        )
+        candidate.params["b2"][0] += bias_correction_strength * float(
+            np.clip(normalized_shift, -1.0, 1.0)
+        )
+    candidate.validate()
+    return candidate
+
+
+def performance_method_names(task: str, portfolio: str = "a1") -> tuple[str, ...]:
+    """Return the preregistered bounded method set for a task contract."""
+
+    if portfolio == "bias_followup":
+        if task == "classification":
+            return ()
+        if task == "regression":
+            return (
+                "soup_current_e3_alpha0.25",
+                "soup_bias_down_0.1",
+                "soup_bias_down_0.25",
+            )
+        raise ValueError("unsupported task")
+    if portfolio != "a1":
+        raise ValueError("unsupported performance portfolio")
+    if task == "classification":
+        return (
+            "native_recent_e3",
+            "balanced_current_e3",
+            "balanced_recent_e3",
+            "balanced_prior_recent_e3",
+        )
+    if task == "regression":
+        return (
+            "native_current_e3_lr3",
+            "soup_current_e3_alpha0.25",
+            "huber_current_e3_lr3",
+            "huber_recent_e3",
+            "asymmetric_current_e3_lr3",
+            "asymmetric_soup_bias",
+        )
+    raise ValueError("unsupported task")
+
+
+def fit_performance_method(
+    parent: _NativeModel,
+    *,
+    method: str,
+    history_x: np.ndarray,
+    history_y: np.ndarray,
+    current_x: np.ndarray,
+    current_y: np.ndarray,
+) -> _NativeModel:
+    """Fit one preregistered low-cost method without changing checkpoint schema."""
+
+    task = str(parent.meta["task"])
+    allowed_methods = set(performance_method_names(task)) | set(
+        performance_method_names(task, "bias_followup")
+    )
+    if method not in allowed_methods:
+        raise ValueError("method is incompatible with the task contract")
+    history_x = np.asarray(history_x, dtype=np.float64)
+    history_y = np.asarray(history_y)
+    current_x = np.asarray(current_x, dtype=np.float64)
+    current_y = np.asarray(current_y)
+    width = len(parent.meta["paths"])
+    if history_x.shape != (len(history_y), width):
+        raise ValueError("history arrays are invalid")
+    if current_x.shape != (len(current_y), width) or not len(current_x):
+        raise ValueError("current arrays are invalid")
+    recent_count = min(len(history_x), 2 * len(current_x))
+    recent_x = np.concatenate((history_x[-recent_count:], current_x), axis=0)
+    recent_y = np.concatenate((history_y[-recent_count:], current_y), axis=0)
+
+    if method == "native_recent_e3":
+        return fit_native_recipe(
+            parent,
+            recipe="recent_e3",
+            history_x=history_x,
+            history_y=history_y,
+            current_x=current_x,
+            current_y=current_y,
+        )
+    if method == "balanced_current_e3":
+        return fit_native_objective(
+            parent,
+            values=current_x,
+            targets=current_y,
+            epochs=3,
+            objective="balanced_cross_entropy",
+        )
+    if method in {"balanced_recent_e3", "balanced_prior_recent_e3"}:
+        return fit_native_objective(
+            parent,
+            values=recent_x,
+            targets=recent_y,
+            epochs=3,
+            objective="balanced_cross_entropy",
+            prior_calibration_strength=(
+                0.25 if method == "balanced_prior_recent_e3" else 0.0
+            ),
+        )
+    if method in {"native_current_e3_lr3", "soup_current_e3_alpha0.25"}:
+        recipe = (
+            "current_e3_lr3"
+            if method == "native_current_e3_lr3"
+            else "soup_current_e3_alpha0.25"
+        )
+        return fit_native_recipe(
+            parent,
+            recipe=recipe,
+            history_x=history_x,
+            history_y=history_y,
+            current_x=current_x,
+            current_y=current_y,
+        )
+    if method == "huber_current_e3_lr3":
+        return fit_native_objective(
+            parent,
+            values=current_x,
+            targets=current_y,
+            epochs=3,
+            objective="huber",
+            learning_rate_multiplier=3.0,
+        )
+    if method == "huber_recent_e3":
+        return fit_native_objective(
+            parent,
+            values=recent_x,
+            targets=recent_y,
+            epochs=3,
+            objective="huber",
+        )
+    if method == "asymmetric_current_e3_lr3":
+        return fit_native_objective(
+            parent,
+            values=current_x,
+            targets=current_y,
+            epochs=3,
+            objective="asymmetric_huber",
+            learning_rate_multiplier=3.0,
+            overprediction_weight=1.5,
+        )
+    if method == "asymmetric_soup_bias":
+        candidate = fit_native_objective(
+            parent,
+            values=current_x,
+            targets=current_y,
+            epochs=3,
+            objective="asymmetric_huber",
+            overprediction_weight=1.5,
+            bias_correction_strength=0.25,
+        )
+        for name in candidate.params:
+            candidate.params[name] = (
+                0.75 * parent.params[name] + 0.25 * candidate.params[name]
+            )
+        candidate.validate()
+        return candidate
+    if method in {"soup_bias_down_0.1", "soup_bias_down_0.25"}:
+        strength = 0.1 if method.endswith("0.1") else 0.25
+        candidate = fit_native_recipe(
+            parent,
+            recipe="soup_current_e3_alpha0.25",
+            history_x=history_x,
+            history_y=history_y,
+            current_x=current_x,
+            current_y=current_y,
+        )
+        error = candidate.predict_raw(current_x) - current_y.astype(
+            np.float64, copy=False
+        )
+        overprediction = max(0.0, float(np.median(error)))
+        normalized_shift = min(
+            1.0, overprediction / float(candidate.meta["target_scale"])
+        )
+        candidate.params["b2"][0] -= strength * normalized_shift
+        candidate.first["b2"].fill(0.0)
+        candidate.second["b2"].fill(0.0)
+        candidate.validate()
+        return candidate
+    raise AssertionError("unreachable performance method")
+
+
 def summarize_transitions(rows: list[dict[str, Any]]) -> dict[str, dict[str, float]]:
     grouped: dict[str, list[dict[str, Any]]] = {}
     for row in rows:

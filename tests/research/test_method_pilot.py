@@ -3,8 +3,12 @@ from __future__ import annotations
 import numpy as np
 
 from brace_msi.method_pilot import (
+    _native_prediction,
     discover_transition_paths,
+    fit_native_objective,
     fit_native_recipe,
+    fit_performance_method,
+    performance_method_names,
     run_native_candidates,
     run_transition,
     summarize_transitions,
@@ -219,3 +223,173 @@ def test_learning_rate_multiplier_does_not_compound_across_parent_chain() -> Non
         )
 
     assert parent.meta["learning_rate"] == original_rate
+
+
+def test_balanced_objective_preserves_checkpoint_schema_and_parent(tmp_path) -> None:
+    rng = np.random.default_rng(37)
+    majority = rng.normal(loc=-0.3, size=(90, 4))
+    minority = rng.normal(loc=0.8, size=(10, 4))
+    values = np.concatenate((majority, minority), axis=0)
+    targets = np.concatenate(
+        (np.zeros(90, dtype=np.int64), np.ones(10, dtype=np.int64))
+    )
+    parent = _parent("classification")
+    original = {name: value.copy() for name, value in parent.params.items()}
+
+    candidate = fit_native_objective(
+        parent,
+        values=values,
+        targets=targets,
+        epochs=3,
+        objective="balanced_cross_entropy",
+        prior_calibration_strength=0.25,
+    )
+    checkpoint = tmp_path / "checkpoint.npz"
+    candidate.save(checkpoint)
+    loaded = _NativeModel.load(checkpoint)
+
+    assert loaded.meta["format"] == "contest.cpu-mlp.v1"
+    assert loaded.meta["learning_rate"] == parent.meta["learning_rate"]
+    assert loaded.meta["epochs"] == parent.meta["epochs"] + 3
+    assert all(
+        np.array_equal(parent.params[name], original[name]) for name in original
+    )
+
+
+def test_huber_objective_limits_single_outlier_damage() -> None:
+    values = np.zeros((41, 4), dtype=np.float64)
+    targets = np.concatenate((np.ones(40), np.asarray([80.0])))
+    clean_values = np.zeros((30, 4), dtype=np.float64)
+    clean_targets = np.ones(30, dtype=np.float64)
+    parent = _parent("regression")
+
+    mse = fit_native_objective(
+        parent,
+        values=values,
+        targets=targets,
+        epochs=5,
+        objective="mse",
+    )
+    huber = fit_native_objective(
+        parent,
+        values=values,
+        targets=targets,
+        epochs=5,
+        objective="huber",
+        huber_delta=1.0,
+    )
+
+    mse_error = np.mean(np.abs(_native_prediction(mse, clean_values) - clean_targets))
+    huber_error = np.mean(
+        np.abs(_native_prediction(huber, clean_values) - clean_targets)
+    )
+    assert huber_error < mse_error
+
+
+def test_asymmetric_huber_penalizes_overprediction_more_strongly() -> None:
+    values = np.zeros((32, 4), dtype=np.float64)
+    targets = np.full(32, 10.0, dtype=np.float64)
+    parent = _parent("regression")
+    parent.params["b2"][0] = 15.0
+
+    symmetric = fit_native_objective(
+        parent,
+        values=values,
+        targets=targets,
+        epochs=2,
+        objective="huber",
+        huber_delta=1.0,
+    )
+    asymmetric = fit_native_objective(
+        parent,
+        values=values,
+        targets=targets,
+        epochs=2,
+        objective="asymmetric_huber",
+        huber_delta=1.0,
+        overprediction_weight=1.5,
+    )
+
+    symmetric_bias = float(np.mean(_native_prediction(symmetric, values) - targets))
+    asymmetric_bias = float(np.mean(_native_prediction(asymmetric, values) - targets))
+    assert 0.0 <= asymmetric_bias < symmetric_bias
+
+
+def test_performance_methods_are_task_contract_bound_and_loadable(tmp_path) -> None:
+    rng = np.random.default_rng(41)
+    history_x = rng.normal(size=(50, 4))
+    current_x = rng.normal(loc=0.2, size=(30, 4))
+    classification_history_y = (history_x[:, 0] > 0).astype(np.int64)
+    classification_current_y = (current_x[:, 0] > 0).astype(np.int64)
+    regression_history_y = 5.0 + history_x[:, 0]
+    regression_current_y = 5.0 + current_x[:, 0]
+
+    cases = (
+        (
+            _parent("classification"),
+            classification_history_y,
+            classification_current_y,
+        ),
+        (_parent("regression"), regression_history_y, regression_current_y),
+    )
+    for parent, history_y, current_y in cases:
+        for method in performance_method_names(parent.meta["task"]):
+            candidate = fit_performance_method(
+                parent,
+                method=method,
+                history_x=history_x,
+                history_y=history_y,
+                current_x=current_x,
+                current_y=current_y,
+            )
+            checkpoint = tmp_path / f"{method}.npz"
+            candidate.save(checkpoint)
+            loaded = _NativeModel.load(checkpoint)
+            assert loaded.meta["format"] == "contest.cpu-mlp.v1"
+            assert loaded.meta["learning_rate"] == parent.meta["learning_rate"]
+
+    try:
+        fit_performance_method(
+            _parent("classification"),
+            method="huber_current_e3_lr3",
+            history_x=history_x,
+            history_y=classification_history_y,
+            current_x=current_x,
+            current_y=classification_current_y,
+        )
+    except ValueError as exc:
+        assert "incompatible" in str(exc)
+    else:
+        raise AssertionError("cross-task method must fail closed")
+
+
+def test_one_sided_bias_followup_only_reduces_detected_overprediction() -> None:
+    values = np.zeros((32, 4), dtype=np.float64)
+    targets = np.full(32, 10.0, dtype=np.float64)
+    parent = _parent("regression")
+    parent.params["b2"][0] = 15.0
+    empty_x = np.empty((0, 4), dtype=np.float64)
+    empty_y = np.empty((0,), dtype=np.float64)
+
+    baseline = fit_performance_method(
+        parent,
+        method="soup_current_e3_alpha0.25",
+        history_x=empty_x,
+        history_y=empty_y,
+        current_x=values,
+        current_y=targets,
+    )
+    corrected = fit_performance_method(
+        parent,
+        method="soup_bias_down_0.25",
+        history_x=empty_x,
+        history_y=empty_y,
+        current_x=values,
+        current_y=targets,
+    )
+
+    assert np.mean(corrected.predict_raw(values)) < np.mean(
+        baseline.predict_raw(values)
+    )
+    assert np.all(corrected.first["b2"] == 0.0)
+    assert np.all(corrected.second["b2"] == 0.0)

@@ -60,6 +60,65 @@ def test_high_scale_regression_heterogeneity_adds_forward_candidate() -> None:
     ) == ("soup_current_e3_alpha0.25", "current_e3_lr3")
 
 
+def test_performance_portfolio_routes_by_contract_and_scale_not_profile() -> None:
+    classification = _candidate_recipes(
+        task_kind="classification",
+        target_batch_means=(0.2, 0.4),
+        target_scale=1.0,
+        previous_delayed_gain=None,
+        failure_streak=0,
+        method_portfolio=True,
+    )
+    high_scale_regression = _candidate_recipes(
+        task_kind="regression",
+        target_batch_means=(1438.5, 34.5),
+        target_scale=785.23,
+        previous_delayed_gain=None,
+        failure_streak=0,
+        method_portfolio=True,
+    )
+    low_scale_regression = _candidate_recipes(
+        task_kind="regression",
+        target_batch_means=(82.0, 76.0),
+        target_scale=45.0,
+        previous_delayed_gain=None,
+        failure_streak=0,
+        method_portfolio=True,
+    )
+
+    assert classification == ("balanced_current_e3", "native_recent_e3")
+    assert high_scale_regression == (
+        "native_current_e3_lr3",
+        "asymmetric_current_e3_lr3",
+    )
+    assert low_scale_regression == (
+        "soup_current_e3_alpha0.25",
+        "huber_recent_e3",
+    )
+
+
+def test_classification_balance_only_leaves_regression_baseline_unchanged() -> None:
+    classification = _candidate_recipes(
+        task_kind="classification",
+        target_batch_means=(0.2, 0.4),
+        target_scale=1.0,
+        previous_delayed_gain=None,
+        failure_streak=0,
+        classification_balance_only=True,
+    )
+    regression = _candidate_recipes(
+        task_kind="regression",
+        target_batch_means=(1438.5, 34.5),
+        target_scale=785.23,
+        previous_delayed_gain=None,
+        failure_streak=0,
+        classification_balance_only=True,
+    )
+
+    assert classification == ("balanced_current_e3", "native_recent_e3")
+    assert regression == ("soup_current_e3_alpha0.25", "current_e3_lr3")
+
+
 def test_round_root_cannot_escape_to_confirmation_or_future_name(tmp_path) -> None:
     (tmp_path / "round-01").mkdir()
     (tmp_path / "round-10").mkdir()

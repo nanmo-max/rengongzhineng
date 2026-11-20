@@ -769,3 +769,46 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 - 资源与边界：墙钟42.41秒；confirmation/public validation读取0，PyTRiO、SwanLab和官方试运行均为0。A6只是开发流候选，仍需D-088规定的方法冻结后独立替代流/任务留出验收。
 - 机器证据：`D:/brace-msi-generalization/GENERALIZATION-MATRIX-001-A6/summary.json`，SHA-256 `BA850904FFE1A839CD839F87C0F6999A53751FE786E5BC12296A8E9F6B126F68`。
 - 独立复审：修复后无剩余技术P0/P1；只批准`bounded_exploration`作为开发候选，不把A6视为独立泛化或正式RC证据。
+
+## PERFORMANCE-METHOD-PILOT-001-A1（COMPLETED_MIXED）
+
+- 目的：在不改变`contest.cpu-mlp.v1`结构和父链语义的前提下，筛选能改善相邻未见阶段的低成本训练目标与校准方法；先看趋势，不直接进入正式镜像。
+- 数据范围：只使用冻结代理流第`t`轮已开放feedback/update训练，并在`t+1`轮未见feedback评价；不读取confirmation/public validation，不消费官方试运行。
+- 候选上限：分类比较原生近期回放、类平衡交叉熵和类先验偏置校准；回归比较原生高强度/权重插值、Huber、有限近期回放、轻量NASA方向非对称Huber和训练内稳健偏差校准。每类最多6个方法，不做开放式HPO。
+- 共享约束：方法只由任务契约（分类/回归及指标方向）启用，不按A/B/C名称选动作；保留原参数形状、Adam状态字段、标准化、epoch/step和可加载性；非有限值或任一连续父链出现5%灾难退化即淘汰。
+- 成功标准：至少一项方法相对现有开发基线同时改善平均有向收益或C的RMSE/NASA趋势，且最差阶段和CPU成本不恶化到门外；否则保留A6的`bounded_exploration`与既有recipe，不集成新方法。
+- 预期输出：`D:/brace-msi-performance-pilot/PERFORMANCE-METHOD-PILOT-001-A1/`及仓库内脱敏摘要；失败和混合结果同样登记。
+- 结果：分类`balanced_current_e3`平均/最差Macro-F1收益`+0.399821/+0.023635`，优于`native_recent_e3`的`+0.386974/+0.017072`且CPU更低；两者同时改变训练范围和损失，因此只证明复合候选趋势，不证明类平衡单因素因果有效。B的非对称Huber改善最差RMSE和NASA但平均RMSE略逊；C所有新稳健方法均未超过既有25%权重插值。
+- 机器证据：摘要SHA-256 `98C75FB2A992BCC6068486E73219E8E29EB85B30DABE83683FC4836AF4A95E2F`。
+
+## PERFORMANCE-METHOD-PILOT-001-A2（COMPLETED_NEGATIVE）
+
+- 触发证据：A1中C的原生`soup_current_e3_alpha0.25`仍是RMSE与NASA综合最优；将Huber、非对称Huber和偏差校正同时组合后反而变差，不能判断偏差校正单因素是否有效。
+- 唯一变量：在同一25%权重插值候选之后，仅当当前训练数据的稳健中位预测误差显示RUL过估时，对输出偏置作向下修正并清零该偏置的Adam一/二阶矩；比较固定强度0.10与0.25，不改变其他参数、数据、父链和选择规则。
+- 数据与边界：复用A1冻结的C相邻未见开发流，runner通过`--profiles C`限定本次研究范围；方法函数本身未接收MetricContract，不把它表述为正式`rmse_nasa`契约路由。不读取confirmation/public validation，不调用PyTRiO/SwanLab，不消费官方试运行。A2仍是同一开发流证据，不是独立泛化。
+- 成功标准：相对未校正soup，C平均RMSE有向收益和NASA改善率至少一项提高，另一项不得退化超过1%，最差阶段不得扩大到5%灾难门；否则永久淘汰该校正。
+- 预期输出：`D:/brace-msi-performance-pilot/PERFORMANCE-METHOD-PILOT-001-A2/`，不覆盖A1。
+- 结果：0.10/0.25向下偏差校正均降低C的平均RMSE收益、NASA改善率和最差阶段，方法淘汰。
+- 机器证据：摘要SHA-256 `EAC9D9752E97588F8909C0760526AB91A0D07EAFE7CEC2FC41C21C14EF7E4820`。
+
+## PERFORMANCE-METHOD-PILOT-001-A3（INVALID_NEGATIVE_NO_PROMOTION）
+
+- 目的：把A1单因素结果放入A6已经通过技术门的四策略十轮矩阵，验证候选质量与选择/回滚能否协同，而不是用单方法连续强制部署结论替代Harness。
+- 身份无关路由：分类使用`balanced_current_e3`与既有`native_recent_e3`；回归目标均值范围相对父`target_scale`至少1时使用`native_current_e3_lr3`与`asymmetric_current_e3_lr3`，否则使用既有`soup_current_e3_alpha0.25`与`huber_recent_e3`。路由不读取profile名称。
+- 冻结项：沿用A6数据、四选择策略、预算、门控、延迟回滚、路径边界和最终checkpoint验证；不采用A2失败的偏差校正，不改变指标或阈值。
+- 成功标准：开发候选在A/B/C均无5%灾难退化、三任务平均有向收益非负、至少两任务为正；整体平均相对收益、最差相对阶段、CPU和checkpoint验证不劣于A6的`bounded_exploration`。否则仅保留单因素证据，不进入正式策略。
+- 边界：同一开发代理流，不是D-088独立验收；confirmation/public validation、PyTRiO、SwanLab、官方试运行均为0。
+- 预期输出：`D:/brace-msi-performance-pilot/PERFORMANCE-METHOD-PILOT-001-A3/`，不覆盖A1/A2。
+- 结果：B最差相对阶段`-5.9527%`超过灾难门；recipe反馈C分支因方法冷却后的跨族回退执行失败，suite `valid=false`。数值和失败均保留，不晋级。
+- 机器证据：摘要SHA-256 `2EC495B4DCAB7EA1789EC101F90A0B0DACA225E029D27EEDE32921240D13113F`。
+
+## PERFORMANCE-METHOD-PILOT-001-A4（COMPLETED_DEVELOPMENT_CANDIDATE）
+
+- 触发证据：A3证明把A1全部回归方法直接替换进十轮策略会使B出现5.95%最差阶段退化，且recipe反馈分支因新方法冷却后回退到旧`current_e1`而执行不完整；A3按无效/负结果保留，不晋级。
+- 唯一方法变更：只把A1中稳定正向的分类`balanced_current_e3 + native_recent_e3`候选接入；所有回归候选、选择策略、阈值、预算、数据和checkpoint门精确恢复A6语义。recipe反馈无可用新候选时回退到当前方法组合首项，不跨方法族。
+- 成功标准：A的平均/最差相对收益优于A6；B/C数值可复算为A6基线或仅有计时噪声；12条链完整、无5%灾难、最终checkpoint 12/12绑定、开发晋级门通过。
+- 边界：同一开发代理流，不是独立泛化；confirmation/public validation、PyTRiO、SwanLab、官方试运行均为0。
+- 预期输出：`D:/brace-msi-performance-pilot/PERFORMANCE-METHOD-PILOT-001-A4/`，不覆盖A1—A3。
+- 结果：120/120轮、12/12最终checkpoint绑定、0个5%灾难任务；A平均有向收益`0.312990→0.360481`且最差相对收益`-0.5470%→0`，B/C checkpoint与A6相同；`bounded_exploration`开发门通过。
+- 机器证据：摘要SHA-256 `4237A9F445E2E42456D3FD434B579D246046274A0B956278E36D764E110637BD`；不替代D-088独立留出。
+- 独立复审：无技术P0；B/C四策略8条链及checkpoint与A6逐项一致。唯一P1为禁止把复合候选收益归因于类平衡单因素，文档已修正；无需A5重跑。

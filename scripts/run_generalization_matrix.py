@@ -25,6 +25,7 @@ from brace_msi.method_pilot import (  # noqa: E402
     _native_prediction,
     _signed_gain,
     fit_native_recipe,
+    fit_performance_method,
 )
 from brace_msi.platform_runtime import _NativeModel, _read_rows  # noqa: E402
 from brace_msi.selection_strategies import (  # noqa: E402
@@ -137,6 +138,8 @@ def _candidate_recipes(
     target_scale: float,
     previous_delayed_gain: float | None,
     failure_streak: int,
+    method_portfolio: bool = False,
+    classification_balance_only: bool = False,
 ) -> tuple[str, ...]:
     plan = build_candidate_plan(
         PortfolioEvidence(
@@ -152,6 +155,16 @@ def _candidate_recipes(
         if len(target_batch_means) >= 2
         else 0.0
     )
+    if method_portfolio or classification_balance_only:
+        if task_kind == "classification":
+            return ("balanced_current_e3", "native_recent_e3")
+        if method_portfolio:
+            if normalized_range >= 1.0:
+                return (
+                    "native_current_e3_lr3",
+                    "asymmetric_current_e3_lr3",
+                )
+            return ("soup_current_e3_alpha0.25", "huber_recent_e3")
     secondary = plan.secondary_recipe
     if (
         task_kind == "regression"
@@ -286,6 +299,8 @@ def _run_profile(
     stream_root: Path,
     package_root: Path,
     output_root: Path,
+    method_portfolio: bool = False,
+    classification_balance_only: bool = False,
 ) -> dict[str, Any]:
     initial_path = package_root / PACKAGES[profile] / "checkpoint.npz"
     initial = _NativeModel.load(initial_path)
@@ -360,6 +375,8 @@ def _run_profile(
                 target_scale=float(parent.meta["target_scale"]),
                 previous_delayed_gain=previous_delayed_gain,
                 failure_streak=failure_streak,
+                method_portfolio=method_portfolio,
+                classification_balance_only=classification_balance_only,
             )
         )
         if strategy == "recipe_feedback":
@@ -369,7 +386,22 @@ def _run_profile(
                 if feedback_state.is_available(recipe, round_index=round_index)
             ]
             if not recipes:
-                recipes = ["current_e1"]
+                if method_portfolio or (
+                    classification_balance_only and task == "classification"
+                ):
+                    recipes = [
+                        _candidate_recipes(
+                            task_kind=task,
+                            target_batch_means=tuple(target_batch_means),
+                            target_scale=float(parent.meta["target_scale"]),
+                            previous_delayed_gain=previous_delayed_gain,
+                            failure_streak=failure_streak,
+                            method_portfolio=method_portfolio,
+                            classification_balance_only=classification_balance_only,
+                        )[0]
+                    ]
+                else:
+                    recipes = ["current_e1"]
 
         prior_x, prior_y = _empty_history(parent)
         if history_x:
@@ -382,14 +414,26 @@ def _run_profile(
             candidate_attempts += 1
             started_cpu = time.process_time()
             try:
-                candidate = fit_native_recipe(
-                    parent,
-                    recipe=recipe,
-                    history_x=prior_x,
-                    history_y=prior_y,
-                    current_x=update["x"],
-                    current_y=update["y"],
-                )
+                if method_portfolio or (
+                    classification_balance_only and task == "classification"
+                ):
+                    candidate = fit_performance_method(
+                        parent,
+                        method=recipe,
+                        history_x=prior_x,
+                        history_y=prior_y,
+                        current_x=update["x"],
+                        current_y=update["y"],
+                    )
+                else:
+                    candidate = fit_native_recipe(
+                        parent,
+                        recipe=recipe,
+                        history_x=prior_x,
+                        history_y=prior_y,
+                        current_x=update["x"],
+                        current_y=update["y"],
+                    )
                 gate_metrics = _metrics(
                     task, gate["y"], _native_prediction(candidate, gate["x"])
                 )
@@ -632,7 +676,12 @@ def _run_profile(
 
 
 def run_matrix(
-    *, stream_root: Path, package_root: Path, output_root: Path
+    *,
+    stream_root: Path,
+    package_root: Path,
+    output_root: Path,
+    method_portfolio: bool = False,
+    classification_balance_only: bool = False,
 ) -> dict[str, Any]:
     if output_root.exists():
         raise FileExistsError("output root must be new")
@@ -650,6 +699,8 @@ def run_matrix(
                         stream_root=stream_root,
                         package_root=package_root,
                         output_root=output_root,
+                        method_portfolio=method_portfolio,
+                        classification_balance_only=classification_balance_only,
                     )
                 )
             except Exception as exc:
@@ -699,6 +750,8 @@ def run_matrix(
         "format": "brace-msi-generalization-matrix.v1",
         "experiment_id": _experiment_id(output_root),
         "scope": "legal-ten-round-proxy-stream-no-confirmation",
+        "method_portfolio": method_portfolio,
+        "classification_balance_only": classification_balance_only,
         "confirmation_files_read": 0,
         "official_trial_count": 0,
         "pytrio_remote_calls": 0,
@@ -718,11 +771,15 @@ def main() -> int:
     parser.add_argument("--stream-root", type=Path, required=True)
     parser.add_argument("--package-root", type=Path, required=True)
     parser.add_argument("--output-root", type=Path, required=True)
+    parser.add_argument("--method-portfolio", action="store_true")
+    parser.add_argument("--classification-balance-only", action="store_true")
     args = parser.parse_args()
     summary = run_matrix(
         stream_root=args.stream_root,
         package_root=args.package_root,
         output_root=args.output_root,
+        method_portfolio=args.method_portfolio,
+        classification_balance_only=args.classification_balance_only,
     )
     print(json.dumps(summary, ensure_ascii=False, allow_nan=False, indent=2))
     return 0 if summary["valid"] else 1

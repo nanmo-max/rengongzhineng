@@ -1,9 +1,9 @@
 # 当前状态
 
 - 最近同步：2026-11-20（Asia/Shanghai）
-- 当前阶段：选择可靠性与开发泛化策略筛选已完成；进入原生checkpoint兼容方法趋势筛选，冻结既有正式归档
+- 当前阶段：选择可靠性、开发泛化策略和原生方法趋势筛选已完成；进入镜像外Advisor验收，冻结既有正式归档
 - 当前路线：**官方SDK 1.0.2 + 每轮Qwen训练提案 + 真实父checkpoint续训 + Harness确定性指标事实 + Qwen在合法可行集合内部署/保留/回滚 + 硬SafetyGate** `[D-079]` `[D-080]` `[D-086]` `[D-087]`
-- 当前唯一核心任务：`PERFORMANCE-METHOD-PILOT-001 (READY)`。先对分类近期回放、高尺度异质回归和稳健/非对称RUL方法做低成本相邻未见阶段趋势筛选；不上传、不发起试运行。
+- 当前唯一核心任务：`PYTRIO-ADVISOR-OPT-001 (READY)`。先用冻结反例与未参与训练轨迹验收基础Qwen；只有仍存在系统性结构/数值错误时才训练镜像外PyTRiO Advisor，并以脱敏聚合记录准备SwanLab；不上传、不发起试运行。
 - 稳定边界：全部历史RC和实验不改写；`0.5.0rc1`只作研究证据，不得上传。正式线从D-058开始只输出原生官方MLP续训checkpoint。A3之后禁止继续LLM调参 `[D-043]`
 - 官方试运行：O-PLATFORM-018证明`0.10.4rc2`的正式提案有效且结算15,146 Token，但30/30主动retain造成零候选；精确剩余次数仍以平台页面实时显示为准。
 - 当前冻结本地归档：`D:/brace-msi-first-principles-release/BRACE-MSI-0.10.6rc1-A1/harness.tar`；SHA-256 `F7518609...D89CB`。它是历史Protocol RC，不因本轮研究原地改写，也不是下一次上传入口。
@@ -19,6 +19,7 @@
 - `SELECTION-RELIABILITY-001`已完成：提交`afa9038`；正式运行核50项、全量487项通过。结果只证明选择可靠性代码与回归，不是性能提升、容器验收或新RC。
 - `GENERALIZATION-MATRIX-001-A1`已完成：O-PLATFORM-019三条确认退化反例在四种策略下均保留父模型，专项11项通过；纯决策JSON SHA-256为`CDD3D5C9...51D66D6616B6516C170`。该结果未训练模型，不是性能结论。
 - `GENERALIZATION-MATRIX-001-A6`完成120/120轮；symlink/junction失败关闭和12/12最终checkpoint全状态/预测绑定通过。`bounded_exploration`是唯一开发候选，A/B/C平均有向收益`+0.312990/+89.198667/+0.173614`；仍需D-088规定的方法冻结后独立替代流/任务留出。
+- `PERFORMANCE-METHOD-PILOT-001-A4`完成120/120轮：仅`balanced_current_e3 + native_recent_e3`复合分类候选晋级，A平均有向收益提高至`+0.360481`且最差阶段归零；该结果不能归因于类平衡单因素。B/C与A6 checkpoint完全相同；A2偏差校正与A3全回归组合均按负结果保留；方法仍需D-088独立门。
 
 ## 2026-11-18 平台试运行根因
 

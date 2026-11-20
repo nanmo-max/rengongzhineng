@@ -773,3 +773,12 @@
 - A6 120/120轮完成，12/12最终checkpoint状态指纹与预测绑定通过；symlink/junction三类对抗测试均先红后绿。`bounded_exploration`是唯一开发候选；摘要SHA-256 `BA850904FFE1A839CD839F87C0F6999A53751FE786E5BC12296A8E9F6B126F68`。
 - 独立二次复审确认无剩余技术P0/P1；GENERALIZATION-MATRIX-001只以“开发策略筛选完成”收尾。D-088的方法冻结后独立替代流/任务留出已在TASKS中编码为正式RC前置。
 - A6收口验证：专项`24 passed`，完整回归`511 passed in 145.39s`；开发候选之外不作隐藏泛化或正式RC主张。
+
+# 2026-11-20 PERFORMANCE-METHOD-PILOT-001
+
+- A1在相邻未见阶段完成原生schema单因素筛选：分类`balanced_current_e3`优于近期回放基线；B非对称Huber改善最差阶段/NASA但平均RMSE略逊；C的新稳健方法均未超过既有25%权重插值。
+- A2将C偏差校正单独拆出后仍同时损害RMSE、NASA和最差阶段，方法淘汰。
+- A3把全部新回归方法接入十轮矩阵后触发B 5.95%灾难退化，并暴露recipe冷却后跨方法族回退缺口；按无效/负结果保留。
+- A4只接入`balanced_current_e3 + native_recent_e3`复合分类候选：120/120轮、12/12最终checkpoint绑定、0个5%灾难任务；A平均收益`0.312990→0.360481`、最差相对收益`-0.5470%→0`，B/C checkpoint与A6完全相同。因为训练范围与损失同时变化，不作类平衡单因素因果主张。机器摘要SHA-256 `4237A9F445E2E42456D3FD434B579D246046274A0B956278E36D764E110637BD`。
+- confirmation/public validation、远程PyTRiO、SwanLab同步和官方试运行使用均为0；下一步按冻结轨迹验收基础Qwen，最终仍需D-088独立替代流。
+- 收口验证：方法/矩阵专项`26 passed`，完整回归`518 passed in 142.91s`；独立复审无技术P0，P1证据措辞已修正。

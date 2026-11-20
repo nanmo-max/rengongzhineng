@@ -130,3 +130,10 @@
 - 状态：`INSTRUMENTED_LOCAL_OFFICIAL_ATTRIBUTION_OPEN`
 - 证据：O-PLATFORM-019三任务墙钟约10,442秒而CPU约1,692秒，但无逐阶段耗时，不能归因。
 - 缓解：已增加互斥、脱敏且明确scope/excluded的history、两次模型调用、训练评估保存、候选提交、state序列化/RPC和finish ACK计时。仍未用平台运行验证归因；任何减少调用、缩短证据窗口或改变训练行为都必须独立实验，墙钟改善不足15%不得进入正式线。
+
+## R-058 开发代理流多重尝试导致方法过拟合
+
+- 等级：Critical
+- 状态：`MITIGATED_DEVELOPMENT_FREEZE_FINAL_HOLDOUT_PENDING`
+- 证据：PERFORMANCE-METHOD-PILOT-001在同一代理流运行A1—A4；A2/A3负结果已经影响最终只保留`balanced_current_e3 + native_recent_e3`复合分类候选的选择。
+- 缓解：D-089冻结方法后禁止再用该流调方法/阈值；正式RC前必须执行D-088的一次性独立替代流/任务留出。打开留出后任何失败只允许回退已冻结A6，不允许继续针对留出调参。
