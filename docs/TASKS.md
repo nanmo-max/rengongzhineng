@@ -4,6 +4,16 @@
 
 ## 当前任务图
 
+### SUBMISSION-DOC-001 正式作品文档生成与验收
+
+- 状态：`DONE`
+- 授权：用户于2026-11-21询问作品文档提交并同意继续正式提交步骤。
+- 依赖：COMPETITION-CORE-PLAN-001、D-095、D-096。
+- 优先级：P0，当前唯一本地可执行任务；不改变`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`的平台依赖。
+- 完成标准：作品说明只引用当前冻结`0.11.0rc1`和已登记证据；生成DOCX及不超过10页PDF；PDF可提取文本、页面无裁切/重叠、无旧版本/旧哈希/未采用Sampler或历史异构模型冒充当前提交；记录文件SHA-256。
+- 停止条件：不修改镜像、正式代码、数据或实验结果；不上传平台、不填写API Key、不消耗试运行。
+- 证据：8页A4 PDF及DOCX已生成；PDF文本门和8页逐页渲染通过。DOCX/PDF SHA-256分别为`388FDCB5...270F1`和`CA7DF592...02DE3`；见`docs/SUBMISSION_CHECKLIST.md`。
+
 ### MATURE-OPTIMIZER-PILOT-001 成熟父链兼容优化方法探针
 
 - 状态：`DONE_NEGATIVE_NO_PROMOTION`

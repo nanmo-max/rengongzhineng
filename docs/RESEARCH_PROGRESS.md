@@ -2,6 +2,15 @@
 
 本文件按时间追加，不回写历史记录。当前状态仍以 [STATUS.md](STATUS.md) 为准。
 
+## 2026-11-21：SUBMISSION-DOC-001
+
+- 审计并替换旧`0.4.1rc1`作品说明，当前文档只引用冻结`0.11.0rc1`、D-095/D-096和已登记的本地/公开证据；移除旧镜像哈希、未采用Sampler和历史异构模型的发布表述。
+- 生成DOCX与8页A4 PDF；PDF可提取6215字符，旧版本`0.4.1rc1`、旧哈希`daf42786`和旧`A3 Sampler`发布字样均为0次，当前版本、基础Qwen和冻结镜像哈希均存在。
+- 使用Poppler渲染全部8页并逐页检查，未发现裁切、重叠、不可读表格或页码错误；长哈希段落经一次排版修正后复验。
+- DOCX：`artifacts/submission/BRACE-MSI-0.11.0rc1-作品说明书.docx`，SHA-256 `388FDCB5C2CC3D5AE4CE682DC47D2E665541CA22A36329C55245B40A8EA270F1`。
+- PDF：`output/pdf/BRACE-MSI-0.11.0rc1-作品说明书.pdf`，SHA-256 `CA7DF5926DA8A7237FD902F2859384B1E5AFFC442D1ED97C7152ECA46E202DE3`。
+- 本任务未修改或重建正式镜像，未填写API Key、上传平台或消耗试运行。
+
 ## 2026-11-21：MATURE-OPTIMIZER-PILOT-001
 
 - 以测试先行方式为官方MLP父checkpoint续训增加研究态L2-SP、SAM-Adam和AdamW路径；默认Adam、checkpoint schema、优化状态与保存加载保持兼容。

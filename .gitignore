@@ -3,6 +3,7 @@ dataji/
 tmp/
 artifacts/
 outputs/
+output/
 
 # Python environments and caches.
 .venv/

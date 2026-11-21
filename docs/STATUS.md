@@ -1,9 +1,9 @@
 # 当前状态
 
 - 最近同步：2026-11-21（Asia/Shanghai）
-- 当前阶段：成熟优化方法探针已按负结果收口；Competition Core RC保持冻结，正式平台验证仍等待外部授权
+- 当前阶段：正式作品文档已生成并验收；等待用户在平台上传文档、校验版本并决定一次受控试运行
 - 当前路线：**官方SDK 1.0.2 + 未知同格式任务自动识别 + 每轮至少一次真实父checkpoint候选训练 + 双阶段Qwen实验决策 + 同作用域确定性指标事实 + 历史数据/历史模型 + PyTRiO镜像外Agent训练 + 本地测试/正式上传双镜像分离** `[D-079]` `[D-086]` `[D-087]` `[D-093]`
-- 当前无本地`READY`任务；`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`保持唯一核心任务。`MATURE-OPTIMIZER-PILOT-001`已完成但没有方法通过跨任务晋级门，因此未接入正式镜像、未读取confirmation，也未修改`0.11.0rc1`。冻结归档仍为`D:/brace-msi-release/COMPETITION-CORE-RC-001/harness.tar`，SHA-256 `b7ba01bcc8a60502896082b58578b56c60c539a5460bb373285ff0abe4503e30`。
+- 当前无本地`READY`任务；`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`保持唯一核心任务。正式作品PDF位于`output/pdf/BRACE-MSI-0.11.0rc1-作品说明书.pdf`，8页，SHA-256 `CA7DF5926DA8A7237FD902F2859384B1E5AFFC442D1ED97C7152ECA46E202DE3`。冻结镜像归档仍为`D:/brace-msi-release/COMPETITION-CORE-RC-001/harness.tar`，SHA-256 `b7ba01bcc8a60502896082b58578b56c60c539a5460bb373285ff0abe4503e30`。
 - 稳定边界：全部历史RC和实验不改写；`0.5.0rc1`只作研究证据，不得上传。正式线从D-058开始只输出原生官方MLP续训checkpoint。D-090仅授权一次镜像外正式部署Advisor SFT，不把Sampler或私有SDK装入正式镜像。
 - 官方试运行：O-PLATFORM-018证明`0.10.4rc2`的正式提案有效且结算15,146 Token，但30/30主动retain造成零候选；精确剩余次数仍以平台页面实时显示为准。
 - 当前冻结正式候选：`D:/brace-msi-release/COMPETITION-CORE-RC-001/harness.tar`；SHA-256 `b7ba01bcc8a60502896082b58578b56c60c539a5460bb373285ff0abe4503e30`；镜像ID `sha256:578e7c9aa0c507efddeb6b4a182fc28299591a2a0a0e7fb1401a02f39b50da51`。`0.10.6rc1`继续作为历史Protocol RC，不得代替当前候选。

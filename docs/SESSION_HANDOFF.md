@@ -1,5 +1,13 @@
 # 新会话恢复与交接
 
+## 2026-11-21 正式作品文档提交入口（当前）
+
+1. `SUBMISSION-DOC-001`已完成；上传文件为`output/pdf/BRACE-MSI-0.11.0rc1-作品说明书.pdf`，8页，SHA-256 `CA7DF5926DA8A7237FD902F2859384B1E5AFFC442D1ED97C7152ECA46E202DE3`。
+2. 可编辑DOCX位于`artifacts/submission/BRACE-MSI-0.11.0rc1-作品说明书.docx`，SHA-256 `388FDCB5C2CC3D5AE4CE682DC47D2E665541CA22A36329C55245B40A8EA270F1`；生成源为`docs/SUBMISSION_DOCUMENT.md`。
+3. 平台表单选择基础模型`Qwen/Qwen3.5-4B`，不填写Sampler路径；训练记录字段可选则留空，不用未采用Sampler记录冒充当前模型。
+4. 镜像已显示“镜像可用”，仍须选择“用于新版本”、上传PDF并执行“核对并保存新版本”。保存校验通过后才运行一次受控试运行。
+5. 当前无本地`READY`任务；任何平台失败先保存原始提示，不重复盲试。
+
 ## 2026-11-21 成熟优化器探针收口入口（当前）
 
 1. 当前分支`codex/first-principles-rebuild`；`MATURE-OPTIMIZER-PILOT-001`已按负结果完成，不要重跑、打开confirmation或扩大参数搜索。
