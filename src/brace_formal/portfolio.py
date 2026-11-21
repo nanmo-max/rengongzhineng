@@ -14,7 +14,8 @@ from .metrics import evaluate, resolve_metric_contract
 from .model import FormalModel
 
 
-RECIPES = ("retain", "e1_lr1", "e3_lr3", "soup_e3_alpha0.25")
+HISTORICAL_RECIPES = ("retain", "e1_lr1", "e3_lr3", "soup_e3_alpha0.25")
+RECIPES = HISTORICAL_RECIPES
 _GROUP_SUFFIX = re.compile(r"^(.*)_(?:s|c)\d+$", re.IGNORECASE)
 
 

@@ -843,3 +843,11 @@
 - 专项命令：`D:\anaconda3\python.exe -m pytest tests/competition_core/test_history_store.py tests/formal_runtime/test_agent_workspace.py tests/formal_runtime/test_model_core.py -q`，结果`23 passed in 0.72s`。
 - 全量命令：`D:\anaconda3\python.exe -m pytest -q`，结果`552 passed in 154.30s`。
 - 未读取原始数据或运行模型训练，未调用PyTRiO/SwanLab、构建镜像或消耗官方试运行。
+
+# 2026-11-21 COMPETITION-CORE Task 4
+
+- `FormalModel.fit`在保持无选项原生路径的同时，增加样本权重、加权交叉熵、加权MSE、Huber与非对称回归梯度，延续Adam状态、确定性打乱和梯度裁剪。
+- 新`RecipeRegistry`只暴露与`TaskProfile`兼容的父checkpoint续训能力；支持类别加权/平衡采样、三类回归损失、当前/历史回放、epoch/学习率覆盖与父候选平均；不包含训练前`retain`。
+- 专项命令：`D:\anaconda3\python.exe -m pytest tests/competition_core/test_recipe_registry.py tests/formal_runtime/test_model_core.py tests/formal_runtime/test_portfolio.py tests/formal_dev/test_official_model.py -q`，结果`23 passed in 1.02s`。
+- 全量命令：`D:\anaconda3\python.exe -m pytest -q`，结果`562 passed in 154.50s`。
+- 本任务运行的仅是小型自动化单元训练测试，未使用官方数据、PyTRiO/SwanLab、镜像或官方试运行。

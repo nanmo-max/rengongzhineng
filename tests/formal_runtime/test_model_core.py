@@ -122,3 +122,70 @@ def test_data_loader_and_metrics_follow_parent_contract(tmp_path: Path) -> None:
     assert batch.y.tolist() == [0, 0, 0, 1, 1, 1]
     assert set(metrics) == {"accuracy", "macro_f1"}
     assert all(0.0 <= value <= 1.0 for value in metrics.values())
+
+
+def test_extended_fit_without_options_is_exactly_native(tmp_path: Path) -> None:
+    from brace_formal.model import FormalModel
+
+    checkpoint = tmp_path / "classification.npz"
+    _write_checkpoint(checkpoint, task="classification")
+    parent = FormalModel.load(checkpoint)
+    values = np.asarray([[float(index), float(index % 2)] for index in range(12)], dtype=np.float64)
+    targets = np.asarray([0] * 6 + [1] * 6, dtype=np.int64)
+    implicit = parent.clone()
+    explicit = parent.clone()
+
+    implicit_losses = implicit.fit(values, targets, 2)
+    explicit_losses = explicit.fit(
+        values,
+        targets,
+        2,
+        sample_weights=None,
+        loss="native",
+        loss_parameters=None,
+    )
+
+    assert implicit_losses == explicit_losses
+    assert implicit.meta == explicit.meta
+    for group_name in ("params", "first", "second"):
+        implicit_group = getattr(implicit, group_name)
+        explicit_group = getattr(explicit, group_name)
+        for name in implicit_group:
+            np.testing.assert_array_equal(implicit_group[name], explicit_group[name])
+
+
+def test_weighted_classification_and_regression_losses_change_training_deterministically(tmp_path: Path) -> None:
+    from brace_formal.model import FormalModel
+
+    class_checkpoint = tmp_path / "classification.npz"
+    _write_checkpoint(class_checkpoint, task="classification")
+    classification = FormalModel.load(class_checkpoint)
+    class_values = np.asarray([[float(index), float(index % 2)] for index in range(10)], dtype=np.float64)
+    class_targets = np.asarray([0] * 9 + [1], dtype=np.int64)
+    weighted = classification.clone()
+    weighted_again = classification.clone()
+    weights = np.asarray([1.0] * 9 + [9.0], dtype=np.float64)
+    weighted.fit(class_values, class_targets, 1, sample_weights=weights, loss="cross_entropy")
+    weighted_again.fit(class_values, class_targets, 1, sample_weights=weights, loss="cross_entropy")
+    for name in weighted.params:
+        np.testing.assert_array_equal(weighted.params[name], weighted_again.params[name])
+
+    regression_checkpoint = tmp_path / "regression.npz"
+    _write_checkpoint(regression_checkpoint, task="regression")
+    regression = FormalModel.load(regression_checkpoint)
+    regression_values = np.asarray([[float(index), float(index % 2)] for index in range(8)], dtype=np.float64)
+    regression_targets = np.asarray([0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 100.0])
+    mse = regression.clone()
+    huber = regression.clone()
+    asymmetric = regression.clone()
+    mse.fit(regression_values, regression_targets, 1, loss="mse")
+    huber.fit(regression_values, regression_targets, 1, loss="huber", loss_parameters={"delta": 1.0})
+    asymmetric.fit(
+        regression_values,
+        regression_targets,
+        1,
+        loss="asymmetric",
+        loss_parameters={"underprediction_weight": 2.0, "overprediction_weight": 1.0},
+    )
+    assert any(not np.array_equal(mse.params[name], huber.params[name]) for name in mse.params)
+    assert any(not np.array_equal(mse.params[name], asymmetric.params[name]) for name in mse.params)

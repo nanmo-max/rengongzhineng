@@ -119,16 +119,59 @@ class FormalModel:
         result = logits[:, 0] * float(self.meta["target_scale"]) + float(self.meta["target_mean"])
         return np.maximum(0.0, result)
 
-    def fit(self, values: np.ndarray, targets: np.ndarray, epochs: int) -> list[float]:
+    def fit(
+        self,
+        values: np.ndarray,
+        targets: np.ndarray,
+        epochs: int,
+        *,
+        sample_weights: np.ndarray | None = None,
+        loss: str = "native",
+        loss_parameters: dict[str, float] | None = None,
+    ) -> list[float]:
         normalized = self._normalized(values)
         if targets.shape != (len(normalized),) or not len(normalized):
             raise ValueError("target shape is invalid")
+        parameters = dict(loss_parameters or {})
+        weights = None if sample_weights is None else np.asarray(sample_weights, dtype=np.float64)
+        if weights is not None and (
+            weights.shape != (len(normalized),)
+            or not np.all(np.isfinite(weights))
+            or np.any(weights <= 0.0)
+        ):
+            raise ValueError("sample weights must be finite positive values aligned to targets")
         if self.meta["task"] == "regression":
             expected = (targets - float(self.meta["target_mean"])) / float(self.meta["target_scale"])
+            if loss == "native":
+                loss = "mse"
+            if loss not in {"mse", "huber", "asymmetric"}:
+                raise ValueError("unsupported regression loss")
+            if loss == "huber":
+                if set(parameters) - {"delta"}:
+                    raise ValueError("unsupported Huber loss parameter")
+                huber_delta = float(parameters.get("delta", 1.0))
+                if not math.isfinite(huber_delta) or huber_delta <= 0.0:
+                    raise ValueError("Huber delta must be positive")
+            elif loss == "asymmetric":
+                if set(parameters) - {"underprediction_weight", "overprediction_weight"}:
+                    raise ValueError("unsupported asymmetric loss parameter")
+                under_weight = float(parameters.get("underprediction_weight", 1.0))
+                over_weight = float(parameters.get("overprediction_weight", 1.0))
+                if (
+                    not math.isfinite(under_weight)
+                    or not math.isfinite(over_weight)
+                    or under_weight <= 0.0
+                    or over_weight <= 0.0
+                ):
+                    raise ValueError("asymmetric loss weights must be positive")
         else:
             expected = targets.astype(np.int64, copy=False)
             if np.any(expected < 0) or np.any(expected >= len(self.meta["classes"])):
                 raise ValueError("classification target is unknown")
+            if loss == "native":
+                loss = "cross_entropy"
+            if loss != "cross_entropy" or parameters:
+                raise ValueError("unsupported classification loss")
         losses: list[float] = []
         for _ in range(epochs):
             rng = np.random.default_rng(np.random.SeedSequence([self.meta["seed"], self.meta["epochs"]]))
@@ -138,22 +181,44 @@ class FormalModel:
                 indices = order[start : start + self.meta["batch_size"]]
                 batch = normalized[indices]
                 target = expected[indices]
+                batch_weights = None if weights is None else weights[indices]
+                weight_sum = float(len(indices)) if batch_weights is None else float(np.sum(batch_weights))
                 hidden = np.tanh(batch @ self.params["w1"] + self.params["b1"])
                 logits = hidden @ self.params["w2"] + self.params["b2"]
                 if self.meta["task"] == "classification":
                     logits -= logits.max(axis=1, keepdims=True)
                     probabilities = np.exp(logits)
                     probabilities /= probabilities.sum(axis=1, keepdims=True)
-                    loss_sum -= float(np.log(np.maximum(probabilities[np.arange(len(indices)), target], 1e-300)).sum())
-                    delta = probabilities
-                    delta[np.arange(len(indices)), target] -= 1.0
-                    delta /= len(indices)
+                    per_sample = -np.log(np.maximum(probabilities[np.arange(len(indices)), target], 1e-300))
+                    loss_sum += float(np.sum(per_sample if batch_weights is None else per_sample * batch_weights))
+                    output_delta = probabilities
+                    output_delta[np.arange(len(indices)), target] -= 1.0
+                    if batch_weights is not None:
+                        output_delta *= batch_weights[:, None]
+                    output_delta /= weight_sum
                 else:
                     error = logits[:, 0] - target
-                    loss_sum += float(np.sum(error**2))
-                    delta = (2.0 * error / len(indices))[:, None]
-                gradients = {"w2": hidden.T @ delta, "b2": delta.sum(axis=0)}
-                hidden_delta = (delta @ self.params["w2"].T) * (1.0 - hidden**2)
+                    if loss == "huber":
+                        absolute = np.abs(error)
+                        per_sample = np.where(
+                            absolute <= huber_delta,
+                            0.5 * error**2,
+                            huber_delta * (absolute - 0.5 * huber_delta),
+                        )
+                        derivative = np.clip(error, -huber_delta, huber_delta)
+                    elif loss == "asymmetric":
+                        factors = np.where(error < 0.0, under_weight, over_weight)
+                        per_sample = factors * error**2
+                        derivative = 2.0 * factors * error
+                    else:
+                        per_sample = error**2
+                        derivative = 2.0 * error
+                    loss_sum += float(np.sum(per_sample if batch_weights is None else per_sample * batch_weights))
+                    if batch_weights is not None:
+                        derivative *= batch_weights
+                    output_delta = (derivative / weight_sum)[:, None]
+                gradients = {"w2": hidden.T @ output_delta, "b2": output_delta.sum(axis=0)}
+                hidden_delta = (output_delta @ self.params["w2"].T) * (1.0 - hidden**2)
                 gradients.update(w1=batch.T @ hidden_delta, b1=hidden_delta.sum(axis=0))
                 norm = math.sqrt(sum(float(np.sum(value * value)) for value in gradients.values()))
                 if not math.isfinite(norm):
@@ -167,7 +232,8 @@ class FormalModel:
                     second = self.second[name] / (1.0 - 0.999 ** self.meta["steps"])
                     self.params[name] -= self.meta["learning_rate"] * first / (np.sqrt(second) + 1e-8)
             self.meta["epochs"] += 1
-            losses.append(loss_sum / len(normalized))
+            loss_denominator = float(len(normalized)) if weights is None else float(np.sum(weights))
+            losses.append(loss_sum / loss_denominator)
         self.validate()
         return losses
 

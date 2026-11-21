@@ -6,14 +6,14 @@
 
 ### COMPETITION-CORE-PLAN-001 Competition Core实施计划
 
-- 状态：`IN_PROGRESS_TASK_4_RECIPE_REGISTRY`
+- 状态：`IN_PROGRESS_TASK_5_QWEN_PROPOSALS`
 - 授权：用户于2026-11-20批准Competition Core书面规格并要求实行。
 - 依赖：COMPETITION-CORE-DESIGN-001、D-093。
 - 优先级：P0，当前唯一执行任务。
 - 工作范围：依据已批准规格，映射现有`brace_formal`、官方SDK、PyTRiO/SwanLab和双镜像代码，形成测试先行、任务级提交、可连续执行的实施计划。
 - 完成标准：计划覆盖任务画像、历史数据、注册recipe、双阶段Qwen、同作用域选择、正式轮编排、本地与正式镜像、A/B/C与未知任务训练、PyTRiO/SwanLab、Docker与发布验收；每项给出精确文件、接口、红绿测试、命令和提交边界；完成自审并独立提交。
 - 停止条件：计划完成前不得修改产品代码、启动训练、调用远程服务或构建镜像。
-- 证据：`superpowers/plans/2026-11-20-competition-core.md`。Task 1提交`e0097a7`冻结官方平台边界；Task 2提交`54578db`建立未知任务画像。Task 3新增`HistoryStore`、`HistoryArtifactRef`及`DataBatch.select/concat`：历史轮必须连续，拒绝重复ID、未来轮、父特征契约变化、损坏或符号链接状态；压缩数据按官方64 MiB状态上限优先保留最新完整批次与全部审计摘要，历史模型仅可经`rnd.restore_artifact`恢复。专项`23 passed`，全量`552 passed in 154.30s`；未启动远程服务、镜像或官方试运行。Task 4已就绪。
+- 证据：`superpowers/plans/2026-11-20-competition-core.md`。Task 1提交`e0097a7`冻结平台边界；Task 2提交`54578db`建立未知任务画像；Task 3提交`a887f46`建立合法历史状态。Task 4扩展`FormalModel.fit`支持分类样本权重、MSE、Huber和非对称回归损失，无可选参数时与官方原生训练逐数组一致；新`RecipeRegistry`根据任务类型提供当前/历史回放、类别加权/平衡采样、MSE/Huber/非对称损失和父候选平均，`retain`不再是新注册表训练recipe。专项`23 passed`，全量`562 passed in 154.50s`。Task 5已就绪。
 
 ### COMPETITION-CORE-DESIGN-001 赛题语义重审与唯一正式架构规格
 
