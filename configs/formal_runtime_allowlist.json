@@ -1,0 +1,30 @@
+{
+  "format": "brace-formal-allowlist.v1",
+  "files": [
+    "Dockerfile.formal",
+    "requirements.formal.lock",
+    "src/brace_formal/__init__.py",
+    "src/brace_formal/agent.py",
+    "src/brace_formal/data.py",
+    "src/brace_formal/history.py",
+    "src/brace_formal/metrics.py",
+    "src/brace_formal/model.py",
+    "src/brace_formal/profile.py",
+    "src/brace_formal/recipes.py",
+    "src/brace_formal/round_core.py",
+    "src/brace_formal/selection.py",
+    "src/brace_formal/submission.py",
+    "src/brace_formal/workspace.py",
+    "src/contest_harness/__init__.py",
+    "src/contest_harness/__main__.py",
+    "src/contest_harness/cli.py",
+    "src/contest_harness/data.py",
+    "src/contest_harness/errors.py",
+    "src/contest_harness/predict.py",
+    "src/contest_harness/protocol.py",
+    "src/contest_harness/round.py",
+    "src/contest_harness/transport.py",
+    "submission/contest_submission.py",
+    "submission/harness.py"
+  ]
+}

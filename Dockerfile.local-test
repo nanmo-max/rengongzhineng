@@ -1,0 +1,27 @@
+FROM mcr.microsoft.com/azurelinux/base/python:3.12@sha256:379135d4dbe66b12825a54d4ed7aef21aa61227533ff1b9151d70f95f9266746
+
+ARG PIP_INDEX_URL=https://pypi.org/simple
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app/src:/app \
+    BRACE_IMAGE_CLASS=LOCAL_TEST_ONLY \
+    CONTEST_SUBMISSION=contest_submission \
+    OMP_NUM_THREADS=4 \
+    OPENBLAS_NUM_THREADS=4 \
+    MKL_NUM_THREADS=4
+
+WORKDIR /app
+COPY requirements.formal.lock /app/requirements.formal.lock
+RUN python3 -m pip install --no-cache-dir --index-url "${PIP_INDEX_URL}" --only-binary=:all: -r /app/requirements.formal.lock \
+    && rm /app/requirements.formal.lock
+
+COPY src/contest_harness /app/src/contest_harness
+COPY src/brace_formal /app/src/brace_formal
+COPY submission/harness.py /app/harness.py
+COPY submission/contest_submission.py /app/contest_submission.py
+COPY scripts/simulate_first_principles_runtime.py /app/local_tools/simulate_first_principles_runtime.py
+COPY scripts/simulate_platform_report.py /app/local_tools/simulate_platform_report.py
+
+ENTRYPOINT ["python3", "/app/harness.py"]
+CMD ["--help"]

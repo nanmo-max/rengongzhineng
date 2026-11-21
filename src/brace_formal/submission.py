@@ -14,6 +14,9 @@ from .metrics import evaluate
 from .model import FormalModel
 
 
+TASKS = ("classification", "regression")
+
+
 def _state_payload(state_root: Path) -> dict[str, Any]:
     """Read legacy formal state for migration tooling and compatibility tests."""
 

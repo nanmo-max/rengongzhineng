@@ -80,7 +80,7 @@
 - 等级：High
 - 状态：本地已关闭，后续新版本持续审计
 - 证据：0.9.0rc1完整wheel含私有PyTRiO、SFT、SwanLab、模拟和论文模块。
-- 缓解：D-081采用文件白名单构建；0.10.3最终镜像`/app`仅官方SDK、`brace_formal`与固定入口，依赖仅NumPy。禁入扫描确认旧`brace_msi`、PyTRiO、SwanLab、sklearn、SciPy、psutil、数据、权重和报告均未进入；递归`.pyc`也已排除。证据`results/FORMAL-AUDIT-FIX-001.md`。
+- 缓解：D-081历史镜像已证明白名单可行；Competition Core Task 8进一步把正式与本地构建上下文分离为两条显式供应链。正式上下文只从排序静态白名单逐文件复制并生成内容哈希，禁入测试、脚本、数据、权重、报告、PyTRiO/SwanLab及密钥；本地上下文明示`LOCAL_TEST_ONLY`。600项源码回归通过，真实新镜像的禁入扫描与save/load仍待Task 12。
 
 ## R-051 Agent建议覆盖训练内负证据
 

@@ -879,3 +879,13 @@
 - 专项命令：`D:\anaconda3\python.exe -m pytest tests/competition_core tests/official_sdk_v2 tests/formal_runtime/test_submission.py tests/formal_runtime/test_ten_rounds.py -q --tb=short`，结果`80 passed in 2.45s`。
 - 全量命令：`D:\anaconda3\python.exe -m pytest -q --tb=short`，结果`593 passed in 155.96s`。
 - 本任务只运行微型自动化训练测试；未调用远程PyTRiO/SwanLab、未构建镜像、未上传平台或消耗官方试运行次数。
+
+# 2026-11-21 COMPETITION-CORE Task 8
+
+- 新增正式运行静态文件白名单；构建器先在临时目录逐文件复制并生成含文件SHA-256和整树SHA-256的机器清单，再以该目录作为Docker上下文，不再以仓库根作为正式构建上下文。
+- 新增独立`Dockerfile.local-test`和本地构建器，镜像与内容清单均显式标记`LOCAL_TEST_ONLY`；两个模拟/报告脚本只进入本地上下文。
+- 正式白名单拒绝tests/scripts/docs/data/artifacts、模型权重、缓存、PyTRiO、SwanLab、Tokenizer、Sampler、密钥类文件、符号链接和缺失文件；隔离正式上下文中的固定入口可成功导入。
+- 修复Task 7薄适配器遗漏`TASKS`导出的问题；该问题由本任务新增固定入口导入测试先失败后定位。
+- 专项命令：`D:\anaconda3\python.exe -m pytest tests/system/test_dual_image_boundaries.py tests/system/test_release_builder.py tests/formal_runtime/test_formal_release.py -q`，结果`19 passed in 0.55s`。
+- 全量命令：`D:\anaconda3\python.exe -m pytest -q --tb=short`，结果`600 passed in 155.58s`。
+- 本任务未执行真实Docker build/save/load，未调用PyTRiO/SwanLab、未上传平台或消耗官方试运行次数。

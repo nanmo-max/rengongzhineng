@@ -6,8 +6,18 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
+import shutil
 import subprocess
+import tempfile
 from typing import Any, Mapping
+
+
+_ALLOWLIST = Path("configs/formal_runtime_allowlist.json")
+_FORBIDDEN_PARTS = {"tests", "scripts", "docs", "dataji", "artifacts", "outputs", "tmp"}
+_FORBIDDEN_NAMES = {"pytrio", "swanlab", "tokenizer", "sampler", "cache"}
+_FORBIDDEN_SUFFIXES = {
+    ".npz", ".pkl", ".pickle", ".joblib", ".pt", ".pth", ".onnx", ".key", ".pem"
+}
 
 
 def _run(arguments: list[str], **kwargs: Any) -> subprocess.CompletedProcess[str]:
@@ -35,12 +45,106 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def load_formal_allowlist(config_path: Path, repository_root: Path) -> tuple[str, ...]:
+    """Load and fail-closed validate the exact formal build-context file set."""
+
+    payload = json.loads(Path(config_path).read_text(encoding="utf-8"))
+    files = payload.get("files") if isinstance(payload, Mapping) else None
+    if not isinstance(payload, Mapping) or payload.get("format") != "brace-formal-allowlist.v1" or not isinstance(files, list):
+        raise ValueError("formal allowlist has an invalid format")
+    if not files or any(not isinstance(item, str) or not item for item in files):
+        raise ValueError("formal allowlist files must be nonempty strings")
+    if len(files) != len(set(files)) or files != sorted(files):
+        raise ValueError("formal allowlist must be unique and sorted")
+    root = Path(repository_root).resolve()
+    normalized: list[str] = []
+    for relative in files:
+        portable = Path(relative)
+        if portable.is_absolute() or ".." in portable.parts or portable.as_posix() != relative:
+            raise ValueError("formal allowlist paths must be normalized repository-relative paths")
+        lowered = relative.lower()
+        if (
+            _FORBIDDEN_PARTS.intersection(portable.parts)
+            or any(name in lowered for name in _FORBIDDEN_NAMES)
+            or portable.suffix.lower() in _FORBIDDEN_SUFFIXES
+            or portable.name.lower().startswith(".env")
+        ):
+            raise ValueError(f"forbidden formal context file: {relative}")
+        source = root / portable
+        if source.is_symlink() or not source.is_file():
+            raise ValueError(f"formal allowlist entry is not a regular file: {relative}")
+        normalized.append(relative)
+    return tuple(normalized)
+
+
+def stage_explicit_context(
+    repository_root: Path,
+    destination: Path,
+    files: tuple[str, ...],
+    *,
+    image_class: str,
+    manifest_name: str,
+) -> dict[str, Any]:
+    """Copy only explicitly listed regular files into a new Docker context."""
+
+    root = Path(repository_root).resolve()
+    target = Path(destination)
+    target.mkdir(parents=True, exist_ok=False)
+    entries: list[dict[str, Any]] = []
+    for relative in files:
+        source = root / Path(relative)
+        if source.is_symlink() or not source.is_file():
+            raise ValueError(f"context source is not a regular file: {relative}")
+        copied = target / Path(relative)
+        copied.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(source, copied)
+        entries.append(
+            {"path": relative, "bytes": copied.stat().st_size, "sha256": _sha256(copied)}
+        )
+    tree_digest = hashlib.sha256(
+        json.dumps(entries, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    manifest = {
+        "format": "brace-image-context.v1",
+        "image_class": image_class,
+        "files": sorted(files),
+        "entries": entries,
+        "tree_sha256": tree_digest,
+    }
+    (target / manifest_name).write_text(
+        json.dumps(manifest, ensure_ascii=False, sort_keys=True, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    return manifest
+
+
+def stage_formal_context(
+    repository_root: Path,
+    destination: Path,
+    allowlist_path: Path = _ALLOWLIST,
+) -> dict[str, Any]:
+    root = Path(repository_root).resolve()
+    config = allowlist_path if allowlist_path.is_absolute() else root / allowlist_path
+    files = load_formal_allowlist(config, root)
+    return stage_explicit_context(
+        root,
+        destination,
+        files,
+        image_class="FORMAL_UPLOAD",
+        manifest_name="FORMAL_CONTEXT_MANIFEST.json",
+    )
+
+
 def build(tag: str, output: Path) -> dict[str, Any]:
     output.mkdir(parents=True, exist_ok=False)
-    _run([
-        "docker", "build", "--platform", "linux/amd64", "--provenance=false",
-        "-f", "Dockerfile.formal", "-t", tag, ".",
-    ])
+    repository_root = Path(__file__).resolve().parents[1]
+    with tempfile.TemporaryDirectory(prefix="brace-formal-context-") as temporary:
+        context = Path(temporary) / "context"
+        content_manifest = stage_formal_context(repository_root, context)
+        _run([
+            "docker", "build", "--platform", "linux/amd64", "--provenance=false",
+            "-f", str(context / "Dockerfile.formal"), "-t", tag, str(context),
+        ])
     inspected = json.loads(_run(["docker", "image", "inspect", tag], capture_output=True).stdout)[0]
     metadata = validate_image_metadata(inspected)
     describe = _run(
@@ -57,6 +161,7 @@ def build(tag: str, output: Path) -> dict[str, Any]:
         "tag": tag,
         "image_id": inspected["Id"],
         **metadata,
+        "content_manifest": content_manifest,
         "descriptor": descriptor,
         "archive": {"path": archive.name, "bytes": archive.stat().st_size, "sha256": _sha256(archive)},
     }

@@ -6,14 +6,14 @@
 
 ### COMPETITION-CORE-PLAN-001 Competition Core实施计划
 
-- 状态：`IN_PROGRESS_TASK_8_DUAL_IMAGE_SUPPLY_CHAINS`
+- 状态：`IN_PROGRESS_TASK_9_LOCAL_OFFICIAL_SIMULATOR`
 - 授权：用户于2026-11-20批准Competition Core书面规格并要求实行。
 - 依赖：COMPETITION-CORE-DESIGN-001、D-093。
 - 优先级：P0，当前唯一执行任务。
 - 工作范围：依据已批准规格，映射现有`brace_formal`、官方SDK、PyTRiO/SwanLab和双镜像代码，形成测试先行、任务级提交、可连续执行的实施计划。
 - 完成标准：计划覆盖任务画像、历史数据、注册recipe、双阶段Qwen、同作用域选择、正式轮编排、本地与正式镜像、A/B/C与未知任务训练、PyTRiO/SwanLab、Docker与发布验收；每项给出精确文件、接口、红绿测试、命令和提交边界；完成自审并独立提交。
 - 停止条件：计划完成前不得修改产品代码、启动训练、调用远程服务或构建镜像。
-- 证据：`superpowers/plans/2026-11-20-competition-core.md`。Task 1提交`e0097a7`；Task 2提交`54578db`；Task 3提交`a887f46`；Task 4提交`5a1c5bc`；Task 5提交`ae75de9`；Task 6提交`4a21f05`。Task 7新`run_competition_round`在未知同格式分类/回归上完成任务画像、两次宿主Qwen调用、每轮真实候选训练、合法历史回放、父/候选/恢复历史当前作用域重评、确定性选择、候选提交、状态保存和finish；首选recipe失败会真实执行native fallback，全部训练失败仍保留双调用/失败收据并选父模型；正式`submission.train`已缩为薄适配器且`predict`保持独立。专项`80 passed`，全量`593 passed in 155.96s`。Task 8已就绪。
+- 证据：`superpowers/plans/2026-11-20-competition-core.md`。Task 1提交`e0097a7`；Task 2提交`54578db`；Task 3提交`a887f46`；Task 4提交`5a1c5bc`；Task 5提交`ae75de9`；Task 6提交`4a21f05`；Task 7提交`5242a4a`。Task 8新增排序静态`formal_runtime_allowlist.json`、逐文件普通文件/禁入校验、正式与本地上下文内容哈希清单、两个独立Dockerfile与构建脚本；正式隔离上下文固定入口可独立导入且不含tests/scripts/docs/data/weights/PyTRiO/SwanLab/密钥，本地上下文显式`LOCAL_TEST_ONLY`并独占模拟/报告脚本。专项`19 passed`，全量`600 passed in 155.58s`；尚未执行真实Docker构建。Task 9已就绪。
 
 ### COMPETITION-CORE-DESIGN-001 赛题语义重审与唯一正式架构规格
 
