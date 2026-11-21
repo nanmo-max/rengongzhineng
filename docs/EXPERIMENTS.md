@@ -2,6 +2,16 @@
 
 本文件是全部实验运行的唯一登记处，包括失败和中止实验。
 
+## MATURE-OPTIMIZER-PILOT-001-A1（REGISTERED）
+
+- 研究问题：L2-SP、SAM-Adam或AdamW在保持官方 `contest.cpu-mlp.v1` checkpoint schema、父权重和Adam状态续接的条件下，是否比 `native_current/native_replay` 在A/B/C训练内部前3个序贯阶段呈现更好的平均收益—最差阶段—CPU Pareto趋势？
+- 数据：官方A/B/C `public/train.jsonl`和真实父`checkpoint.npz`；仅使用现有类别分层、轴承轨迹、发动机unit分组的前3阶段。`public/validation.jsonl`、密封集、隐藏数据读取0次。
+- 候选：`native_current`、`native_replay`、L2-SP `lambda={1e-4,1e-3}`、SAM `rho={0.01,0.05}`、AdamW `weight_decay={1e-5,1e-4}`；每项独立、同父模型/样本顺序/epoch/基础学习率。
+- 预注册分析：同时报告三任务平均有向收益、跨任务最差阶段、改善/退化任务数、CPU、墙钟、RSS和checkpoint大小；不建立伪官方综合分。
+- 晋级边界：只有跨任务正向、最差阶段不劣且成本可接受的机制可创建新十轮集成任务；A1不构建或替换正式镜像。
+- 外部调用：PyTRiO、SwanLab、官方试运行、平台上传均为0。
+- 预期输出：`D:/brace-msi-competition/MATURE-OPTIMIZER-PILOT-001-A1/summary.json`与`docs/results/MATURE-OPTIMIZER-PILOT-001.md`；输出目录存在不匹配manifest时失败关闭。
+
 ## RELEASE-COMPATIBILITY-AUDIT-001-A1/A2（PROTOCOL_PASS_RELEASE_FAIL）
 
 - 研究问题：冻结`0.10.6rc1`是否能在官方SDK 1.0.2契约下完成本地三任务正式生命周期，并在错误宿主部署判断下保持性能方向安全？
