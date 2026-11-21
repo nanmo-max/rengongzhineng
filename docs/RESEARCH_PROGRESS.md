@@ -851,3 +851,12 @@
 - 专项命令：`D:\anaconda3\python.exe -m pytest tests/competition_core/test_recipe_registry.py tests/formal_runtime/test_model_core.py tests/formal_runtime/test_portfolio.py tests/formal_dev/test_official_model.py -q`，结果`23 passed in 1.02s`。
 - 全量命令：`D:\anaconda3\python.exe -m pytest -q`，结果`562 passed in 154.50s`。
 - 本任务运行的仅是小型自动化单元训练测试，未使用官方数据、PyTRiO/SwanLab、镜像或官方试运行。
+
+# 2026-11-21 COMPETITION-CORE Task 5
+
+- 新`request_experiment_proposal`调用官方宿主模型时不自设Token上限，并要求返回可由`RecipeRegistry.resolve`执行的recipe、参数、历史策略、假设与理由。
+- 模型返回含糊、recipe不可执行或服务异常时，使用对当前任务合法的`native_current`真实训练fallback；已有调用ID保留，异常记入`parse_error`。
+- 部署阶段可请求父、候选或历史的合法产物ID，而不再只输出含糊`deploy/retain/rollback`。
+- 专项命令：`D:\anaconda3\python.exe -m pytest tests/competition_core/test_experiment_agent.py tests/formal_runtime/test_agent_workspace.py tests/formal_runtime/test_release_host.py -q`，结果`21 passed in 0.21s`。
+- 全量命令：`D:\anaconda3\python.exe -m pytest -q`，结果`570 passed in 154.29s`。
+- 未调用真实远程模型、PyTRiO/SwanLab、镜像或官方试运行。
