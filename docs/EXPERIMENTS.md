@@ -865,3 +865,32 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 - 结果：`COMPLETED_VALID_PROTOCOL_SMOKE`。分类/回归各10轮、20次模型调用、10个真实候选、10条历史和11节点父链；最终预测各48条，确认分区各读取一次。
 - 代理确认指标：分类Accuracy `0.812500`、Macro-F1 `0.805480`；回归MAE `0.351059`、RMSE `0.504862`。这些数值只验证合成任务链路，不是官方A/B/C、隐藏成绩或新独立泛化证据。
 - 机器证据：`D:/brace-msi-competition/COMPETITION-CORE-SMOKE-001/report.json`，SHA-256 `D7EBB3E3A814D12E28163085EF7BF141E07AFA68895EE51515A8D97E3BD180B8`；同目录`report.html`由该JSON生成。
+
+## COMPETITION-CORE-EXP-001（REGISTERED）
+
+- 研究问题：在不使用官方隐藏数据或平台次数的前提下，Competition Core的身份无关注册recipe与同作用域选择，相对静态父模型和每轮固定更新，能否同时改善官方A/B/C公开训练内部十轮证据及两个同格式未知代理任务，并保持父链、最差阶段和CPU资源可审计？
+- 官方源：`configs/competition_core_experiments.json`锁定A/B/C父checkpoint、`public/train.jsonl`和历史暴露`public/validation.jsonl` SHA-256；运行前后重新校验，原包只读。
+- 开发/确认边界：模型与策略选择只使用`public/train.jsonl`内部的十个互斥顺序/分组轮；A按类别分层、B按轴承寿命进度且轮内留出轴承、C按完整unit分组。公开validation和代理confirmation在开发winner冻结后各读取一次，同时报告静态、固定更新和冻结winner，不再反馈策略或参数。
+- 对照：`static_parent`、`fixed_update(native_current)`、`core_replay`、`core_robust`和`core_stable`。recipe只按分类/回归任务合同路由，不按A/B/C或代理名称路由；核心策略以跨任务平均相对有向收益、最差阶段和实测CPU排序，不自称官方评分公式。
+- 资源/停止：本机CPU；每臂10轮，每轮最多1个真实候选；所有候选计入CPU/墙钟/RSS/模型大小。非有限指标、父链断裂、源哈希变化、确认提前读取或输出manifest不一致立即失败。PyTRiO远程、SwanLab同步、Docker、官方上传和试运行均为0。
+- 输出：Smoke `D:/brace-msi-competition/COMPETITION-CORE-EXP-001-SMOKE/`；完整矩阵`D:/brace-msi-competition/COMPETITION-CORE-EXP-001/`。失败和负结果同样保留。
+- A1结果：`COMPLETED_VALID_MIXED`。机器结果`valid=true`，跨任务开发选择`core_robust`；冻结后公开/代理确认显示A Macro-F1 `0.714030→0.730826`、B RMSE `681.159833→680.012612`、C RMSE `52.868573→51.877279`，两个代理任务也改善；但训练内部B的平均相对收益为负，证明统一Huber回归路线不够稳健。摘要SHA-256 `9F1CECC4AEDBB6AF25E6D42E97319C0A123E3E9791FA752438757FD4A86DF47A`。公开validation继续标记历史暴露，不能把A1确认值用于独立选型。
+
+## COMPETITION-CORE-EXP-001-A2（REGISTERED）
+
+- 触发证据：A1开发结果中B的`core_robust`平均相对收益`-0.232407`，而C为`+0.005457`；既有A6/PERFORMANCE-METHOD-PILOT证据已表明高阶段均值跨度回归更适合高强度当前MSE，低跨度回归更适合父候选平均。
+- 唯一新增策略：`core_profile_adaptive`。分类继续使用`class_weighted_ce`；回归只依据截至当前轮的目标阶段均值跨度/父`target_scale`决定`averaged_native`或`regression_mse(epochs=3, lr×3)`，不读取A/B/C或代理名称，不读取Gate/confirmation选择recipe。
+- 冻结项：A1全部源哈希、分轮、其余策略、同作用域选择、确认读取一次、资源记录和停止条件保持不变；输出使用新目录，不覆盖A1。
+- 成功标准：开发跨任务winner的平均相对收益提高，最差阶段不比A1 winner更差；否则淘汰新增策略。公开validation已经历史暴露，A2只作描述性复算，不称独立确认。
+- 输出：`D:/brace-msi-competition/COMPETITION-CORE-EXP-001-A2/`。
+- A2结果：`COMPLETED_VALID_NEGATIVE_NO_SELECTION_CHANGE`。画像自适应把B训练内部平均相对收益由`-0.232407`改善到`-0.038043`，但最差阶段仍为`-0.721589`；按A1“平均优先”的冻结排序仍由`core_robust`获胜。A2证明画像规则有趋势价值，但也暴露平均优先会牺牲跨任务最差阶段。摘要SHA-256 `67D54094A76BD8B39248B2827BBC7B834BE44B3A39F155CB083F092382449DE6`。
+
+## COMPETITION-CORE-EXP-001-A3（REGISTERED）
+
+- 触发证据：A2四个Core候选的跨任务最差相对阶段分别为`core_replay -0.465362`、`core_stable -0.333333`、`core_robust -1.257086`、`core_profile_adaptive -0.721589`；平均优先选择`core_robust`与赛题“最差阶段、稳定性”目标冲突。
+- 唯一变更：开发winner排序改为先最大化所有任务/阶段中的最差相对收益，再比较跨任务平均相对收益，最后比较实测CPU；不创造官方综合分，不设置固定提升阈值。
+- 冻结项：A2全部数据、源哈希、分轮、候选训练、recipe、模型、确认边界和资源记录均不变；使用新输出目录，不覆盖A1/A2。
+- 成功标准：选择出的Core候选必须是开发证据中的风险优先Pareto候选；其跨任务最差阶段严格优于A1/A2 winner。确认数值因公开validation已历史暴露只作描述，不反向调整。
+- 输出：`D:/brace-msi-competition/COMPETITION-CORE-EXP-001-A3/`。
+- 结果：`COMPLETED_VALID_MIXED_NO_FORMAL_PROMOTION`。风险优先冻结`core_stable`，开发跨任务最差阶段由A1 winner的`-1.257086`改善为`-0.333333`；公开描述性复算中B RMSE `681.159833→672.769954`、C `52.868573→52.322937`，但A Macro-F1 `0.714030→0.699854`退化，因此不得把固定`core_stable`晋级为正式唯一策略。
+- 机器证据：`D:/brace-msi-competition/COMPETITION-CORE-EXP-001-A3/summary.json`，SHA-256 `FEC09C59ED727EC3192EB180DA7D7598410F4AB5BD125E1B7C6DD997A91266D0`；综合报告见`docs/results/COMPETITION-CORE-EXP-001.md`。

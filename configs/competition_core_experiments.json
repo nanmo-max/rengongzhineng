@@ -1,0 +1,50 @@
+{
+  "format": "brace-msi.competition-core-experiments.v1",
+  "experiment_id": "COMPETITION-CORE-EXP-001-A3",
+  "confirmation_feedback": false,
+  "confirmation_read_policy": "once_after_development_freeze",
+  "rounds": 10,
+  "seed": 20261121,
+  "official_package_root": "C:/Users/Administrator/Desktop/人工智能创新大赛/训练包",
+  "packages": {
+    "A": {
+      "directory": "cpu-a-guide-20261110-v1",
+      "task": "classification",
+      "checkpoint_sha256": "fd1e08b2aad08b2e9754f9b2dfdc029481c0da7ecdedca0abb0ec6fcc818c757",
+      "train_sha256": "c724014feb2c968d144e167f4997d2ad2125df3825abf4306c9c87c8f08de6c0",
+      "confirmation_sha256": "6be1370388bf67d017f7426a51e149a65baf9bc1186f5f41f6731ce5006ffbee"
+    },
+    "B": {
+      "directory": "cpu-b-rul-20261110-v1",
+      "task": "regression",
+      "checkpoint_sha256": "c7d819fcee9d25459c583b5ffdb35593d4a47b524ed152d0226bf81a283314b4",
+      "train_sha256": "71b2663fffd3d7ef6dca8a7b3feb31c3feb96c57f385335d03041a5fa431054a",
+      "confirmation_sha256": "23673a66bc22a166bf2f47b18f9c9d594f7e66a9aad88ddbccbcaea2310d9eb3"
+    },
+    "C": {
+      "directory": "cpu-c-guide-20261110-v1",
+      "task": "regression",
+      "checkpoint_sha256": "98ec6e30e38aee56ca15b7d624a8f412226d46fe97b170667a567601c700bc4e",
+      "train_sha256": "fcfaeaf1e50a0cc01766dfba5fd34c7369f1fe14bf583111837e847865fac281",
+      "confirmation_sha256": "0cc747f9998c5d7ee1e4eac6aec0db9f5ed4d2de149a1b1cbe689cce6b6aaca7"
+    }
+  },
+  "registered_surrogates": [
+    {"key": "opaque-cls-01", "task": "classification", "feature_count": 5, "samples_per_round": 32, "confirmation_samples": 64, "seed": 8111},
+    {"key": "opaque-reg-01", "task": "regression", "feature_count": 6, "samples_per_round": 32, "confirmation_samples": 64, "seed": 8221}
+  ],
+  "strategies": {
+    "static_parent": {"kind": "static"},
+    "fixed_update": {"kind": "fixed", "recipes": {"classification": "native_current", "regression": "native_current"}},
+    "core_replay": {"kind": "competition_core", "recipes": {"classification": "native_replay", "regression": "native_replay"}},
+    "core_robust": {"kind": "competition_core", "recipes": {"classification": "class_weighted_ce", "regression": "regression_huber"}},
+    "core_stable": {"kind": "competition_core", "recipes": {"classification": "class_balanced_sample", "regression": "averaged_native"}},
+    "core_profile_adaptive": {
+      "kind": "competition_core",
+      "policy": "target_stage_scale",
+      "recipes": {"classification": "class_weighted_ce", "regression": "averaged_native"}
+    }
+  },
+  "winner_scope": "competition_core_strategies_only",
+  "report_metrics": ["primary", "auxiliary", "worst_stage", "recovery", "cpu_seconds", "wall_seconds", "peak_rss_bytes", "token_count", "checkpoint_bytes"]
+}

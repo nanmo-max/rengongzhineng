@@ -144,3 +144,10 @@
 - 状态：`MITIGATED_CORE_IMPLEMENTED_PERFORMANCE_AND_RELEASE_PENDING`
 - 证据：历史路线叠加四缓冲区、Bandit、影子收益、固定动作日程、多层门控和任意补丁沙箱，但官方试运行仍曾出现零候选、错误部署和性能不足；协议测试数量不能替代工业模型收益。
 - 缓解：D-093将正式核心收敛为七个职责单元，每轮真实训练、同作用域选择和官方硬约束；Competition Core Tasks 1—9已实现任务画像、合法历史、注册recipe、双阶段Qwen、确定性同作用域选择、正式轮编排、双镜像清单和官方SDK Round/RPC本地十轮模拟。旧复杂机制未进入新运行路径，本地测试与正式上传镜像从构建清单层分离。真实性能矩阵、远程Agent证据和最终Docker发布门仍分别由Tasks 10—12开放。
+
+## R-060 单一固定recipe跨任务泛化不足
+
+- 等级：Critical
+- 状态：`REALIZED_TASK10_AGENT_DECISION_PENDING`
+- 证据：COMPETITION-CORE-EXP-001 A1—A3。`core_robust`在A/B/C公开描述性复算均改善，但B训练内部最差阶段`-1.257086`；`core_stable`把最差阶段改善为`-0.333333`并改善B/C，却使A Macro-F1 `0.714030→0.699854`。
+- 缓解：禁止把任何固定recipe菜单直接晋级正式RC。Task 11使用身份无关正负轨迹训练/验证Qwen实验决策，正式Harness仍由同作用域数值选择和硬门约束；若Agent留出不优于基础模型/确定性策略，则保持基础Qwen与确定性选择并明确性能限制。

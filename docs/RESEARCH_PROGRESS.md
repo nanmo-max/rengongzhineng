@@ -900,3 +900,15 @@
 - 全量命令：`D:\anaconda3\python.exe -m pytest -q --tb=short`，结果`604 passed in 161.51s`。
 - Smoke命令：`D:\anaconda3\python.exe scripts/run_competition_simulation.py --config configs/competition_simulation.json --output D:/brace-msi-competition/COMPETITION-CORE-SMOKE-001`，结果`valid=true`；报告SHA-256 `D7EBB3E3A814D12E28163085EF7BF141E07AFA68895EE51515A8D97E3BD180B8`。
 - 远程PyTRiO、SwanLab同步、Docker真实构建、官方上传和试运行均为0；正式镜像白名单未加入模拟器。
+
+# 2026-11-21 COMPETITION-CORE Task 10
+
+- 冻结A/B/C父checkpoint、train/validation哈希及两个身份不透明同格式代理任务；所有recipe只按分类/回归合同及聚合目标阶段画像路由，没有A/B/C名称分支。
+- A/B/C开发分别采用类别分层、轴承寿命进度+轮内轴承留出、完整unit分组；每条train样本恰好进入一个十轮Update或Gate。确认只在开发winner冻结后读取一次，且未回写策略。
+- A1平均优先`core_robust`在公开描述性复算中A/B/C均超过静态：Macro-F1 `0.714030→0.730826`、B RMSE `681.159833→680.012612`、C `52.868573→51.877279`；但B训练内部最差阶段为`-1.257086`。
+- A2画像自适应把B训练内部平均相对收益从`-0.232407`改善到`-0.038043`，仍未解决最差阶段。
+- A3最差阶段优先选择`core_stable`，跨任务开发最差阶段改善到`-0.333333`；公开描述中B/C和代理改善，但A Macro-F1退化至`0.699854`。因此固定recipe策略不晋级正式RC，正负轨迹进入Task 11 Agent训练/留出。
+- 机器摘要：A1 SHA-256 `9F1CECC4...86DF47A`；A2 `67D54094...2449DE6`；A3 `FEC09C59...91266D0`。综合报告：`docs/results/COMPETITION-CORE-EXP-001.md`。
+- 专项命令：`D:\anaconda3\python.exe -m pytest tests/system/test_competition_experiment_manifest.py tests/competition_core -q`，结果`64 passed in 0.90s`。
+- 全量命令：`D:\anaconda3\python.exe -m pytest -q --tb=short`，结果`610 passed in 161.62s`。
+- 远程PyTRiO、SwanLab、Docker、官方上传和试运行均为0；公开validation历史暴露属性明确保留。

@@ -6,14 +6,14 @@
 
 ### COMPETITION-CORE-PLAN-001 Competition Core实施计划
 
-- 状态：`IN_PROGRESS_TASK_10_PERFORMANCE_MATRIX`
+- 状态：`IN_PROGRESS_TASK_11_PYTRIO_SWANLAB`
 - 授权：用户于2026-11-20批准Competition Core书面规格并要求实行。
 - 依赖：COMPETITION-CORE-DESIGN-001、D-093。
 - 优先级：P0，当前唯一执行任务。
 - 工作范围：依据已批准规格，映射现有`brace_formal`、官方SDK、PyTRiO/SwanLab和双镜像代码，形成测试先行、任务级提交、可连续执行的实施计划。
 - 完成标准：计划覆盖任务画像、历史数据、注册recipe、双阶段Qwen、同作用域选择、正式轮编排、本地与正式镜像、A/B/C与未知任务训练、PyTRiO/SwanLab、Docker与发布验收；每项给出精确文件、接口、红绿测试、命令和提交边界；完成自审并独立提交。
 - 停止条件：计划完成前不得修改产品代码、启动训练、调用远程服务或构建镜像。
-- 证据：`superpowers/plans/2026-11-20-competition-core.md`。Task 1提交`e0097a7`；Task 2提交`54578db`；Task 3提交`a887f46`；Task 4提交`5a1c5bc`；Task 5提交`ae75de9`；Task 6提交`4a21f05`；Task 7提交`5242a4a`；Task 8提交`6b40fb0`。Task 9新增官方SDK Round/RPC本地宿主模拟、十轮父链/历史/候选/双模型调用、冻结后单次确认、同源JSON/HTML和本地镜像显式文件清单；专项`11 passed`、全量`604 passed in 161.51s`。`COMPETITION-CORE-SMOKE-001`两任务均10轮/20调用/10候选，报告`valid=true`，SHA-256 `D7EBB3E3...3BD180B8`；未调用远程PyTRiO/SwanLab或官方平台。Task 10已就绪。
+- 证据：`superpowers/plans/2026-11-20-competition-core.md`。Task 1提交`e0097a7`；Task 2提交`54578db`；Task 3提交`a887f46`；Task 4提交`5a1c5bc`；Task 5提交`ae75de9`；Task 6提交`4a21f05`；Task 7提交`5242a4a`；Task 8提交`6b40fb0`；Task 9提交`af59cb2`。Task 10完成A1—A3：官方三包哈希前后一致，A/B/C和两个代理任务各5策略×10轮；确认只在开发冻结后各读取一次。A1摘要`9F1CECC4...86DF47A`，A2 `67D54094...2449DE6`，A3 `FEC09C59...91266D0`。没有固定Core策略同时满足训练内部最差阶段和A/B/C公开描述性指标，故固定菜单不晋级；完整证据见`results/COMPETITION-CORE-EXP-001.md`。专项`64 passed`，全量`610 passed in 161.62s`；PyTRiO/SwanLab/官方试运行均为0。Task 11已就绪。
 
 ### COMPETITION-CORE-DESIGN-001 赛题语义重审与唯一正式架构规格
 
