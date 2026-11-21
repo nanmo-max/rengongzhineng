@@ -48,6 +48,29 @@ _ALL_DIRECTIONS = {
 _DEFAULTS = {"classification": "macro_f1", "regression": "rmse"}
 
 
+def compare_metric_values(direction: str, left: float, right: float) -> int:
+    """Compare two finite metric values using the declared optimization direction.
+
+    Returns ``1`` when ``left`` is better, ``-1`` when it is worse and ``0``
+    when the values are numerically indistinguishable.  This is deliberately a
+    direction primitive rather than a deployment threshold.
+    """
+
+    if direction not in {"higher", "lower"}:
+        raise ValueError("metric direction must be higher or lower")
+    left_number = float(left)
+    right_number = float(right)
+    if not math.isfinite(left_number) or not math.isfinite(right_number):
+        raise ValueError("metric values must be finite")
+    signed = left_number - right_number if direction == "higher" else right_number - left_number
+    tolerance = 1e-12 * max(1.0, abs(left_number), abs(right_number))
+    if signed > tolerance:
+        return 1
+    if signed < -tolerance:
+        return -1
+    return 0
+
+
 def resolve_metric_contract(task_contract: Mapping[str, Any] | None, model_task: str) -> MetricContract:
     """Resolve one fail-closed metric contract without silently changing direction."""
 

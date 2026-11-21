@@ -860,3 +860,12 @@
 - 专项命令：`D:\anaconda3\python.exe -m pytest tests/competition_core/test_experiment_agent.py tests/formal_runtime/test_agent_workspace.py tests/formal_runtime/test_release_host.py -q`，结果`21 passed in 0.21s`。
 - 全量命令：`D:\anaconda3\python.exe -m pytest -q`，结果`570 passed in 154.29s`。
 - 未调用真实远程模型、PyTRiO/SwanLab、镜像或官方试运行。
+
+# 2026-11-21 COMPETITION-CORE Task 6
+
+- 新增不可变`ArtifactEvaluation`和`SelectionResult`，以父模型当前验证指纹作为唯一可比较作用域；不同指纹、非有限主指标和硬失败产物均从选择集合排除。
+- 选择顺序为任务合同主指标方向、合同声明的辅助指标、所有并列产物共同具备的实测资源；没有新增固定提升比例或自造官方综合分。
+- Qwen请求只作为可审计建议：O-PLATFORM-019 Gas/Bearing/Engine退化反例与旧RC `RMSE 52.868573→55.629944`均不能错误部署；合法恢复且在当前作用域重评的历史产物可被选择。
+- 专项命令：`D:\anaconda3\python.exe -m pytest tests/competition_core/test_artifact_selection.py tests/formal_runtime/test_metric_contract.py -q`，结果`21 passed in 0.20s`。
+- 全量命令：`D:\anaconda3\python.exe -m pytest -q`，结果`583 passed in 154.34s`。
+- 本任务未训练模型、未调用PyTRiO/SwanLab、未构建镜像、未使用官方试运行次数。

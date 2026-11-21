@@ -3,7 +3,7 @@
 - 最近同步：2026-11-21（Asia/Shanghai）
 - 当前阶段：Competition Core书面规格已批准，实施计划正在按测试先行方式连续执行
 - 当前路线：**官方SDK 1.0.2 + 未知同格式任务自动识别 + 每轮至少一次真实父checkpoint候选训练 + 双阶段Qwen实验决策 + 同作用域确定性指标事实 + 历史数据/历史模型 + PyTRiO镜像外Agent训练 + 本地测试/正式上传双镜像分离** `[D-079]` `[D-086]` `[D-087]` `[D-093]`
-- 当前唯一核心任务：`COMPETITION-CORE-PLAN-001 / Task 6 (READY)`。Task 5已实现Qwen可执行训练提案、合法产物部署建议和真训练fallback，专项`21 passed`、全量`570 passed`；下一步实现同一验证作用域内的父/候选/历史产物确定性选择。
+- 当前唯一核心任务：`COMPETITION-CORE-PLAN-001 / Task 7 (READY)`。Task 6已实现同一验证作用域内的父/候选/历史产物确定性选择；O-PLATFORM-019及旧RC错误部署反例均不能覆盖指标事实，专项`21 passed`、全量`583 passed`。下一步把TaskProfile、历史、recipe、双阶段Qwen和ArtifactSelector接入正式单轮编排。
 - 稳定边界：全部历史RC和实验不改写；`0.5.0rc1`只作研究证据，不得上传。正式线从D-058开始只输出原生官方MLP续训checkpoint。D-090仅授权一次镜像外正式部署Advisor SFT，不把Sampler或私有SDK装入正式镜像。
 - 官方试运行：O-PLATFORM-018证明`0.10.4rc2`的正式提案有效且结算15,146 Token，但30/30主动retain造成零候选；精确剩余次数仍以平台页面实时显示为准。
 - 当前冻结本地归档：`D:/brace-msi-first-principles-release/BRACE-MSI-0.10.6rc1-A1/harness.tar`；SHA-256 `F7518609...D89CB`。它是历史Protocol RC，不因本轮研究原地改写，也不是下一次上传入口。
