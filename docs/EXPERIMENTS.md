@@ -912,3 +912,14 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 - 唯一修复：在身份无关`history_summary`中加入当前漂移、历史相似度、既往同作用域收益和机制失败等聚合证据，使recipe标签可由提示推断；评估解析改为与正式`brace_formal.agent`一致的“恰好一个JSON对象”规则。模型、rank、epoch、batch、学习率、源轨迹、隐私边界和采用门均不变。
 - 新冻结哈希：训练`8AA31CC91DB02A501E1CF72B2EEC6A0D696D2549AF192BA1A6571418FA1D0192`；留出`B5BB211CD8FEBAFBE84522C1C2B6816BF071795FA99A94C051D04A11D4638EFF`。A1留出不用于A2调参；A2使用修改后重新固化的场景族与数值。
 - 输出：`D:/brace-msi-pytrio/COMPETITION-AGENT-SFT-001-A2/`；同样不进入正式镜像、Git或公开SwanLab的Sampler路径。
+
+## COMPETITION-CORE-RC-001（COMPLETED_LOCAL_RELEASE_EXTERNAL_BLOCK）
+
+- 目的：对Competition Core冻结正式镜像做独立本地性能边界汇总、官方SDK协议验收、错误部署对抗、未知同格式任务覆盖、4核8GB容器与干净环境发布审计；不上传平台或消耗试运行。
+- 正式产物：`brace-msi:0.11.0rc1`；归档`D:/brace-msi-release/COMPETITION-CORE-RC-001/harness.tar`；SHA-256 `b7ba01bcc8a60502896082b58578b56c60c539a5460bb373285ff0abe4503e30`。
+- 协议结果：A/B/C与两个内容身份不透明同格式任务合计50轮、100次双阶段模型调用替身、50个真实候选；每轮父链、状态、历史、候选和独立预测有效。错误deploy被拒绝，历史产物经恢复和当前作用域重评后成功回选，保存加载预测一致。
+- 容器结果：linux/amd64、非root、81,214,923字节；4核8GB、断网、只读根、`pip check`、内容白名单和`docker save/load`通过。正式镜像无数据、权重、测试、模拟器、报告、PyTRiO/SwanLab、Tokenizer、Sampler或凭据。
+- 软件结果：当前主机629项通过；全新venv安装项目、dev锁和PyTRiO可选锁后`pip check`无冲突、629项通过。只安装dev锁的首次尝试有5项因缺PyTRiO包元数据失败，作为依赖边界证据保留。
+- 性能边界：A/B/C冻结开发矩阵描述性变化为A Macro-F1 +2.35%、B/C RMSE -0.17%/-1.88%；代理分类/回归显著改善。公开validation已历史暴露，精确镜像复演只验证协议，不作独立或官方成绩。
+- Agent记录：A2 PyTRiO SFT严格总体87.5%未达90%门，正式配置保留平台基础Qwen；SwanLab公开链接`https://swanlab.cn/@nanmo-max/BRACE-MSI/runs/ph2ztekq`只含脱敏聚合记录。
+- 判定：`LOCAL_RELEASE_PASS / OFFICIAL_PLATFORM_BLOCKED_EXTERNAL`。机器审计和HTML位于`D:/brace-msi-release/COMPETITION-CORE-RC-001/`；仓库摘要见`docs/results/COMPETITION-CORE-RC-001.md`。

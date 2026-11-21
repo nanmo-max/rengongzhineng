@@ -6,14 +6,14 @@
 
 ### COMPETITION-CORE-PLAN-001 Competition Core实施计划
 
-- 状态：`IN_PROGRESS_TASK_12_RELEASE_AUDIT`
+- 状态：`DONE_LOCAL_RELEASE_EXTERNAL_BLOCK`
 - 授权：用户于2026-11-20批准Competition Core书面规格并要求实行。
 - 依赖：COMPETITION-CORE-DESIGN-001、D-093。
 - 优先级：P0，当前唯一执行任务。
 - 工作范围：依据已批准规格，映射现有`brace_formal`、官方SDK、PyTRiO/SwanLab和双镜像代码，形成测试先行、任务级提交、可连续执行的实施计划。
 - 完成标准：计划覆盖任务画像、历史数据、注册recipe、双阶段Qwen、同作用域选择、正式轮编排、本地与正式镜像、A/B/C与未知任务训练、PyTRiO/SwanLab、Docker与发布验收；每项给出精确文件、接口、红绿测试、命令和提交边界；完成自审并独立提交。
 - 停止条件：计划完成前不得修改产品代码、启动训练、调用远程服务或构建镜像。
-- 证据：`superpowers/plans/2026-11-20-competition-core.md`。Task 1—10提交与证据保持不变。Task 11完成A1/A2 PyTRiO训练、持久化和重载；A2为36步、schema 100%、部署100%、严格总体87.5%，未越过90%采用门，Sampler不晋级。SwanLab脱敏spool 39条且敏感扫描零匹配，公开运行`https://swanlab.cn/@nanmo-max/BRACE-MSI/runs/ph2ztekq`。结果见`results/COMPETITION-AGENT-SFT-001.md`；正式配置继续使用平台基础Qwen。Task 12已就绪，且不得上传平台或消耗试运行。
+- 证据：`superpowers/plans/2026-11-20-competition-core.md`。Task 1—11提交与证据保持不变。Task 12冻结`0.11.0rc1`：正式镜像50轮、100次双阶段模型调用替身、50个真实候选、错误部署拒绝、历史回选、重载同预测、官方SDK 1.0.2、4核8GB断网只读、内容白名单与`docker save/load`全部通过；全新venv安装开发与PyTRiO锁后`pip check`无冲突、629项通过。归档SHA-256 `b7ba01bc...503e30`；完整证据见`results/COMPETITION-CORE-RC-001.md`。未上传平台或消耗试运行。
 
 ### COMPETITION-CORE-DESIGN-001 赛题语义重审与唯一正式架构规格
 
@@ -90,11 +90,12 @@
 
 #### FORMAL-RC-NEXT-001 新正式候选冻结
 
-- 状态：`BLOCKED_BY_LOCAL_GATES`
+- 状态：`DONE_COMPETITION_CORE_RC`
 - 依赖：SELECTION-RELIABILITY-001、GENERALIZATION-MATRIX-001、PERFORMANCE-METHOD-PILOT-001、FINAL-GENERALIZATION-VALIDATION-001；PYTRIO-ADVISOR-OPT-001只有在证明有效且被采用时才是依赖
 - 优先级：P0
 - 完成标准：仅集成已证明稳定的策略与方法；完整回归、官方SDK、A/B/C十轮、60次宿主调用、30个真实候选、父链、预测、4核8GB、64MiB、禁入扫描及docker save/load全部通过；形成唯一归档、源码提交和脱敏实验记录。
 - 停止条件：任一任务、协议、资源或禁入门失败时不得替换冻结归档；平台上传继续由FORMAL-RELEASE-001单独授权。
+- 证据：D-091失败研究组合未进入发布物；Competition Core从`a28a1fe`构建独立`0.11.0rc1`。机器审计全部门PASS，正式镜像与LOCAL_TEST_ONLY镜像物理分离；见`results/COMPETITION-CORE-RC-001.md`。
 
 ```text
 SELECTION-RELIABILITY-001(DONE)
@@ -102,7 +103,7 @@ SELECTION-RELIABILITY-001(DONE)
   -> PERFORMANCE-METHOD-PILOT-001(DONE_DEVELOPMENT_METHOD_SCREENING)
   -> PYTRIO-ADVISOR-OPT-001(DONE_EXTERNAL_ADVISOR_CANDIDATE)
   -> FINAL-GENERALIZATION-VALIDATION-001(DONE_INVALID_PROTOCOL_AND_NEGATIVE)
-  -> FORMAL-RC-NEXT-001(BLOCKED_BY_LOCAL_GATES)
+  -> FORMAL-RC-NEXT-001(DONE_COMPETITION_CORE_RC)
   -> FORMAL-RELEASE-001(BLOCKED_EXTERNAL)
 ```
 

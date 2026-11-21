@@ -1,5 +1,14 @@
 # 新会话恢复与交接
 
+## 2026-11-21 Competition Core RC恢复入口（当前）
+
+1. 当前分支`codex/first-principles-rebuild`；先读`STATUS.md`、`TASKS.md`、D-093至D-095和`results/COMPETITION-CORE-RC-001.md`。Competition Core Tasks 1—12本地实施已结束，当前无本地READY任务。
+2. 唯一正式候选为`D:/brace-msi-release/COMPETITION-CORE-RC-001/harness.tar`，SHA-256 `b7ba01bcc8a60502896082b58578b56c60c539a5460bb373285ff0abe4503e30`，镜像ID`sha256:578e7c9aa0c507efddeb6b4a182fc28299591a2a0a0e7fb1401a02f39b50da51`。不要上传历史`0.10.6rc1`或用LOCAL_TEST_ONLY镜像替代。
+3. 本地准入：五类任务50轮、100次双阶段宿主调用替身、50候选、错误部署拒绝、历史回选、模型重载、4核8GB断网只读、白名单和`docker save/load`均通过；干净venv安装dev与PyTRiO锁后629项通过。
+4. 正式模型选择平台已校验的`Qwen/Qwen3.5-4B`基础模型。Task 11 A2 Sampler严格总体87.5%低于90%门，不填写其`trio://`路径。SwanLab公开聚合记录为`https://swanlab.cn/@nanmo-max/BRACE-MSI/runs/ph2ztekq`。
+5. 本地A/B/C公开开发收益有限且validation已暴露，不能声称获奖或官方性能。平台实际导入、宿主调用、挂载生命周期、Token和隐藏分数仍为`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`。
+6. 未经用户明确授权不得上传、保存平台新版本或消耗试运行。授权后只上传上述精确归档；保存完整原始平台报告，失败时先定位而不盲目重试。
+
 ## 2026-11-20 Competition Core规格审阅入口
 
 1. 规格已获用户批准；先读取`docs/superpowers/specs/2026-11-20-competition-core-design.md`、`docs/superpowers/plans/2026-11-20-competition-core.md`、D-093和L-AUTH-017。

@@ -209,3 +209,11 @@
 - 决策：`COMPETITION-AGENT-SFT-001` A1/A2均保留为真实PyTRiO证据；A2虽完成持久化和重载且schema/部署选择100%，但严格总体策略87.5%低于预注册90%，不得在提交页选择该Sampler。Task 12正式候选继续选择平台已校验的`Qwen/Qwen3.5-4B`基础模型。
 - 执行边界：正式镜像仍只调用官方`rnd.model()`，不包含PyTRiO、SwanLab、Tokenizer、Sampler或凭据。基础模型输出仍须经过RecipeRegistry可执行性校验、同作用域指标事实与父模型回退；Sampler路径仅留在仓库外受控收据。
 - 依据：A1/A2机器结果、重载复评、预注册采用门及公开SwanLab脱敏运行`ph2ztekq`。不因训练已经付费而降低采用标准。
+
+## D-095：冻结0.11.0rc1为Competition Core正式平台候选（2026-11-21，LOCKED）
+
+- 决策：以提交`a28a1fe`的正式运行清单构建`brace-msi:0.11.0rc1`，冻结`D:/brace-msi-release/COMPETITION-CORE-RC-001/harness.tar`为下一次受控平台验证的唯一候选。正式镜像与`LOCAL_TEST_ONLY`镜像物理分离；正式镜像不包含模拟器、数据、权重、测试、报告、PyTRiO、SwanLab、Tokenizer、Sampler或凭据。
+- 准入证据：已知A/B/C与两个内容身份不透明同格式任务共50轮、100次双阶段宿主调用替身、50个真实父链候选；错误部署被拒绝，历史模型须恢复并在当前作用域重评后才可回选；模型保存加载预测一致。4核8GB、断网、只读根、非root、官方SDK 1.0.2、归档重载、内容扫描和全新环境629项测试通过。
+- 性能边界：公开A/B/C的独立开发矩阵只有约+2.35% Macro-F1、-0.17%/-1.88% RMSE描述性提升，不能声称30%或获奖水平；精确镜像重复公开validation只验证选择协议。代理任务显著提升不等于隐藏泛化。
+- 外部边界：本决策只授予本地Release Candidate地位，不等于平台运行成功。上传、保存新提交版本或消耗试运行仍须用户单独授权；真实模型网关、挂载生命周期、Token计量和隐藏评分只能由平台验证。
+- 依据：`results/COMPETITION-CORE-RC-001.md`、`release-audit.json`和归档SHA-256 `b7ba01bc...503e30`。

@@ -30,10 +30,9 @@ _LOCAL_ONLY_FILES = (
     "scripts/render_competition_report.py",
     "scripts/run_competition_core_experiments.py",
     "scripts/run_competition_simulation.py",
-    "scripts/simulate_first_principles_runtime.py",
-    "scripts/simulate_platform_report.py",
     "src/brace_msi/__init__.py",
     "src/brace_msi/competition_simulator.py",
+    "src/brace_msi/protocol/__init__.py",
 )
 
 

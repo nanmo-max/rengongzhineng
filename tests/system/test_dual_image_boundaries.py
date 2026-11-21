@@ -114,8 +114,9 @@ def test_local_context_is_marked_local_only_and_formal_context_excludes_simulato
 
     assert formal_manifest["image_class"] == "FORMAL_UPLOAD"
     assert local_manifest["image_class"] == "LOCAL_TEST_ONLY"
-    assert (local / "scripts" / "simulate_first_principles_runtime.py").is_file()
-    assert (local / "scripts" / "simulate_platform_report.py").is_file()
+    assert (local / "scripts" / "run_competition_simulation.py").is_file()
+    assert (local / "src" / "brace_msi" / "protocol" / "__init__.py").is_file()
+    assert not (local / "scripts" / "simulate_platform_report.py").exists()
     assert not (formal / "scripts").exists()
     dockerfile = (local / "Dockerfile.local-test").read_text(encoding="utf-8")
     assert "LOCAL_TEST_ONLY" in dockerfile
@@ -132,6 +133,25 @@ def test_both_dockerfiles_copy_only_from_staged_explicit_contexts() -> None:
         assert "COPY data" not in dockerfile
 
 
+def test_local_image_contains_current_competition_simulator_not_agent_training() -> None:
+    from scripts.build_local_test_image import stage_local_test_context
+
+    import tempfile
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        manifest = stage_local_test_context(Path.cwd(), root / "local")
+        files = set(manifest["files"])
+        assert "src/brace_msi/competition_simulator.py" in files
+        assert "scripts/run_competition_simulation.py" in files
+        assert "scripts/render_competition_report.py" in files
+        assert "scripts/run_competition_core_experiments.py" in files
+        assert "src/brace_msi/protocol/__init__.py" in files
+        assert "src/brace_msi/formal_advisor_sft.py" not in files
+        dockerfile = (root / "local" / "Dockerfile.local-test").read_text(encoding="utf-8")
+        assert "COPY src/brace_msi /app/src/brace_msi" in dockerfile
+        assert "COPY scripts/run_competition_simulation.py" in dockerfile
+
+
 def test_both_builders_are_directly_invocable() -> None:
     for script in ("scripts/build_formal_release.py", "scripts/build_local_test_image.py"):
         result = subprocess.run(
@@ -143,4 +163,36 @@ def test_both_builders_are_directly_invocable() -> None:
         )
         assert result.returncode == 0, result.stderr
         assert "usage:" in result.stdout
+
+
+def test_formal_release_source_commit_is_explicit() -> None:
+    from subprocess import CompletedProcess
+    from scripts.build_formal_release import read_source_commit
+
+    def runner(arguments, **_):
+        assert arguments == ["git", "rev-parse", "HEAD"]
+        return CompletedProcess(arguments, 0, stdout="a" * 40 + "\n", stderr="")
+
+    assert read_source_commit(Path.cwd(), runner=runner) == "a" * 40
+
+
+def test_release_metadata_binds_base_model_and_public_swanlab_without_sampler_path(
+    tmp_path: Path,
+) -> None:
+    from scripts.build_formal_release import bind_release_metadata
+
+    manifest = tmp_path / "release-manifest.json"
+    manifest.write_text(
+        json.dumps({"format": "brace-formal-release.v1"}), encoding="utf-8"
+    )
+    result = bind_release_metadata(
+        manifest,
+        model_name="Qwen/Qwen3.5-4B",
+        model_selection="platform_validated_base",
+        swanlab_url="https://swanlab.cn/@team/project/runs/abc",
+        sft_evidence_sha256="a" * 64,
+    )
+    assert result["agent_model"]["selection"] == "platform_validated_base"
+    assert result["swanlab"]["public_url"].startswith("https://swanlab.cn/")
+    assert "trio://" not in manifest.read_text(encoding="utf-8")
 

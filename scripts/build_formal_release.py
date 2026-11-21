@@ -45,6 +45,63 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def read_source_commit(
+    repository_root: Path,
+    *,
+    runner: Any = _run,
+) -> str:
+    completed = runner(
+        ["git", "rev-parse", "HEAD"], cwd=Path(repository_root), capture_output=True
+    )
+    commit = completed.stdout.strip()
+    if len(commit) != 40 or any(character not in "0123456789abcdef" for character in commit.lower()):
+        raise ValueError("source commit is not a full Git SHA-1")
+    return commit
+
+
+def bind_release_metadata(
+    manifest_path: Path,
+    *,
+    model_name: str,
+    model_selection: str,
+    swanlab_url: str,
+    sft_evidence_sha256: str,
+) -> dict[str, Any]:
+    """Bind public provenance without embedding credentials or Sampler paths."""
+
+    if model_name != "Qwen/Qwen3.5-4B":
+        raise ValueError("formal release model must be the platform-validated base model")
+    if model_selection != "platform_validated_base":
+        raise ValueError("unadopted SFT candidates cannot be bound to the formal release")
+    if not swanlab_url.startswith("https://swanlab.cn/"):
+        raise ValueError("SwanLab evidence must be a public HTTPS SwanLab URL")
+    if len(sft_evidence_sha256) != 64 or any(
+        character not in "0123456789abcdef" for character in sft_evidence_sha256.lower()
+    ):
+        raise ValueError("SFT evidence hash must be SHA-256")
+    path = Path(manifest_path)
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict) or payload.get("format") != "brace-formal-release.v1":
+        raise ValueError("release manifest has an invalid format")
+    payload["agent_model"] = {
+        "name": model_name,
+        "selection": model_selection,
+        "sft_candidate": "evaluated_not_adopted",
+        "sft_evidence_sha256": sft_evidence_sha256.lower(),
+    }
+    payload["swanlab"] = {
+        "public_url": swanlab_url,
+        "scope": "aggregate_public_no_private_rows_or_credentials",
+    }
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    temporary.write_text(
+        json.dumps(payload, ensure_ascii=False, sort_keys=True, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    temporary.replace(path)
+    return payload
+
+
 def load_formal_allowlist(config_path: Path, repository_root: Path) -> tuple[str, ...]:
     """Load and fail-closed validate the exact formal build-context file set."""
 
@@ -138,6 +195,7 @@ def stage_formal_context(
 def build(tag: str, output: Path) -> dict[str, Any]:
     output.mkdir(parents=True, exist_ok=False)
     repository_root = Path(__file__).resolve().parents[1]
+    source_commit = read_source_commit(repository_root)
     with tempfile.TemporaryDirectory(prefix="brace-formal-context-") as temporary:
         context = Path(temporary) / "context"
         content_manifest = stage_formal_context(repository_root, context)
@@ -159,6 +217,7 @@ def build(tag: str, output: Path) -> dict[str, Any]:
     manifest = {
         "format": "brace-formal-release.v1",
         "tag": tag,
+        "source_commit": source_commit,
         "image_id": inspected["Id"],
         **metadata,
         "content_manifest": content_manifest,
@@ -174,9 +233,28 @@ def build(tag: str, output: Path) -> dict[str, Any]:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--tag", default="brace-msi:0.10.0rc1")
-    parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--output", type=Path)
+    parser.add_argument("--finalize-manifest", type=Path)
+    parser.add_argument("--model-name", default="Qwen/Qwen3.5-4B")
+    parser.add_argument("--model-selection", default="platform_validated_base")
+    parser.add_argument("--swanlab-url")
+    parser.add_argument("--sft-evidence-sha256")
     args = parser.parse_args()
-    print(json.dumps(build(args.tag, args.output), ensure_ascii=False, sort_keys=True))
+    if args.finalize_manifest is not None:
+        if not args.swanlab_url or not args.sft_evidence_sha256:
+            parser.error("--swanlab-url and --sft-evidence-sha256 are required when finalizing")
+        result = bind_release_metadata(
+            args.finalize_manifest,
+            model_name=args.model_name,
+            model_selection=args.model_selection,
+            swanlab_url=args.swanlab_url,
+            sft_evidence_sha256=args.sft_evidence_sha256,
+        )
+    else:
+        if args.output is None:
+            parser.error("--output is required when building")
+        result = build(args.tag, args.output)
+    print(json.dumps(result, ensure_ascii=False, sort_keys=True))
     return 0
 
 

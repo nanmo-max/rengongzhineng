@@ -99,9 +99,9 @@
 ## R-054 Qwen双阶段决策无效或质量不足
 
 - 等级：High
-- 状态：本地已缓解，平台待确认
+- 状态：`MITIGATED_LOCAL_OPEN_PLATFORM`
 - 证据：正式候选每轮依赖训练recipe与部署判断两次宿主模型输出；平台真实Qwen尚未验证该新双阶段契约。
-- 缓解：严格JSON schema、受控recipe白名单、非法训练提案降级到最保守真实续训、非法部署判断保留父模型、硬SafetyGate不可绕过；A4 30轮/60调用本地协议验收通过。下一次平台试运行必须检查真实Token、两个call ID、候选数和决策记录。
+- 缓解：严格JSON schema、受控recipe白名单、非法训练提案降级到最保守真实续训、非法部署判断保留父模型、同作用域确定性事实不可覆盖；`0.11.0rc1`五类任务50轮/100调用/50候选本地验收通过。下一次平台试运行仍必须检查真实Token、每轮两个call ID、候选数和决策记录。
 
 ## R-053 训练声明与实际执行recipe不一致
 
@@ -113,9 +113,9 @@
 ## R-055 Qwen数值判断错误导致部署退化候选
 
 - 等级：Critical
-- 状态：`REALIZED_IN_FROZEN_RC_MITIGATED_IN_HEAD_NOT_RELEASED`
+- 状态：`MITIGATED_IN_0.11.0RC1_OPEN_PLATFORM`
 - 证据：O-PLATFORM-019中Gas第5轮、Bearing第2轮、Engine第4轮的父/候选主指标关系与deploy动作冲突；当前`agent.py`只校验枚举和非空理由，`submission.py`未校验结构化决定与指标方向。
-- 缓解：RELEASE-COMPATIBILITY-AUDIT-001对精确`0.10.6rc1`黑盒复现：C候选RMSE `55.629944`劣于父模型`52.868573`仍因错误deploy被采用，因此该归档禁止最终上传。Competition Core Task 7已把同作用域`ArtifactSelector`接入正式单轮编排，O-PLATFORM-019及旧RC反例不能覆盖指标事实，全量593项通过；尚未构建并黑盒复验新的正式镜像，因此发布层风险继续开放。
+- 缓解：`0.10.6rc1`继续禁止最终上传。Competition Core把同作用域`ArtifactSelector`接入正式单轮编排；`0.11.0rc1`黑盒令宿主模型明确请求部署劣质候选，结果`wrong_deploy_accepted=false`，且历史回选/重载通过。机器证据为`D:/brace-msi-release/COMPETITION-CORE-RC-001/blackbox-v4/blackbox.json`；真实平台行为仍待受控试运行。
 
 ## R-056 跨轮评价作用域变化导致伪历史最优
 
@@ -141,9 +141,9 @@
 ## R-059 防御性复杂度遮蔽竞赛目标
 
 - 等级：Critical
-- 状态：`MITIGATED_CORE_IMPLEMENTED_PERFORMANCE_AND_RELEASE_PENDING`
+- 状态：`MITIGATED_CORE_AND_LOCAL_RELEASE_OFFICIAL_PERFORMANCE_OPEN`
 - 证据：历史路线叠加四缓冲区、Bandit、影子收益、固定动作日程、多层门控和任意补丁沙箱，但官方试运行仍曾出现零候选、错误部署和性能不足；协议测试数量不能替代工业模型收益。
-- 缓解：D-093将正式核心收敛为七个职责单元，每轮真实训练、同作用域选择和官方硬约束；Competition Core Tasks 1—9已实现任务画像、合法历史、注册recipe、双阶段Qwen、确定性同作用域选择、正式轮编排、双镜像清单和官方SDK Round/RPC本地十轮模拟。旧复杂机制未进入新运行路径，本地测试与正式上传镜像从构建清单层分离。真实性能矩阵、远程Agent证据和最终Docker发布门仍分别由Tasks 10—12开放。
+- 缓解：D-093将正式核心收敛为七个职责单元；Tasks 1—12已完成任务画像、合法历史、注册recipe、双阶段Qwen、同作用域选择、正式轮编排、双镜像、性能矩阵、远程Agent证据和Docker发布门。旧复杂机制未进入`0.11.0rc1`。已知A/B/C收益仍有限，真实隐藏性能和平台墙钟继续开放，不能用协议通过代替竞赛分数。
 
 ## R-060 单一固定recipe跨任务泛化不足
 
@@ -157,4 +157,4 @@
 - 等级：High
 - 状态：`REALIZED_CONTAINED_BY_NON_ADOPTION`
 - 证据：`COMPETITION-AGENT-SFT-001-A2`重载留出schema 100%、部署100%，但回归实验提案有3/12严格recipe标签差异，总体87.5%，低于预注册90%；A1/A2均成功持久化和重载，故不是服务或权重保存故障。
-- 缓解：不绑定未达门Sampler，不把Sampler放入镜像或SwanLab；正式配置使用平台已校验Qwen3.5-4B基础模型，任何非法提案由注册表回退为真实`native_current`训练，非法部署选择保留父模型。Task 12黑盒验证这条降级链。
+- 缓解：不绑定未达门Sampler，不把Sampler放入镜像或SwanLab；正式配置使用平台已校验Qwen3.5-4B基础模型，任何非法提案由注册表回退为真实`native_current`训练，非法部署选择保留父模型。Task 12已在精确正式镜像中通过这条降级链和错误部署黑盒；平台基础模型真实输出质量仍待试运行。

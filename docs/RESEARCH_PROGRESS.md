@@ -922,3 +922,13 @@
 - SwanLab只同步39条脱敏聚合记录；敏感扫描未发现`trio://`、密钥、prompt、原始回复或模型路径。公开运行：`https://swanlab.cn/@nanmo-max/BRACE-MSI/runs/ph2ztekq`。
 - 专项命令：`D:\anaconda3\python.exe -m pytest tests/agent/test_competition_agent_sft.py tests/agent/test_formal_advisor_sft.py tests/system/test_swanlab_adapter.py -q`，结果`15 passed`；全量命令`D:\anaconda3\python.exe -m pytest -q --tb=short`，结果`618 passed in 161.69s`。
 - 未上传平台、未构建正式镜像、未消费官方试运行；远程产物位于仓库外`D:/brace-msi-pytrio/`。
+
+# 2026-11-21 COMPETITION-CORE Task 12
+
+- 从Task 11提交`a28a1fe`构建正式`brace-msi:0.11.0rc1`，镜像ID`sha256:578e7c...b50da51`；`docker save`归档81,232,384字节，SHA-256 `b7ba01bc...503e30`，重载后镜像ID一致。
+- 正式镜像在4核8GB、断网、只读根、非root环境完成A/B/C各10轮及两个内容身份不透明同格式任务各10轮；合计50轮、100次双阶段宿主模型替身调用和50个真实候选。
+- 对抗验收中宿主模型故意要求部署劣质候选，确定性同作用域选择成功拒绝；历史模型恢复、当前作用域重评、回选和保存加载同预测通过。
+- 正式镜像白名单扫描确认无数据、权重、测试、模拟器、报告、PyTRiO、SwanLab、Tokenizer、Sampler、缓存或凭据；本地测试镜像独立标记`LOCAL_TEST_ONLY`并完成两个任务画像各10轮模拟。
+- 当前主机完整回归`629 passed in 163.91s`。全新venv安装项目、`requirements-dev.lock`和`requirements-pytrio.lock`后，`pip check`无冲突，完整回归`629 passed in 175.11s`。首次只安装dev锁时5项PyTRiO测试因缺少可选包元数据失败，补齐项目已有PyTRiO锁后通过；没有为此修改正式镜像。
+- 机器审计`D:/brace-msi-release/COMPETITION-CORE-RC-001/release-audit.json`全部门PASS；易读报告`release-report.html`明确标注本地发布验收、非官方成绩。
+- 未上传平台、未保存平台新版本、未消费官方试运行。真实模型网关、挂载生命周期、Token计量和隐藏评分继续`BLOCKED_EXTERNAL`。

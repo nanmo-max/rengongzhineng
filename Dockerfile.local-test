@@ -18,10 +18,14 @@ RUN python3 -m pip install --no-cache-dir --index-url "${PIP_INDEX_URL}" --only-
 
 COPY src/contest_harness /app/src/contest_harness
 COPY src/brace_formal /app/src/brace_formal
+COPY src/brace_msi /app/src/brace_msi
 COPY submission/harness.py /app/harness.py
 COPY submission/contest_submission.py /app/contest_submission.py
-COPY scripts/simulate_first_principles_runtime.py /app/local_tools/simulate_first_principles_runtime.py
-COPY scripts/simulate_platform_report.py /app/local_tools/simulate_platform_report.py
+COPY configs/competition_simulation.json /app/configs/competition_simulation.json
+COPY configs/competition_core_experiments.json /app/configs/competition_core_experiments.json
+COPY scripts/run_competition_simulation.py /app/local_tools/run_competition_simulation.py
+COPY scripts/render_competition_report.py /app/local_tools/render_competition_report.py
+COPY scripts/run_competition_core_experiments.py /app/local_tools/run_competition_core_experiments.py
 
 ENTRYPOINT ["python3", "/app/harness.py"]
 CMD ["--help"]

@@ -1,6 +1,20 @@
 # BRACE-MSI Release Candidate
 
-## 当前正式候选：0.9.0rc1
+## 当前正式候选：0.11.0rc1
+
+Competition Core正式候选使用官方`contest_harness` 1.0.2和`contest.harness.workspace.v2`；每轮从平台父checkpoint训练真实候选，经两次宿主模型调用完成实验设计和部署建议，并由同作用域确定性指标事实拒绝数值矛盾或劣质部署。分类、回归及内容身份不透明的同格式任务共50轮本地验收通过。
+
+- 唯一候选归档：`D:/brace-msi-release/COMPETITION-CORE-RC-001/harness.tar`
+- SHA-256：`b7ba01bcc8a60502896082b58578b56c60c539a5460bb373285ff0abe4503e30`
+- 镜像ID：`sha256:578e7c9aa0c507efddeb6b4a182fc28299591a2a0a0e7fb1401a02f39b50da51`
+- 镜像：linux/amd64，81,214,923 bytes，`10001:10001`
+- 模型：平台已校验的`Qwen/Qwen3.5-4B`基础模型；A2 SFT因严格策略87.5%未达90%门而不采用
+- SwanLab：<https://swanlab.cn/@nanmo-max/BRACE-MSI/runs/ph2ztekq>
+- 本地终审：[COMPETITION-CORE-RC-001](results/COMPETITION-CORE-RC-001.md)
+
+本地可核验门全部通过，但尚未上传平台；真实宿主网关、挂载生命周期和隐藏成绩继续为`BLOCKED_EXTERNAL`。不得把本地HTML或公开validation复演称作官方成绩。
+
+## 历史正式候选：0.10.4rc2（标题曾误写0.9.0rc1）
 
 `BRACE-MSI-0.10.4rc2`直接接入官方`contest_harness` 1.0.2与`contest.harness.workspace.v2`。固定`describe/train/predict`入口经宿主`rnd.model()`调用平台模型；参赛代码不设置`max_tokens`，由官方SDK使用宿主完整授权预算。Agent只表达train/retain意图，实际recipe由训练内部证据和受控执行层选择。
 
