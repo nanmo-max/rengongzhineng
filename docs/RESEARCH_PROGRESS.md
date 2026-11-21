@@ -827,3 +827,11 @@
 - 专项命令：`D:\anaconda3\python.exe -m pytest tests/competition_core/test_platform_boundary.py tests/competition_core/test_current_round_characterization.py -q`，结果`5 passed in 0.21s`。
 - 全量命令：`D:\anaconda3\python.exe -m pytest -q`，结果`538 passed in 163.22s`。
 - 本任务只冻结已验证平台边界，未修改产品代码，未训练模型、调用远程服务、构建镜像或消耗官方试运行。
+
+# 2026-11-21 COMPETITION-CORE Task 2
+
+- 新增不受Gas/Bearing/Engine或其他`dataset_key`名称影响的不可变`TaskProfile`；任务类型、主指标、方向、特征/类别数、标签分布、数据质量、分组/时间提示和合同指纹均来自任务合同、父checkpoint与聚合数据。
+- 按TDD先观测`ModuleNotFoundError: brace_formal.profile`红灯，再实现最小画像接口。
+- 专项命令：`D:\anaconda3\python.exe -m pytest tests/competition_core/test_task_profile.py tests/formal_runtime/test_metric_contract.py tests/formal_dev/test_official_metrics.py -q`，结果`17 passed in 3.62s`。
+- 全量命令：`D:\anaconda3\python.exe -m pytest -q`，结果`544 passed in 158.45s`。
+- 未启动训练、PyTRiO/SwanLab、镜像或官方试运行。

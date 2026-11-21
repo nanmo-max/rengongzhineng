@@ -6,14 +6,14 @@
 
 ### COMPETITION-CORE-PLAN-001 Competition Core实施计划
 
-- 状态：`IN_PROGRESS_TASK_2_TASK_PROFILE`
+- 状态：`IN_PROGRESS_TASK_3_HISTORY_STORE`
 - 授权：用户于2026-11-20批准Competition Core书面规格并要求实行。
 - 依赖：COMPETITION-CORE-DESIGN-001、D-093。
 - 优先级：P0，当前唯一执行任务。
 - 工作范围：依据已批准规格，映射现有`brace_formal`、官方SDK、PyTRiO/SwanLab和双镜像代码，形成测试先行、任务级提交、可连续执行的实施计划。
 - 完成标准：计划覆盖任务画像、历史数据、注册recipe、双阶段Qwen、同作用域选择、正式轮编排、本地与正式镜像、A/B/C与未知任务训练、PyTRiO/SwanLab、Docker与发布验收；每项给出精确文件、接口、红绿测试、命令和提交边界；完成自审并独立提交。
 - 停止条件：计划完成前不得修改产品代码、启动训练、调用远程服务或构建镜像。
-- 证据：`superpowers/plans/2026-11-20-competition-core.md`；12项顺序任务覆盖正式运行核、性能实验、PyTRiO/SwanLab、双镜像与发布验收。Task 1新增`tests/competition_core/`下5项分类/回归与负向特征测试：双模型调用、父checkpoint真实续训、候选/状态/完成事务、独立预测，以及空收据、父哈希错误和不可加载候选的失败关闭。专项`5 passed`，全量回归`538 passed in 163.22s`；未运行训练、远程服务、镜像或官方试运行。Task 2已就绪。
+- 证据：`superpowers/plans/2026-11-20-competition-core.md`。Task 1提交`e0097a7`冻结官方平台边界。Task 2新增`src/brace_formal/profile.py`与6项测试，从任务合同、父checkpoint与聚合数据生成分类/回归任务画像，覆盖指标方向、类别不平衡、目标范围、非有限特征、分组/时间提示、任务冲突与特征维度错误；更改`dataset_key`不改变画像或指纹。专项`17 passed`，全量`544 passed in 158.45s`；未启动训练、远程服务、镜像或官方试运行。Task 3已就绪。
 
 ### COMPETITION-CORE-DESIGN-001 赛题语义重审与唯一正式架构规格
 
