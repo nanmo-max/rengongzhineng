@@ -6,14 +6,14 @@
 
 ### COMPETITION-CORE-PLAN-001 Competition Core实施计划
 
-- 状态：`IN_PROGRESS_TASK_7_FORMAL_ORCHESTRATOR`
+- 状态：`IN_PROGRESS_TASK_8_DUAL_IMAGE_SUPPLY_CHAINS`
 - 授权：用户于2026-11-20批准Competition Core书面规格并要求实行。
 - 依赖：COMPETITION-CORE-DESIGN-001、D-093。
 - 优先级：P0，当前唯一执行任务。
 - 工作范围：依据已批准规格，映射现有`brace_formal`、官方SDK、PyTRiO/SwanLab和双镜像代码，形成测试先行、任务级提交、可连续执行的实施计划。
 - 完成标准：计划覆盖任务画像、历史数据、注册recipe、双阶段Qwen、同作用域选择、正式轮编排、本地与正式镜像、A/B/C与未知任务训练、PyTRiO/SwanLab、Docker与发布验收；每项给出精确文件、接口、红绿测试、命令和提交边界；完成自审并独立提交。
 - 停止条件：计划完成前不得修改产品代码、启动训练、调用远程服务或构建镜像。
-- 证据：`superpowers/plans/2026-11-20-competition-core.md`。Task 1提交`e0097a7`；Task 2提交`54578db`；Task 3提交`a887f46`；Task 4提交`5a1c5bc`；Task 5提交`ae75de9`。Task 6新增不可变`ArtifactEvaluation/SelectionResult`和`select_artifact`：只比较与父模型同一验证指纹、主指标有限且无官方硬失败的产物；主指标按合同方向排序，相同后才使用合同辅助指标和共同可见的实测资源；Qwen错误选择只记录为requested，不会覆盖applied。O-PLATFORM-019三类退化值和旧RC `52.868573→55.629944`反例均保留父模型，合法同作用域历史模型可回滚。专项`21 passed`，全量`583 passed in 154.34s`。Task 7已就绪。
+- 证据：`superpowers/plans/2026-11-20-competition-core.md`。Task 1提交`e0097a7`；Task 2提交`54578db`；Task 3提交`a887f46`；Task 4提交`5a1c5bc`；Task 5提交`ae75de9`；Task 6提交`4a21f05`。Task 7新`run_competition_round`在未知同格式分类/回归上完成任务画像、两次宿主Qwen调用、每轮真实候选训练、合法历史回放、父/候选/恢复历史当前作用域重评、确定性选择、候选提交、状态保存和finish；首选recipe失败会真实执行native fallback，全部训练失败仍保留双调用/失败收据并选父模型；正式`submission.train`已缩为薄适配器且`predict`保持独立。专项`80 passed`，全量`593 passed in 155.96s`。Task 8已就绪。
 
 ### COMPETITION-CORE-DESIGN-001 赛题语义重审与唯一正式架构规格
 

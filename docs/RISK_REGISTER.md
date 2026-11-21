@@ -115,7 +115,7 @@
 - 等级：Critical
 - 状态：`REALIZED_IN_FROZEN_RC_MITIGATED_IN_HEAD_NOT_RELEASED`
 - 证据：O-PLATFORM-019中Gas第5轮、Bearing第2轮、Engine第4轮的父/候选主指标关系与deploy动作冲突；当前`agent.py`只校验枚举和非空理由，`submission.py`未校验结构化决定与指标方向。
-- 缓解：RELEASE-COMPATIBILITY-AUDIT-001对精确`0.10.6rc1`黑盒复现：C候选RMSE `55.629944`劣于父模型`52.868573`仍因错误deploy被采用，因此该归档禁止最终上传。当前Competition Core Task 6已建立同作用域`ArtifactSelector`，O-PLATFORM-019三类反例及旧RC反例均不能覆盖指标事实，全量583项通过；该选择器尚待Task 7接入正式编排并在新正式镜像黑盒复验，因此发布风险仍开放。
+- 缓解：RELEASE-COMPATIBILITY-AUDIT-001对精确`0.10.6rc1`黑盒复现：C候选RMSE `55.629944`劣于父模型`52.868573`仍因错误deploy被采用，因此该归档禁止最终上传。Competition Core Task 7已把同作用域`ArtifactSelector`接入正式单轮编排，O-PLATFORM-019及旧RC反例不能覆盖指标事实，全量593项通过；尚未构建并黑盒复验新的正式镜像，因此发布层风险继续开放。
 
 ## R-056 跨轮评价作用域变化导致伪历史最优
 

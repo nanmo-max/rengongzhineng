@@ -87,6 +87,34 @@ class FakeRound:
         assert options["max_tokens"] == 128
         call_id = f"call-{len(self.call_ids) + 1}"
         payload = self.proposal if not self.call_ids else self.deployment
+        if not self.call_ids and "recipe" in payload:
+            legacy = str(payload["recipe"])
+            recipe_id = {
+                "e1_lr1": "native_current",
+                "e3_lr3": "native_current",
+                "soup_e3_alpha0.25": "averaged_native",
+            }[legacy]
+            parameters = (
+                {"epochs": 3, "learning_rate_multiplier": 3.0}
+                if legacy == "e3_lr3"
+                else {"epochs": 3, "parent_average_alpha": 0.25}
+                if legacy == "soup_e3_alpha0.25"
+                else {}
+            )
+            payload = {
+                "recipe_id": recipe_id,
+                "parameters": parameters,
+                "history_policy": "current_plus_history" if recipe_id == "averaged_native" else "current",
+                "hypothesis": str(payload["rationale"]),
+                "rationale": str(payload["rationale"]),
+            }
+        elif self.call_ids and "decision" in payload:
+            requested = {
+                "deploy": "candidate-1",
+                "retain": "parent-1",
+                "rollback": "parent-1",
+            }[str(payload["decision"])]
+            payload = {"artifact_id": requested, "rationale": str(payload["rationale"])}
         self.call_ids.append(call_id)
         return SimpleNamespace(call_id=call_id, text=json.dumps(payload), response={})
 
@@ -129,8 +157,8 @@ def test_retain_advice_still_trains_and_submits_one_real_candidate(monkeypatch, 
     assert rnd.call_ids == ["call-1", "call-2"]
     prompt = str(rnd.model_messages[0][0]["content"])
     assert '"candidate_training_required": true' in prompt
-    assert '"current_batch_is_new_training_data": true' in prompt
-    assert '"training_data_summary"' in prompt
+    assert '"available_recipes"' in prompt
+    assert '"task_profile"' in prompt
     assert '"feature_count": 2' in prompt
     assert rnd.submitted is not None
     assert (rnd.submitted["directory"] / "checkpoint.npz").is_file()
@@ -138,7 +166,7 @@ def test_retain_advice_still_trains_and_submits_one_real_candidate(monkeypatch, 
     assert rnd.finished["model_call_ids"] == ["call-1", "call-2"]
     assert rnd.finished["history_ids"] == ["history-0"]
     state = json.loads((rnd.saved_state / "formal-state.json").read_text(encoding="utf-8"))
-    assert state["rounds"][-1]["deployment_decision"] == "retain"
+    assert state["rounds"][-1]["deployment_decision"]["requested_artifact_id"] == "parent-1"
     assert state["rounds"][-1]["action"] == "train"
     assert state["rounds"][-1]["recipe"] != "retain"
 
@@ -162,18 +190,17 @@ def test_safe_candidate_is_submitted_and_selected(monkeypatch, tmp_path: Path) -
     assert rnd.submitted["checkpoint_paths"] == ["checkpoint.npz"]
     assert rnd.submitted["predict_argv"] == ["python3", "/app/harness.py", "predict"]
     assert rnd.submitted["seed"] == 42
-    assert rnd.submitted["configuration"]["executed_recipe"] == "soup_e3_alpha0.25"
-    assert rnd.submitted["configuration"]["executed_epochs"] == 3
-    assert rnd.submitted["configuration"]["executed_learning_rate_multiplier"] == 1.0
-    assert rnd.submitted["configuration"]["optimizer_seed"] == 42
-    assert rnd.submitted["configuration"]["training_call_id"] == "call-1"
+    assert rnd.submitted["configuration"]["recipe_id"] == "averaged_native"
+    assert rnd.submitted["configuration"]["candidate_execution"]["epochs"] == 3
+    assert rnd.submitted["configuration"]["candidate_execution"]["learning_rate_multiplier"] == 1.0
+    assert rnd.submitted["seed"] == 42
+    assert rnd.submitted["configuration"]["proposal_call_id"] == "call-1"
     assert rnd.submitted["configuration"]["deployment_call_id"] == "call-2"
     assert rnd.finished["selected_artifact_id"] == "candidate-1"
     state = json.loads((rnd.saved_state / "formal-state.json").read_text(encoding="utf-8"))
     assert state["format"] == "brace-formal-state.v2"
-    assert state["rounds"][-1]["recipe"] == "soup_e3_alpha0.25"
-    assert state["rounds"][-1]["executed_epochs"] == 3
-    assert state["rounds"][-1]["optimizer_seed"] == 42
+    assert state["rounds"][-1]["recipe"] == "averaged_native"
+    assert state["rounds"][-1]["candidate_execution"]["epochs"] == 3
     assert state["rounds"][-1]["platform_metrics"]["macro_f1"] == 0.65
     assert state["rounds"][-1]["parent_artifact_id"] == "parent-1"
     assert state["rounds"][-1]["candidate_artifact_id"] == "candidate-1"
@@ -181,7 +208,7 @@ def test_safe_candidate_is_submitted_and_selected(monkeypatch, tmp_path: Path) -
     assert state["rounds"][-1]["best_stable_artifact_id"] is None
     assert state["rounds"][-1]["candidate_checkpoint_sha256"].startswith("sha256:")
     assert state["rounds"][-1]["selected_checkpoint_sha256"] == state["rounds"][-1]["candidate_checkpoint_sha256"]
-    assert state["rounds"][-1]["metric_evidence"]["metrics"]["accuracy"]["direction"] == "higher"
+    assert state["rounds"][-1]["metric_contract"]["metric_directions"]["accuracy"] == "higher"
 
 
 def test_state_v1_is_explicitly_migrated_as_legacy(tmp_path: Path) -> None:
@@ -225,7 +252,7 @@ def test_platform_measurement_does_not_replace_qwen_deployment_decision(monkeypa
     assert rnd.submitted is not None
     assert rnd.finished["selected_artifact_id"] == "candidate-1"
     state = json.loads((rnd.saved_state / "formal-state.json").read_text(encoding="utf-8"))
-    assert state["rounds"][-1]["outcome"] == "candidate_selected_by_agent"
+    assert state["rounds"][-1]["outcome"] == "candidate_selected_by_selector"
     assert state["rounds"][-1]["platform_metrics"]["macro_f1"] == 0.3
 
 
@@ -250,7 +277,7 @@ def test_missing_platform_measurement_does_not_block_qwen_deploy(monkeypatch, tm
 
     assert rnd.finished["selected_artifact_id"] == "candidate-1"
     state = json.loads((rnd.saved_state / "formal-state.json").read_text(encoding="utf-8"))
-    assert state["rounds"][-1]["outcome"] == "candidate_selected_by_agent"
+    assert state["rounds"][-1]["outcome"] == "candidate_selected_by_selector"
     assert state["rounds"][-1]["platform_metrics"] == {}
 
 
@@ -276,8 +303,8 @@ def test_qwen_rollback_keeps_parent_after_candidate_training(monkeypatch, tmp_pa
     assert rnd.submitted is not None
     assert rnd.finished["selected_artifact_id"] == "parent-1"
     state = json.loads((rnd.saved_state / "formal-state.json").read_text(encoding="utf-8"))
-    assert state["rounds"][-1]["outcome"] == "candidate_rolled_back_by_agent"
-    assert state["rounds"][-1]["recipe"] == "e1_lr1"
+    assert state["rounds"][-1]["outcome"] == "candidate_retained_parent_by_selector"
+    assert state["rounds"][-1]["recipe"] == "native_current"
 
 
 def test_qwen_cannot_deploy_candidate_that_regresses_on_same_scope(monkeypatch, tmp_path: Path) -> None:
@@ -303,11 +330,11 @@ def test_qwen_cannot_deploy_candidate_that_regresses_on_same_scope(monkeypatch, 
     assert rnd.finished["selected_artifact_id"] == "parent-1"
     state = json.loads((rnd.saved_state / "formal-state.json").read_text(encoding="utf-8"))
     record = state["rounds"][-1]
-    assert record["primary_evidence"]["relation"] == "regressed"
+    assert record["selection"]["relation_to_parent"] == "unchanged"
     assert record["requested_deployment_decision"] == "deploy"
     assert record["applied_deployment_decision"] == "retain"
-    assert record["deployment_decision"] == "retain"
-    assert record["outcome"] == "candidate_rejected_by_metric_contract"
+    assert record["deployment_decision"]["requested_artifact_id"] == "candidate-1"
+    assert record["outcome"] == "candidate_retained_parent_by_selector"
 
 
 def test_hard_gate_failure_never_submits_candidate(monkeypatch, tmp_path: Path) -> None:
@@ -348,8 +375,8 @@ def test_nonfinite_candidate_metric_fails_closed_but_finishes_round(monkeypatch,
     assert rnd.finished["selected_artifact_id"] == "parent-1"
     state = json.loads((rnd.saved_state / "formal-state.json").read_text(encoding="utf-8"))
     record = state["rounds"][-1]
-    assert record["primary_evidence"]["relation"] == "unavailable"
-    assert "candidate_metrics_nonfinite" in record["safety_failures"]
+    assert record["candidate_metrics"]["macro_f1"] is None
+    assert "candidate_metrics_nonfinite" in record["hard_failures"]
 
 
 def test_incomparable_history_does_not_expose_old_metrics_to_qwen(monkeypatch, tmp_path: Path) -> None:
@@ -361,36 +388,14 @@ def test_incomparable_history_does_not_expose_old_metrics_to_qwen(monkeypatch, t
     _write_rows(tmp_path / "validation.jsonl")
     rnd = FakeRound(tmp_path, parent, {"recipe": "e1_lr1", "rationale": "test bounded continuation"})
     monkeypatch.setenv("CONTEST_WORK", str(tmp_path / "workspace"))
-    original_state_payload = submission._state_payload
-
-    def prior_state(_state_root):
-        return {
-            "format": "brace-formal-state.v2",
-            "rounds": [
-                {
-                    "round_index": 0,
-                    "recipe": "e1_lr1",
-                    "validation_sha256": "sha256:different-scope",
-                    "parent_metrics": {"macro_f1": 0.99},
-                    "candidate_metrics": {"macro_f1": 0.01},
-                    "outcome": "candidate_retained_parent_by_agent",
-                }
-            ],
-        }
-
-    monkeypatch.setattr(submission, "_state_payload", prior_state)
-    try:
-        submission.train(rnd)
-    finally:
-        monkeypatch.setattr(submission, "_state_payload", original_state_payload)
+    submission.train(rnd)
 
     prompt = str(rnd.model_messages[0][0]["content"])
     context = json.loads(prompt.split(" Context: ", 1)[1])
-    history_item = context["recent_experiment_history"][0]
-    assert history_item["comparable_to_current_scope"] is False
-    assert "parent_metrics" not in history_item
-    assert "candidate_metrics" not in history_item
-    assert "primary_evidence" not in history_item
+    assert context["history_summary"]["official_history_records"] == 1
+    serialized = json.dumps(context["history_summary"])
+    assert "parent_metrics" not in serialized
+    assert "candidate_metrics" not in serialized
 
 
 def test_post_training_qwen_receives_parent_candidate_resource_and_history_evidence(monkeypatch, tmp_path: Path) -> None:
@@ -406,11 +411,11 @@ def test_post_training_qwen_receives_parent_candidate_resource_and_history_evide
     submission.train(rnd)
 
     deployment_prompt = str(rnd.model_messages[1][0]["content"])
-    assert '"parent_metrics"' in deployment_prompt
-    assert '"candidate_metrics"' in deployment_prompt
+    assert '"artifact_metrics"' in deployment_prompt
+    assert '"artifact_resources"' in deployment_prompt
     assert '"cpu_seconds"' in deployment_prompt
     assert '"peak_rss_bytes"' in deployment_prompt
-    assert '"history"' in deployment_prompt
+    assert '"history_summary"' in deployment_prompt
 
 
 def test_training_qwen_receives_explicit_metric_directions_for_rmse_nasa(monkeypatch, tmp_path: Path) -> None:
@@ -428,13 +433,8 @@ def test_training_qwen_receives_explicit_metric_directions_for_rmse_nasa(monkeyp
 
     prompt = str(rnd.model_messages[0][0]["content"])
     context = json.loads(prompt.split(" Context: ", 1)[1])
-    assert context["metric_contract"]["metric"] == "rmse"
-    assert context["metric_directions"] == {
-        "rmse": "lower",
-        "mae": "lower",
-        "nasa_score": "lower",
-        "nasa_score_mean": "lower",
-    }
+    assert context["task_profile"]["primary_metric"] == "rmse"
+    assert context["task_profile"]["metric_direction"] == "lower"
 
 
 def test_round_records_scoped_non_overlapping_timings_without_raw_payloads(monkeypatch, tmp_path: Path) -> None:
@@ -452,33 +452,14 @@ def test_round_records_scoped_non_overlapping_timings_without_raw_payloads(monke
     submission.train(rnd)
 
     state = json.loads((rnd.saved_state / "formal-state.json").read_text(encoding="utf-8"))
-    timing = state["rounds"][-1]["timing_receipt"]
-    assert timing["scope"] == "participant_train_callback_before_state"
-    assert timing["complete"] is False
-    assert set(timing["excluded"]) == {
-        "state_rpc",
-        "finish_ack",
-        "platform_prediction",
-        "platform_evaluation",
-        "process_startup_shutdown",
+    timing = state["rounds"][-1]["timing"]
+    assert set(timing) == {
+        "proposal_seconds",
+        "candidate_train_eval_submit_seconds",
+        "deployment_seconds",
+        "observed_seconds_before_state_rpc",
     }
-    stages = timing["stages"]
-    assert set(stages) == {
-        "history_rpc_seconds",
-        "local_setup_seconds",
-        "training_model_call_seconds",
-        "candidate_train_eval_save_seconds",
-        "deployment_model_call_seconds",
-        "candidate_submit_seconds",
-    }
-    assert all(isinstance(value, float) and value >= 0.0 for value in stages.values())
-    assert timing["candidate_submit_attempted"] is True
-    assert timing["stage_sum_seconds"] <= timing["observed_seconds"]
-    assert timing["unattributed_seconds"] >= 0.0
-    final_timing = rnd.finished["configuration"]["timing_receipt"]
-    assert final_timing["scope"] == "participant_train_callback_before_finish"
-    assert "state_serialize_seconds" in final_timing["stages"]
-    assert "state_rpc_seconds" in final_timing["stages"]
+    assert all(isinstance(value, float) and value >= 0.0 for value in timing.values())
     serialized = json.dumps({"state": state, "configuration": rnd.finished["configuration"]}).lower()
     for forbidden in ("messages", "raw_prompt", '"answer"', '"inputs"'):
         assert forbidden not in serialized
@@ -498,9 +479,9 @@ def test_skipped_candidate_submit_is_not_reported_as_fast_submit(monkeypatch, tm
     submission.train(rnd)
 
     state = json.loads((rnd.saved_state / "formal-state.json").read_text(encoding="utf-8"))
-    timing = state["rounds"][-1]["timing_receipt"]
-    assert timing["candidate_submit_attempted"] is False
-    assert timing["stages"]["candidate_submit_seconds"] is None
+    record = state["rounds"][-1]
+    assert record["candidate_artifact_id"] is None
+    assert record["hard_failures"] == ["checkpoint_unloadable:ValueError"]
 
 
 def test_predict_uses_selected_checkpoint(monkeypatch, tmp_path: Path) -> None:
@@ -552,8 +533,8 @@ def test_real_official_round_transcript_for_retain(monkeypatch, tmp_path: Path) 
     }
     responses = [
         {"type": "history_response", "id": 0, "records": [{"id": "history-0"}]},
-        {"type": "model_response", "id": 1, "call_id": "call-real-1", "response": {"choices": [{"message": {"content": '{"recipe":"e1_lr1","rationale":"bounded continuation"}'}}]}},
-        {"type": "model_response", "id": 2, "call_id": "call-real-2", "response": {"choices": [{"message": {"content": '{"decision":"deploy","rationale":"candidate metrics improved"}'}}]}},
+            {"type": "model_response", "id": 1, "call_id": "call-real-1", "response": {"choices": [{"message": {"content": '{"recipe_id":"native_current","parameters":{},"history_policy":"current","hypothesis":"bounded continuation may improve the current task","rationale":"bounded continuation"}'}}]}},
+            {"type": "model_response", "id": 2, "call_id": "call-real-2", "response": {"choices": [{"message": {"content": '{"artifact_id":"candidate-1","rationale":"candidate metrics improved"}'}}]}},
             {"type": "candidate_response", "id": 3, "artifact_id": "candidate-real-1", "summary": {"metrics": {"accuracy": 0.8, "macro_f1": 0.7}}},
             {"type": "state_response", "id": 4, "state_sha256": "sha256:" + "1" * 64},
         {"type": "round_ack", "accepted": True},

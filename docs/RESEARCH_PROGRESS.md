@@ -869,3 +869,13 @@
 - 专项命令：`D:\anaconda3\python.exe -m pytest tests/competition_core/test_artifact_selection.py tests/formal_runtime/test_metric_contract.py -q`，结果`21 passed in 0.20s`。
 - 全量命令：`D:\anaconda3\python.exe -m pytest -q`，结果`583 passed in 154.34s`。
 - 本任务未训练模型、未调用PyTRiO/SwanLab、未构建镜像、未使用官方试运行次数。
+
+# 2026-11-21 COMPETITION-CORE Task 7
+
+- 新增`run_competition_round`正式单轮编排，串联未知任务画像、合法历史、注册recipe、双阶段Qwen、父/候选/历史当前作用域评估、确定性选择、候选登记、状态原子记录和官方finish。
+- 每轮至少尝试一个真实父checkpoint兼容训练；Agent首选recipe失败时执行`native_current`真实fallback；所有训练均失败时仍完成第二次模型调用、保留父模型并保存失败收据，不提交损坏产物。
+- 历史数据只从官方状态恢复，历史模型只经`restore_artifact`恢复并在当前validation重新评价后进入选择；新测试证明合法历史回滚和两轮Replay训练样本数正确。
+- `submission.train`已从500余行旧编排缩为薄适配器；独立`predict`继续只读取宿主挂载的精确选中checkpoint。
+- 专项命令：`D:\anaconda3\python.exe -m pytest tests/competition_core tests/official_sdk_v2 tests/formal_runtime/test_submission.py tests/formal_runtime/test_ten_rounds.py -q --tb=short`，结果`80 passed in 2.45s`。
+- 全量命令：`D:\anaconda3\python.exe -m pytest -q --tb=short`，结果`593 passed in 155.96s`。
+- 本任务只运行微型自动化训练测试；未调用远程PyTRiO/SwanLab、未构建镜像、未上传平台或消耗官方试运行次数。
