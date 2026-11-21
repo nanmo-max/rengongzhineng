@@ -1,5 +1,13 @@
 # 新会话恢复与交接
 
+## 2026-11-21 成熟优化器探针收口入口（当前）
+
+1. 当前分支`codex/first-principles-rebuild`；`MATURE-OPTIMIZER-PILOT-001`已按负结果完成，不要重跑、打开confirmation或扩大参数搜索。
+2. A1机器摘要位于`D:/brace-msi-competition/MATURE-OPTIMIZER-PILOT-001-A1/summary.json`，SHA-256 `49BFF56946899E48D713E4491405867516F4AAE96EF9371048604748E6087B02`；24个方法臂、72个阶段、confirmation读取0次。
+3. L2-SP、SAM-Adam与AdamW均未通过跨任务门，研究实现与测试保留，但未注册到正式RecipeRegistry。冻结`0.11.0rc1`镜像和归档完全不变。
+4. 当前无本地`READY`任务；唯一核心任务仍为`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`。不得把本次探针写成官方性能或镜像升级。
+5. 详情见`results/MATURE-OPTIMIZER-PILOT-001.md`、D-096和R-062。
+
 ## 2026-11-21 Competition Core RC恢复入口（当前）
 
 1. 当前分支`codex/first-principles-rebuild`；先读`STATUS.md`、`TASKS.md`、D-093至D-095和`results/COMPETITION-CORE-RC-001.md`。Competition Core Tasks 1—12本地实施已结束，当前无本地READY任务。

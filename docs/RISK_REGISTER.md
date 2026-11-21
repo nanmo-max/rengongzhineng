@@ -158,3 +158,10 @@
 - 状态：`REALIZED_CONTAINED_BY_NON_ADOPTION`
 - 证据：`COMPETITION-AGENT-SFT-001-A2`重载留出schema 100%、部署100%，但回归实验提案有3/12严格recipe标签差异，总体87.5%，低于预注册90%；A1/A2均成功持久化和重载，故不是服务或权重保存故障。
 - 缓解：不绑定未达门Sampler，不把Sampler放入镜像或SwanLab；正式配置使用平台已校验Qwen3.5-4B基础模型，任何非法提案由注册表回退为真实`native_current`训练，非法部署选择保留父模型。Task 12已在精确正式镜像中通过这条降级链和错误部署黑盒；平台基础模型真实输出质量仍待试运行。
+
+## R-062 成熟优化器在任务间产生相反收益
+
+- 等级：High
+- 状态：`REALIZED_CONTAINED_BY_NON_PROMOTION`
+- 证据：`MATURE-OPTIMIZER-PILOT-001-A1`中L2-SP、SAM-Adam、AdamW及原生对照跨任务平均有向收益全部为负；B全部退化，C只有原生及近等价方法改善，A短阶段无指标分辨率。
+- 缓解：严格执行预注册停止条件，不打开confirmation、不扩大搜索、不把Pareto成员直接注册进正式镜像；冻结`0.11.0rc1`不变。研究实现和负结果保留，只有出现新的独立任务证据或正式数据协议变化才能重新立项。

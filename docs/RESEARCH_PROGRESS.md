@@ -2,6 +2,16 @@
 
 本文件按时间追加，不回写历史记录。当前状态仍以 [STATUS.md](STATUS.md) 为准。
 
+## 2026-11-21：MATURE-OPTIMIZER-PILOT-001
+
+- 以测试先行方式为官方MLP父checkpoint续训增加研究态L2-SP、SAM-Adam和AdamW路径；默认Adam、checkpoint schema、优化状态与保存加载保持兼容。
+- 新增可恢复三阶段探针运行器；A/B/C共完成24个方法臂、72个候选阶段，`confirmation_reads=0`，源训练包哈希前后一致。
+- 结果：全部方法跨任务平均有向收益为负；B任务全部退化，C原生Adam及L2-SP/AdamW约`+0.04132`，但新方法未超过原生，A短阶段无分辨率。按预注册停止条件不接入镜像。
+- 运行命令：`D:\anaconda3\python.exe scripts/run_mature_optimizer_pilot.py --config configs/mature_optimizer_pilot.json --output D:/brace-msi-competition/MATURE-OPTIMIZER-PILOT-001-A1`。
+- 机器摘要：`D:/brace-msi-competition/MATURE-OPTIMIZER-PILOT-001-A1/summary.json`，SHA-256 `49BFF56946899E48D713E4491405867516F4AAE96EF9371048604748E6087B02`。
+- 验证：专项`15 passed in 1.07s`；完整回归`644 passed in 164.23s`。没有调用PyTRiO/SwanLab、没有构建Docker、没有平台上传或试运行。
+- 报告：`docs/results/MATURE-OPTIMIZER-PILOT-001.md`。
+
 ## 2026-11-17：冻结A4归档独立官方协议模拟
 
 - 用户明确授权后登记`WORKSPACE-V2-INDEPENDENT-TEST-001-A1`；先复核A4归档SHA-256，再删除原镜像标签并由`docker load`恢复、创建独立测试标签，未从工作树重新构建镜像。

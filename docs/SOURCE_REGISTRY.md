@@ -459,6 +459,27 @@
 - 已核实贡献：以Successive Halving分配迭代/样本等资源并提前停止劣质配置，论文报告在多类问题上相对常见调参方法获得数量级加速。
 - 适配边界：本轮实现确定性有限Successive Halving，不复制第三方非作者实现，不扩展为BOHB。
 
+### P-PAPER-004 L2-SP迁移正则
+
+- 论文：Li, X. et al. *Explicit Inductive Bias for Transfer Learning with Convolutional Networks*, ICML 2018。
+- 原始来源：https://proceedings.mlr.press/v80/li18a.html
+- 已核实贡献：以起始参数而非零点作为L2约束中心，减少迁移学习阶段对原有表示的破坏。
+- 适配边界：论文对象主要是深度视觉迁移；本项目只测试“权重向父checkpoint参数收缩”的核心机制，不宣称复现论文全部网络和实验。
+
+### P-PAPER-005 SAM平坦极小值优化
+
+- 论文：Foret, P. et al. *Sharpness-Aware Minimization for Efficiently Improving Generalization*, ICLR 2021。
+- 原始来源：https://openreview.net/forum?id=6Tm1mposlrM
+- 已核实贡献：在参数邻域内优化最坏损失，需要两次梯度计算，以偏向更平坦的解。
+- 适配边界：本项目实现父checkpoint兼容的SAM-Adam小试；没有复制论文的大规模图像训练配置，也不把负结果写成论文失效。
+
+### P-PAPER-006 AdamW解耦权重衰减
+
+- 论文：Loshchilov, I. and Hutter, F. *Decoupled Weight Decay Regularization*, ICLR 2019。
+- 原始来源：https://openreview.net/forum?id=Bkg6RiCqY7
+- 已核实贡献：将权重衰减与Adam梯度更新解耦，避免把L2惩罚简单混入自适应梯度。
+- 适配边界：本项目只对MLP权重矩阵做解耦衰减，保持bias与既有checkpoint schema不变。
+
 ## 待核实假设与冲突
 
 ### O-PLATFORM-009 平台原生运行时挂载与不兼容诊断

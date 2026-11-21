@@ -6,14 +6,15 @@
 
 ### MATURE-OPTIMIZER-PILOT-001 成熟父链兼容优化方法探针
 
-- 状态：`READY`
+- 状态：`DONE_NEGATIVE_NO_PROMOTION`
 - 授权：用户于2026-11-21批准 L2-SP → SAM → AdamW 的小规模探针。
 - 依赖：COMPETITION-CORE-PLAN-001、D-093、D-095。
-- 优先级：P0，当前唯一本地可执行任务；`FORMAL-RELEASE-001` 继续外部阻塞。
+- 优先级：P0，已完成并按停止条件收口；当前无本地`READY`任务，`FORMAL-RELEASE-001`继续外部阻塞。
 - 完成标准：三种机制通过checkpoint schema、优化状态、非有限与保存加载测试；A/B/C训练内部前3阶段完成全部预注册矩阵；报告平均、最差阶段、CPU/墙钟/RSS/模型大小且 confirmation 读取0次；归档负结果。
 - 停止条件：本任务不修改冻结RC、不构建正式镜像、不读取confirmation/密封/隐藏数据、不调用PyTRiO/SwanLab、不消耗平台次数。没有跨任务正向趋势时立即止于探针，不接入镜像。
 - 规格：`superpowers/specs/2026-11-21-mature-optimizer-pilot-design.md`。
 - 计划：`superpowers/plans/2026-11-21-mature-optimizer-pilot.md`。
+- 证据：A1完成24个方法臂、72个阶段，confirmation读取0次；所有方法跨任务平均收益为负，按停止条件未接入镜像。见`results/MATURE-OPTIMIZER-PILOT-001.md`和机器摘要SHA-256 `49BFF569...6087B02`。
 
 ### COMPETITION-CORE-PLAN-001 Competition Core实施计划
 

@@ -2,7 +2,7 @@
 
 本文件是全部实验运行的唯一登记处，包括失败和中止实验。
 
-## MATURE-OPTIMIZER-PILOT-001-A1（REGISTERED）
+## MATURE-OPTIMIZER-PILOT-001-A1（COMPLETED_NEGATIVE_NO_PROMOTION）
 
 - 研究问题：L2-SP、SAM-Adam或AdamW在保持官方 `contest.cpu-mlp.v1` checkpoint schema、父权重和Adam状态续接的条件下，是否比 `native_current/native_replay` 在A/B/C训练内部前3个序贯阶段呈现更好的平均收益—最差阶段—CPU Pareto趋势？
 - 数据：官方A/B/C `public/train.jsonl`和真实父`checkpoint.npz`；仅使用现有类别分层、轴承轨迹、发动机unit分组的前3阶段。`public/validation.jsonl`、密封集、隐藏数据读取0次。
@@ -11,6 +11,8 @@
 - 晋级边界：只有跨任务正向、最差阶段不劣且成本可接受的机制可创建新十轮集成任务；A1不构建或替换正式镜像。
 - 外部调用：PyTRiO、SwanLab、官方试运行、平台上传均为0。
 - 预期输出：`D:/brace-msi-competition/MATURE-OPTIMIZER-PILOT-001-A1/summary.json`与`docs/results/MATURE-OPTIMIZER-PILOT-001.md`；输出目录存在不匹配manifest时失败关闭。
+- 结果：24个方法臂、72个候选阶段全部完成，`confirmation_reads=0`。L2-SP、SAM-Adam、AdamW及两条原生对照的三任务平均有向收益均为负；B任务所有方法退化，C只有原生Adam及近等价L2-SP/AdamW呈正向，A短阶段指标无分辨率。
+- 决策：没有方法满足跨任务晋级门；不接入正式RecipeRegistry、不构建镜像、不打开confirmation。机器摘要SHA-256为`49BFF56946899E48D713E4491405867516F4AAE96EF9371048604748E6087B02`，完整报告见`docs/results/MATURE-OPTIMIZER-PILOT-001.md`。
 
 ## RELEASE-COMPATIBILITY-AUDIT-001-A1/A2（PROTOCOL_PASS_RELEASE_FAIL）
 
