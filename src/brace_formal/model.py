@@ -128,7 +128,41 @@ class FormalModel:
         sample_weights: np.ndarray | None = None,
         loss: str = "native",
         loss_parameters: dict[str, float] | None = None,
+        optimizer: str = "adam",
+        optimizer_parameters: dict[str, float] | None = None,
     ) -> list[float]:
+        optimizer_options = dict(optimizer_parameters or {})
+        allowed_optimizer_parameters = {
+            "adam": set(),
+            "l2sp": {"strength"},
+            "sam": {"rho"},
+            "adamw": {"weight_decay"},
+        }
+        if optimizer not in allowed_optimizer_parameters:
+            raise ValueError("unsupported optimizer")
+        unknown_optimizer_parameters = set(optimizer_options) - allowed_optimizer_parameters[optimizer]
+        if unknown_optimizer_parameters:
+            raise ValueError(f"unsupported optimizer parameter: {sorted(unknown_optimizer_parameters)[0]}")
+        optimizer_parameter_name = {
+            "l2sp": "strength",
+            "sam": "rho",
+            "adamw": "weight_decay",
+        }.get(optimizer)
+        optimizer_parameter = 0.0
+        if optimizer_parameter_name is not None:
+            raw_optimizer_parameter = optimizer_options.get(optimizer_parameter_name)
+            if (
+                isinstance(raw_optimizer_parameter, bool)
+                or not isinstance(raw_optimizer_parameter, (int, float))
+                or not math.isfinite(float(raw_optimizer_parameter))
+                or float(raw_optimizer_parameter) <= 0.0
+            ):
+                raise ValueError(f"{optimizer_parameter_name} must be positive and finite")
+            optimizer_parameter = float(raw_optimizer_parameter)
+        reference_parameters = {
+            name: self.params[name].copy()
+            for name in ("w1", "w2")
+        }
         normalized = self._normalized(values)
         if targets.shape != (len(normalized),) or not len(normalized):
             raise ValueError("target shape is invalid")
@@ -183,43 +217,69 @@ class FormalModel:
                 target = expected[indices]
                 batch_weights = None if weights is None else weights[indices]
                 weight_sum = float(len(indices)) if batch_weights is None else float(np.sum(batch_weights))
-                hidden = np.tanh(batch @ self.params["w1"] + self.params["b1"])
-                logits = hidden @ self.params["w2"] + self.params["b2"]
-                if self.meta["task"] == "classification":
-                    logits -= logits.max(axis=1, keepdims=True)
-                    probabilities = np.exp(logits)
-                    probabilities /= probabilities.sum(axis=1, keepdims=True)
-                    per_sample = -np.log(np.maximum(probabilities[np.arange(len(indices)), target], 1e-300))
-                    loss_sum += float(np.sum(per_sample if batch_weights is None else per_sample * batch_weights))
-                    output_delta = probabilities
-                    output_delta[np.arange(len(indices)), target] -= 1.0
-                    if batch_weights is not None:
-                        output_delta *= batch_weights[:, None]
-                    output_delta /= weight_sum
-                else:
-                    error = logits[:, 0] - target
-                    if loss == "huber":
-                        absolute = np.abs(error)
-                        per_sample = np.where(
-                            absolute <= huber_delta,
-                            0.5 * error**2,
-                            huber_delta * (absolute - 0.5 * huber_delta),
-                        )
-                        derivative = np.clip(error, -huber_delta, huber_delta)
-                    elif loss == "asymmetric":
-                        factors = np.where(error < 0.0, under_weight, over_weight)
-                        per_sample = factors * error**2
-                        derivative = 2.0 * factors * error
+
+                def loss_and_gradients() -> tuple[float, dict[str, np.ndarray]]:
+                    hidden = np.tanh(batch @ self.params["w1"] + self.params["b1"])
+                    logits = hidden @ self.params["w2"] + self.params["b2"]
+                    if self.meta["task"] == "classification":
+                        logits -= logits.max(axis=1, keepdims=True)
+                        probabilities = np.exp(logits)
+                        probabilities /= probabilities.sum(axis=1, keepdims=True)
+                        per_sample = -np.log(np.maximum(probabilities[np.arange(len(indices)), target], 1e-300))
+                        batch_loss = float(np.sum(per_sample if batch_weights is None else per_sample * batch_weights))
+                        output_delta = probabilities
+                        output_delta[np.arange(len(indices)), target] -= 1.0
+                        if batch_weights is not None:
+                            output_delta *= batch_weights[:, None]
+                        output_delta /= weight_sum
                     else:
-                        per_sample = error**2
-                        derivative = 2.0 * error
-                    loss_sum += float(np.sum(per_sample if batch_weights is None else per_sample * batch_weights))
-                    if batch_weights is not None:
-                        derivative *= batch_weights
-                    output_delta = (derivative / weight_sum)[:, None]
-                gradients = {"w2": hidden.T @ output_delta, "b2": output_delta.sum(axis=0)}
-                hidden_delta = (output_delta @ self.params["w2"].T) * (1.0 - hidden**2)
-                gradients.update(w1=batch.T @ hidden_delta, b1=hidden_delta.sum(axis=0))
+                        error = logits[:, 0] - target
+                        if loss == "huber":
+                            absolute = np.abs(error)
+                            per_sample = np.where(
+                                absolute <= huber_delta,
+                                0.5 * error**2,
+                                huber_delta * (absolute - 0.5 * huber_delta),
+                            )
+                            derivative = np.clip(error, -huber_delta, huber_delta)
+                        elif loss == "asymmetric":
+                            factors = np.where(error < 0.0, under_weight, over_weight)
+                            per_sample = factors * error**2
+                            derivative = 2.0 * factors * error
+                        else:
+                            per_sample = error**2
+                            derivative = 2.0 * error
+                        batch_loss = float(np.sum(per_sample if batch_weights is None else per_sample * batch_weights))
+                        if batch_weights is not None:
+                            derivative *= batch_weights
+                        output_delta = (derivative / weight_sum)[:, None]
+                    result = {"w2": hidden.T @ output_delta, "b2": output_delta.sum(axis=0)}
+                    hidden_delta = (output_delta @ self.params["w2"].T) * (1.0 - hidden**2)
+                    result.update(w1=batch.T @ hidden_delta, b1=hidden_delta.sum(axis=0))
+                    return batch_loss, result
+
+                batch_loss, gradients = loss_and_gradients()
+                loss_sum += batch_loss
+                if optimizer == "sam":
+                    first_norm = math.sqrt(sum(float(np.sum(value * value)) for value in gradients.values()))
+                    if not math.isfinite(first_norm):
+                        raise ValueError("nonfinite gradient")
+                    perturbations = {
+                        name: optimizer_parameter * gradient / max(first_norm, 1e-12)
+                        for name, gradient in gradients.items()
+                    }
+                    for name, perturbation in perturbations.items():
+                        self.params[name] += perturbation
+                    try:
+                        _, gradients = loss_and_gradients()
+                    finally:
+                        for name, perturbation in perturbations.items():
+                            self.params[name] -= perturbation
+                elif optimizer == "l2sp":
+                    for name in reference_parameters:
+                        gradients[name] += 2.0 * optimizer_parameter * (
+                            self.params[name] - reference_parameters[name]
+                        )
                 norm = math.sqrt(sum(float(np.sum(value * value)) for value in gradients.values()))
                 if not math.isfinite(norm):
                     raise ValueError("nonfinite gradient")
@@ -231,6 +291,8 @@ class FormalModel:
                     first = self.first[name] / (1.0 - 0.9 ** self.meta["steps"])
                     second = self.second[name] / (1.0 - 0.999 ** self.meta["steps"])
                     self.params[name] -= self.meta["learning_rate"] * first / (np.sqrt(second) + 1e-8)
+                    if optimizer == "adamw" and name in reference_parameters:
+                        self.params[name] *= 1.0 - self.meta["learning_rate"] * optimizer_parameter
             self.meta["epochs"] += 1
             loss_denominator = float(len(normalized)) if weights is None else float(np.sum(weights))
             losses.append(loss_sum / loss_denominator)
