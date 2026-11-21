@@ -33,12 +33,12 @@ MATURE_PILOT_RECIPES = {
     for recipe in (
         MaturePilotRecipe("native_current", _TASKS, "current", "adam"),
         MaturePilotRecipe("native_replay", _TASKS, "current_plus_history", "adam"),
-        MaturePilotRecipe("l2sp_1e-4", _TASKS, "current_plus_history", "l2sp", (("strength", 1e-4),)),
-        MaturePilotRecipe("l2sp_1e-3", _TASKS, "current_plus_history", "l2sp", (("strength", 1e-3),)),
-        MaturePilotRecipe("sam_0.01", _TASKS, "current_plus_history", "sam", (("rho", 0.01),)),
-        MaturePilotRecipe("sam_0.05", _TASKS, "current_plus_history", "sam", (("rho", 0.05),)),
-        MaturePilotRecipe("adamw_1e-5", _TASKS, "current_plus_history", "adamw", (("weight_decay", 1e-5),)),
-        MaturePilotRecipe("adamw_1e-4", _TASKS, "current_plus_history", "adamw", (("weight_decay", 1e-4),)),
+        MaturePilotRecipe("l2sp_1e-4", _TASKS, "current", "l2sp", (("strength", 1e-4),)),
+        MaturePilotRecipe("l2sp_1e-3", _TASKS, "current", "l2sp", (("strength", 1e-3),)),
+        MaturePilotRecipe("sam_0.01", _TASKS, "current", "sam", (("rho", 0.01),)),
+        MaturePilotRecipe("sam_0.05", _TASKS, "current", "sam", (("rho", 0.05),)),
+        MaturePilotRecipe("adamw_1e-5", _TASKS, "current", "adamw", (("weight_decay", 1e-5),)),
+        MaturePilotRecipe("adamw_1e-4", _TASKS, "current", "adamw", (("weight_decay", 1e-4),)),
     )
 }
 

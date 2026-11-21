@@ -1,0 +1,38 @@
+{
+  "format": "brace-msi.mature-optimizer-pilot.v1",
+  "experiment_id": "MATURE-OPTIMIZER-PILOT-001-A1",
+  "rounds": 3,
+  "confirmation_read_policy": "never",
+  "official_package_root": "C:/Users/Administrator/Desktop/人工智能创新大赛/训练包",
+  "packages": {
+    "A": {
+      "directory": "cpu-a-guide-20261110-v1",
+      "checkpoint_sha256": "fd1e08b2aad08b2e9754f9b2dfdc029481c0da7ecdedca0abb0ec6fcc818c757",
+      "train_sha256": "c724014feb2c968d144e167f4997d2ad2125df3825abf4306c9c87c8f08de6c0"
+    },
+    "B": {
+      "directory": "cpu-b-rul-20261110-v1",
+      "checkpoint_sha256": "c7d819fcee9d25459c583b5ffdb35593d4a47b524ed152d0226bf81a283314b4",
+      "train_sha256": "71b2663fffd3d7ef6dca8a7b3feb31c3feb96c57f385335d03041a5fa431054a"
+    },
+    "C": {
+      "directory": "cpu-c-guide-20261110-v1",
+      "checkpoint_sha256": "98ec6e30e38aee56ca15b7d624a8f412226d46fe97b170667a567601c700bc4e",
+      "train_sha256": "fcfaeaf1e50a0cc01766dfba5fd34c7369f1fe14bf583111837e847865fac281"
+    }
+  },
+  "methods": [
+    "native_current",
+    "native_replay",
+    "l2sp_1e-4",
+    "l2sp_1e-3",
+    "sam_0.01",
+    "sam_0.05",
+    "adamw_1e-5",
+    "adamw_1e-4"
+  ],
+  "registered_surrogates": [
+    {"key": "opaque-cls-optimizer", "task": "classification", "feature_count": 5, "samples_per_round": 32, "confirmation_samples": 64, "seed": 9121},
+    {"key": "opaque-reg-optimizer", "task": "regression", "feature_count": 6, "samples_per_round": 32, "confirmation_samples": 64, "seed": 9231}
+  ]
+}
