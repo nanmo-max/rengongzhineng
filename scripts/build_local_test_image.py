@@ -25,8 +25,13 @@ except ModuleNotFoundError:  # Direct ``python scripts/...`` invocation.
 
 _LOCAL_ONLY_FILES = (
     "Dockerfile.local-test",
+    "configs/competition_simulation.json",
+    "scripts/render_competition_report.py",
+    "scripts/run_competition_simulation.py",
     "scripts/simulate_first_principles_runtime.py",
     "scripts/simulate_platform_report.py",
+    "src/brace_msi/__init__.py",
+    "src/brace_msi/competition_simulator.py",
 )
 
 

@@ -853,3 +853,15 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 - 预期产物：`D:/brace-msi-final/FINAL-GENERALIZATION-VALIDATION-001-A1/summary.json`、一次性打开锁、密封派生缓存清单、开发轮收据、静态/候选密封预测指标和仓库内脱敏结果摘要。
 - 结果：开发10轮、16候选、10部署、2回滚；平均RMSE有向收益`+188.967744`，但最差相对收益`-99.61%`，未通过冻结的最差阶段门。密封全局RMSE `243.718016→220.922262`、MAE `184.328347→168.207564`，2/3轴承改善，最差轴承退化2.04%；资源、泄漏和checkpoint门通过。
 - 判定：机器promotion=false并直接失败`development_worst_relative_gain_min`；独立审查进一步发现开发延迟收益复用当前Gate、A1峰值RSS和恢复未验证。密封最终预测只保留描述性证据；根据D-091不晋级、不重跑、不基于密封结果调参。摘要SHA-256 `22D4143B53074CE6A3CF8C913937157EE42403400FA462E0C2AE66ACEF38AA05`。
+
+## COMPETITION-CORE-SMOKE-001（REGISTERED）
+
+- 目的：验证Competition Core模拟器能以官方`contest.harness.workspace.v2`的Round/RPC对象完成分类与回归各10轮、每轮两次宿主模型调用、一次真实父checkpoint候选训练、同作用域选择、状态/历史/父链和冻结后一次确认预测。
+- 数据：由`configs/competition_simulation.json`固定seed生成的两个身份不透明同格式代理任务；仅用于协议与报告Smoke，不是官方A/B/C、隐藏数据或独立性能证据。
+- 隔离：确认分区在十轮结束前不读取，确认哈希不进入任何轮收据或Agent上下文；正式上传镜像不包含模拟器、代理数据、报告或测试工具。
+- 成功标准：两任务各10轮、20次模型调用、10个真实候选、11节点父链、32/48条最终预测（按配置），报告`valid=true`，JSON与HTML同源并明确标注非官方成绩。
+- 资源与外部调用：本机CPU；PyTRiO远程、SwanLab同步、官方试运行和平台上传均为0。模型Token为本地宿主替身的协议计量，不冒充PyTRiO或平台结算。
+- 输出：`D:/brace-msi-competition/COMPETITION-CORE-SMOKE-001/`，若目录已存在则失败关闭，不覆盖历史产物。
+- 结果：`COMPLETED_VALID_PROTOCOL_SMOKE`。分类/回归各10轮、20次模型调用、10个真实候选、10条历史和11节点父链；最终预测各48条，确认分区各读取一次。
+- 代理确认指标：分类Accuracy `0.812500`、Macro-F1 `0.805480`；回归MAE `0.351059`、RMSE `0.504862`。这些数值只验证合成任务链路，不是官方A/B/C、隐藏成绩或新独立泛化证据。
+- 机器证据：`D:/brace-msi-competition/COMPETITION-CORE-SMOKE-001/report.json`，SHA-256 `D7EBB3E3A814D12E28163085EF7BF141E07AFA68895EE51515A8D97E3BD180B8`；同目录`report.html`由该JSON生成。

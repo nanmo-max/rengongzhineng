@@ -889,3 +889,14 @@
 - 专项命令：`D:\anaconda3\python.exe -m pytest tests/system/test_dual_image_boundaries.py tests/system/test_release_builder.py tests/formal_runtime/test_formal_release.py -q`，结果`19 passed in 0.55s`。
 - 全量命令：`D:\anaconda3\python.exe -m pytest -q --tb=short`，结果`600 passed in 155.58s`。
 - 本任务未执行真实Docker build/save/load，未调用PyTRiO/SwanLab、未上传平台或消耗官方试运行次数。
+
+# 2026-11-21 COMPETITION-CORE Task 9
+
+- 新增本地宿主模拟器，直接实例化并驱动官方SDK 1.0.2的`Round`与`contest.harness.workspace.v2` JSONL RPC；history/model/candidate/state/artifact-read/finish均使用官方帧语义，没有另造参赛接口。
+- 身份不透明分类与回归代理任务各完成10轮；每轮恰好两次宿主模型调用、一次真实父checkpoint候选训练和同作用域父/候选/历史选择。每任务20调用、10候选、11节点父链和10条历史完整。
+- 确认分区在十轮完成后只读取一次，确认哈希未进入任何轮收据或Agent请求；同源`report.json`/`report.html`明确标注本地协议模拟、非官方成绩。
+- Smoke结果：分类确认Accuracy `0.812500`、Macro-F1 `0.805480`；回归确认MAE `0.351059`、RMSE `0.504862`。这些仅是合成代理任务的链路输出，不能作为A/B/C或隐藏任务性能证据。
+- 专项命令：`D:\anaconda3\python.exe -m pytest tests/system/test_competition_simulator.py tests/system/test_dual_image_boundaries.py -q`，结果`11 passed in 6.19s`。
+- 全量命令：`D:\anaconda3\python.exe -m pytest -q --tb=short`，结果`604 passed in 161.51s`。
+- Smoke命令：`D:\anaconda3\python.exe scripts/run_competition_simulation.py --config configs/competition_simulation.json --output D:/brace-msi-competition/COMPETITION-CORE-SMOKE-001`，结果`valid=true`；报告SHA-256 `D7EBB3E3A814D12E28163085EF7BF141E07AFA68895EE51515A8D97E3BD180B8`。
+- 远程PyTRiO、SwanLab同步、Docker真实构建、官方上传和试运行均为0；正式镜像白名单未加入模拟器。

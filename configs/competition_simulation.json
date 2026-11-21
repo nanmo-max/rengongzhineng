@@ -1,0 +1,28 @@
+{
+  "format": "brace-msi.competition-simulation-config.v1",
+  "model_name": "Qwen/Qwen3.5-4B",
+  "tasks": [
+    {
+      "dataset_key": "A",
+      "opaque_name": "opaque-classification-surrogate",
+      "task": "classification",
+      "rounds": 10,
+      "samples_per_round": 32,
+      "validation_samples": 24,
+      "confirmation_samples": 48,
+      "feature_count": 5,
+      "seed": 1729
+    },
+    {
+      "dataset_key": "B",
+      "opaque_name": "opaque-regression-surrogate",
+      "task": "regression",
+      "rounds": 10,
+      "samples_per_round": 32,
+      "validation_samples": 24,
+      "confirmation_samples": 48,
+      "feature_count": 6,
+      "seed": 2718
+    }
+  ]
+}
