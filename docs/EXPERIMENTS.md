@@ -2,7 +2,7 @@
 
 本文件是全部实验运行的唯一登记处，包括失败和中止实验。
 
-## PERFORMANCE-RC2-PILOT-001-A1（REGISTERED）
+## PERFORMANCE-RC2-PILOT-001-A1（COMPLETED_NEGATIVE_NO_PROMOTION）
 
 - 研究问题：自适应标准化等价重参数化、近期加权历史和每轮互补候选组合，能否在保持`contest.cpu-mlp.v1`父checkpoint schema的条件下，稳定超过当前`core_robust`对照？
 - 数据：仅官方A/B/C `public/train.jsonl`和父`checkpoint.npz`。运行前按类别、完整bearing、`source_subset+unit`完整组冻结开发流与独立确认组；`public/validation.jsonl`、密封和隐藏数据读取0次。
@@ -11,6 +11,7 @@
 - 晋级门：RC2相对`core_robust`三任务确认平均有向收益为正、至少2/3任务严格改善、0/3任务主指标退化，且开发最差阶段不劣；否则停止，不集成正式镜像。
 - 资源：本地CPU；记录CPU、墙钟、峰值RSS、候选数、checkpoint大小。PyTRiO、SwanLab、Docker和官方试运行均为0。
 - 预期输出：`D:/brace-msi-competition/PERFORMANCE-RC2-PILOT-001-A1/summary.json`和`docs/results/PERFORMANCE-RC2-PILOT-001.md`；输出目录manifest不匹配时失败关闭。
+- 结果：Smoke完成两个身份不透明任务共8候选，确认读取0次。A1完成A/B/C各十轮，每任务确认组只评价一次，`public_validation_reads=0`。A Macro-F1三者均`0.938433`；B RMSE为静态`126.258498`、对照`163.985950`、RC2 `206.207286`；C为`54.589901/54.883384/55.106327`。四项晋级门均失败，未集成镜像。摘要SHA-256 `A676ABBF...E03071E`。
 
 ## MATURE-OPTIMIZER-PILOT-001-A1（COMPLETED_NEGATIVE_NO_PROMOTION）
 

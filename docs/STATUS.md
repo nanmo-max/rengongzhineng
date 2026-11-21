@@ -1,9 +1,9 @@
 # 当前状态
 
 - 最近同步：2026-11-21（Asia/Shanghai）
-- 当前阶段：在不消耗官方次数的前提下执行RC2本地性能探针；正式作品文档和`0.11.0rc1`继续冻结
+- 当前阶段：RC2本地性能探针已按负结果收口；正式作品文档和`0.11.0rc1`继续冻结
 - 当前路线：**官方SDK 1.0.2 + 未知同格式任务自动识别 + 每轮至少一次真实父checkpoint候选训练 + 双阶段Qwen实验决策 + 同作用域确定性指标事实 + 历史数据/历史模型 + PyTRiO镜像外Agent训练 + 本地测试/正式上传双镜像分离** `[D-079]` `[D-086]` `[D-087]` `[D-093]`
-- 当前唯一本地可执行任务：`PERFORMANCE-RC2-PILOT-001 (READY)`；先在A/B/C官方train内部冻结流上训练和一次性独立确认，只有通过预注册晋级门才允许另立镜像集成任务。`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`和冻结归档`D:/brace-msi-release/COMPETITION-CORE-RC-001/harness.tar`保持不变，归档SHA-256 `b7ba01bcc8a60502896082b58578b56c60c539a5460bb373285ff0abe4503e30`。
+- 当前无本地`READY`任务：`PERFORMANCE-RC2-PILOT-001`A1证据有效但四项晋级门全部失败，已停止且未构建镜像。`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`和冻结归档`D:/brace-msi-release/COMPETITION-CORE-RC-001/harness.tar`保持不变，归档SHA-256 `b7ba01bcc8a60502896082b58578b56c60c539a5460bb373285ff0abe4503e30`。
 - 稳定边界：全部历史RC和实验不改写；`0.5.0rc1`只作研究证据，不得上传。正式线从D-058开始只输出原生官方MLP续训checkpoint。D-090仅授权一次镜像外正式部署Advisor SFT，不把Sampler或私有SDK装入正式镜像。
 - 官方试运行：O-PLATFORM-018证明`0.10.4rc2`的正式提案有效且结算15,146 Token，但30/30主动retain造成零候选；精确剩余次数仍以平台页面实时显示为准。
 - 当前冻结正式候选：`D:/brace-msi-release/COMPETITION-CORE-RC-001/harness.tar`；SHA-256 `b7ba01bcc8a60502896082b58578b56c60c539a5460bb373285ff0abe4503e30`；镜像ID `sha256:578e7c9aa0c507efddeb6b4a182fc28299591a2a0a0e7fb1401a02f39b50da51`。`0.10.6rc1`继续作为历史Protocol RC，不得代替当前候选。

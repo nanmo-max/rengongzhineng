@@ -165,3 +165,10 @@
 - 状态：`REALIZED_CONTAINED_BY_NON_PROMOTION`
 - 证据：`MATURE-OPTIMIZER-PILOT-001-A1`中L2-SP、SAM-Adam、AdamW及原生对照跨任务平均有向收益全部为负；B全部退化，C只有原生及近等价方法改善，A短阶段无指标分辨率。
 - 缓解：严格执行预注册停止条件，不打开confirmation、不扩大搜索、不把Pareto成员直接注册进正式镜像；冻结`0.11.0rc1`不变。研究实现和负结果保留，只有出现新的独立任务证据或正式数据协议变化才能重新立项。
+
+## R-063 轮内Gate收益无法稳定外推到未见设备组
+
+- 等级：Critical
+- 状态：`REALIZED_CONTAINED_BY_NON_PROMOTION`
+- 证据：`PERFORMANCE-RC2-PILOT-001-A1`中B的RC2在开发Gate上接受8/10轮且开发平均收益为正，但完整未见bearing确认RMSE从对照`163.985950`恶化到`206.207286`；C也小幅退化。
+- 缓解：RC2四项晋级门全部失败，研究模块不进入正式RecipeRegistry，不重建或替换`0.11.0rc1`。后续若立项，必须优先修复跨设备选择证据，不得仅扩大同Gate搜索。

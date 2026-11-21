@@ -951,3 +951,10 @@
 - 当前主机完整回归`629 passed in 163.91s`。全新venv安装项目、`requirements-dev.lock`和`requirements-pytrio.lock`后，`pip check`无冲突，完整回归`629 passed in 175.11s`。首次只安装dev锁时5项PyTRiO测试因缺少可选包元数据失败，补齐项目已有PyTRiO锁后通过；没有为此修改正式镜像。
 - 机器审计`D:/brace-msi-release/COMPETITION-CORE-RC-001/release-audit.json`全部门PASS；易读报告`release-report.html`明确标注本地发布验收、非官方成绩。
 - 未上传平台、未保存平台新版本、未消费官方试运行。真实模型网关、挂载生命周期、Token计量和隐藏评分继续`BLOCKED_EXTERNAL`。
+
+# 2026-11-21 PERFORMANCE-RC2-PILOT-001
+
+- 测试先行实现了研究态自适应标准化等价重参数化、近期Update加权历史、分类/回归合同驱动候选和多折稳健选择；专项`8 passed in 0.32s`，提交前完整回归`652 passed in 165.03s`。
+- Smoke在两个同格式匿名任务执行8候选，确认数据读取0次。A1只读官方train和父checkpoint，完成A/B/C各十轮；确认组每任务只评价一次，公开validation读取0次。
+- 一次确认中A持平，B相对对照退化25.7469%，C退化0.4062%；开发最差阶段门也失败。本轮证明开发Gate上的多候选收益不能稳定外推到未见设备/机组；不把负结果接入正式线。
+- 未调用PyTRiO/SwanLab/Docker，未改动冻结`0.11.0rc1`，未上传或消耗官方次数。机器摘要SHA-256 `A676ABBFDB8B42655E3C13480E75372D1868BA88F75FD25DAED0D3516E03071E`。
