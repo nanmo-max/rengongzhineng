@@ -2,6 +2,16 @@
 
 本文件是全部实验运行的唯一登记处，包括失败和中止实验。
 
+## PERFORMANCE-RC2-PILOT-001-A1（REGISTERED）
+
+- 研究问题：自适应标准化等价重参数化、近期加权历史和每轮互补候选组合，能否在保持`contest.cpu-mlp.v1`父checkpoint schema的条件下，稳定超过当前`core_robust`对照？
+- 数据：仅官方A/B/C `public/train.jsonl`和父`checkpoint.npz`。运行前按类别、完整bearing、`source_subset+unit`完整组冻结开发流与独立确认组；`public/validation.jsonl`、密封和隐藏数据读取0次。
+- 开发策略：每轮只用当前Update及此前合法Update；当前Gate只评估不训练。分类比较原生、类别平衡、自适应标准化与近期加权历史；回归比较MSE、Huber、非对称损失、自适应标准化与近期加权历史。所有路由只依据分类/回归合同和数据画像，不读取A/B/C名称。
+- 对照：静态父模型、现有`core_robust`单候选策略、RC2多候选策略；三者使用相同开发流和确认组。
+- 晋级门：RC2相对`core_robust`三任务确认平均有向收益为正、至少2/3任务严格改善、0/3任务主指标退化，且开发最差阶段不劣；否则停止，不集成正式镜像。
+- 资源：本地CPU；记录CPU、墙钟、峰值RSS、候选数、checkpoint大小。PyTRiO、SwanLab、Docker和官方试运行均为0。
+- 预期输出：`D:/brace-msi-competition/PERFORMANCE-RC2-PILOT-001-A1/summary.json`和`docs/results/PERFORMANCE-RC2-PILOT-001.md`；输出目录manifest不匹配时失败关闭。
+
 ## MATURE-OPTIMIZER-PILOT-001-A1（COMPLETED_NEGATIVE_NO_PROMOTION）
 
 - 研究问题：L2-SP、SAM-Adam或AdamW在保持官方 `contest.cpu-mlp.v1` checkpoint schema、父权重和Adam状态续接的条件下，是否比 `native_current/native_replay` 在A/B/C训练内部前3个序贯阶段呈现更好的平均收益—最差阶段—CPU Pareto趋势？
