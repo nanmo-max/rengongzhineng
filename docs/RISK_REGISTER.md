@@ -148,6 +148,13 @@
 ## R-060 单一固定recipe跨任务泛化不足
 
 - 等级：Critical
-- 状态：`REALIZED_TASK10_AGENT_DECISION_PENDING`
+- 状态：`REALIZED_AGENT_SFT_NOT_ADOPTED_RELEASE_FALLBACK_REQUIRED`
 - 证据：COMPETITION-CORE-EXP-001 A1—A3。`core_robust`在A/B/C公开描述性复算均改善，但B训练内部最差阶段`-1.257086`；`core_stable`把最差阶段改善为`-0.333333`并改善B/C，却使A Macro-F1 `0.714030→0.699854`。
-- 缓解：禁止把任何固定recipe菜单直接晋级正式RC。Task 11使用身份无关正负轨迹训练/验证Qwen实验决策，正式Harness仍由同作用域数值选择和硬门约束；若Agent留出不优于基础模型/确定性策略，则保持基础Qwen与确定性选择并明确性能限制。
+- 缓解：禁止把任何固定recipe菜单直接晋级正式RC。Task 11的A2虽把schema提高到100%、部署选择提高到100%，但严格总体策略87.5%未达90%门，Sampler不采用。Task 12必须绑定平台已校验基础Qwen，并保留注册表合法性、同作用域数值选择和父模型回退；未知任务recipe质量仍是正式评测风险。
+
+## R-061 PyTRiO Competition Agent未达到采用门
+
+- 等级：High
+- 状态：`REALIZED_CONTAINED_BY_NON_ADOPTION`
+- 证据：`COMPETITION-AGENT-SFT-001-A2`重载留出schema 100%、部署100%，但回归实验提案有3/12严格recipe标签差异，总体87.5%，低于预注册90%；A1/A2均成功持久化和重载，故不是服务或权重保存故障。
+- 缓解：不绑定未达门Sampler，不把Sampler放入镜像或SwanLab；正式配置使用平台已校验Qwen3.5-4B基础模型，任何非法提案由注册表回退为真实`native_current`训练，非法部署选择保留父模型。Task 12黑盒验证这条降级链。

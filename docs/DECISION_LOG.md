@@ -203,3 +203,9 @@
 - Agent与发布：PyTRiO在镜像外训练Qwen Agent并由SwanLab记录；只有提交页校验通过的Sampler才可由平台绑定。正式镜像只经`rnd.model()`访问宿主模型，不包含PyTRiO/SwanLab客户端、Sampler、Tokenizer或凭据。本地测试镜像与正式上传镜像使用独立构建清单。
 - 替代关系：保留D-079至D-087已经验证的官方SDK、父链、双阶段调用和指标一致性原则；旧四缓冲区、Bandit、影子收益、固定动作日程、固定提升门、Anchor零退化和任意代码补丁不进入新核心。D-088至D-091保留为历史研究证据，不作为新架构必须机制。
 - 依据：用户2026-11-20对赛题语义、每轮训练、未知同格式任务、历史数据、双镜像、非官方限制和PyTRiO组成的逐项确认；书面规格`docs/superpowers/specs/2026-11-20-competition-core-design.md`。
+
+## D-094：Competition Agent Sampler未达门，发布继续使用平台基础Qwen（2026-11-21，LOCKED）
+
+- 决策：`COMPETITION-AGENT-SFT-001` A1/A2均保留为真实PyTRiO证据；A2虽完成持久化和重载且schema/部署选择100%，但严格总体策略87.5%低于预注册90%，不得在提交页选择该Sampler。Task 12正式候选继续选择平台已校验的`Qwen/Qwen3.5-4B`基础模型。
+- 执行边界：正式镜像仍只调用官方`rnd.model()`，不包含PyTRiO、SwanLab、Tokenizer、Sampler或凭据。基础模型输出仍须经过RecipeRegistry可执行性校验、同作用域指标事实与父模型回退；Sampler路径仅留在仓库外受控收据。
+- 依据：A1/A2机器结果、重载复评、预注册采用门及公开SwanLab脱敏运行`ph2ztekq`。不因训练已经付费而降低采用标准。

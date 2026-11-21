@@ -1,0 +1,27 @@
+{
+  "base_model": "Qwen/Qwen3.5-4B",
+  "batch_size": 4,
+  "budget_cny_max": 10.0,
+  "epochs": 3,
+  "learning_rate": 0.0001,
+  "max_eval_tokens": 768,
+  "rank": 8,
+  "seed": 20261121,
+  "source_summaries": [
+    {
+      "path": "D:/brace-msi-competition/COMPETITION-CORE-EXP-001/summary.json",
+      "sha256": "9f1cecc4aedbb6af25e6d42e97319c0a123e3e9791fa752438757fd4a86df47a"
+    },
+    {
+      "path": "D:/brace-msi-competition/COMPETITION-CORE-EXP-001-A2/summary.json",
+      "sha256": "67d54094a76bd8b39248b2827bbc7b834be44b3a39f155cb083f092382449de6"
+    },
+    {
+      "path": "D:/brace-msi-competition/COMPETITION-CORE-EXP-001-A3/summary.json",
+      "sha256": "fec09c59ed727ec3192eb180da7d7598410f4ab5bd125e1b7c6dd997a91266d0"
+    }
+  ],
+  "swanlab_experiment_name": "competition-agent-sft-001",
+  "swanlab_project": "BRACE-MSI",
+  "weight_name": "brace-msi-competition-agent-v2"
+}

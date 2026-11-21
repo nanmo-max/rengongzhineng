@@ -894,3 +894,21 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 - 输出：`D:/brace-msi-competition/COMPETITION-CORE-EXP-001-A3/`。
 - 结果：`COMPLETED_VALID_MIXED_NO_FORMAL_PROMOTION`。风险优先冻结`core_stable`，开发跨任务最差阶段由A1 winner的`-1.257086`改善为`-0.333333`；公开描述性复算中B RMSE `681.159833→672.769954`、C `52.868573→52.322937`，但A Macro-F1 `0.714030→0.699854`退化，因此不得把固定`core_stable`晋级为正式唯一策略。
 - 机器证据：`D:/brace-msi-competition/COMPETITION-CORE-EXP-001-A3/summary.json`，SHA-256 `FEC09C59ED727EC3192EB180DA7D7598410F4AB5BD125E1B7C6DD997A91266D0`；综合报告见`docs/results/COMPETITION-CORE-EXP-001.md`。
+
+## COMPETITION-AGENT-SFT-001（REGISTERED）
+
+- 目的：训练并独立验证一个镜像外Qwen3.5-4B Competition Agent，使其同时能提出注册表内可执行训练recipe，并在同作用域父/候选/历史模型间作出数值与指标方向一致的选择；正式镜像仍只经官方`rnd.model()`调用平台所选模型。
+- 数据：只使用`COMPETITION-CORE-EXP-001` A1/A2/A3的脱敏聚合轨迹形态和已登记数值比较错误形态；源摘要SHA-256依次为`9F1CE...DF47A`、`67D540...49DE6`、`FEC09C...66D0`。语料不含工业逐样本行、可逆特征、任务名称、隐藏数据、凭据、完整原始响应或Sampler路径。
+- 划分：训练/留出按场景族隔离；分类/回归、正负收益、历史使用、指标方向、硬失败、父/候选/历史选择均覆盖。留出在训练前固化并只用于基础模型与训练后Sampler成对评估。
+- 固定训练：`Qwen/Qwen3.5-4B`、LoRA rank 8、3 epoch、batch 4、learning rate `1e-4`、seed `20261121`、assistant-only loss；冻结语料哈希不匹配则不启动远程训练。
+- 成功标准：基础和Sampler均记录非零Token；Sampler留出两类调用schema有效率100%，可执行recipe与history_policy一致率100%，指标算术/方向安全率100%，总体策略匹配率至少90%，且严格优于同留出基础模型；持久化`trio://`路径可重新创建采样客户端并复评。未达门则保留平台基础模型和确定性回退。
+- 预算/边界：费用上限10元；不调用官方试运行，不上传镜像，不修改正式镜像；API Key与Sampler路径只存在本机受控目录。SwanLab只同步训练loss、Token、延迟和聚合评估，敏感扫描通过后才公开。
+- 预期输出：`D:/brace-msi-pytrio/COMPETITION-AGENT-SFT-001/`、脱敏SwanLab运行和仓库内聚合结果报告；成功与失败均保留。
+- A1结果：`COMPLETED_EXTERNAL_NEGATIVE`。基础模型留出策略匹配25.00%，训练36步并成功持久化Sampler后为41.67%，重载复评完全一致；但提案匹配仅16.67%、总体schema 87.50%，未通过采用门。根因审计确认六类提案提示缺少可区分机制证据，而标签却指定不同recipe；评估还比生产单JSON提取更严格。A1保留且不采用。
+
+## COMPETITION-AGENT-SFT-001-A2（REGISTERED）
+
+- 触发：A1已证实语料目标不可由输入唯一推断，属于语料构造缺陷而非简单增加epoch可解决的问题。
+- 唯一修复：在身份无关`history_summary`中加入当前漂移、历史相似度、既往同作用域收益和机制失败等聚合证据，使recipe标签可由提示推断；评估解析改为与正式`brace_formal.agent`一致的“恰好一个JSON对象”规则。模型、rank、epoch、batch、学习率、源轨迹、隐私边界和采用门均不变。
+- 新冻结哈希：训练`8AA31CC91DB02A501E1CF72B2EEC6A0D696D2549AF192BA1A6571418FA1D0192`；留出`B5BB211CD8FEBAFBE84522C1C2B6816BF071795FA99A94C051D04A11D4638EFF`。A1留出不用于A2调参；A2使用修改后重新固化的场景族与数值。
+- 输出：`D:/brace-msi-pytrio/COMPETITION-AGENT-SFT-001-A2/`；同样不进入正式镜像、Git或公开SwanLab的Sampler路径。

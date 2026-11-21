@@ -3,7 +3,7 @@
 - 最近同步：2026-11-21（Asia/Shanghai）
 - 当前阶段：Competition Core书面规格已批准，实施计划正在按测试先行方式连续执行
 - 当前路线：**官方SDK 1.0.2 + 未知同格式任务自动识别 + 每轮至少一次真实父checkpoint候选训练 + 双阶段Qwen实验决策 + 同作用域确定性指标事实 + 历史数据/历史模型 + PyTRiO镜像外Agent训练 + 本地测试/正式上传双镜像分离** `[D-079]` `[D-086]` `[D-087]` `[D-093]`
-- 当前唯一核心任务：`COMPETITION-CORE-PLAN-001 / Task 11 (READY)`。Task 10已完成A/B/C与两个身份不透明代理任务的五策略十轮矩阵。A1的`core_robust`在历史暴露公开验证上使A/B/C三项均小幅超过静态，但B训练内部最差阶段显著退化；A3风险优先`core_stable`改善B/C与代理任务，却使A Macro-F1低于静态。结论是固定recipe菜单不能正式晋级，正负轨迹将用于Task 11训练/验证PyTRiO Competition Agent。专项`64 passed`、全量`610 passed`；源哈希、父链、确认一次读取和失败结果均已保留，未上传平台。
+- 当前唯一核心任务：`COMPETITION-CORE-PLAN-001 / Task 12 (READY)`。Task 11已完成两次有证据边界的PyTRiO Competition Agent运行：A1暴露不可学习语料缺陷；A2完成36步、持久化与重载，schema 100%、部署选择100%、总体严格策略87.5%，低于预注册90%采用门，故Sampler不晋级。正式发布继续绑定平台已校验的Qwen3.5-4B基础模型。SwanLab公开运行仅含39条脱敏聚合记录：`https://swanlab.cn/@nanmo-max/BRACE-MSI/runs/ph2ztekq`。未上传平台或消费官方试运行。
 - 稳定边界：全部历史RC和实验不改写；`0.5.0rc1`只作研究证据，不得上传。正式线从D-058开始只输出原生官方MLP续训checkpoint。D-090仅授权一次镜像外正式部署Advisor SFT，不把Sampler或私有SDK装入正式镜像。
 - 官方试运行：O-PLATFORM-018证明`0.10.4rc2`的正式提案有效且结算15,146 Token，但30/30主动retain造成零候选；精确剩余次数仍以平台页面实时显示为准。
 - 当前冻结本地归档：`D:/brace-msi-first-principles-release/BRACE-MSI-0.10.6rc1-A1/harness.tar`；SHA-256 `F7518609...D89CB`。它是历史Protocol RC，不因本轮研究原地改写，也不是下一次上传入口。

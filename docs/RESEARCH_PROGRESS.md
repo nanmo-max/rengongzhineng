@@ -912,3 +912,13 @@
 - 专项命令：`D:\anaconda3\python.exe -m pytest tests/system/test_competition_experiment_manifest.py tests/competition_core -q`，结果`64 passed in 0.90s`。
 - 全量命令：`D:\anaconda3\python.exe -m pytest -q --tb=short`，结果`610 passed in 161.62s`。
 - 远程PyTRiO、SwanLab、Docker、官方上传和试运行均为0；公开validation历史暴露属性明确保留。
+
+# 2026-11-21 COMPETITION-CORE Task 11
+
+- 新增48训练/24场景族隔离留出的Competition Agent语料，覆盖正式实验提案与部署选择两次调用；只含任务画像、聚合历史、资源与同作用域指标，不含工业逐样本、任务名称、密钥或Sampler路径。
+- A1真实PyTRiO训练36步并持久化/重载成功，但总体严格策略仅41.67%；审计确认提案提示缺少区分机制证据。A1作为负结果保留。
+- A2只修复不可学习输入与生产解析一致性，保持Qwen3.5-4B、rank 8、3 epoch、batch 4、learning rate `1e-4`。训练36步，最终监督Token损失`0.010448397`；重载留出schema 100%、部署100%、提案75%、总体87.5%。
+- A2未达到预注册90%总体与100%数值安全门；未事后放宽标准，也未把Sampler晋级。正式候选继续使用平台基础Qwen与确定性回退。
+- SwanLab只同步39条脱敏聚合记录；敏感扫描未发现`trio://`、密钥、prompt、原始回复或模型路径。公开运行：`https://swanlab.cn/@nanmo-max/BRACE-MSI/runs/ph2ztekq`。
+- 专项命令：`D:\anaconda3\python.exe -m pytest tests/agent/test_competition_agent_sft.py tests/agent/test_formal_advisor_sft.py tests/system/test_swanlab_adapter.py -q`，结果`15 passed`；全量命令`D:\anaconda3\python.exe -m pytest -q --tb=short`，结果`618 passed in 161.69s`。
+- 未上传平台、未构建正式镜像、未消费官方试运行；远程产物位于仓库外`D:/brace-msi-pytrio/`。
