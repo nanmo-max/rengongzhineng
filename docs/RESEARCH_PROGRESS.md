@@ -835,3 +835,11 @@
 - 专项命令：`D:\anaconda3\python.exe -m pytest tests/competition_core/test_task_profile.py tests/formal_runtime/test_metric_contract.py tests/formal_dev/test_official_metrics.py -q`，结果`17 passed in 3.62s`。
 - 全量命令：`D:\anaconda3\python.exe -m pytest -q`，结果`544 passed in 158.45s`。
 - 未启动训练、PyTRiO/SwanLab、镜像或官方试运行。
+
+# 2026-11-21 COMPETITION-CORE Task 3
+
+- 新增`DataBatch.select/concat`、压缩`HistoryStore`与只经官方API恢复的`HistoryArtifactRef`；没有引入参赛者自定样本数上限。
+- 容量压力测试证明：当全部原始行不能装入官方状态限额时，保留全部轮次审计摘要和能完整装入的最新合法批次，不截断批次。
+- 专项命令：`D:\anaconda3\python.exe -m pytest tests/competition_core/test_history_store.py tests/formal_runtime/test_agent_workspace.py tests/formal_runtime/test_model_core.py -q`，结果`23 passed in 0.72s`。
+- 全量命令：`D:\anaconda3\python.exe -m pytest -q`，结果`552 passed in 154.30s`。
+- 未读取原始数据或运行模型训练，未调用PyTRiO/SwanLab、构建镜像或消耗官方试运行。

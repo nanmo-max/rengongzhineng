@@ -6,6 +6,9 @@ from dataclasses import dataclass
 from pathlib import Path
 
 
+OFFICIAL_STATE_BYTE_LIMIT = 64 * 1024 * 1024
+
+
 @dataclass(frozen=True)
 class RoundPaths:
     root: Path

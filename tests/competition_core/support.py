@@ -8,12 +8,15 @@ from types import SimpleNamespace
 import numpy as np
 
 
-def write_parent(path: Path, *, task: str) -> None:
-    feature_paths = ['[["key","features"],["index",0]]', '[["key","features"],["index",1]]']
+def write_parent(path: Path, *, task: str, feature_count: int = 2) -> None:
+    feature_paths = [
+        f'[["key","features"],["index",{index}]]'
+        for index in range(feature_count)
+    ]
     classes = ["cold", "hot"] if task == "classification" else []
     outputs = len(classes) if classes else 1
     parameters = {
-        "w1": np.asarray([[0.5, -0.2], [0.1, 0.3]], dtype=np.float64),
+        "w1": np.resize(np.asarray([[0.5, -0.2], [0.1, 0.3]], dtype=np.float64), (feature_count, 2)),
         "b1": np.zeros(2, dtype=np.float64),
         "w2": np.full((2, outputs), 0.2, dtype=np.float64),
         "b2": np.arange(outputs, dtype=np.float64) * 0.01,
@@ -40,8 +43,8 @@ def write_parent(path: Path, *, task: str) -> None:
         **parameters,
         **{f"adam_first_{name}": np.zeros_like(value) for name, value in parameters.items()},
         **{f"adam_second_{name}": np.zeros_like(value) for name, value in parameters.items()},
-        mean=np.zeros(2, dtype=np.float64),
-        scale=np.ones(2, dtype=np.float64),
+        mean=np.zeros(feature_count, dtype=np.float64),
+        scale=np.ones(feature_count, dtype=np.float64),
         metadata=np.asarray(json.dumps(metadata, sort_keys=True, separators=(",", ":"))),
     )
 

@@ -7,7 +7,7 @@ import hashlib
 import json
 import math
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterable, Sequence
 
 import numpy as np
 
@@ -24,6 +24,54 @@ class DataBatch:
     x: np.ndarray
     y: np.ndarray
     sha256: str
+
+    def select(self, indices: Sequence[int]) -> "DataBatch":
+        selected = tuple(int(index) for index in indices)
+        if not selected or len(set(selected)) != len(selected):
+            raise ValueError("selection indices must be nonempty and unique")
+        if any(index < 0 or index >= len(self.ids) for index in selected):
+            raise ValueError("selection index is outside the batch")
+        digest = hashlib.sha256(
+            json.dumps(
+                {"source_sha256": self.sha256, "indices": selected},
+                sort_keys=True,
+                separators=(",", ":"),
+            ).encode("utf-8")
+        ).hexdigest()
+        array_indices = np.asarray(selected, dtype=np.int64)
+        return DataBatch(
+            ids=tuple(self.ids[index] for index in selected),
+            x=self.x[array_indices].copy(),
+            y=self.y[array_indices].copy(),
+            sha256=digest,
+        )
+
+    @staticmethod
+    def concat(batches: Iterable["DataBatch"]) -> "DataBatch":
+        parts = tuple(batches)
+        if not parts:
+            raise ValueError("at least one batch is required")
+        feature_count = parts[0].x.shape[1] if parts[0].x.ndim == 2 else -1
+        if feature_count < 1 or any(batch.x.ndim != 2 or batch.x.shape[1] != feature_count for batch in parts):
+            raise ValueError("batch feature schemas differ")
+        ids = tuple(identity for batch in parts for identity in batch.ids)
+        if len(ids) != len(set(ids)):
+            raise ValueError("duplicate sample ID across batches")
+        if any(batch.y.ndim != 1 or len(batch.ids) != len(batch.x) or len(batch.y) != len(batch.x) for batch in parts):
+            raise ValueError("batch shapes are inconsistent")
+        digest = hashlib.sha256(
+            json.dumps(
+                [{"sha256": batch.sha256, "samples": len(batch.ids)} for batch in parts],
+                sort_keys=True,
+                separators=(",", ":"),
+            ).encode("utf-8")
+        ).hexdigest()
+        return DataBatch(
+            ids=ids,
+            x=np.concatenate([batch.x for batch in parts], axis=0),
+            y=np.concatenate([batch.y for batch in parts], axis=0),
+            sha256=digest,
+        )
 
 
 def _flatten(inputs: Any) -> tuple[list[str], list[float]]:
