@@ -1,9 +1,9 @@
 # 当前状态
 
 - 最近同步：2026-11-22（Asia/Shanghai）
-- 当前阶段：P5第一阶段`P5-IMPLEMENTATION-001`已完成并停止待人工审查；接口、maxT/BY、效应量门、alpha-spending和参考恢复状态机已有本地代码/测试，诊断归因、Qwen集成、Docker和新RC尚未开始
+- 当前阶段：用户已批准`P5-DRIFT-STATISTICAL-VALIDATION-001`；最终配置、互斥种子和接受门已冻结，正在对P5漂移核心执行独立合成统计验收。检测算法、冻结RC、诊断归因、Qwen、Docker均不改。
 - 当前路线：**官方SDK 1.0.2 + 未知同格式任务自动识别 + 每轮至少一次真实父checkpoint候选训练 + 双阶段Qwen实验决策 + 同作用域确定性指标事实 + 历史数据/历史模型 + PyTRiO镜像外Agent训练 + 本地测试/正式上传双镜像分离** `[D-079]` `[D-086]` `[D-087]` `[D-093]`
-- 当前无本地`READY`任务：`P5-DRIFT-DIAGNOSIS-IMPLEMENT-001`状态为`PHASE1_DONE_BLOCKED_USER_REVIEW`；P3实施继续`BLOCKED_USER_REVIEW`。P5第一阶段24项专项和676项全量回归通过，但尚未接入正式轮链或完成完整合成验证，不能写成正式RC能力。`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`和冻结归档`D:/brace-msi-release/COMPETITION-CORE-RC-001/harness.tar`保持不变，归档SHA-256 `b7ba01bcc8a60502896082b58578b56c60c539a5460bb373285ff0abe4503e30`。
+- 当前任务：`P5-DRIFT-STATISTICAL-VALIDATION-001 (IN_PROGRESS_FINAL_SEEDS_FROZEN)`。配置见`configs/p5_drift_statistical_validation.json`；结果出现后只能按预注册门报告，不能修改检测器或标准。P3实施继续`BLOCKED_USER_REVIEW`。`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`和冻结归档`D:/brace-msi-release/COMPETITION-CORE-RC-001/harness.tar`保持不变，归档SHA-256 `b7ba01bcc8a60502896082b58578b56c60c539a5460bb373285ff0abe4503e30`。
 - 稳定边界：全部历史RC和实验不改写；`0.5.0rc1`只作研究证据，不得上传。正式线从D-058开始只输出原生官方MLP续训checkpoint。D-090仅授权一次镜像外正式部署Advisor SFT，不把Sampler或私有SDK装入正式镜像。
 - 官方试运行：O-PLATFORM-018证明`0.10.4rc2`的正式提案有效且结算15,146 Token，但30/30主动retain造成零候选；精确剩余次数仍以平台页面实时显示为准。
 - 当前冻结正式候选：`D:/brace-msi-release/COMPETITION-CORE-RC-001/harness.tar`；SHA-256 `b7ba01bcc8a60502896082b58578b56c60c539a5460bb373285ff0abe4503e30`；镜像ID `sha256:578e7c9aa0c507efddeb6b4a182fc28299591a2a0a0e7fb1401a02f39b50da51`。`0.10.6rc1`继续作为历史Protocol RC，不得代替当前候选。

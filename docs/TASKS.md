@@ -4,6 +4,15 @@
 
 ## 当前任务图
 
+### P5-DRIFT-STATISTICAL-VALIDATION-001 漂移监测核心完整统计验收
+
+- 状态：`IN_PROGRESS_FINAL_SEEDS_FROZEN`
+- 授权：用户于2026-11-22批准在`codex/p5-implementation-001`、基线`3c880f9`上只做合成统计验收；禁止新增业务功能、诊断归因、Qwen/PyTRiO、工业训练、受限数据、Docker和平台运行。
+- 依赖：`P5-DRIFT-DIAGNOSIS-IMPLEMENT-001`第一阶段；P5-R1五份设计。
+- 冻结配置：`configs/p5_drift_statistical_validation.json`；校准、开发、最终无漂移、最终效应、恢复、相关结构和性能种子区间互斥。主臂保持2047次置换、`alpha_run=0.05`、10窗口等额alpha-spending；最终结果出现后不得修改门槛或重跑相同最终种子。
+- 完成标准：覆盖24/34/128维及用户指定十类场景；以独立流为重复单位报告窗口/确认/运行误报、检出、漏报、延迟、定位、95%区间、maxT/BY/交换性、alpha账本和8核/4核资源；失败和负结果必须保留。
+- 停止条件：任何最终统计门失败时只报告，不修改检测器、配置、种子或接受标准；完成交付后等待人工审查。
+
 ### P5-DRIFT-DIAGNOSIS-DESIGN-001 漂移监测与诊断归因最小可验证设计
 
 - 状态：`DONE_DESIGN_ONLY`

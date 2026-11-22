@@ -1,0 +1,83 @@
+{
+  "format": "brace-msi.p5-drift-statistical-validation-config.v1",
+  "experiment_id": "P5-DRIFT-STATISTICAL-VALIDATION-001",
+  "frozen_at_commit": "3c880f9b293e13591d8b4e89250f3a3838257597",
+  "generator_version": "p5.synthetic-stream.v1",
+  "dimensions": [24, 34, 128],
+  "samples_per_window": 80,
+  "block_size": 4,
+  "windows_per_run": 10,
+  "monitor": {
+    "alpha_run": 0.05,
+    "alpha_window": 0.005,
+    "permutations": 2047,
+    "effect_threshold": 2.0,
+    "confirmation_windows": 2,
+    "recovery_windows": 2,
+    "rebase_min_windows": 3
+  },
+  "seed_sets": {
+    "calibration": {"start": 510001, "count": 4},
+    "development": {"start": 520001, "count": 4},
+    "final_null": {"start": 530001, "count": 40},
+    "final_effect": {"start": 540001, "count": 8},
+    "final_recovery": {"start": 550001, "count": 8},
+    "final_correlation": {"start": 560001, "count": 6},
+    "performance": {"start": 570001, "count": 1},
+    "bootstrap": {"start": 580001, "count": 1}
+  },
+  "correlation_structures": [
+    "independent",
+    "block_positive",
+    "mixed_sign",
+    "strong_collinear"
+  ],
+  "primary_correlation": "block_positive",
+  "effects": {
+    "mean_shift": {"small": 0.75, "medium": 1.5, "large": 2.5},
+    "scale_multiplier": {"small": 1.25, "medium": 1.75, "large": 2.5},
+    "joint_feature_count": 3,
+    "progressive_final_shift": 2.5,
+    "noise_added_std": 1.5,
+    "outlier_fraction": 0.0125,
+    "outlier_magnitude": 12.0,
+    "composition_reference_probability": 0.5,
+    "composition_current_probability": 0.8,
+    "composition_group_shift": 1.5
+  },
+  "methods": ["block_permutation_maxT", "by_fallback"],
+  "primary_method": "block_permutation_maxT",
+  "acceptance": {
+    "single_window_fpr_point_max": 0.01,
+    "confirmation_fpr_point_max": 0.05,
+    "run_level_false_alarm_point_max": 0.05,
+    "run_level_false_alarm_wilson_upper_max": 0.10,
+    "medium_large_event_recall_min": 0.80,
+    "medium_large_median_delay_max_windows": 2.0,
+    "recall_at_k_min": 0.80,
+    "outlier_direct_confirmation_max": 0.0,
+    "baseline_contamination_rate_max": 0.0,
+    "invalid_exchangeability_fail_closed_min": 1.0,
+    "alpha_budget_excess_max": 0.0,
+    "cpu_seconds_hard_max": 30.0,
+    "wall_seconds_hard_max": 30.0,
+    "rss_delta_bytes_hard_max": 1073741824,
+    "wall_seconds_aspirational_target": 1.0
+  },
+  "statistics": {
+    "confidence_level": 0.95,
+    "binary_interval": "wilson",
+    "continuous_interval": "stream_bootstrap_percentile",
+    "bootstrap_resamples": 2000,
+    "independent_unit": "generated_stream_seed"
+  },
+  "execution": {
+    "max_workers": 4,
+    "raw_output_root": "D:/brace-msi-p5/P5-DRIFT-STATISTICAL-VALIDATION-001",
+    "restricted_data_reads": 0,
+    "industrial_training_runs": 0,
+    "remote_model_calls": 0,
+    "docker_builds": 0,
+    "platform_runs": 0
+  }
+}
