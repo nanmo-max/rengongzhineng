@@ -19,6 +19,8 @@ class ReferenceStatus(str, Enum):
 
 
 class Observation(str, Enum):
+    NO_DRIFT_DETECTED = "no_drift_detected"
+    INSUFFICIENT_EVIDENCE = "insufficient_evidence"
     STABLE = "stable"
     WARNING = "warning"
     CONFIRMED = "confirmed"
@@ -90,6 +92,7 @@ class DriftState:
     seen_window_ids: tuple[str, ...]
     warning_streak: int
     recovery_streak: int
+    non_admissible_window_ids: tuple[str, ...] = ()
 
     @classmethod
     def initial(cls, *, alpha_run: float) -> "DriftState":
@@ -108,6 +111,7 @@ class DriftState:
             seen_window_ids=(),
             warning_streak=0,
             recovery_streak=0,
+            non_admissible_window_ids=(),
         )
 
     def as_dict(self) -> dict[str, Any]:
@@ -125,6 +129,7 @@ class DriftState:
             "seen_window_ids": list(self.seen_window_ids),
             "warning_streak": self.warning_streak,
             "recovery_streak": self.recovery_streak,
+            "non_admissible_window_ids": list(self.non_admissible_window_ids),
         }
 
     @classmethod
@@ -147,6 +152,9 @@ class DriftState:
                 seen_window_ids=tuple(str(item) for item in payload["seen_window_ids"]),
                 warning_streak=int(payload["warning_streak"]),
                 recovery_streak=int(payload["recovery_streak"]),
+                non_admissible_window_ids=tuple(
+                    str(item) for item in payload.get("non_admissible_window_ids", ())
+                ),
             )
         except (KeyError, TypeError, ValueError) as exc:
             raise ValueError("drift state payload is invalid") from exc
@@ -164,6 +172,7 @@ class DriftState:
             state.quarantine_ids,
             state.rejected_window_ids,
             state.seen_window_ids,
+            state.non_admissible_window_ids,
         )
         if any(not item for values in collections for item in values):
             raise ValueError("drift state window IDs are invalid")
@@ -174,8 +183,13 @@ class DriftState:
             set(state.candidate_reference_ids),
             set(state.quarantine_ids),
             set(state.rejected_window_ids),
+            set(state.non_admissible_window_ids),
         )
-        if any(pools[left].intersection(pools[right]) for left in range(4) for right in range(left + 1, 4)):
+        if any(
+            pools[left].intersection(pools[right])
+            for left in range(len(pools))
+            for right in range(left + 1, len(pools))
+        ):
             raise ValueError("drift state reference pools overlap")
         if not set().union(*pools).issubset(set(state.seen_window_ids)):
             raise ValueError("drift state pools contain unseen windows")
@@ -206,6 +220,14 @@ class ReferenceStateMachine:
             return replace(
                 updated,
                 rejected_window_ids=(*state.rejected_window_ids, window_id),
+            )
+        if observation in {
+            Observation.NO_DRIFT_DETECTED,
+            Observation.INSUFFICIENT_EVIDENCE,
+        }:
+            return replace(
+                updated,
+                non_admissible_window_ids=(*state.non_admissible_window_ids, window_id),
             )
         if updated.status is ReferenceStatus.CALIBRATING:
             if observation is not Observation.STABLE:

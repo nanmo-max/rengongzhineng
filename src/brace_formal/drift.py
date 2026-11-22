@@ -21,6 +21,24 @@ class DriftStatus(str, Enum):
 
 
 @dataclass(frozen=True)
+class StatisticContribution:
+    name: str
+    raw_value: float
+    standardized_score: float
+    empirical_p: float
+    contribution: float
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "name": self.name,
+            "raw_value": self.raw_value,
+            "standardized_score": self.standardized_score,
+            "empirical_p": self.empirical_p,
+            "contribution": self.contribution,
+        }
+
+
+@dataclass(frozen=True)
 class FeatureDrift:
     feature_index: int
     dominant_statistic: str
@@ -34,6 +52,7 @@ class FeatureDrift:
     adjusted_p: float
     selected: bool
     contribution: float
+    statistic_contributions: tuple[StatisticContribution, ...] = ()
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -49,6 +68,59 @@ class FeatureDrift:
             "adjusted_p": self.adjusted_p,
             "selected": self.selected,
             "contribution": self.contribution,
+            "statistic_contributions": [
+                item.as_dict() for item in self.statistic_contributions
+            ],
+        }
+
+
+@dataclass(frozen=True)
+class GroupDriftEvidence:
+    available: bool
+    total_variation: float
+    empirical_p: float
+    selected: bool
+    category_count: int
+    limitation: str | None = None
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "available": self.available,
+            "total_variation": self.total_variation,
+            "empirical_p": self.empirical_p,
+            "selected": self.selected,
+            "category_count": self.category_count,
+            "limitation": self.limitation,
+        }
+
+
+@dataclass(frozen=True)
+class TimeHintEvidence:
+    available: bool
+    monotonic: bool
+    limitation: str | None = None
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "available": self.available,
+            "monotonic": self.monotonic,
+            "limitation": self.limitation,
+        }
+
+
+@dataclass(frozen=True)
+class WindowQualityEvidence:
+    acceptable_for_reference: bool
+    maximum_robust_z: float
+    maximum_feature_outlier_fraction: float
+    limitation: str | None = None
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "acceptable_for_reference": self.acceptable_for_reference,
+            "maximum_robust_z": self.maximum_robust_z,
+            "maximum_feature_outlier_fraction": self.maximum_feature_outlier_fraction,
+            "limitation": self.limitation,
         }
 
 
@@ -70,6 +142,8 @@ class DriftReport:
     reference_epoch: int
     features: tuple[FeatureDrift, ...]
     limitations: tuple[str, ...]
+    group_evidence: GroupDriftEvidence | None = None
+    time_evidence: TimeHintEvidence | None = None
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -90,6 +164,12 @@ class DriftReport:
             "reference_epoch": self.reference_epoch,
             "features": [item.as_dict() for item in self.features],
             "limitations": list(self.limitations),
+            "group_evidence": (
+                self.group_evidence.as_dict() if self.group_evidence is not None else None
+            ),
+            "time_evidence": (
+                self.time_evidence.as_dict() if self.time_evidence is not None else None
+            ),
         }
 
 
@@ -100,6 +180,7 @@ class MonitorConfig:
     effect_threshold: float = 2.0
     random_seed: int = 0
     numeric_floor: float = 1e-12
+    group_effect_threshold: float = 0.10
 
     def __post_init__(self) -> None:
         if self.calibration_method not in {"block_permutation_maxT", "by_fallback"}:
@@ -110,6 +191,8 @@ class MonitorConfig:
             raise ValueError("effect threshold must be finite and nonnegative")
         if not math.isfinite(self.numeric_floor) or self.numeric_floor <= 0.0:
             raise ValueError("numeric floor must be finite and positive")
+        if not math.isfinite(self.group_effect_threshold) or not 0.0 <= self.group_effect_threshold <= 1.0:
+            raise ValueError("group effect threshold must be finite and in [0, 1]")
 
 
 def adjust_pvalues_by(pvalues: np.ndarray) -> np.ndarray:
@@ -147,6 +230,47 @@ def apply_effect_gate(
     if not math.isfinite(effect_threshold) or effect_threshold < 0.0:
         raise ValueError("effect threshold must be finite and nonnegative")
     return (probabilities <= alpha) & (effects >= effect_threshold)
+
+
+def assess_window_quality(
+    reference: np.ndarray,
+    current: np.ndarray,
+    *,
+    robust_z_limit: float = 8.0,
+    feature_outlier_fraction_limit: float = 0.01,
+    numeric_floor: float = 1e-12,
+) -> WindowQualityEvidence:
+    """Fail closed for sparse extreme contamination before reference admission.
+
+    This is a data-quality receipt, not a drift hypothesis test.  It never
+    converts a non-rejection into positive stability evidence.
+    """
+
+    left = np.asarray(reference, dtype=np.float64)
+    right = np.asarray(current, dtype=np.float64)
+    if left.ndim != 2 or right.ndim != 2 or left.shape[1] != right.shape[1]:
+        raise ValueError("reference and current must be two-dimensional with equal features")
+    if not np.all(np.isfinite(left)) or not np.all(np.isfinite(right)):
+        return WindowQualityEvidence(False, math.inf, 1.0, "non_finite_values")
+    if robust_z_limit <= 0.0 or not 0.0 <= feature_outlier_fraction_limit <= 1.0:
+        raise ValueError("quality thresholds are invalid")
+    center = np.median(left, axis=0)
+    iqr = np.quantile(left, 0.75, axis=0) - np.quantile(left, 0.25, axis=0)
+    mad = np.median(np.abs(left - center), axis=0)
+    scale = np.maximum.reduce(
+        (iqr / 1.349, 1.4826 * mad, np.full(left.shape[1], numeric_floor))
+    )
+    robust_z = np.abs(right - center) / scale
+    feature_fractions = np.mean(robust_z > robust_z_limit, axis=0)
+    maximum_z = float(np.max(robust_z))
+    maximum_fraction = float(np.max(feature_fractions))
+    acceptable = maximum_fraction <= feature_outlier_fraction_limit
+    return WindowQualityEvidence(
+        acceptable,
+        maximum_z,
+        maximum_fraction,
+        None if acceptable else "sparse_extreme_contamination",
+    )
 
 
 _STATISTIC_NAMES = (
@@ -192,6 +316,7 @@ def _feature_statistics(
         left_iqr = left_quartiles[1] - left_quartiles[0]
         right_iqr = right_quartiles[1] - right_quartiles[0]
         left_mad = np.median(np.abs(reference - left_median), axis=0)
+        right_mad = np.median(np.abs(current - right_median), axis=0)
         scale = np.maximum.reduce(
             (
                 left_iqr / 1.349,
@@ -200,8 +325,9 @@ def _feature_statistics(
             )
         )
         result[:, 1] = np.abs(right_median - left_median) / scale
-        result[:, 2] = np.abs(
-            np.log((right_iqr + numeric_floor) / (left_iqr + numeric_floor))
+        result[:, 2] = np.maximum(
+            np.abs(np.log((right_iqr + numeric_floor) / (left_iqr + numeric_floor))),
+            np.abs(np.log((right_mad + numeric_floor) / (left_mad + numeric_floor))),
         )
         if len(reference) == len(current):
             result[:, 3] = np.mean(
@@ -240,10 +366,12 @@ def _feature_statistics(
         left_iqr = float(left_quartiles[1] - left_quartiles[0])
         right_iqr = float(right_quartiles[1] - right_quartiles[0])
         left_mad = float(np.median(np.abs(left - left_median)))
+        right_mad = float(np.median(np.abs(right - right_median)))
         scale = max(left_iqr / 1.349, 1.4826 * left_mad, numeric_floor)
         result[feature_index, 1] = abs(right_median - left_median) / scale
-        result[feature_index, 2] = abs(
-            math.log((right_iqr + numeric_floor) / (left_iqr + numeric_floor))
+        result[feature_index, 2] = max(
+            abs(math.log((right_iqr + numeric_floor) / (left_iqr + numeric_floor))),
+            abs(math.log((right_mad + numeric_floor) / (left_mad + numeric_floor))),
         )
         wasserstein, ks = _one_dimensional_distances(left, right)
         result[feature_index, 3] = wasserstein / scale
@@ -284,6 +412,71 @@ def _permutation_masks(
         selected = rng.choice(len(units), size=len(reference_units), replace=False)
         masks[index] = np.isin(inverse, selected)
     return masks, None
+
+
+def _total_variation(left: np.ndarray, right: np.ndarray) -> tuple[float, int]:
+    categories = np.unique(np.concatenate((left, right)))
+    if not len(categories):
+        return 0.0, 0
+    left_probabilities = np.asarray([np.mean(left == value) for value in categories])
+    right_probabilities = np.asarray([np.mean(right == value) for value in categories])
+    return float(0.5 * np.sum(np.abs(left_probabilities - right_probabilities))), len(categories)
+
+
+def _group_drift_evidence(
+    reference_group_ids: np.ndarray | None,
+    current_group_ids: np.ndarray | None,
+    *,
+    reference_count: int,
+    current_count: int,
+    masks: np.ndarray,
+    alpha: float,
+    effect_threshold: float,
+) -> GroupDriftEvidence:
+    if reference_group_ids is None and current_group_ids is None:
+        return GroupDriftEvidence(False, 0.0, 1.0, False, 0, "group_identity_unavailable")
+    if reference_group_ids is None or current_group_ids is None:
+        return GroupDriftEvidence(False, 0.0, 1.0, False, 0, "group_identity_incomplete")
+    left = np.asarray(reference_group_ids)
+    right = np.asarray(current_group_ids)
+    if left.ndim != 1 or right.ndim != 1 or len(left) != reference_count or len(right) != current_count:
+        return GroupDriftEvidence(False, 0.0, 1.0, False, 0, "group_identity_shape_invalid")
+    combined = np.concatenate((left, right))
+    observed, category_count = _total_variation(left, right)
+    null = np.asarray(
+        [_total_variation(combined[mask], combined[~mask])[0] for mask in masks],
+        dtype=np.float64,
+    )
+    empirical = float((1.0 + np.sum(null >= observed)) / (len(masks) + 1.0))
+    return GroupDriftEvidence(
+        True,
+        observed,
+        empirical,
+        bool(empirical <= alpha and observed >= effect_threshold),
+        category_count,
+        None,
+    )
+
+
+def _time_hint_evidence(
+    reference_time_hints: np.ndarray | None,
+    current_time_hints: np.ndarray | None,
+    *,
+    reference_count: int,
+    current_count: int,
+) -> TimeHintEvidence:
+    if reference_time_hints is None and current_time_hints is None:
+        return TimeHintEvidence(False, False, "time_hints_unavailable")
+    if reference_time_hints is None or current_time_hints is None:
+        return TimeHintEvidence(False, False, "time_hints_incomplete")
+    left = np.asarray(reference_time_hints, dtype=np.float64)
+    right = np.asarray(current_time_hints, dtype=np.float64)
+    if left.ndim != 1 or right.ndim != 1 or len(left) != reference_count or len(right) != current_count:
+        return TimeHintEvidence(False, False, "time_hints_shape_invalid")
+    if not np.all(np.isfinite(left)) or not np.all(np.isfinite(right)):
+        return TimeHintEvidence(False, False, "time_hints_non_finite")
+    monotonic = bool(np.all(np.diff(left) >= 0.0) and np.all(np.diff(right) >= 0.0))
+    return TimeHintEvidence(True, monotonic, None if monotonic else "time_hints_non_monotonic")
 
 
 def _scope_sha256(values: np.ndarray) -> str:
@@ -351,6 +544,10 @@ class DriftMonitor:
         reference_epoch: int,
         history_window_count: int,
         block_ids: np.ndarray | None,
+        reference_group_ids: np.ndarray | None = None,
+        current_group_ids: np.ndarray | None = None,
+        reference_time_hints: np.ndarray | None = None,
+        current_time_hints: np.ndarray | None = None,
     ) -> DriftReport:
         left = np.asarray(reference, dtype=np.float64)
         right = np.asarray(current, dtype=np.float64)
@@ -362,7 +559,16 @@ class DriftMonitor:
             raise ValueError("alpha values must satisfy 0 < alpha_window <= alpha_run <= 1")
         if not 0.0 <= alpha_spent <= alpha_run + 1e-12:
             raise ValueError("alpha spent is outside the run budget")
-        required = math.ceil(10.0 / alpha_window) - 1
+        if self.config.calibration_method == "by_fallback":
+            hypothesis_count = left.shape[1]
+            harmonic = float(
+                np.sum(1.0 / np.arange(1, hypothesis_count + 1, dtype=np.float64))
+            )
+            required = math.ceil(hypothesis_count * harmonic / alpha_window) - 1
+            resolution_limitation = "by_rank_one_empirical_p_resolution_insufficient"
+        else:
+            required = math.ceil(10.0 / alpha_window) - 1
+            resolution_limitation = "empirical_p_resolution_exceeds_alpha_budget"
         if self.config.permutations < required:
             return _empty_report(
                 status=DriftStatus.INSUFFICIENT_CALIBRATION,
@@ -374,7 +580,7 @@ class DriftMonitor:
                 alpha_spent=alpha_spent,
                 reference_epoch=reference_epoch,
                 history_window_count=history_window_count,
-                limitation="empirical_p_resolution_exceeds_alpha_budget",
+                limitation=resolution_limitation,
             )
         combined = np.concatenate((left, right), axis=0)
         masks, block_error = _permutation_masks(
@@ -397,6 +603,22 @@ class DriftMonitor:
                 history_window_count=history_window_count,
                 limitation=str(block_error),
             )
+
+        group_evidence = _group_drift_evidence(
+            reference_group_ids,
+            current_group_ids,
+            reference_count=len(left),
+            current_count=len(right),
+            masks=masks,
+            alpha=alpha_window,
+            effect_threshold=self.config.group_effect_threshold,
+        )
+        time_evidence = _time_hint_evidence(
+            reference_time_hints,
+            current_time_hints,
+            reference_count=len(left),
+            current_count=len(right),
+        )
 
         observed = _feature_statistics(left, right, numeric_floor=self.config.numeric_floor)
         null_statistics = np.empty(
@@ -426,6 +648,9 @@ class DriftMonitor:
         empirical = (1.0 + np.sum(null_omnibus >= observed_omnibus[None, :], axis=0)) / (
             self.config.permutations + 1.0
         )
+        statistic_empirical = (
+            1.0 + np.sum(null_statistics >= observed[None, :, :], axis=0)
+        ) / (self.config.permutations + 1.0)
         if self.config.calibration_method == "block_permutation_maxT":
             null_global = np.max(null_omnibus, axis=1)
             adjusted = (1.0 + np.sum(null_global[:, None] >= observed_omnibus[None, :], axis=0)) / (
@@ -442,6 +667,7 @@ class DriftMonitor:
         excess = np.where(selected, np.maximum(observed_omnibus - self.config.effect_threshold, 0.0), 0.0)
         contributions = excess / np.sum(excess) if np.sum(excess) > 0.0 else np.zeros_like(excess)
         dominant = np.argmax(observed_standardized, axis=1)
+        within_feature_totals = np.sum(observed_standardized, axis=1)
         features = tuple(
             FeatureDrift(
                 feature_index=index,
@@ -456,6 +682,23 @@ class DriftMonitor:
                 adjusted_p=float(adjusted[index]),
                 selected=bool(selected[index]),
                 contribution=float(contributions[index]),
+                statistic_contributions=tuple(
+                    StatisticContribution(
+                        name=name,
+                        raw_value=float(observed[index, statistic_index]),
+                        standardized_score=float(
+                            observed_standardized[index, statistic_index]
+                        ),
+                        empirical_p=float(statistic_empirical[index, statistic_index]),
+                        contribution=float(
+                            observed_standardized[index, statistic_index]
+                            / within_feature_totals[index]
+                            if within_feature_totals[index] > 0.0
+                            else 0.0
+                        ),
+                    )
+                    for statistic_index, name in enumerate(_STATISTIC_NAMES)
+                ),
             )
             for index in range(left.shape[1])
         )
@@ -466,6 +709,8 @@ class DriftMonitor:
             "current": current_hash,
             "method": self.config.calibration_method,
             "features": [item.as_dict() for item in features],
+            "group_evidence": group_evidence.as_dict(),
+            "time_evidence": time_evidence.as_dict(),
         }
         report_id = "sha256:" + hashlib.sha256(
             json.dumps(
@@ -475,9 +720,18 @@ class DriftMonitor:
                 allow_nan=False,
             ).encode("utf-8")
         ).hexdigest()
+        limitations = tuple(
+            item
+            for item in (group_evidence.limitation, time_evidence.limitation)
+            if item is not None
+        )
         return DriftReport(
             report_id=report_id,
-            status=DriftStatus.WARNING if np.any(selected) else DriftStatus.STABLE,
+            status=(
+                DriftStatus.WARNING
+                if np.any(selected) or group_evidence.selected
+                else DriftStatus.STABLE
+            ),
             calibration_method=self.config.calibration_method,
             reference_scope_sha256=reference_hash,
             current_scope_sha256=current_hash,
@@ -491,5 +745,7 @@ class DriftMonitor:
             minimum_empirical_p=1.0 / (self.config.permutations + 1.0),
             reference_epoch=reference_epoch,
             features=features,
-            limitations=(),
+            limitations=limitations,
+            group_evidence=group_evidence,
+            time_evidence=time_evidence,
         )

@@ -5,10 +5,27 @@
   "rows_per_window": 80,
   "block_size": 4,
   "windows": 10,
+  "independent_streams_per_dimension_scenario": 4,
   "permutations": 2047,
   "alpha_run": 0.05,
   "effect_threshold": 2.0,
   "confirmation_windows": 2,
+  "development_effects": {
+    "variance_multiplier": 1.75,
+    "noise_standard_deviation_multiplier": 0.90,
+    "persistent_location_shift": 3.0,
+    "sparse_outlier_robust_scale": 20.0,
+    "group_reference_probability": 0.90,
+    "group_current_probability": 0.10
+  },
+  "development_gates": {
+    "no_drift_warning_rate_max": 0.25,
+    "medium_variance_detection_rate_min": 0.50,
+    "noise_detection_rate_min": 0.50,
+    "group_composition_detection_rate_min": 0.75,
+    "outlier_reference_block_rate_min": 1.0,
+    "persistent_confirmation_and_recovery_rate_min": 1.0
+  },
   "scenarios": [
     "no_drift",
     "medium_variance",
