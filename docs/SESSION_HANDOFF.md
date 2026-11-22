@@ -1,5 +1,13 @@
 # 新会话恢复与交接
 
+## 2026-11-22 P3自适应优化算法对照入口（当前）
+
+1. 当前分支仍为`codex/first-principles-rebuild`；`0.11.0rc1`、正式归档和全部历史实验保持冻结。
+2. `ADAPTIVE-OPT-COMPARE-DESIGN-001`已完成设计但没有代码或训练；先读`superpowers/specs/2026-11-22-adaptive-optimizer-competition-design.md`和`superpowers/plans/2026-11-22-adaptive-optimizer-competition.md`。
+3. 50个主轮收据的参数—结果字段完整，但五个任务都只执行首轮`native_current`和后九轮`native_replay`；不得把它们写成真实Qwen自适应证据。
+4. `ADAPTIVE-OPT-COMPARE-IMPLEMENT-001`为`BLOCKED_USER_REVIEW`。用户批准后才从`eae619b`创建`codex/p3-adaptive-optimizer-benchmark`并按计划Task 1开始；先做C任务6候选pilot，不直接启动三任务大矩阵。
+5. public validation、XJTU密封、隐藏数据、官方平台、SwanLab和正式镜像均不得在P3 pilot中使用。大矩阵即使pilot通过也需再次明确批准。
+
 ## 2026-11-21 正式作品文档提交入口（当前）
 
 1. `SUBMISSION-DOC-001`已完成；上传文件为`output/pdf/BRACE-MSI-0.11.0rc1-作品说明书.pdf`，8页，SHA-256 `CA7DF5926DA8A7237FD902F2859384B1E5AFFC442D1ED97C7152ECA46E202DE3`。

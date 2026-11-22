@@ -4,6 +4,26 @@
 
 ## 当前任务图
 
+### ADAPTIVE-OPT-COMPARE-DESIGN-001 自适应优化算法公平对照设计
+
+- 状态：`DONE_DESIGN_ONLY`
+- 授权：用户于2026-11-22要求建立静态、随机搜索、TPE和Qwen同预算对照，完善Qwen历史反馈，并先完成研究设计和代码审计而不启动大规模训练。
+- 依赖：COMPETITION-CORE-PLAN-001、D-095、D-096、现有50轮本地验收收据。
+- 优先级：P3研究设计；不改变当前正式候选。
+- 完成标准：基于实际`brace_formal`代码和50轮收据形成算法对照、详细历史schema、Random/TPE实现选择、预算表、数据隔离、独立研究分支计划、验收和停止条件。
+- 停止条件：不得修改冻结RC、启动训练、调用PyTRiO/SwanLab、读取A/B/C公开validation、XJTU密封或隐藏数据，不得上传平台或消耗试运行。
+- 证据：`superpowers/specs/2026-11-22-adaptive-optimizer-competition-design.md`、`superpowers/plans/2026-11-22-adaptive-optimizer-competition.md`；只读抽查50轮主收据，关键参数—结果字段缺失数均为0，但recipe仅`native_current/native_replay`，证明协议完整而自适应证据不足。
+
+### ADAPTIVE-OPT-COMPARE-IMPLEMENT-001 自适应优化算法公平对照实施
+
+- 状态：`BLOCKED_USER_REVIEW`
+- 依赖：ADAPTIVE-OPT-COMPARE-DESIGN-001书面规格与计划经用户审阅；新建独立分支`codex/p3-adaptive-optimizer-benchmark`。
+- 优先级：P3；正式RC和平台任务不受影响。
+- 完成标准：按实施计划Tasks 1—7先完成研究框架和C任务6候选可行性探针；只有协议门通过后才允许预注册三任务三种子矩阵。
+- 停止条件：任何预算不等、数据越界、伪造Qwen调用标识、TPE未进入post-startup、确认集反馈调参或研究依赖进入正式镜像，立即停止并保留负证据。大规模A2矩阵必须再次获得明确批准。
+- 规格：`superpowers/specs/2026-11-22-adaptive-optimizer-competition-design.md`。
+- 计划：`superpowers/plans/2026-11-22-adaptive-optimizer-competition.md`。
+
 ### PERFORMANCE-RC2-PILOT-001 自适应预处理与多候选性能探针
 
 - 状态：`DONE_NEGATIVE_NO_PROMOTION`

@@ -172,3 +172,24 @@
 - 状态：`REALIZED_CONTAINED_BY_NON_PROMOTION`
 - 证据：`PERFORMANCE-RC2-PILOT-001-A1`中B的RC2在开发Gate上接受8/10轮且开发平均收益为正，但完整未见bearing确认RMSE从对照`163.985950`恶化到`206.207286`；C也小幅退化。
 - 缓解：RC2四项晋级门全部失败，研究模块不进入正式RecipeRegistry，不重建或替换`0.11.0rc1`。后续若立项，必须优先修复跨设备选择证据，不得仅扩大同Gate搜索。
+
+## R-064 优化算法对照因预算口径不同而失真
+
+- 等级：Critical
+- 状态：`DESIGN_MITIGATION_PENDING_IMPLEMENTATION`
+- 风险：只匹配候选数会让Replay、类平衡和多epoch方案消耗不同训练量；只匹配CPU秒又会因调度噪声产生不同候选数。
+- 缓解：P3同时匹配完成候选配置数、物理训练数和标准化work units，并报告实际CPU/墙钟/RSS。所有臂共享一个TrialRunner和搜索空间；任何不等预算运行判无效。
+
+## R-065 train内部确认不能证明新任务泛化
+
+- 等级：High
+- 状态：`OPEN_DISCLOSED`
+- 风险：官方父checkpoint已经使用过公开train；即使按设备/unit重新隔离，仍只能评估优化器相对效率，不能等同于模型面对全新数据的外部泛化。
+- 缓解：public validation、XJTU密封和隐藏数据保持关闭；报告明确限制推论。没有新的合法独立数据前，P3结果不得替换冻结RC或宣称隐藏优势。
+
+## R-066 Qwen调用标识被本地关联ID冒充
+
+- 等级：High
+- 状态：`DESIGN_MITIGATION_PENDING_IMPLEMENTATION`
+- 风险：PyTRiO SDK成功采样至少暴露Sampler运行ID，但未必公开每次成功请求的服务端request ID；自行生成字符串会造成“真实Qwen调用”伪证据。
+- 缓解：分别保存官方宿主`call_id`、PyTRiO `sampling_run_cuid`、SDK实际暴露的request ID和本地correlation ID。未暴露字段写`null/not_exposed_by_sdk`；缺少真实远程收据时整个Qwen臂无效且不得用确定性fallback补名。

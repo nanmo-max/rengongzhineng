@@ -958,3 +958,11 @@
 - Smoke在两个同格式匿名任务执行8候选，确认数据读取0次。A1只读官方train和父checkpoint，完成A/B/C各十轮；确认组每任务只评价一次，公开validation读取0次。
 - 一次确认中A持平，B相对对照退化25.7469%，C退化0.4062%；开发最差阶段门也失败。本轮证明开发Gate上的多候选收益不能稳定外推到未见设备/机组；不把负结果接入正式线。
 - 未调用PyTRiO/SwanLab/Docker，未改动冻结`0.11.0rc1`，未上传或消耗官方次数。机器摘要SHA-256 `A676ABBFDB8B42655E3C13480E75372D1868BA88F75FD25DAED0D3516E03071E`。
+
+# 2026-11-22 ADAPTIVE-OPT-COMPARE-DESIGN-001
+
+- 只读审计`brace_formal`正式运行核：现有`RecipeRegistry`、候选执行、评价、确定性选择和逐轮收据可作为公平对照的共享执行层；当前`_history_summary`只含轮数/样本数等粗粒度计数，不能证明Qwen依据上一轮参数和收益调整策略。
+- 精确抽查`acceptance-known-v6`的A/B/C及`acceptance-opaque-v5`两个身份不透明任务，共50个主轮收据；提案、参数、执行、父/候选指标、资源和选择字段缺失均为0。五个任务均为首轮`native_current`、后九轮`native_replay`，因此它们是协议证据而非自适应搜索证据。
+- 仓库代码和依赖中未发现Random Search/TPE/Optuna同预算实现或结果。只读核验Optuna官方资料后，选择研究态`optuna==5.1.0`的经典单目标独立TPE；不修改正式依赖或镜像。
+- 形成共享TrialRunner、Random/TPE/Qwen-History/Qwen-No-History、配对预算、C任务先行、三任务二次批准、数据隔离、验收和停止条件的规格与实施计划。
+- 未修改产品代码、未运行训练、未调用PyTRiO/SwanLab、未读取public validation/XJTU密封/隐藏数据、未构建镜像或使用官方次数。

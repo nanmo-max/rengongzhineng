@@ -637,3 +637,12 @@ PyTRiO通用接口、Qwen3.5-4B基础模型平台校验和持久化Sampler路线
 - 已确认：隐藏评测可能包含A/B/C之外但与当前官方训练包同格式的新工业任务；官方平台直接调用镜像，任务内容事前不可见；父模型、带标签数据和历史可用；每轮必须至少训练一个真实候选后再部署、保留或回滚。
 - 已确认：不增加非官方Token、候选数、epoch、提升比例等硬限制；本地测试镜像与正式上传镜像分开；PyTRiO训练的Qwen Agent必须进入正式方案，正式镜像仍遵守官方宿主网关。
 - 证据边界：当前SDK 1.0.2仍只验证`dataset_key` A/B/C。新任务如何编码由平台负责；算法必须把`dataset_key`视为不承载方法语义的路由标识，并以`task_contract`、父checkpoint和数据画像为准。不得把用户确认写成官方已经公开隐藏任务细节。
+
+### O-OPTUNA-001 Optuna TPE官方实现与许可
+
+- 类型：上游官方技术文档和源码许可；不是赛事官方要求。
+- 检查日期：2026-11-22。
+- 来源：Optuna稳定版`TPESampler`文档、官方GitHub `pyproject.toml`与LICENSE。
+- 已确认：Optuna 5.1.0稳定文档提供`TPESampler`，支持`n_startup_trials`、`n_ei_candidates`、`seed`和`multivariate`配置；项目声明Python `>=3.10`和MIT许可证。
+- 实施边界：仅允许加入独立研究锁文件和研究分支，不进入`0.11.0rc1`正式运行白名单；本项目采用单目标独立TPE并显式记录startup/TPE来源，不能把前三次随机startup算作贝叶斯建议。
+- 链接：<https://optuna.readthedocs.io/en/stable/reference/samplers/generated/optuna.samplers.TPESampler.html>；<https://github.com/optuna/optuna/blob/master/LICENSE>；<https://github.com/optuna/optuna/blob/master/pyproject.toml>。

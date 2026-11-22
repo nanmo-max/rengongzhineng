@@ -224,3 +224,11 @@
 - 保留边界：研究代码、单元测试和负结果保留，用于可复现审计；默认Adam路径已通过兼容回归。该结论只针对当前父模型、当前数据协议与预注册参数，不被解释为方法在其他问题上普遍无效。
 - 停止边界：不打开confirmation，不扩大参数搜索，不以Pareto成员名义绕过“跨任务平均正向且最差阶段不劣”的采用门。`0.11.0rc1`及其归档哈希保持不变。
 - 依据：`results/MATURE-OPTIMIZER-PILOT-001.md`，机器摘要SHA-256 `49BFF569...6087B02`，专项15项与完整644项测试。
+
+## D-097：P3采用共享TrialRunner开展同预算优化器对照（2026-11-22，PROVISIONAL）
+
+- 决策：下一研究任务不增加正式Recipe数量，而是在独立分支建立共享`TrialRunner`和可插拔`Random/TPE/Qwen`优化器。三臂必须复用相同父checkpoint、数据fold、条件搜索空间、候选执行器、评价器、选择器及候选/物理训练/work-unit预算；静态父模型只作零训练参考。
+- 历史反馈：Qwen输入新增逐trial的recipe、请求/实际参数、同作用域父/候选指标、有向收益、选择/拒绝、失败、CPU/墙钟/RSS、work units和延迟收益；不含逐样本、原始路径或密钥。必须设置`Qwen-No-History`消融，真实服务标识缺失或使用本地替身时Qwen臂无效。
+- 实验顺序：先只在C Engine官方train内部按完整unit完成6候选可行性探针；不读公开validation。协议通过后才能预注册A/B/C三任务、三配对种子、每臂10候选的大矩阵，且大矩阵仍需用户再次明确批准。
+- 发布边界：`0.11.0rc1`、正式镜像白名单、XJTU密封和全部历史实验冻结；Optuna/PyTRiO研究依赖不进入正式镜像。本地train内部结果只能证明相对优化效率，不能冒充隐藏泛化。
+- 依据：用户P3任务书；50轮收据字段完整但仅两种重复recipe的只读审计；`superpowers/specs/2026-11-22-adaptive-optimizer-competition-design.md`；O-OPTUNA-001。
