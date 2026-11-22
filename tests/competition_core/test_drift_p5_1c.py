@@ -226,5 +226,3 @@ def test_scale_receipt_uses_mad_when_iqr_is_unchanged() -> None:
     current_iqr = np.diff(np.quantile(current[:, 0], [0.25, 0.75]))[0]
     assert np.isclose(reference_iqr, current_iqr)
     assert stats[0, 2] > 0.0
-
-
