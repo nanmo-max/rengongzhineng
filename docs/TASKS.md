@@ -4,6 +4,16 @@
 
 ## 当前任务图
 
+### P5-1C-TARGETED-REPAIR-001 限时定向修复
+
+- 状态：`IN_PROGRESS`
+- 授权：用户于2026-11-22批准最多6小时工程时间，修复参考池污染、统计贡献收据、合法组/时间提示和maxT/BY统计降级；使用全新开发种子验证，不得触碰P5-1A最终种子或扩大到诊断归因、Qwen/PyTRiO、Docker和平台。
+- 依赖：`P5-1B-ROOT-CAUSE-ANALYSIS-001`已完成；分支必须为`codex/p5-implementation-001`。
+- 完成标准：红灯测试先行；四项根因均有实现与专项测试；新开发种子覆盖无漂移、中等方差、噪声、组组成、少量异常值、持续漂移与恢复；保存机器可读结果、实施报告、根因对应和剩余风险；只有实测通过项标记PASS。
+- 冻结边界：P5-1A配置、最终种子、结果JSON和原始JSONL不得修改或用于调参；`COMPETITION-CORE-RC-001 / 0.11.0rc1`保持原样。
+- 停止条件：工程累计6小时或四项最小修复及开发验证完成即停止；不得自行进入诊断归因、Qwen集成、Docker构建或正式RC发布。
+- 实验配置：`configs/p5_drift_targeted_repair.json`；原始结果输出到`D:/brace-msi-p5/P5-1C-TARGETED-REPAIR-001/`，仓库仅保存聚合机器证据与报告。
+
 ### P5-1B-ROOT-CAUSE-ANALYSIS-001 统计失败根因与修复设计
 
 - 状态：`DONE_ANALYSIS_ONLY`

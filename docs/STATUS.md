@@ -1,9 +1,9 @@
 # 当前状态
 
 - 最近同步：2026-11-22（Asia/Shanghai）
-- 当前阶段：`P5-1B-ROOT-CAUSE-ANALYSIS-001`只读分析已完成，36项失败归并为五个根因；修复设计和全新验证计划已形成，等待人工审批，未修改漂移算法、P5-1A配置/种子、冻结RC、诊断归因、Qwen或Docker。
+- 当前阶段：`P5-1C-TARGETED-REPAIR-001`已获批准并开始实施；限时6小时，仅修复参考池准入、统计贡献收据、合法group/time hints与maxT/BY降级逻辑，并使用全新开发种子验证。
 - 当前路线：**官方SDK 1.0.2 + 未知同格式任务自动识别 + 每轮至少一次真实父checkpoint候选训练 + 双阶段Qwen实验决策 + 同作用域确定性指标事实 + 历史数据/历史模型 + PyTRiO镜像外Agent训练 + 本地测试/正式上传双镜像分离** `[D-079]` `[D-086]` `[D-087]` `[D-093]`
-- 当前无READY任务：P5-1A仍为`COMPLETED_FAILED_GATES_STOPPED`；P5-1B为`DONE_ANALYSIS_ONLY`。确定需改代码的问题是参考纳入语义、尺度/噪声功效可观测性、组组成接口及BY校准路径；相关结构每格n=6的区间失败只需扩大到至少35条独立流。修复实施必须使用新实验ID和全新种子，仍待批准。P3实施继续`BLOCKED_USER_REVIEW`；`FORMAL-RELEASE-001 (BLOCKED_EXTERNAL)`和冻结归档保持不变。
+- 当前唯一执行任务：`P5-1C-TARGETED-REPAIR-001 (IN_PROGRESS)`。P5-1A仍为`COMPLETED_FAILED_GATES_STOPPED`且最终配置/种子/原始结果封存；P5-1B保持`DONE_ANALYSIS_ONLY`。P3、诊断归因、远程模型、Docker和正式发布均不在本任务范围。
 - 稳定边界：全部历史RC和实验不改写；`0.5.0rc1`只作研究证据，不得上传。正式线从D-058开始只输出原生官方MLP续训checkpoint。D-090仅授权一次镜像外正式部署Advisor SFT，不把Sampler或私有SDK装入正式镜像。
 - 官方试运行：O-PLATFORM-018证明`0.10.4rc2`的正式提案有效且结算15,146 Token，但30/30主动retain造成零候选；精确剩余次数仍以平台页面实时显示为准。
 - 当前冻结正式候选：`D:/brace-msi-release/COMPETITION-CORE-RC-001/harness.tar`；SHA-256 `b7ba01bcc8a60502896082b58578b56c60c539a5460bb373285ff0abe4503e30`；镜像ID `sha256:578e7c9aa0c507efddeb6b4a182fc28299591a2a0a0e7fb1401a02f39b50da51`。`0.10.6rc1`继续作为历史Protocol RC，不得代替当前候选。

@@ -1,0 +1,38 @@
+{
+  "experiment_id": "P5-1C-TARGETED-REPAIR-001",
+  "scope": "development_only_not_final_validation",
+  "dimensions": [24, 34, 128],
+  "rows_per_window": 80,
+  "block_size": 4,
+  "windows": 10,
+  "permutations": 2047,
+  "alpha_run": 0.05,
+  "effect_threshold": 2.0,
+  "confirmation_windows": 2,
+  "scenarios": [
+    "no_drift",
+    "medium_variance",
+    "noise_increase",
+    "group_composition",
+    "sparse_outlier",
+    "persistent_drift_recovery"
+  ],
+  "generation_seed_start": 620001,
+  "generation_seed_end": 620072,
+  "permutation_seed_start": 621001,
+  "permutation_seed_end": 621072,
+  "property_seed_start": 622001,
+  "property_seed_end": 622099,
+  "sealed_p5_1a_seed_ranges": [
+    "510001..510004",
+    "520001..520004",
+    "530001..530040",
+    "540001..540008",
+    "550001..550008",
+    "560001..560006",
+    "570001",
+    "580001"
+  ],
+  "raw_output_dir": "D:/brace-msi-p5/P5-1C-TARGETED-REPAIR-001",
+  "time_limit_hours": 6
+}
