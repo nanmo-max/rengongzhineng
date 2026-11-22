@@ -946,3 +946,11 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 - 性能边界：A/B/C冻结开发矩阵描述性变化为A Macro-F1 +2.35%、B/C RMSE -0.17%/-1.88%；代理分类/回归显著改善。公开validation已历史暴露，精确镜像复演只验证协议，不作独立或官方成绩。
 - Agent记录：A2 PyTRiO SFT严格总体87.5%未达90%门，正式配置保留平台基础Qwen；SwanLab公开链接`https://swanlab.cn/@nanmo-max/BRACE-MSI/runs/ph2ztekq`只含脱敏聚合记录。
 - 判定：`LOCAL_RELEASE_PASS / OFFICIAL_PLATFORM_BLOCKED_EXTERNAL`。机器审计和HTML位于`D:/brace-msi-release/COMPETITION-CORE-RC-001/`；仓库摘要见`docs/results/COMPETITION-CORE-RC-001.md`。
+
+## P5-IMPLEMENTATION-001-PERF（COMPLETED_SYNTHETIC_ENGINEERING_BENCHMARK）
+
+- 目的：在不读取任何比赛数据、不运行工业模型训练的前提下，测量P5同步块置换maxT核心在预注册最坏维度上的CPU、墙钟和RSS，并验证优化不得降低置换次数或alpha分辨率。
+- 合成输入：固定seed `20261122`；128维相关高斯，参考/当前各80行，40个完整块；当前第0特征注入`+1.5`位置漂移；2047次置换；`alpha_run=0.05`、`alpha_window=0.005`、最小经验p值`1/2048`。
+- A1：朴素逐特征实现CPU`45.15625s`、墙钟`43.885438s`、峰值RSS`75,898,880B`，超过30秒工程目标，标记负结果并保留。
+- A2唯一变化：向量化相同位置/尺度/Wasserstein/KS计算，不改变seed、数据、统计量、置换次数、alpha或效应量门。CPU`6.90625s`、墙钟`5.546296s`、峰值RSS`76,218,368B`、RSS增量`31,383,552B`；只选择注入漂移的1个特征。
+- 判定：`PASS_ENGINEERING_TARGET`，只证明合成工程成本和确定性统计行为；不证明真实工业检出率、误报率、诊断有效性或官方性能。证据见`docs/results/P5-IMPLEMENTATION-001.md/json`。

@@ -646,3 +646,27 @@ PyTRiO通用接口、Qwen3.5-4B基础模型平台校验和持久化Sampler路线
 - 已确认：Optuna 5.1.0稳定文档提供`TPESampler`，支持`n_startup_trials`、`n_ei_candidates`、`seed`和`multivariate`配置；项目声明Python `>=3.10`和MIT许可证。
 - 实施边界：仅允许加入独立研究锁文件和研究分支，不进入`0.11.0rc1`正式运行白名单；本项目采用单目标独立TPE并显式记录startup/TPE来源，不能把前三次随机startup算作贝叶斯建议。
 - 链接：<https://optuna.readthedocs.io/en/stable/reference/samplers/generated/optuna.samplers.TPESampler.html>；<https://github.com/optuna/optuna/blob/master/LICENSE>；<https://github.com/optuna/optuna/blob/master/pyproject.toml>。
+
+### L-DRIFT-001 漂移检测与多重检验方法依据
+
+- 类型：公开学术论文与官方统计文档；不是赛事官方要求，也不是当前RC运行证据。
+- 检查日期：2026-11-22。
+- 已确认：Gama等人的综述区分输入分布变化与预测关系变化；输入`p(X)`变化本身不能证明`p(y|X)`或设备物理状态改变。ADWIN以自适应窗口处理时变数据并讨论误报/漏报界限。Benjamini-Hochberg方法控制多重检验的FDR。NIST说明KS基于经验CDF且有限样本临界值需谨慎；SciPy官方文档给出一维Wasserstein距离定义。
+- 设计边界：P5只将这些方法作为候选组件和科学边界依据。推荐的稳健双窗口组合是团队设计，尚未实现、测试或证明优于其他方法。
+- 链接：<https://doi.org/10.1145/2523813>；<https://doi.org/10.1137/1.9781611972771.42>；<https://doi.org/10.1111/j.2517-6161.1995.tb02031.x>；<https://www.itl.nist.gov/div898/handbook/prc/section2/prc212.htm>；<https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.wasserstein_distance.html>。
+
+### L-AUTH-018 P5第一阶段实施授权
+
+- 类型：用户对本地研究实施范围的明确授权，不是赛事官方要求或平台接口证据。
+- 来源：2026-11-22当前对话中的“正式批准P5第一阶段实施”。
+- 已授权：独立研究分支内冻结`DriftReport/DiagnosisReport/DriftState`接口，测试先行实现特征级统计合并、同步块置换maxT、BY降级、效应量门、alpha-spending及参考窗口确认/冻结/恢复/重新校准。
+- 禁止边界：不接入Qwen，不修改训练器、模型选择器、官方SDK、checkpoint或冻结RC；不运行工业模型训练，不读取公开validation/XJTU密封/隐藏数据，不构建Docker、上传平台或消耗试运行。
+- 停止边界：第一阶段完成后等待人工审查；不得自行进入诊断归因、Qwen集成、Docker或正式RC发布。
+
+### L-EVIDENCE-014 P5第一阶段本地实现证据
+
+- 类型：本地合成统计、自动化测试和文件哈希证据；不是官方成绩或真实工业漂移验证。
+- 来源：`docs/results/P5-IMPLEMENTATION-001.md/json`，分支`codex/p5-implementation-001`。
+- 已确认：24项P5专项、676项全量回归通过；128维、80+80行、2047次同步块置换实测墙钟`5.546296s`、CPU`6.90625s`、峰值RSS`76,218,368B`。朴素A1墙钟`43.885438s`负证据保留，A2未降低置换次数或alpha分辨率。
+- 冻结边界：`0.11.0rc1`归档SHA-256仍为`B7BA01BC...503E30`；受保护SDK/checkpoint/训练/选择/预测文件相对实施基线零差异。
+- 推论限制：尚无完整八场景统计区间、诊断归因、Qwen使用证据、正式轮链接入、容器或工业数据证据，不能声称官方五步闭环已经补齐。

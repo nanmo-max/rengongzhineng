@@ -966,3 +966,20 @@
 - 仓库代码和依赖中未发现Random Search/TPE/Optuna同预算实现或结果。只读核验Optuna官方资料后，选择研究态`optuna==5.1.0`的经典单目标独立TPE；不修改正式依赖或镜像。
 - 形成共享TrialRunner、Random/TPE/Qwen-History/Qwen-No-History、配对预算、C任务先行、三任务二次批准、数据隔离、验收和停止条件的规格与实施计划。
 - 未修改产品代码、未运行训练、未调用PyTRiO/SwanLab、未读取public validation/XJTU密封/隐藏数据、未构建镜像或使用官方次数。
+
+# 2026-11-22 P5-DRIFT-DIAGNOSIS-DESIGN-001
+
+- 只读核对正式`brace_formal`链、formal allowlist、旧KS研究模块、官方训练包聚合画像和P4证据；没有读取A/B/C `public/validation.jsonl`、XJTU密封或隐藏数据。
+- 比较单KS、固定PSI、逐特征ADWIN、MMD与稳健双窗口方案；推荐NumPy可实现的稳健位置/尺度/Wasserstein/KS辅助统计、历史稳定窗口经验校准、BH-FDR+效应量双门和连续窗口确认。
+- 形成统计事实、可能归因和未知项三层诊断合同；Qwen必须用有效`evidence_refs`连接诊断与实验提案，仅把报告放入prompt不算利用证据。
+- 完成八类合成场景、误报/漏报/延迟/定位/CPU/RSS指标、Harness最小修改范围、18—25工程小时实施估计和四级决策门。
+- 交付目录：`docs/designs/P5-DRIFT-DIAGNOSIS-2026-11-22/`。未修改产品代码、正式RC或镜像；未训练、未调用Qwen/PyTRiO/SwanLab、未构建Docker、未上传平台或消耗试运行。
+
+# 2026-11-22 P5-IMPLEMENTATION-001 第一阶段
+
+- 从`0a592cf`创建独立分支`codex/p5-implementation-001`；冻结`0.11.0rc1`归档及SDK/checkpoint/训练/选择/预测源码不变。
+- 测试先行新增不可变`DriftReport/DiagnosisReport/DriftState`接口；实现特征内稳健位置、尺度、Wasserstein、KS和缺失率统计合并，同步完整块置换maxT、BY保守降级、效应量门和经验p值分辨率失败关闭。
+- 实现已知/开放时域alpha-spending及`CALIBRATING/STABLE/WARNING/CONFIRMED/RECOVERY/REBASE_PENDING/STABLE_NEW_BASELINE`双参考池状态机；WARNING/CONFIRMED、恢复中窗口和损坏状态不能污染活动参考。
+- P5专项`24 passed`；全量`python -m pytest -q`为`676 passed in 167.35s`；compileall通过。Ruff在锁定环境中未安装，未新增依赖。
+- 128维、80+80行、2047次同步置换A1朴素实现墙钟`43.885438s`未达30秒目标；保留负证据后以等价向量化优化为A2，墙钟`5.546296s`、CPU`6.90625s`、峰值RSS`76,218,368B`，统计预算和最小经验p值`1/2048`不变。
+- 本阶段未运行工业模型训练、未调用Qwen/PyTRiO/SwanLab、未读取public validation/XJTU密封/隐藏数据、未构建Docker或使用官方次数。结果见`results/P5-IMPLEMENTATION-001.md/json`。

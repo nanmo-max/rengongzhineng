@@ -193,3 +193,10 @@
 - 状态：`DESIGN_MITIGATION_PENDING_IMPLEMENTATION`
 - 风险：PyTRiO SDK成功采样至少暴露Sampler运行ID，但未必公开每次成功请求的服务端request ID；自行生成字符串会造成“真实Qwen调用”伪证据。
 - 缓解：分别保存官方宿主`call_id`、PyTRiO `sampling_run_cuid`、SDK实际暴露的request ID和本地correlation ID。未暴露字段写`null/not_exposed_by_sdk`；缺少真实远程收据时整个Qwen臂无效且不得用确定性fallback补名。
+
+## R-067 高维漂移检测误报或诊断过度归因
+
+- 等级：Critical
+- 状态：`PHASE1_STATISTICAL_CORE_IMPLEMENTED_FULL_VALIDATION_PENDING`
+- 风险：Gas 128维逐特征检验造成多重比较误报；大样本微小差异被误判为有意义漂移；单次异常值触发更新；输入漂移被错误解释为设备故障或概念漂移。
+- 缓解：第一阶段已实现特征内联合统计、同步块置换maxT、BY降级、效应量双门、经验p值分辨率失败关闭、alpha-spending和双参考池恢复状态机；24项专项与676项回归通过。完整八场景无漂移FPR/检出/定位/恢复区间、诊断归因和Qwen证据匹配尚未实施，因此仍禁止接入正式轮链或声称真实工业有效。

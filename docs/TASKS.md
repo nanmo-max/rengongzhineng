@@ -4,6 +4,28 @@
 
 ## 当前任务图
 
+### P5-DRIFT-DIAGNOSIS-DESIGN-001 漂移监测与诊断归因最小可验证设计
+
+- 状态：`DONE_DESIGN_ONLY`
+- 授权：用户于2026-11-22依据P4审计结果，要求只研究正式RC缺失的漂移监测和诊断归因，形成算法、schema、合成验证、Harness集成和实施计划；本轮禁止代码、训练、远程模型、Docker、禁止数据和平台运行。
+- 依赖：P4官方五大能力审计、COMPETITION-CORE-PLAN-001、D-093至D-095。
+- 优先级：P0官方符合性设计；不改变冻结`0.11.0rc1`。
+- 完成标准：比较轻量检测方法，明确推荐算法、误报控制、事实/假设边界、Qwen证据引用、合成八场景、集成文件范围、工期和停止条件。
+- 停止条件：不得修改正式RC、运行训练、调用Qwen/PyTRiO、读取公开validation/XJTU密封/隐藏数据、构建Docker、上传平台或消耗试运行。
+- 证据：`designs/P5-DRIFT-DIAGNOSIS-2026-11-22/`内五份设计文档；仅只读源码、既有聚合资料与公开方法文献。
+
+### P5-DRIFT-DIAGNOSIS-IMPLEMENT-001 漂移监测与诊断归因实施
+
+- 状态：`PHASE1_DONE_BLOCKED_USER_REVIEW`
+- 授权：用户于2026-11-22正式批准`P5-IMPLEMENTATION-001`第一阶段，仅允许接口冻结、红灯测试、漂移监测统计核心、alpha-spending和参考状态机；明确禁止本阶段进入诊断归因、Qwen、训练器/选择器、Docker或RC发布。
+- 依赖：P5五份设计经用户审批；在新分支执行，不原地修改冻结`0.11.0rc1`。
+- 优先级：P0；优先于P3大规模自适应优化对照。
+- 完成标准：依次完成schema红灯测试、稳健漂移监测、诊断归因、Qwen事实引用、合成验证、回归和容器门；只有全部通过才允许产生新RC候选。
+- 停止条件：无漂移误报无法控制、诊断过度归因、任何未来/禁止数据泄漏、逐样本信息进入Qwen/公开日志、破坏父链/选择/回滚、或在验证结果后调整阈值重跑。
+- 设计入口：`designs/P5-DRIFT-DIAGNOSIS-2026-11-22/P5_IMPLEMENTATION_ROADMAP.md`。
+- 第一阶段完成证据：分支`codex/p5-implementation-001`；24项专项、676项全量回归通过；2047次/128维实测墙钟`5.546296s`、CPU`6.90625s`、峰值RSS`76,218,368B`；冻结归档SHA-256保持`B7BA01BC...503E30`。详见`results/P5-IMPLEMENTATION-001.md/json`。
+- 剩余阻塞：诊断归因逻辑、Qwen证据能力匹配、完整八场景合成验证、Harness集成与容器门均未获本阶段授权；等待人工审查，不得自行继续。
+
 ### ADAPTIVE-OPT-COMPARE-DESIGN-001 自适应优化算法公平对照设计
 
 - 状态：`DONE_DESIGN_ONLY`

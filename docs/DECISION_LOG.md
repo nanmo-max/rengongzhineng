@@ -232,3 +232,17 @@
 - 实验顺序：先只在C Engine官方train内部按完整unit完成6候选可行性探针；不读公开validation。协议通过后才能预注册A/B/C三任务、三配对种子、每臂10候选的大矩阵，且大矩阵仍需用户再次明确批准。
 - 发布边界：`0.11.0rc1`、正式镜像白名单、XJTU密封和全部历史实验冻结；Optuna/PyTRiO研究依赖不进入正式镜像。本地train内部结果只能证明相对优化效率，不能冒充隐藏泛化。
 - 依据：用户P3任务书；50轮收据字段完整但仅两种重复recipe的只读审计；`superpowers/specs/2026-11-22-adaptive-optimizer-competition-design.md`；O-OPTUNA-001。
+
+## D-098：P5采用稳健双窗口证据链作为待审批设计（2026-11-22，PROVISIONAL）
+
+- 决策：P5最小方案采用稳健位置/尺度、一维Wasserstein和KS辅助统计组成的双窗口监测；阈值由历史稳定窗口经验校准，特征多重比较使用FDR与效应量双门，漂移确认要求持续证据。诊断严格拆分统计事实、可能解释和未知项，禁止把输入漂移写成设备故障。
+- 集成边界：在`TaskProfiler`与第一次`QwenExperimentAgent`调用之间加入`DriftMonitor → DiagnosisAttributor → EvidenceProjection`；Qwen提案必须引用有效事实ID。训练、指标、ArtifactSelector、回滚、checkpoint、SDK和预测不改。冻结`0.11.0rc1`不原地修改。
+- 状态边界：该方案只有书面设计，没有代码、合成验证、工业验证或正式镜像证据；用户审批前`P5-DRIFT-DIAGNOSIS-IMPLEMENT-001`保持阻塞。
+- 依据：P4五大能力审计、L-DRIFT-001及`designs/P5-DRIFT-DIAGNOSIS-2026-11-22/`五份文档。
+
+## D-099：P5第一阶段采用相关性感知校准和双参考池状态机（2026-11-22，LOCKED_PHASE1）
+
+- 决策：特征内位置/尺度/Wasserstein/KS统计合并为联合得分；特征间满足块交换性时采用同步完整块置换`maxT`，无法使用maxT时提供BY保守降级。BH不作为无条件默认。调整后显著性与标准化效应量必须同时过门；经验p值分辨率不足时返回`insufficient_calibration`而不是稳定。
+- 序贯与状态：运行级误报由已知/开放时域alpha-spending账本约束；活动参考池与隔离候选池分离，WARNING/CONFIRMED冻结旧参考，短暂波动经RECOVERY回旧epoch，持续新状态只有达到候选稳定窗口要求后才能原子建立新epoch。
+- 实施边界：本阶段只冻结`DriftReport/DiagnosisReport/DriftState`接口并实现漂移统计和状态核心；不接入`round_core`、诊断归因、Qwen、训练器、选择器、Docker或正式RC。冻结`0.11.0rc1`归档和受保护源码保持原样。
+- 证据：`results/P5-IMPLEMENTATION-001.md/json`；24项专项、676项全量回归；128维/2047置换A2墙钟`5.546296s`、CPU`6.90625s`、峰值RSS`76,218,368B`。A1朴素实现43.885秒负证据保留，未降低统计预算。

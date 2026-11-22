@@ -1,0 +1,56 @@
+{
+  "format": "brace-msi.p5-implementation-phase1.v1",
+  "status": "PHASE1_PASS_STOP_FOR_HUMAN_REVIEW",
+  "branch": "codex/p5-implementation-001",
+  "base_commit": "0a592cf26a7ff120d216b7331caa4ecca696c6fd",
+  "scope": [
+    "schema_interfaces",
+    "feature_omnibus_statistics",
+    "block_permutation_maxT",
+    "by_fallback",
+    "effect_gate",
+    "alpha_spending",
+    "reference_state_machine"
+  ],
+  "tests": {
+    "p5_specialized_passed": 24,
+    "full_suite_passed": 676,
+    "full_suite_seconds": 167.54
+  },
+  "benchmark": {
+    "dimensions": 128,
+    "reference_samples": 80,
+    "current_samples": 80,
+    "permutations": 2047,
+    "minimum_empirical_p": 0.00048828125,
+    "before_vectorization": {
+      "cpu_seconds": 45.15625,
+      "wall_seconds": 43.88543789999858,
+      "rss_peak_bytes": 75898880,
+      "rss_peak_delta_bytes": 32370688,
+      "accepted": false
+    },
+    "after_vectorization": {
+      "cpu_seconds": 6.90625,
+      "wall_seconds": 5.546295899999677,
+      "rss_peak_bytes": 76218368,
+      "rss_peak_delta_bytes": 31383552,
+      "selected_features": 1,
+      "accepted": true
+    }
+  },
+  "frozen_rc": {
+    "archive": "D:/brace-msi-release/COMPETITION-CORE-RC-001/harness.tar",
+    "bytes": 81232384,
+    "sha256": "B7BA01BCC8A60502896082B58578B56C60C539A5460BB373285FF0ABE4503E30",
+    "protected_tracked_diff": "clean"
+  },
+  "external_actions": {
+    "industrial_training": 0,
+    "qwen_calls": 0,
+    "pytrio_calls": 0,
+    "docker_builds": 0,
+    "platform_uploads": 0,
+    "official_trial_runs": 0
+  }
+}

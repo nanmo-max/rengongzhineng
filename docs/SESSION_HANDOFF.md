@@ -1,5 +1,13 @@
 # 新会话恢复与交接
 
+## 2026-11-22 P5第一阶段实施入口（当前）
+
+1. 当前分支`codex/p5-implementation-001`；`P5-IMPLEMENTATION-001`第一阶段已完成并按用户停止条件等待人工审查。结果入口为`docs/results/P5-IMPLEMENTATION-001.md/json`。
+2. 已新增未接线的`src/brace_formal/drift.py`、`diagnosis.py`和`drift_state.py`；Diagnosis仅冻结接口，没有实现归因。统计核心包含同步块置换maxT、BY降级、效应量门、经验p值分辨率检查和alpha-spending；参考状态机覆盖冻结、恢复与新epoch重建。
+3. P5专项24项、全量676项通过；128维/2047置换A2实测墙钟`5.546296s`、CPU`6.90625s`、峰值RSS`76,218,368B`。A1 43.885秒负结果保留。
+4. 冻结`0.11.0rc1`归档仍为`D:/brace-msi-release/COMPETITION-CORE-RC-001/harness.tar`，SHA-256 `B7BA01BCC8A60502896082B58578B56C60C539A5460BB373285FF0ABE4503E30`；SDK/checkpoint/训练/选择/预测受保护文件相对基线零差异。
+5. 当前无READY任务。不得自行进入诊断归因、Qwen集成、完整八场景验证、Harness接线、Docker或新RC；这些继续`BLOCKED_USER_REVIEW`。
+
 ## 2026-11-22 P3自适应优化算法对照入口（当前）
 
 1. 当前分支仍为`codex/first-principles-rebuild`；`0.11.0rc1`、正式归档和全部历史实验保持冻结。
