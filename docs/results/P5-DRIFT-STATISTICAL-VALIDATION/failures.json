@@ -1,0 +1,530 @@
+[
+  {
+    "check_id": "correlation_check.d128.block_positive.block_permutation_maxT.single_window_fpr",
+    "observed": 0.041666666666666664,
+    "threshold": {
+      "max": 0.01
+    },
+    "passed": false,
+    "gating": true
+  },
+  {
+    "check_id": "correlation_check.d128.block_positive.block_permutation_maxT.run_level_false_alarm",
+    "observed": {
+      "point": 0.0,
+      "wilson_95": [
+        2.7755575615628914e-17,
+        0.3903342879021653
+      ]
+    },
+    "threshold": {
+      "point_max": 0.05,
+      "wilson_upper_max": 0.1
+    },
+    "passed": false,
+    "gating": true
+  },
+  {
+    "check_id": "correlation_check.d128.independent.block_permutation_maxT.run_level_false_alarm",
+    "observed": {
+      "point": 0.0,
+      "wilson_95": [
+        2.7755575615628914e-17,
+        0.3903342879021653
+      ]
+    },
+    "threshold": {
+      "point_max": 0.05,
+      "wilson_upper_max": 0.1
+    },
+    "passed": false,
+    "gating": true
+  },
+  {
+    "check_id": "correlation_check.d128.mixed_sign.block_permutation_maxT.run_level_false_alarm",
+    "observed": {
+      "point": 0.0,
+      "wilson_95": [
+        2.7755575615628914e-17,
+        0.3903342879021653
+      ]
+    },
+    "threshold": {
+      "point_max": 0.05,
+      "wilson_upper_max": 0.1
+    },
+    "passed": false,
+    "gating": true
+  },
+  {
+    "check_id": "correlation_check.d128.strong_collinear.block_permutation_maxT.single_window_fpr",
+    "observed": 0.041666666666666664,
+    "threshold": {
+      "max": 0.01
+    },
+    "passed": false,
+    "gating": true
+  },
+  {
+    "check_id": "correlation_check.d128.strong_collinear.block_permutation_maxT.run_level_false_alarm",
+    "observed": {
+      "point": 0.0,
+      "wilson_95": [
+        2.7755575615628914e-17,
+        0.3903342879021653
+      ]
+    },
+    "threshold": {
+      "point_max": 0.05,
+      "wilson_upper_max": 0.1
+    },
+    "passed": false,
+    "gating": true
+  },
+  {
+    "check_id": "correlation_check.d24.block_positive.block_permutation_maxT.run_level_false_alarm",
+    "observed": {
+      "point": 0.0,
+      "wilson_95": [
+        2.7755575615628914e-17,
+        0.3903342879021653
+      ]
+    },
+    "threshold": {
+      "point_max": 0.05,
+      "wilson_upper_max": 0.1
+    },
+    "passed": false,
+    "gating": true
+  },
+  {
+    "check_id": "correlation_check.d24.independent.block_permutation_maxT.single_window_fpr",
+    "observed": 0.041666666666666664,
+    "threshold": {
+      "max": 0.01
+    },
+    "passed": false,
+    "gating": true
+  },
+  {
+    "check_id": "correlation_check.d24.independent.block_permutation_maxT.run_level_false_alarm",
+    "observed": {
+      "point": 0.0,
+      "wilson_95": [
+        2.7755575615628914e-17,
+        0.3903342879021653
+      ]
+    },
+    "threshold": {
+      "point_max": 0.05,
+      "wilson_upper_max": 0.1
+    },
+    "passed": false,
+    "gating": true
+  },
+  {
+    "check_id": "correlation_check.d24.mixed_sign.block_permutation_maxT.run_level_false_alarm",
+    "observed": {
+      "point": 0.0,
+      "wilson_95": [
+        2.7755575615628914e-17,
+        0.3903342879021653
+      ]
+    },
+    "threshold": {
+      "point_max": 0.05,
+      "wilson_upper_max": 0.1
+    },
+    "passed": false,
+    "gating": true
+  },
+  {
+    "check_id": "correlation_check.d24.strong_collinear.block_permutation_maxT.run_level_false_alarm",
+    "observed": {
+      "point": 0.0,
+      "wilson_95": [
+        2.7755575615628914e-17,
+        0.3903342879021653
+      ]
+    },
+    "threshold": {
+      "point_max": 0.05,
+      "wilson_upper_max": 0.1
+    },
+    "passed": false,
+    "gating": true
+  },
+  {
+    "check_id": "correlation_check.d34.block_positive.block_permutation_maxT.run_level_false_alarm",
+    "observed": {
+      "point": 0.0,
+      "wilson_95": [
+        2.7755575615628914e-17,
+        0.3903342879021653
+      ]
+    },
+    "threshold": {
+      "point_max": 0.05,
+      "wilson_upper_max": 0.1
+    },
+    "passed": false,
+    "gating": true
+  },
+  {
+    "check_id": "correlation_check.d34.independent.block_permutation_maxT.run_level_false_alarm",
+    "observed": {
+      "point": 0.0,
+      "wilson_95": [
+        2.7755575615628914e-17,
+        0.3903342879021653
+      ]
+    },
+    "threshold": {
+      "point_max": 0.05,
+      "wilson_upper_max": 0.1
+    },
+    "passed": false,
+    "gating": true
+  },
+  {
+    "check_id": "correlation_check.d34.mixed_sign.block_permutation_maxT.run_level_false_alarm",
+    "observed": {
+      "point": 0.0,
+      "wilson_95": [
+        2.7755575615628914e-17,
+        0.3903342879021653
+      ]
+    },
+    "threshold": {
+      "point_max": 0.05,
+      "wilson_upper_max": 0.1
+    },
+    "passed": false,
+    "gating": true
+  },
+  {
+    "check_id": "correlation_check.d34.strong_collinear.block_permutation_maxT.run_level_false_alarm",
+    "observed": {
+      "point": 0.0,
+      "wilson_95": [
+        2.7755575615628914e-17,
+        0.3903342879021653
+      ]
+    },
+    "threshold": {
+      "point_max": 0.05,
+      "wilson_upper_max": 0.1
+    },
+    "passed": false,
+    "gating": true
+  },
+  {
+    "check_id": "composition_change.d128.medium.block_positive.event_recall",
+    "observed": {
+      "point": 0.25,
+      "wilson_95": [
+        0.071479212752109,
+        0.5907245696898311
+      ]
+    },
+    "threshold": {
+      "min": 0.8
+    },
+    "passed": false,
+    "gating": true
+  },
+  {
+    "check_id": "composition_change.d24.medium.block_positive.event_recall",
+    "observed": {
+      "point": 0.625,
+      "wilson_95": [
+        0.30574239460262737,
+        0.8631557141764026
+      ]
+    },
+    "threshold": {
+      "min": 0.8
+    },
+    "passed": false,
+    "gating": true
+  },
+  {
+    "check_id": "composition_change.d34.medium.block_positive.event_recall",
+    "observed": {
+      "point": 0.75,
+      "wilson_95": [
+        0.40927543031016883,
+        0.9285207872478909
+      ]
+    },
+    "threshold": {
+      "min": 0.8
+    },
+    "passed": false,
+    "gating": true
+  },
+  {
+    "check_id": "noise_increase.d128.medium.block_positive.event_recall",
+    "observed": {
+      "point": 0.0,
+      "wilson_95": [
+        0.0,
+        0.32440756488388023
+      ]
+    },
+    "threshold": {
+      "min": 0.8
+    },
+    "passed": false,
+    "gating": true
+  },
+  {
+    "check_id": "noise_increase.d128.medium.block_positive.median_detection_delay",
+    "observed": {
+      "point": null,
+      "bootstrap_95": [
+        null,
+        null
+      ]
+    },
+    "threshold": {
+      "max_windows": 2.0
+    },
+    "passed": false,
+    "gating": true
+  },
+  {
+    "check_id": "noise_increase.d128.medium.block_positive.recall_at_k",
+    "observed": {
+      "point": null,
+      "bootstrap_95": [
+        null,
+        null
+      ]
+    },
+    "threshold": {
+      "min": 0.8
+    },
+    "passed": false,
+    "gating": true
+  },
+  {
+    "check_id": "noise_increase.d24.medium.block_positive.event_recall",
+    "observed": {
+      "point": 0.125,
+      "wilson_95": [
+        0.02241749145005667,
+        0.4708881822128535
+      ]
+    },
+    "threshold": {
+      "min": 0.8
+    },
+    "passed": false,
+    "gating": true
+  },
+  {
+    "check_id": "noise_increase.d34.medium.block_positive.event_recall",
+    "observed": {
+      "point": 0.25,
+      "wilson_95": [
+        0.071479212752109,
+        0.5907245696898311
+      ]
+    },
+    "threshold": {
+      "min": 0.8
+    },
+    "passed": false,
+    "gating": true
+  },
+  {
+    "check_id": "noise_increase.d34.medium.block_positive.median_detection_delay",
+    "observed": {
+      "point": 2.5,
+      "bootstrap_95": [
+        2.0,
+        3.0
+      ]
+    },
+    "threshold": {
+      "max_windows": 2.0
+    },
+    "passed": false,
+    "gating": true
+  },
+  {
+    "check_id": "variance_shift.d128.medium.block_positive.event_recall",
+    "observed": {
+      "point": 0.0,
+      "wilson_95": [
+        0.0,
+        0.32440756488388023
+      ]
+    },
+    "threshold": {
+      "min": 0.8
+    },
+    "passed": false,
+    "gating": true
+  },
+  {
+    "check_id": "variance_shift.d128.medium.block_positive.median_detection_delay",
+    "observed": {
+      "point": null,
+      "bootstrap_95": [
+        null,
+        null
+      ]
+    },
+    "threshold": {
+      "max_windows": 2.0
+    },
+    "passed": false,
+    "gating": true
+  },
+  {
+    "check_id": "variance_shift.d128.medium.block_positive.recall_at_k",
+    "observed": {
+      "point": null,
+      "bootstrap_95": [
+        null,
+        null
+      ]
+    },
+    "threshold": {
+      "min": 0.8
+    },
+    "passed": false,
+    "gating": true
+  },
+  {
+    "check_id": "variance_shift.d24.medium.block_positive.event_recall",
+    "observed": {
+      "point": 0.0,
+      "wilson_95": [
+        0.0,
+        0.32440756488388023
+      ]
+    },
+    "threshold": {
+      "min": 0.8
+    },
+    "passed": false,
+    "gating": true
+  },
+  {
+    "check_id": "variance_shift.d24.medium.block_positive.median_detection_delay",
+    "observed": {
+      "point": null,
+      "bootstrap_95": [
+        null,
+        null
+      ]
+    },
+    "threshold": {
+      "max_windows": 2.0
+    },
+    "passed": false,
+    "gating": true
+  },
+  {
+    "check_id": "variance_shift.d24.medium.block_positive.recall_at_k",
+    "observed": {
+      "point": null,
+      "bootstrap_95": [
+        null,
+        null
+      ]
+    },
+    "threshold": {
+      "min": 0.8
+    },
+    "passed": false,
+    "gating": true
+  },
+  {
+    "check_id": "variance_shift.d34.medium.block_positive.event_recall",
+    "observed": {
+      "point": 0.125,
+      "wilson_95": [
+        0.02241749145005667,
+        0.4708881822128535
+      ]
+    },
+    "threshold": {
+      "min": 0.8
+    },
+    "passed": false,
+    "gating": true
+  },
+  {
+    "check_id": "variance_shift.d34.medium.block_positive.median_detection_delay",
+    "observed": {
+      "point": 3.0,
+      "bootstrap_95": [
+        3.0,
+        3.0
+      ]
+    },
+    "threshold": {
+      "max_windows": 2.0
+    },
+    "passed": false,
+    "gating": true
+  },
+  {
+    "check_id": "outlier_burst.d128.baseline_contamination",
+    "observed": {
+      "point": 1.0,
+      "wilson_95": [
+        0.6755924351161198,
+        1.0
+      ]
+    },
+    "threshold": {
+      "max": 0.0
+    },
+    "passed": false,
+    "gating": true
+  },
+  {
+    "check_id": "outlier_burst.d24.baseline_contamination",
+    "observed": {
+      "point": 1.0,
+      "wilson_95": [
+        0.6755924351161198,
+        1.0
+      ]
+    },
+    "threshold": {
+      "max": 0.0
+    },
+    "passed": false,
+    "gating": true
+  },
+  {
+    "check_id": "outlier_burst.d34.baseline_contamination",
+    "observed": {
+      "point": 1.0,
+      "wilson_95": [
+        0.6755924351161198,
+        1.0
+      ]
+    },
+    "threshold": {
+      "max": 0.0
+    },
+    "passed": false,
+    "gating": true
+  },
+  {
+    "check_id": "coverage.by_invalid_exchangeability",
+    "observed": false,
+    "threshold": {
+      "required": true
+    },
+    "passed": false,
+    "gating": true
+  }
+]

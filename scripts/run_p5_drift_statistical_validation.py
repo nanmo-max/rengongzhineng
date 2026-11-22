@@ -92,6 +92,30 @@ def bootstrap_mean_interval(
     return float(np.quantile(means, 0.025)), float(np.quantile(means, 0.975))
 
 
+def bootstrap_statistic_interval(
+    values: Iterable[float],
+    *,
+    seed: int,
+    resamples: int,
+    statistic: str,
+) -> tuple[float | None, float | None]:
+    data = np.asarray(list(values), dtype=np.float64)
+    if not len(data):
+        return None, None
+    if len(data) == 1:
+        value = float(data[0])
+        return value, value
+    rng = np.random.default_rng(seed)
+    samples = rng.choice(data, size=(resamples, len(data)), replace=True)
+    if statistic == "mean":
+        estimates = np.mean(samples, axis=1)
+    elif statistic == "median":
+        estimates = np.median(samples, axis=1)
+    else:
+        raise ValueError("unsupported bootstrap statistic")
+    return float(np.quantile(estimates, 0.025)), float(np.quantile(estimates, 0.975))
+
+
 def generate_window(
     *,
     seed: int,
@@ -441,6 +465,40 @@ def baseline_contamination_count(
     return len(set(active_ids).intersection(truth_drift_ids))
 
 
+def replay_reference_statuses(
+    monitor_statuses: Iterable[str], config: dict[str, Any]
+) -> list[str]:
+    state = _stable_state(config["monitor"]["alpha_run"])
+    machine = ReferenceStateMachine(
+        StateMachineConfig(
+            confirmation_windows=config["monitor"]["confirmation_windows"],
+            recovery_windows=config["monitor"]["recovery_windows"],
+            rebase_min_windows=config["monitor"]["rebase_min_windows"],
+        )
+    )
+    trajectory: list[str] = []
+    for index, status in enumerate(monitor_statuses):
+        observation = Observation.WARNING if status == DriftStatus.WARNING.value else Observation.STABLE
+        state = machine.observe(state, f"replay-{index}", observation)
+        trajectory.append(state.status.value)
+    return trajectory
+
+
+def _recovery_time(record: dict[str, Any], config: dict[str, Any]) -> float | None:
+    if record["scenario"] not in {"outlier_burst", "transient_shift", "reverse_recovery"}:
+        return None
+    schedule, _ = _schedule(record, config)
+    changed = [index for index, magnitude in enumerate(schedule) if magnitude != 0.0]
+    if not changed or max(changed) + 1 >= len(schedule):
+        return None
+    recovery_start = max(changed) + 1
+    trajectory = replay_reference_statuses(record["statuses"], config)
+    for index in range(recovery_start, len(trajectory)):
+        if trajectory[index] in {ReferenceStatus.STABLE.value, ReferenceStatus.STABLE_NEW_BASELINE.value}:
+            return float(index - recovery_start)
+    return None
+
+
 def run_job(job: dict[str, Any], config: dict[str, Any]) -> dict[str, Any]:
     reference = generate_window(
         seed=job["seed"] * 1000 + 1,
@@ -650,6 +708,25 @@ def aggregate_records(records: list[dict[str, Any]], config: dict[str, Any]) -> 
         event_low, event_high = wilson_interval(successes=detected, trials=len(items))
         delays = [float(item["detection_delay"]) for item in items if item["detection_delay"] is not None]
         recalls = [float(item["recall_at_k"]) for item in items if item["recall_at_k"] is not None]
+        recovery_times = [
+            value
+            for item in items
+            if (value := _recovery_time(item, config)) is not None
+        ]
+        delay_ci = bootstrap_statistic_interval(
+            delays,
+            seed=bootstrap_seed + int(dimension) + 1000,
+            resamples=config["statistics"]["bootstrap_resamples"],
+            statistic="median",
+        )
+        recall_ci = bootstrap_statistic_interval(
+            recalls,
+            seed=bootstrap_seed + int(dimension) + 2000,
+            resamples=config["statistics"]["bootstrap_resamples"],
+            statistic="mean",
+        )
+        contamination_count = sum(item["baseline_contamination_count"] > 0 for item in items)
+        contamination_ci = wilson_interval(successes=contamination_count, trials=len(items))
         aggregate: dict[str, Any] = {
             "scenario": scenario,
             "dimension": dimension,
@@ -661,12 +738,22 @@ def aggregate_records(records: list[dict[str, Any]], config: dict[str, Any]) -> 
             "event_recall": detected / len(items),
             "event_recall_wilson_95": [event_low, event_high],
             "miss_rate": 1.0 - detected / len(items),
+            "miss_rate_wilson_95": [1.0 - event_high, 1.0 - event_low],
             "median_detection_delay": statistics.median(delays) if delays else None,
+            "median_detection_delay_bootstrap_95": list(delay_ci),
             "mean_recall_at_k": float(np.mean(recalls)) if recalls else None,
-            "baseline_contamination_rate": sum(
-                item["baseline_contamination_count"] > 0 for item in items
-            )
-            / len(items),
+            "mean_recall_at_k_bootstrap_95": list(recall_ci),
+            "baseline_contamination_rate": contamination_count / len(items),
+            "baseline_contamination_wilson_95": list(contamination_ci),
+            "mean_time_to_recovery": float(np.mean(recovery_times)) if recovery_times else None,
+            "mean_time_to_recovery_bootstrap_95": list(
+                bootstrap_statistic_interval(
+                    recovery_times,
+                    seed=bootstrap_seed + int(dimension) + 3000,
+                    resamples=config["statistics"]["bootstrap_resamples"],
+                    statistic="mean",
+                )
+            ),
             "alpha_excess_rate": sum(item["alpha_excess"] > 1e-12 for item in items)
             / len(items),
             "mean_cpu_seconds": float(np.mean([item["cpu_seconds"] for item in items])),
@@ -687,6 +774,241 @@ def aggregate_records(records: list[dict[str, Any]], config: dict[str, Any]) -> 
             aggregate.update(null)
         output.append(aggregate)
     return output
+
+
+def evaluate_acceptance(
+    aggregates: list[dict[str, Any]],
+    resources: list[dict[str, Any]],
+    config: dict[str, Any],
+    *,
+    require_coverage: bool = True,
+) -> dict[str, Any]:
+    limits = config["acceptance"]
+    checks: list[dict[str, Any]] = []
+
+    def add(
+        check_id: str,
+        observed: Any,
+        threshold: Any,
+        passed: bool,
+        *,
+        gating: bool = True,
+    ) -> None:
+        checks.append(
+            {
+                "check_id": check_id,
+                "observed": observed,
+                "threshold": threshold,
+                "passed": bool(passed),
+                "gating": gating,
+            }
+        )
+
+    null_groups = [
+        item
+        for item in aggregates
+        if item["scenario"] == "no_drift"
+        or (item["scenario"] == "correlation_check" and item["variant"] == "null")
+    ]
+    for item in null_groups:
+        prefix = (
+            f"{item['scenario']}.d{item['dimension']}.{item['correlation']}.{item['method']}"
+        )
+        add(
+            prefix + ".single_window_fpr",
+            item["single_window_fpr"],
+            {"max": limits["single_window_fpr_point_max"]},
+            item["single_window_fpr"] <= limits["single_window_fpr_point_max"],
+        )
+        add(
+            prefix + ".confirmation_fpr",
+            item["confirmation_fpr"],
+            {"max": limits["confirmation_fpr_point_max"]},
+            item["confirmation_fpr"] <= limits["confirmation_fpr_point_max"],
+        )
+        add(
+            prefix + ".run_level_false_alarm",
+            {
+                "point": item["run_level_false_alarm"],
+                "wilson_95": item["run_level_wilson_95"],
+            },
+            {
+                "point_max": limits["run_level_false_alarm_point_max"],
+                "wilson_upper_max": limits["run_level_false_alarm_wilson_upper_max"],
+            },
+            item["run_level_false_alarm"] <= limits["run_level_false_alarm_point_max"]
+            and item["run_level_wilson_95"][1]
+            <= limits["run_level_false_alarm_wilson_upper_max"],
+        )
+
+    detection_scenarios = {
+        "mean_shift",
+        "variance_shift",
+        "joint_shift",
+        "progressive_shift",
+        "noise_increase",
+        "composition_change",
+        "correlation_check",
+    }
+    detection_groups = [
+        item
+        for item in aggregates
+        if item["scenario"] in detection_scenarios
+        and item["method"] == config["primary_method"]
+        and item["variant"] != "null"
+        and item["effect"] in {"medium", "large"}
+    ]
+    for item in detection_groups:
+        prefix = (
+            f"{item['scenario']}.d{item['dimension']}.{item['effect']}."
+            f"{item['correlation']}"
+        )
+        add(
+            prefix + ".event_recall",
+            {
+                "point": item["event_recall"],
+                "wilson_95": item["event_recall_wilson_95"],
+            },
+            {"min": limits["medium_large_event_recall_min"]},
+            item["event_recall"] >= limits["medium_large_event_recall_min"],
+        )
+        delay = item["median_detection_delay"]
+        add(
+            prefix + ".median_detection_delay",
+            {
+                "point": delay,
+                "bootstrap_95": item["median_detection_delay_bootstrap_95"],
+            },
+            {"max_windows": limits["medium_large_median_delay_max_windows"]},
+            delay is not None and delay <= limits["medium_large_median_delay_max_windows"],
+        )
+        localization = item["mean_recall_at_k"]
+        add(
+            prefix + ".recall_at_k",
+            {
+                "point": localization,
+                "bootstrap_95": item["mean_recall_at_k_bootstrap_95"],
+            },
+            {"min": limits["recall_at_k_min"]},
+            localization is not None and localization >= limits["recall_at_k_min"],
+        )
+
+    outlier_groups = [item for item in aggregates if item["scenario"] == "outlier_burst"]
+    for item in outlier_groups:
+        add(
+            f"outlier_burst.d{item['dimension']}.direct_confirmation",
+            item["event_recall"],
+            {"max": limits["outlier_direct_confirmation_max"]},
+            item["event_recall"] <= limits["outlier_direct_confirmation_max"],
+        )
+    recovery_groups = [
+        item
+        for item in aggregates
+        if item["scenario"] in {"outlier_burst", "transient_shift", "reverse_recovery"}
+    ]
+    for item in recovery_groups:
+        add(
+            f"{item['scenario']}.d{item['dimension']}.baseline_contamination",
+            {
+                "point": item["baseline_contamination_rate"],
+                "wilson_95": item["baseline_contamination_wilson_95"],
+            },
+            {"max": limits["baseline_contamination_rate_max"]},
+            item["baseline_contamination_rate"] <= limits["baseline_contamination_rate_max"],
+        )
+    invalid_groups = [
+        item for item in aggregates if item["scenario"] == "invalid_exchangeability"
+    ]
+    for item in invalid_groups:
+        add(
+            f"invalid_exchangeability.d{item['dimension']}.fail_closed",
+            item["insufficient_calibration_rate"],
+            {"min": limits["invalid_exchangeability_fail_closed_min"]},
+            item["insufficient_calibration_rate"]
+            >= limits["invalid_exchangeability_fail_closed_min"],
+        )
+    max_alpha_excess = max((item["alpha_excess_rate"] for item in aggregates), default=0.0)
+    add(
+        "alpha_spending.excess_rate",
+        max_alpha_excess,
+        {"max": limits["alpha_budget_excess_max"]},
+        max_alpha_excess <= limits["alpha_budget_excess_max"],
+    )
+    for item in resources:
+        prefix = f"resource.{item['logical_cpu_limit']}core"
+        add(
+            prefix + ".cpu_seconds_per_window",
+            item["per_window_cpu_seconds"],
+            {"max": limits["cpu_seconds_hard_max"]},
+            item["per_window_cpu_seconds"] <= limits["cpu_seconds_hard_max"],
+        )
+        add(
+            prefix + ".wall_seconds_per_window",
+            item["per_window_wall_seconds"],
+            {"max": limits["wall_seconds_hard_max"]},
+            item["per_window_wall_seconds"] <= limits["wall_seconds_hard_max"],
+        )
+        add(
+            prefix + ".rss_delta_bytes",
+            item["rss_delta_bytes"],
+            {"max": limits["rss_delta_bytes_hard_max"]},
+            item["rss_delta_bytes"] <= limits["rss_delta_bytes_hard_max"],
+        )
+        add(
+            prefix + ".aspirational_wall_one_second",
+            item["per_window_wall_seconds"],
+            {"max": limits["wall_seconds_aspirational_target"]},
+            item["per_window_wall_seconds"]
+            <= limits["wall_seconds_aspirational_target"],
+            gating=False,
+        )
+    if require_coverage:
+        scenarios = {item["scenario"] for item in aggregates}
+        dimensions = {item["dimension"] for item in aggregates}
+        required_scenarios = {
+            "no_drift",
+            "mean_shift",
+            "variance_shift",
+            "joint_shift",
+            "progressive_shift",
+            "noise_increase",
+            "outlier_burst",
+            "composition_change",
+            "transient_shift",
+            "reverse_recovery",
+            "correlation_check",
+            "invalid_exchangeability",
+            "by_comparison",
+        }
+        add(
+            "coverage.scenarios",
+            sorted(scenarios),
+            {"required": sorted(required_scenarios)},
+            required_scenarios.issubset(scenarios),
+        )
+        add(
+            "coverage.dimensions",
+            sorted(dimensions),
+            {"required": config["dimensions"]},
+            dimensions == set(config["dimensions"]),
+        )
+        by_invalid = any(
+            item["scenario"] == "invalid_exchangeability"
+            and item["method"] == "by_fallback"
+            for item in aggregates
+        )
+        add(
+            "coverage.by_invalid_exchangeability",
+            by_invalid,
+            {"required": True},
+            by_invalid,
+        )
+    gating_failures = [item for item in checks if item["gating"] and not item["passed"]]
+    return {
+        "overall_pass": not gating_failures,
+        "gating_failure_count": len(gating_failures),
+        "checks": checks,
+    }
 
 
 def _manifest(jobs: list[dict[str, Any]], config: dict[str, Any]) -> dict[str, Any]:

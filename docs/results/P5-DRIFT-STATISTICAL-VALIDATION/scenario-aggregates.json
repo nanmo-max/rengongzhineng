@@ -1,0 +1,3779 @@
+[
+  {
+    "scenario": "by_comparison",
+    "dimension": 128,
+    "effect": "medium",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "mean_medium",
+    "stream_count": 6,
+    "event_recall": 1.0,
+    "event_recall_wilson_95": [
+      0.6096657120978346,
+      1.0
+    ],
+    "miss_rate": 0.0,
+    "miss_rate_wilson_95": [
+      0.0,
+      0.3903342879021654
+    ],
+    "median_detection_delay": 1.0,
+    "median_detection_delay_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "mean_recall_at_k": 1.0,
+    "mean_recall_at_k_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 21.153645833333332,
+    "mean_wall_seconds": 21.240599699999922,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "by_comparison",
+    "dimension": 128,
+    "effect": "medium",
+    "correlation": "block_positive",
+    "method": "by_fallback",
+    "variant": "mean_medium",
+    "stream_count": 6,
+    "event_recall": 0.0,
+    "event_recall_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "miss_rate": 1.0,
+    "miss_rate_wilson_95": [
+      0.6096657120978347,
+      1.0
+    ],
+    "median_detection_delay": null,
+    "median_detection_delay_bootstrap_95": [
+      null,
+      null
+    ],
+    "mean_recall_at_k": null,
+    "mean_recall_at_k_bootstrap_95": [
+      null,
+      null
+    ],
+    "baseline_contamination_rate": 1.0,
+    "baseline_contamination_wilson_95": [
+      0.6096657120978346,
+      1.0
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 20.833333333333332,
+    "mean_wall_seconds": 20.922767883334625,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "by_comparison",
+    "dimension": 128,
+    "effect": "none",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "null",
+    "stream_count": 6,
+    "event_recall": 0.0,
+    "event_recall_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "miss_rate": 1.0,
+    "miss_rate_wilson_95": [
+      0.6096657120978347,
+      1.0
+    ],
+    "median_detection_delay": null,
+    "median_detection_delay_bootstrap_95": [
+      null,
+      null
+    ],
+    "mean_recall_at_k": null,
+    "mean_recall_at_k_bootstrap_95": [
+      null,
+      null
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 20.817708333333332,
+    "mean_wall_seconds": 20.92147613333388,
+    "insufficient_calibration_rate": 0.0,
+    "window_count": 24,
+    "single_window_fpr": 0.041666666666666664,
+    "confirmation_fpr": 0.0,
+    "run_level_false_alarm": 0.0,
+    "run_level_trials": 6,
+    "run_level_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "alpha_excess_count": 0,
+    "single_window_fpr_stream_bootstrap_95": [
+      0.0,
+      0.125
+    ]
+  },
+  {
+    "scenario": "by_comparison",
+    "dimension": 128,
+    "effect": "none",
+    "correlation": "block_positive",
+    "method": "by_fallback",
+    "variant": "null",
+    "stream_count": 6,
+    "event_recall": 0.0,
+    "event_recall_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "miss_rate": 1.0,
+    "miss_rate_wilson_95": [
+      0.6096657120978347,
+      1.0
+    ],
+    "median_detection_delay": null,
+    "median_detection_delay_bootstrap_95": [
+      null,
+      null
+    ],
+    "mean_recall_at_k": null,
+    "mean_recall_at_k_bootstrap_95": [
+      null,
+      null
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 21.197916666666668,
+    "mean_wall_seconds": 21.27777096666796,
+    "insufficient_calibration_rate": 0.0,
+    "window_count": 24,
+    "single_window_fpr": 0.0,
+    "confirmation_fpr": 0.0,
+    "run_level_false_alarm": 0.0,
+    "run_level_trials": 6,
+    "run_level_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "alpha_excess_count": 0,
+    "single_window_fpr_stream_bootstrap_95": [
+      0.0,
+      0.0
+    ]
+  },
+  {
+    "scenario": "by_comparison",
+    "dimension": 24,
+    "effect": "medium",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "mean_medium",
+    "stream_count": 6,
+    "event_recall": 1.0,
+    "event_recall_wilson_95": [
+      0.6096657120978346,
+      1.0
+    ],
+    "miss_rate": 0.0,
+    "miss_rate_wilson_95": [
+      0.0,
+      0.3903342879021654
+    ],
+    "median_detection_delay": 1.0,
+    "median_detection_delay_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "mean_recall_at_k": 1.0,
+    "mean_recall_at_k_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 5.106770833333333,
+    "mean_wall_seconds": 5.124872800000351,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "by_comparison",
+    "dimension": 24,
+    "effect": "medium",
+    "correlation": "block_positive",
+    "method": "by_fallback",
+    "variant": "mean_medium",
+    "stream_count": 6,
+    "event_recall": 0.0,
+    "event_recall_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "miss_rate": 1.0,
+    "miss_rate_wilson_95": [
+      0.6096657120978347,
+      1.0
+    ],
+    "median_detection_delay": null,
+    "median_detection_delay_bootstrap_95": [
+      null,
+      null
+    ],
+    "mean_recall_at_k": null,
+    "mean_recall_at_k_bootstrap_95": [
+      null,
+      null
+    ],
+    "baseline_contamination_rate": 1.0,
+    "baseline_contamination_wilson_95": [
+      0.6096657120978346,
+      1.0
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 5.096354166666667,
+    "mean_wall_seconds": 5.134506333333168,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "by_comparison",
+    "dimension": 24,
+    "effect": "none",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "null",
+    "stream_count": 6,
+    "event_recall": 0.0,
+    "event_recall_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "miss_rate": 1.0,
+    "miss_rate_wilson_95": [
+      0.6096657120978347,
+      1.0
+    ],
+    "median_detection_delay": null,
+    "median_detection_delay_bootstrap_95": [
+      null,
+      null
+    ],
+    "mean_recall_at_k": null,
+    "mean_recall_at_k_bootstrap_95": [
+      null,
+      null
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 5.09375,
+    "mean_wall_seconds": 5.122328883333466,
+    "insufficient_calibration_rate": 0.0,
+    "window_count": 24,
+    "single_window_fpr": 0.0,
+    "confirmation_fpr": 0.0,
+    "run_level_false_alarm": 0.0,
+    "run_level_trials": 6,
+    "run_level_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "alpha_excess_count": 0,
+    "single_window_fpr_stream_bootstrap_95": [
+      0.0,
+      0.0
+    ]
+  },
+  {
+    "scenario": "by_comparison",
+    "dimension": 24,
+    "effect": "none",
+    "correlation": "block_positive",
+    "method": "by_fallback",
+    "variant": "null",
+    "stream_count": 6,
+    "event_recall": 0.0,
+    "event_recall_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "miss_rate": 1.0,
+    "miss_rate_wilson_95": [
+      0.6096657120978347,
+      1.0
+    ],
+    "median_detection_delay": null,
+    "median_detection_delay_bootstrap_95": [
+      null,
+      null
+    ],
+    "mean_recall_at_k": null,
+    "mean_recall_at_k_bootstrap_95": [
+      null,
+      null
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 5.080729166666667,
+    "mean_wall_seconds": 5.113920716667053,
+    "insufficient_calibration_rate": 0.0,
+    "window_count": 24,
+    "single_window_fpr": 0.0,
+    "confirmation_fpr": 0.0,
+    "run_level_false_alarm": 0.0,
+    "run_level_trials": 6,
+    "run_level_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "alpha_excess_count": 0,
+    "single_window_fpr_stream_bootstrap_95": [
+      0.0,
+      0.0
+    ]
+  },
+  {
+    "scenario": "by_comparison",
+    "dimension": 34,
+    "effect": "medium",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "mean_medium",
+    "stream_count": 6,
+    "event_recall": 1.0,
+    "event_recall_wilson_95": [
+      0.6096657120978346,
+      1.0
+    ],
+    "miss_rate": 0.0,
+    "miss_rate_wilson_95": [
+      0.0,
+      0.3903342879021654
+    ],
+    "median_detection_delay": 1.0,
+    "median_detection_delay_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "mean_recall_at_k": 1.0,
+    "mean_recall_at_k_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 6.395833333333333,
+    "mean_wall_seconds": 6.417815449999277,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "by_comparison",
+    "dimension": 34,
+    "effect": "medium",
+    "correlation": "block_positive",
+    "method": "by_fallback",
+    "variant": "mean_medium",
+    "stream_count": 6,
+    "event_recall": 0.0,
+    "event_recall_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "miss_rate": 1.0,
+    "miss_rate_wilson_95": [
+      0.6096657120978347,
+      1.0
+    ],
+    "median_detection_delay": null,
+    "median_detection_delay_bootstrap_95": [
+      null,
+      null
+    ],
+    "mean_recall_at_k": null,
+    "mean_recall_at_k_bootstrap_95": [
+      null,
+      null
+    ],
+    "baseline_contamination_rate": 1.0,
+    "baseline_contamination_wilson_95": [
+      0.6096657120978346,
+      1.0
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 6.424479166666667,
+    "mean_wall_seconds": 6.445590683333042,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "by_comparison",
+    "dimension": 34,
+    "effect": "none",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "null",
+    "stream_count": 6,
+    "event_recall": 0.0,
+    "event_recall_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "miss_rate": 1.0,
+    "miss_rate_wilson_95": [
+      0.6096657120978347,
+      1.0
+    ],
+    "median_detection_delay": null,
+    "median_detection_delay_bootstrap_95": [
+      null,
+      null
+    ],
+    "mean_recall_at_k": null,
+    "mean_recall_at_k_bootstrap_95": [
+      null,
+      null
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 6.390625,
+    "mean_wall_seconds": 6.420120416665668,
+    "insufficient_calibration_rate": 0.0,
+    "window_count": 24,
+    "single_window_fpr": 0.0,
+    "confirmation_fpr": 0.0,
+    "run_level_false_alarm": 0.0,
+    "run_level_trials": 6,
+    "run_level_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "alpha_excess_count": 0,
+    "single_window_fpr_stream_bootstrap_95": [
+      0.0,
+      0.0
+    ]
+  },
+  {
+    "scenario": "by_comparison",
+    "dimension": 34,
+    "effect": "none",
+    "correlation": "block_positive",
+    "method": "by_fallback",
+    "variant": "null",
+    "stream_count": 6,
+    "event_recall": 0.0,
+    "event_recall_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "miss_rate": 1.0,
+    "miss_rate_wilson_95": [
+      0.6096657120978347,
+      1.0
+    ],
+    "median_detection_delay": null,
+    "median_detection_delay_bootstrap_95": [
+      null,
+      null
+    ],
+    "mean_recall_at_k": null,
+    "mean_recall_at_k_bootstrap_95": [
+      null,
+      null
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 6.395833333333333,
+    "mean_wall_seconds": 6.413491783333181,
+    "insufficient_calibration_rate": 0.0,
+    "window_count": 24,
+    "single_window_fpr": 0.0,
+    "confirmation_fpr": 0.0,
+    "run_level_false_alarm": 0.0,
+    "run_level_trials": 6,
+    "run_level_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "alpha_excess_count": 0,
+    "single_window_fpr_stream_bootstrap_95": [
+      0.0,
+      0.0
+    ]
+  },
+  {
+    "scenario": "composition_change",
+    "dimension": 128,
+    "effect": "medium",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "primary",
+    "stream_count": 8,
+    "event_recall": 0.25,
+    "event_recall_wilson_95": [
+      0.071479212752109,
+      0.5907245696898311
+    ],
+    "miss_rate": 0.75,
+    "miss_rate_wilson_95": [
+      0.4092754303101689,
+      0.928520787247891
+    ],
+    "median_detection_delay": 2.0,
+    "median_detection_delay_bootstrap_95": [
+      1.0,
+      3.0
+    ],
+    "mean_recall_at_k": 1.0,
+    "mean_recall_at_k_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "baseline_contamination_rate": 0.5,
+    "baseline_contamination_wilson_95": [
+      0.21521606221387757,
+      0.7847839377861224
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 21.349609375,
+    "mean_wall_seconds": 21.433460400000513,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "composition_change",
+    "dimension": 24,
+    "effect": "medium",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "primary",
+    "stream_count": 8,
+    "event_recall": 0.625,
+    "event_recall_wilson_95": [
+      0.30574239460262737,
+      0.8631557141764026
+    ],
+    "miss_rate": 0.375,
+    "miss_rate_wilson_95": [
+      0.13684428582359742,
+      0.6942576053973726
+    ],
+    "median_detection_delay": 2.0,
+    "median_detection_delay_bootstrap_95": [
+      1.0,
+      3.0
+    ],
+    "mean_recall_at_k": 0.9333333333333333,
+    "mean_recall_at_k_bootstrap_95": [
+      0.7999999999999999,
+      1.0
+    ],
+    "baseline_contamination_rate": 0.375,
+    "baseline_contamination_wilson_95": [
+      0.13684428582359742,
+      0.6942576053973727
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 5.115234375,
+    "mean_wall_seconds": 5.132970662500611,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "composition_change",
+    "dimension": 34,
+    "effect": "medium",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "primary",
+    "stream_count": 8,
+    "event_recall": 0.75,
+    "event_recall_wilson_95": [
+      0.40927543031016883,
+      0.9285207872478909
+    ],
+    "miss_rate": 0.25,
+    "miss_rate_wilson_95": [
+      0.07147921275210911,
+      0.5907245696898311
+    ],
+    "median_detection_delay": 1.0,
+    "median_detection_delay_bootstrap_95": [
+      1.0,
+      2.5
+    ],
+    "mean_recall_at_k": 0.9444444444444443,
+    "mean_recall_at_k_bootstrap_95": [
+      0.8333333333333334,
+      1.0
+    ],
+    "baseline_contamination_rate": 0.125,
+    "baseline_contamination_wilson_95": [
+      0.02241749145005667,
+      0.4708881822128535
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 6.390625,
+    "mean_wall_seconds": 6.420202287499706,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "correlation_check",
+    "dimension": 128,
+    "effect": "medium",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "mean_medium",
+    "stream_count": 6,
+    "event_recall": 1.0,
+    "event_recall_wilson_95": [
+      0.6096657120978346,
+      1.0
+    ],
+    "miss_rate": 0.0,
+    "miss_rate_wilson_95": [
+      0.0,
+      0.3903342879021654
+    ],
+    "median_detection_delay": 1.0,
+    "median_detection_delay_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "mean_recall_at_k": 1.0,
+    "mean_recall_at_k_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 20.75,
+    "mean_wall_seconds": 20.82882685000065,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "correlation_check",
+    "dimension": 128,
+    "effect": "medium",
+    "correlation": "independent",
+    "method": "block_permutation_maxT",
+    "variant": "mean_medium",
+    "stream_count": 6,
+    "event_recall": 1.0,
+    "event_recall_wilson_95": [
+      0.6096657120978346,
+      1.0
+    ],
+    "miss_rate": 0.0,
+    "miss_rate_wilson_95": [
+      0.0,
+      0.3903342879021654
+    ],
+    "median_detection_delay": 1.0,
+    "median_detection_delay_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "mean_recall_at_k": 1.0,
+    "mean_recall_at_k_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 21.479166666666668,
+    "mean_wall_seconds": 21.5415506666662,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "correlation_check",
+    "dimension": 128,
+    "effect": "medium",
+    "correlation": "mixed_sign",
+    "method": "block_permutation_maxT",
+    "variant": "mean_medium",
+    "stream_count": 6,
+    "event_recall": 1.0,
+    "event_recall_wilson_95": [
+      0.6096657120978346,
+      1.0
+    ],
+    "miss_rate": 0.0,
+    "miss_rate_wilson_95": [
+      0.0,
+      0.3903342879021654
+    ],
+    "median_detection_delay": 1.0,
+    "median_detection_delay_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "mean_recall_at_k": 1.0,
+    "mean_recall_at_k_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 21.4765625,
+    "mean_wall_seconds": 21.573263083333586,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "correlation_check",
+    "dimension": 128,
+    "effect": "medium",
+    "correlation": "strong_collinear",
+    "method": "block_permutation_maxT",
+    "variant": "mean_medium",
+    "stream_count": 6,
+    "event_recall": 1.0,
+    "event_recall_wilson_95": [
+      0.6096657120978346,
+      1.0
+    ],
+    "miss_rate": 0.0,
+    "miss_rate_wilson_95": [
+      0.0,
+      0.3903342879021654
+    ],
+    "median_detection_delay": 1.0,
+    "median_detection_delay_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "mean_recall_at_k": 1.0,
+    "mean_recall_at_k_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 20.294270833333332,
+    "mean_wall_seconds": 20.36613753333404,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "correlation_check",
+    "dimension": 128,
+    "effect": "none",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "null",
+    "stream_count": 6,
+    "event_recall": 0.0,
+    "event_recall_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "miss_rate": 1.0,
+    "miss_rate_wilson_95": [
+      0.6096657120978347,
+      1.0
+    ],
+    "median_detection_delay": null,
+    "median_detection_delay_bootstrap_95": [
+      null,
+      null
+    ],
+    "mean_recall_at_k": null,
+    "mean_recall_at_k_bootstrap_95": [
+      null,
+      null
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 20.71875,
+    "mean_wall_seconds": 20.80816633333355,
+    "insufficient_calibration_rate": 0.0,
+    "window_count": 24,
+    "single_window_fpr": 0.041666666666666664,
+    "confirmation_fpr": 0.0,
+    "run_level_false_alarm": 0.0,
+    "run_level_trials": 6,
+    "run_level_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "alpha_excess_count": 0,
+    "single_window_fpr_stream_bootstrap_95": [
+      0.0,
+      0.125
+    ]
+  },
+  {
+    "scenario": "correlation_check",
+    "dimension": 128,
+    "effect": "none",
+    "correlation": "independent",
+    "method": "block_permutation_maxT",
+    "variant": "null",
+    "stream_count": 6,
+    "event_recall": 0.0,
+    "event_recall_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "miss_rate": 1.0,
+    "miss_rate_wilson_95": [
+      0.6096657120978347,
+      1.0
+    ],
+    "median_detection_delay": null,
+    "median_detection_delay_bootstrap_95": [
+      null,
+      null
+    ],
+    "mean_recall_at_k": null,
+    "mean_recall_at_k_bootstrap_95": [
+      null,
+      null
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 20.489583333333332,
+    "mean_wall_seconds": 20.559721233333523,
+    "insufficient_calibration_rate": 0.0,
+    "window_count": 24,
+    "single_window_fpr": 0.0,
+    "confirmation_fpr": 0.0,
+    "run_level_false_alarm": 0.0,
+    "run_level_trials": 6,
+    "run_level_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "alpha_excess_count": 0,
+    "single_window_fpr_stream_bootstrap_95": [
+      0.0,
+      0.0
+    ]
+  },
+  {
+    "scenario": "correlation_check",
+    "dimension": 128,
+    "effect": "none",
+    "correlation": "mixed_sign",
+    "method": "block_permutation_maxT",
+    "variant": "null",
+    "stream_count": 6,
+    "event_recall": 0.0,
+    "event_recall_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "miss_rate": 1.0,
+    "miss_rate_wilson_95": [
+      0.6096657120978347,
+      1.0
+    ],
+    "median_detection_delay": null,
+    "median_detection_delay_bootstrap_95": [
+      null,
+      null
+    ],
+    "mean_recall_at_k": null,
+    "mean_recall_at_k_bootstrap_95": [
+      null,
+      null
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 20.434895833333332,
+    "mean_wall_seconds": 20.52427400000003,
+    "insufficient_calibration_rate": 0.0,
+    "window_count": 24,
+    "single_window_fpr": 0.0,
+    "confirmation_fpr": 0.0,
+    "run_level_false_alarm": 0.0,
+    "run_level_trials": 6,
+    "run_level_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "alpha_excess_count": 0,
+    "single_window_fpr_stream_bootstrap_95": [
+      0.0,
+      0.0
+    ]
+  },
+  {
+    "scenario": "correlation_check",
+    "dimension": 128,
+    "effect": "none",
+    "correlation": "strong_collinear",
+    "method": "block_permutation_maxT",
+    "variant": "null",
+    "stream_count": 6,
+    "event_recall": 0.0,
+    "event_recall_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "miss_rate": 1.0,
+    "miss_rate_wilson_95": [
+      0.6096657120978347,
+      1.0
+    ],
+    "median_detection_delay": null,
+    "median_detection_delay_bootstrap_95": [
+      null,
+      null
+    ],
+    "mean_recall_at_k": null,
+    "mean_recall_at_k_bootstrap_95": [
+      null,
+      null
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 20.984375,
+    "mean_wall_seconds": 21.076861950000723,
+    "insufficient_calibration_rate": 0.0,
+    "window_count": 24,
+    "single_window_fpr": 0.041666666666666664,
+    "confirmation_fpr": 0.0,
+    "run_level_false_alarm": 0.0,
+    "run_level_trials": 6,
+    "run_level_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "alpha_excess_count": 0,
+    "single_window_fpr_stream_bootstrap_95": [
+      0.0,
+      0.125
+    ]
+  },
+  {
+    "scenario": "correlation_check",
+    "dimension": 24,
+    "effect": "medium",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "mean_medium",
+    "stream_count": 6,
+    "event_recall": 1.0,
+    "event_recall_wilson_95": [
+      0.6096657120978346,
+      1.0
+    ],
+    "miss_rate": 0.0,
+    "miss_rate_wilson_95": [
+      0.0,
+      0.3903342879021654
+    ],
+    "median_detection_delay": 1.0,
+    "median_detection_delay_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "mean_recall_at_k": 1.0,
+    "mean_recall_at_k_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 5.0859375,
+    "mean_wall_seconds": 5.1062913333322895,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "correlation_check",
+    "dimension": 24,
+    "effect": "medium",
+    "correlation": "independent",
+    "method": "block_permutation_maxT",
+    "variant": "mean_medium",
+    "stream_count": 6,
+    "event_recall": 1.0,
+    "event_recall_wilson_95": [
+      0.6096657120978346,
+      1.0
+    ],
+    "miss_rate": 0.0,
+    "miss_rate_wilson_95": [
+      0.0,
+      0.3903342879021654
+    ],
+    "median_detection_delay": 1.0,
+    "median_detection_delay_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "mean_recall_at_k": 1.0,
+    "mean_recall_at_k_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 5.109375,
+    "mean_wall_seconds": 5.1427831666660495,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "correlation_check",
+    "dimension": 24,
+    "effect": "medium",
+    "correlation": "mixed_sign",
+    "method": "block_permutation_maxT",
+    "variant": "mean_medium",
+    "stream_count": 6,
+    "event_recall": 1.0,
+    "event_recall_wilson_95": [
+      0.6096657120978346,
+      1.0
+    ],
+    "miss_rate": 0.0,
+    "miss_rate_wilson_95": [
+      0.0,
+      0.3903342879021654
+    ],
+    "median_detection_delay": 1.0,
+    "median_detection_delay_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "mean_recall_at_k": 1.0,
+    "mean_recall_at_k_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 5.096354166666667,
+    "mean_wall_seconds": 5.127357566666736,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "correlation_check",
+    "dimension": 24,
+    "effect": "medium",
+    "correlation": "strong_collinear",
+    "method": "block_permutation_maxT",
+    "variant": "mean_medium",
+    "stream_count": 6,
+    "event_recall": 1.0,
+    "event_recall_wilson_95": [
+      0.6096657120978346,
+      1.0
+    ],
+    "miss_rate": 0.0,
+    "miss_rate_wilson_95": [
+      0.0,
+      0.3903342879021654
+    ],
+    "median_detection_delay": 1.0,
+    "median_detection_delay_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "mean_recall_at_k": 1.0,
+    "mean_recall_at_k_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 5.052083333333333,
+    "mean_wall_seconds": 5.083554400000746,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "correlation_check",
+    "dimension": 24,
+    "effect": "none",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "null",
+    "stream_count": 6,
+    "event_recall": 0.0,
+    "event_recall_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "miss_rate": 1.0,
+    "miss_rate_wilson_95": [
+      0.6096657120978347,
+      1.0
+    ],
+    "median_detection_delay": null,
+    "median_detection_delay_bootstrap_95": [
+      null,
+      null
+    ],
+    "mean_recall_at_k": null,
+    "mean_recall_at_k_bootstrap_95": [
+      null,
+      null
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 5.096354166666667,
+    "mean_wall_seconds": 5.123154299999442,
+    "insufficient_calibration_rate": 0.0,
+    "window_count": 24,
+    "single_window_fpr": 0.0,
+    "confirmation_fpr": 0.0,
+    "run_level_false_alarm": 0.0,
+    "run_level_trials": 6,
+    "run_level_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "alpha_excess_count": 0,
+    "single_window_fpr_stream_bootstrap_95": [
+      0.0,
+      0.0
+    ]
+  },
+  {
+    "scenario": "correlation_check",
+    "dimension": 24,
+    "effect": "none",
+    "correlation": "independent",
+    "method": "block_permutation_maxT",
+    "variant": "null",
+    "stream_count": 6,
+    "event_recall": 0.0,
+    "event_recall_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "miss_rate": 1.0,
+    "miss_rate_wilson_95": [
+      0.6096657120978347,
+      1.0
+    ],
+    "median_detection_delay": null,
+    "median_detection_delay_bootstrap_95": [
+      null,
+      null
+    ],
+    "mean_recall_at_k": null,
+    "mean_recall_at_k_bootstrap_95": [
+      null,
+      null
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 5.122395833333333,
+    "mean_wall_seconds": 5.150723233333338,
+    "insufficient_calibration_rate": 0.0,
+    "window_count": 24,
+    "single_window_fpr": 0.041666666666666664,
+    "confirmation_fpr": 0.0,
+    "run_level_false_alarm": 0.0,
+    "run_level_trials": 6,
+    "run_level_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "alpha_excess_count": 0,
+    "single_window_fpr_stream_bootstrap_95": [
+      0.0,
+      0.125
+    ]
+  },
+  {
+    "scenario": "correlation_check",
+    "dimension": 24,
+    "effect": "none",
+    "correlation": "mixed_sign",
+    "method": "block_permutation_maxT",
+    "variant": "null",
+    "stream_count": 6,
+    "event_recall": 0.0,
+    "event_recall_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "miss_rate": 1.0,
+    "miss_rate_wilson_95": [
+      0.6096657120978347,
+      1.0
+    ],
+    "median_detection_delay": null,
+    "median_detection_delay_bootstrap_95": [
+      null,
+      null
+    ],
+    "mean_recall_at_k": null,
+    "mean_recall_at_k_bootstrap_95": [
+      null,
+      null
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 5.106770833333333,
+    "mean_wall_seconds": 5.136934950000675,
+    "insufficient_calibration_rate": 0.0,
+    "window_count": 24,
+    "single_window_fpr": 0.0,
+    "confirmation_fpr": 0.0,
+    "run_level_false_alarm": 0.0,
+    "run_level_trials": 6,
+    "run_level_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "alpha_excess_count": 0,
+    "single_window_fpr_stream_bootstrap_95": [
+      0.0,
+      0.0
+    ]
+  },
+  {
+    "scenario": "correlation_check",
+    "dimension": 24,
+    "effect": "none",
+    "correlation": "strong_collinear",
+    "method": "block_permutation_maxT",
+    "variant": "null",
+    "stream_count": 6,
+    "event_recall": 0.0,
+    "event_recall_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "miss_rate": 1.0,
+    "miss_rate_wilson_95": [
+      0.6096657120978347,
+      1.0
+    ],
+    "median_detection_delay": null,
+    "median_detection_delay_bootstrap_95": [
+      null,
+      null
+    ],
+    "mean_recall_at_k": null,
+    "mean_recall_at_k_bootstrap_95": [
+      null,
+      null
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 5.075520833333333,
+    "mean_wall_seconds": 5.090285283333287,
+    "insufficient_calibration_rate": 0.0,
+    "window_count": 24,
+    "single_window_fpr": 0.0,
+    "confirmation_fpr": 0.0,
+    "run_level_false_alarm": 0.0,
+    "run_level_trials": 6,
+    "run_level_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "alpha_excess_count": 0,
+    "single_window_fpr_stream_bootstrap_95": [
+      0.0,
+      0.0
+    ]
+  },
+  {
+    "scenario": "correlation_check",
+    "dimension": 34,
+    "effect": "medium",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "mean_medium",
+    "stream_count": 6,
+    "event_recall": 1.0,
+    "event_recall_wilson_95": [
+      0.6096657120978346,
+      1.0
+    ],
+    "miss_rate": 0.0,
+    "miss_rate_wilson_95": [
+      0.0,
+      0.3903342879021654
+    ],
+    "median_detection_delay": 1.0,
+    "median_detection_delay_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "mean_recall_at_k": 1.0,
+    "mean_recall_at_k_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 6.401041666666667,
+    "mean_wall_seconds": 6.432836666666238,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "correlation_check",
+    "dimension": 34,
+    "effect": "medium",
+    "correlation": "independent",
+    "method": "block_permutation_maxT",
+    "variant": "mean_medium",
+    "stream_count": 6,
+    "event_recall": 1.0,
+    "event_recall_wilson_95": [
+      0.6096657120978346,
+      1.0
+    ],
+    "miss_rate": 0.0,
+    "miss_rate_wilson_95": [
+      0.0,
+      0.3903342879021654
+    ],
+    "median_detection_delay": 1.0,
+    "median_detection_delay_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "mean_recall_at_k": 1.0,
+    "mean_recall_at_k_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 6.401041666666667,
+    "mean_wall_seconds": 6.445811299999453,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "correlation_check",
+    "dimension": 34,
+    "effect": "medium",
+    "correlation": "mixed_sign",
+    "method": "block_permutation_maxT",
+    "variant": "mean_medium",
+    "stream_count": 6,
+    "event_recall": 1.0,
+    "event_recall_wilson_95": [
+      0.6096657120978346,
+      1.0
+    ],
+    "miss_rate": 0.0,
+    "miss_rate_wilson_95": [
+      0.0,
+      0.3903342879021654
+    ],
+    "median_detection_delay": 1.0,
+    "median_detection_delay_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "mean_recall_at_k": 1.0,
+    "mean_recall_at_k_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 6.390625,
+    "mean_wall_seconds": 6.428138549999251,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "correlation_check",
+    "dimension": 34,
+    "effect": "medium",
+    "correlation": "strong_collinear",
+    "method": "block_permutation_maxT",
+    "variant": "mean_medium",
+    "stream_count": 6,
+    "event_recall": 1.0,
+    "event_recall_wilson_95": [
+      0.6096657120978346,
+      1.0
+    ],
+    "miss_rate": 0.0,
+    "miss_rate_wilson_95": [
+      0.0,
+      0.3903342879021654
+    ],
+    "median_detection_delay": 1.0,
+    "median_detection_delay_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "mean_recall_at_k": 1.0,
+    "mean_recall_at_k_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 6.377604166666667,
+    "mean_wall_seconds": 6.400680483332811,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "correlation_check",
+    "dimension": 34,
+    "effect": "none",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "null",
+    "stream_count": 6,
+    "event_recall": 0.0,
+    "event_recall_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "miss_rate": 1.0,
+    "miss_rate_wilson_95": [
+      0.6096657120978347,
+      1.0
+    ],
+    "median_detection_delay": null,
+    "median_detection_delay_bootstrap_95": [
+      null,
+      null
+    ],
+    "mean_recall_at_k": null,
+    "mean_recall_at_k_bootstrap_95": [
+      null,
+      null
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 6.395833333333333,
+    "mean_wall_seconds": 6.438449766666963,
+    "insufficient_calibration_rate": 0.0,
+    "window_count": 24,
+    "single_window_fpr": 0.0,
+    "confirmation_fpr": 0.0,
+    "run_level_false_alarm": 0.0,
+    "run_level_trials": 6,
+    "run_level_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "alpha_excess_count": 0,
+    "single_window_fpr_stream_bootstrap_95": [
+      0.0,
+      0.0
+    ]
+  },
+  {
+    "scenario": "correlation_check",
+    "dimension": 34,
+    "effect": "none",
+    "correlation": "independent",
+    "method": "block_permutation_maxT",
+    "variant": "null",
+    "stream_count": 6,
+    "event_recall": 0.0,
+    "event_recall_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "miss_rate": 1.0,
+    "miss_rate_wilson_95": [
+      0.6096657120978347,
+      1.0
+    ],
+    "median_detection_delay": null,
+    "median_detection_delay_bootstrap_95": [
+      null,
+      null
+    ],
+    "mean_recall_at_k": null,
+    "mean_recall_at_k_bootstrap_95": [
+      null,
+      null
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 6.419270833333333,
+    "mean_wall_seconds": 6.450346033333214,
+    "insufficient_calibration_rate": 0.0,
+    "window_count": 24,
+    "single_window_fpr": 0.0,
+    "confirmation_fpr": 0.0,
+    "run_level_false_alarm": 0.0,
+    "run_level_trials": 6,
+    "run_level_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "alpha_excess_count": 0,
+    "single_window_fpr_stream_bootstrap_95": [
+      0.0,
+      0.0
+    ]
+  },
+  {
+    "scenario": "correlation_check",
+    "dimension": 34,
+    "effect": "none",
+    "correlation": "mixed_sign",
+    "method": "block_permutation_maxT",
+    "variant": "null",
+    "stream_count": 6,
+    "event_recall": 0.0,
+    "event_recall_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "miss_rate": 1.0,
+    "miss_rate_wilson_95": [
+      0.6096657120978347,
+      1.0
+    ],
+    "median_detection_delay": null,
+    "median_detection_delay_bootstrap_95": [
+      null,
+      null
+    ],
+    "mean_recall_at_k": null,
+    "mean_recall_at_k_bootstrap_95": [
+      null,
+      null
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 6.40625,
+    "mean_wall_seconds": 6.444058400000965,
+    "insufficient_calibration_rate": 0.0,
+    "window_count": 24,
+    "single_window_fpr": 0.0,
+    "confirmation_fpr": 0.0,
+    "run_level_false_alarm": 0.0,
+    "run_level_trials": 6,
+    "run_level_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "alpha_excess_count": 0,
+    "single_window_fpr_stream_bootstrap_95": [
+      0.0,
+      0.0
+    ]
+  },
+  {
+    "scenario": "correlation_check",
+    "dimension": 34,
+    "effect": "none",
+    "correlation": "strong_collinear",
+    "method": "block_permutation_maxT",
+    "variant": "null",
+    "stream_count": 6,
+    "event_recall": 0.0,
+    "event_recall_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "miss_rate": 1.0,
+    "miss_rate_wilson_95": [
+      0.6096657120978347,
+      1.0
+    ],
+    "median_detection_delay": null,
+    "median_detection_delay_bootstrap_95": [
+      null,
+      null
+    ],
+    "mean_recall_at_k": null,
+    "mean_recall_at_k_bootstrap_95": [
+      null,
+      null
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 6.377604166666667,
+    "mean_wall_seconds": 6.397005733332965,
+    "insufficient_calibration_rate": 0.0,
+    "window_count": 24,
+    "single_window_fpr": 0.0,
+    "confirmation_fpr": 0.0,
+    "run_level_false_alarm": 0.0,
+    "run_level_trials": 6,
+    "run_level_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "alpha_excess_count": 0,
+    "single_window_fpr_stream_bootstrap_95": [
+      0.0,
+      0.0
+    ]
+  },
+  {
+    "scenario": "invalid_exchangeability",
+    "dimension": 128,
+    "effect": "medium",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "primary",
+    "stream_count": 6,
+    "event_recall": 0.0,
+    "event_recall_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "miss_rate": 1.0,
+    "miss_rate_wilson_95": [
+      0.6096657120978347,
+      1.0
+    ],
+    "median_detection_delay": null,
+    "median_detection_delay_bootstrap_95": [
+      null,
+      null
+    ],
+    "mean_recall_at_k": null,
+    "mean_recall_at_k_bootstrap_95": [
+      null,
+      null
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 0.0,
+    "mean_wall_seconds": 0.0014819666666880948,
+    "insufficient_calibration_rate": 1.0
+  },
+  {
+    "scenario": "invalid_exchangeability",
+    "dimension": 24,
+    "effect": "medium",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "primary",
+    "stream_count": 6,
+    "event_recall": 0.0,
+    "event_recall_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "miss_rate": 1.0,
+    "miss_rate_wilson_95": [
+      0.6096657120978347,
+      1.0
+    ],
+    "median_detection_delay": null,
+    "median_detection_delay_bootstrap_95": [
+      null,
+      null
+    ],
+    "mean_recall_at_k": null,
+    "mean_recall_at_k_bootstrap_95": [
+      null,
+      null
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 0.0026041666666666665,
+    "mean_wall_seconds": 0.0005993499992958581,
+    "insufficient_calibration_rate": 1.0
+  },
+  {
+    "scenario": "invalid_exchangeability",
+    "dimension": 34,
+    "effect": "medium",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "primary",
+    "stream_count": 6,
+    "event_recall": 0.0,
+    "event_recall_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "miss_rate": 1.0,
+    "miss_rate_wilson_95": [
+      0.6096657120978347,
+      1.0
+    ],
+    "median_detection_delay": null,
+    "median_detection_delay_bootstrap_95": [
+      null,
+      null
+    ],
+    "mean_recall_at_k": null,
+    "mean_recall_at_k_bootstrap_95": [
+      null,
+      null
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      2.7755575615628914e-17,
+      0.3903342879021653
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 0.0,
+    "mean_wall_seconds": 0.0007071333329804474,
+    "insufficient_calibration_rate": 1.0
+  },
+  {
+    "scenario": "joint_shift",
+    "dimension": 128,
+    "effect": "medium",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "primary",
+    "stream_count": 8,
+    "event_recall": 1.0,
+    "event_recall_wilson_95": [
+      0.6755924351161198,
+      1.0
+    ],
+    "miss_rate": 0.0,
+    "miss_rate_wilson_95": [
+      0.0,
+      0.32440756488388023
+    ],
+    "median_detection_delay": 1.0,
+    "median_detection_delay_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "mean_recall_at_k": 1.0,
+    "mean_recall_at_k_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      0.0,
+      0.32440756488388023
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 21.009765625,
+    "mean_wall_seconds": 21.074688662500193,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "joint_shift",
+    "dimension": 24,
+    "effect": "medium",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "primary",
+    "stream_count": 8,
+    "event_recall": 1.0,
+    "event_recall_wilson_95": [
+      0.6755924351161198,
+      1.0
+    ],
+    "miss_rate": 0.0,
+    "miss_rate_wilson_95": [
+      0.0,
+      0.32440756488388023
+    ],
+    "median_detection_delay": 1.0,
+    "median_detection_delay_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "mean_recall_at_k": 1.0,
+    "mean_recall_at_k_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      0.0,
+      0.32440756488388023
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 5.09375,
+    "mean_wall_seconds": 5.106603050000103,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "joint_shift",
+    "dimension": 34,
+    "effect": "medium",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "primary",
+    "stream_count": 8,
+    "event_recall": 1.0,
+    "event_recall_wilson_95": [
+      0.6755924351161198,
+      1.0
+    ],
+    "miss_rate": 0.0,
+    "miss_rate_wilson_95": [
+      0.0,
+      0.32440756488388023
+    ],
+    "median_detection_delay": 1.0,
+    "median_detection_delay_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "mean_recall_at_k": 1.0,
+    "mean_recall_at_k_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      0.0,
+      0.32440756488388023
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 6.39453125,
+    "mean_wall_seconds": 6.433675712500644,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "mean_shift",
+    "dimension": 128,
+    "effect": "large",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "primary",
+    "stream_count": 8,
+    "event_recall": 1.0,
+    "event_recall_wilson_95": [
+      0.6755924351161198,
+      1.0
+    ],
+    "miss_rate": 0.0,
+    "miss_rate_wilson_95": [
+      0.0,
+      0.32440756488388023
+    ],
+    "median_detection_delay": 1.0,
+    "median_detection_delay_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "mean_recall_at_k": 1.0,
+    "mean_recall_at_k_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      0.0,
+      0.32440756488388023
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 21.48046875,
+    "mean_wall_seconds": 21.53462353750001,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "mean_shift",
+    "dimension": 128,
+    "effect": "medium",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "primary",
+    "stream_count": 8,
+    "event_recall": 1.0,
+    "event_recall_wilson_95": [
+      0.6755924351161198,
+      1.0
+    ],
+    "miss_rate": 0.0,
+    "miss_rate_wilson_95": [
+      0.0,
+      0.32440756488388023
+    ],
+    "median_detection_delay": 1.0,
+    "median_detection_delay_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "mean_recall_at_k": 1.0,
+    "mean_recall_at_k_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      0.0,
+      0.32440756488388023
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 21.3671875,
+    "mean_wall_seconds": 21.45242341250014,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "mean_shift",
+    "dimension": 128,
+    "effect": "small",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "primary",
+    "stream_count": 8,
+    "event_recall": 0.25,
+    "event_recall_wilson_95": [
+      0.071479212752109,
+      0.5907245696898311
+    ],
+    "miss_rate": 0.75,
+    "miss_rate_wilson_95": [
+      0.4092754303101689,
+      0.928520787247891
+    ],
+    "median_detection_delay": 1.0,
+    "median_detection_delay_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "mean_recall_at_k": 1.0,
+    "mean_recall_at_k_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "baseline_contamination_rate": 0.75,
+    "baseline_contamination_wilson_95": [
+      0.40927543031016883,
+      0.9285207872478909
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 21.185546875,
+    "mean_wall_seconds": 21.287670212500416,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "mean_shift",
+    "dimension": 24,
+    "effect": "large",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "primary",
+    "stream_count": 8,
+    "event_recall": 1.0,
+    "event_recall_wilson_95": [
+      0.6755924351161198,
+      1.0
+    ],
+    "miss_rate": 0.0,
+    "miss_rate_wilson_95": [
+      0.0,
+      0.32440756488388023
+    ],
+    "median_detection_delay": 1.0,
+    "median_detection_delay_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "mean_recall_at_k": 1.0,
+    "mean_recall_at_k_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      0.0,
+      0.32440756488388023
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 5.09375,
+    "mean_wall_seconds": 5.109411850000015,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "mean_shift",
+    "dimension": 24,
+    "effect": "medium",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "primary",
+    "stream_count": 8,
+    "event_recall": 1.0,
+    "event_recall_wilson_95": [
+      0.6755924351161198,
+      1.0
+    ],
+    "miss_rate": 0.0,
+    "miss_rate_wilson_95": [
+      0.0,
+      0.32440756488388023
+    ],
+    "median_detection_delay": 1.0,
+    "median_detection_delay_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "mean_recall_at_k": 1.0,
+    "mean_recall_at_k_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      0.0,
+      0.32440756488388023
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 5.087890625,
+    "mean_wall_seconds": 5.11587496249922,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "mean_shift",
+    "dimension": 24,
+    "effect": "small",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "primary",
+    "stream_count": 8,
+    "event_recall": 0.375,
+    "event_recall_wilson_95": [
+      0.13684428582359742,
+      0.6942576053973727
+    ],
+    "miss_rate": 0.625,
+    "miss_rate_wilson_95": [
+      0.3057423946026273,
+      0.8631557141764026
+    ],
+    "median_detection_delay": 2.0,
+    "median_detection_delay_bootstrap_95": [
+      1.0,
+      3.0
+    ],
+    "mean_recall_at_k": 1.0,
+    "mean_recall_at_k_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "baseline_contamination_rate": 0.25,
+    "baseline_contamination_wilson_95": [
+      0.071479212752109,
+      0.5907245696898311
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 5.099609375,
+    "mean_wall_seconds": 5.116970112500439,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "mean_shift",
+    "dimension": 34,
+    "effect": "large",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "primary",
+    "stream_count": 8,
+    "event_recall": 1.0,
+    "event_recall_wilson_95": [
+      0.6755924351161198,
+      1.0
+    ],
+    "miss_rate": 0.0,
+    "miss_rate_wilson_95": [
+      0.0,
+      0.32440756488388023
+    ],
+    "median_detection_delay": 1.0,
+    "median_detection_delay_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "mean_recall_at_k": 1.0,
+    "mean_recall_at_k_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      0.0,
+      0.32440756488388023
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 6.412109375,
+    "mean_wall_seconds": 6.422442462500385,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "mean_shift",
+    "dimension": 34,
+    "effect": "medium",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "primary",
+    "stream_count": 8,
+    "event_recall": 1.0,
+    "event_recall_wilson_95": [
+      0.6755924351161198,
+      1.0
+    ],
+    "miss_rate": 0.0,
+    "miss_rate_wilson_95": [
+      0.0,
+      0.32440756488388023
+    ],
+    "median_detection_delay": 1.0,
+    "median_detection_delay_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "mean_recall_at_k": 1.0,
+    "mean_recall_at_k_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      0.0,
+      0.32440756488388023
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 6.3984375,
+    "mean_wall_seconds": 6.424387949999982,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "mean_shift",
+    "dimension": 34,
+    "effect": "small",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "primary",
+    "stream_count": 8,
+    "event_recall": 0.625,
+    "event_recall_wilson_95": [
+      0.30574239460262737,
+      0.8631557141764026
+    ],
+    "miss_rate": 0.375,
+    "miss_rate_wilson_95": [
+      0.13684428582359742,
+      0.6942576053973726
+    ],
+    "median_detection_delay": 1.0,
+    "median_detection_delay_bootstrap_95": [
+      1.0,
+      3.0
+    ],
+    "mean_recall_at_k": 1.0,
+    "mean_recall_at_k_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "baseline_contamination_rate": 0.375,
+    "baseline_contamination_wilson_95": [
+      0.13684428582359742,
+      0.6942576053973727
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 6.4140625,
+    "mean_wall_seconds": 6.435090212499745,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "no_drift",
+    "dimension": 128,
+    "effect": "none",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "primary",
+    "stream_count": 40,
+    "event_recall": 0.0,
+    "event_recall_wilson_95": [
+      0.0,
+      0.08762160119728664
+    ],
+    "miss_rate": 1.0,
+    "miss_rate_wilson_95": [
+      0.9123783988027133,
+      1.0
+    ],
+    "median_detection_delay": null,
+    "median_detection_delay_bootstrap_95": [
+      null,
+      null
+    ],
+    "mean_recall_at_k": null,
+    "mean_recall_at_k_bootstrap_95": [
+      null,
+      null
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      0.0,
+      0.08762160119728664
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 53.2671875,
+    "mean_wall_seconds": 53.472790367500146,
+    "insufficient_calibration_rate": 0.0,
+    "window_count": 400,
+    "single_window_fpr": 0.005,
+    "confirmation_fpr": 0.0,
+    "run_level_false_alarm": 0.0,
+    "run_level_trials": 40,
+    "run_level_wilson_95": [
+      0.0,
+      0.08762160119728664
+    ],
+    "alpha_excess_count": 0,
+    "single_window_fpr_stream_bootstrap_95": [
+      0.0,
+      0.0125
+    ]
+  },
+  {
+    "scenario": "no_drift",
+    "dimension": 24,
+    "effect": "none",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "primary",
+    "stream_count": 40,
+    "event_recall": 0.0,
+    "event_recall_wilson_95": [
+      0.0,
+      0.08762160119728664
+    ],
+    "miss_rate": 1.0,
+    "miss_rate_wilson_95": [
+      0.9123783988027133,
+      1.0
+    ],
+    "median_detection_delay": null,
+    "median_detection_delay_bootstrap_95": [
+      null,
+      null
+    ],
+    "mean_recall_at_k": null,
+    "mean_recall_at_k_bootstrap_95": [
+      null,
+      null
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      0.0,
+      0.08762160119728664
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 12.754296875,
+    "mean_wall_seconds": 12.79677920999975,
+    "insufficient_calibration_rate": 0.0,
+    "window_count": 400,
+    "single_window_fpr": 0.005,
+    "confirmation_fpr": 0.0,
+    "run_level_false_alarm": 0.0,
+    "run_level_trials": 40,
+    "run_level_wilson_95": [
+      0.0,
+      0.08762160119728664
+    ],
+    "alpha_excess_count": 0,
+    "single_window_fpr_stream_bootstrap_95": [
+      0.0,
+      0.0125
+    ]
+  },
+  {
+    "scenario": "no_drift",
+    "dimension": 34,
+    "effect": "none",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "primary",
+    "stream_count": 40,
+    "event_recall": 0.0,
+    "event_recall_wilson_95": [
+      0.0,
+      0.08762160119728664
+    ],
+    "miss_rate": 1.0,
+    "miss_rate_wilson_95": [
+      0.9123783988027133,
+      1.0
+    ],
+    "median_detection_delay": null,
+    "median_detection_delay_bootstrap_95": [
+      null,
+      null
+    ],
+    "mean_recall_at_k": null,
+    "mean_recall_at_k_bootstrap_95": [
+      null,
+      null
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      0.0,
+      0.08762160119728664
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 16.01640625,
+    "mean_wall_seconds": 16.07396412499984,
+    "insufficient_calibration_rate": 0.0,
+    "window_count": 400,
+    "single_window_fpr": 0.0,
+    "confirmation_fpr": 0.0,
+    "run_level_false_alarm": 0.0,
+    "run_level_trials": 40,
+    "run_level_wilson_95": [
+      0.0,
+      0.08762160119728664
+    ],
+    "alpha_excess_count": 0,
+    "single_window_fpr_stream_bootstrap_95": [
+      0.0,
+      0.0
+    ]
+  },
+  {
+    "scenario": "noise_increase",
+    "dimension": 128,
+    "effect": "medium",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "primary",
+    "stream_count": 8,
+    "event_recall": 0.0,
+    "event_recall_wilson_95": [
+      0.0,
+      0.32440756488388023
+    ],
+    "miss_rate": 1.0,
+    "miss_rate_wilson_95": [
+      0.6755924351161198,
+      1.0
+    ],
+    "median_detection_delay": null,
+    "median_detection_delay_bootstrap_95": [
+      null,
+      null
+    ],
+    "mean_recall_at_k": null,
+    "mean_recall_at_k_bootstrap_95": [
+      null,
+      null
+    ],
+    "baseline_contamination_rate": 0.875,
+    "baseline_contamination_wilson_95": [
+      0.5291118177871464,
+      0.9775825085499433
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 21.416015625,
+    "mean_wall_seconds": 21.452612162499918,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "noise_increase",
+    "dimension": 24,
+    "effect": "medium",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "primary",
+    "stream_count": 8,
+    "event_recall": 0.125,
+    "event_recall_wilson_95": [
+      0.02241749145005667,
+      0.4708881822128535
+    ],
+    "miss_rate": 0.875,
+    "miss_rate_wilson_95": [
+      0.5291118177871466,
+      0.9775825085499433
+    ],
+    "median_detection_delay": 2.0,
+    "median_detection_delay_bootstrap_95": [
+      2.0,
+      2.0
+    ],
+    "mean_recall_at_k": 1.0,
+    "mean_recall_at_k_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "baseline_contamination_rate": 0.5,
+    "baseline_contamination_wilson_95": [
+      0.21521606221387757,
+      0.7847839377861224
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 5.1015625,
+    "mean_wall_seconds": 5.122717687500426,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "noise_increase",
+    "dimension": 34,
+    "effect": "medium",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "primary",
+    "stream_count": 8,
+    "event_recall": 0.25,
+    "event_recall_wilson_95": [
+      0.071479212752109,
+      0.5907245696898311
+    ],
+    "miss_rate": 0.75,
+    "miss_rate_wilson_95": [
+      0.4092754303101689,
+      0.928520787247891
+    ],
+    "median_detection_delay": 2.5,
+    "median_detection_delay_bootstrap_95": [
+      2.0,
+      3.0
+    ],
+    "mean_recall_at_k": 1.0,
+    "mean_recall_at_k_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "baseline_contamination_rate": 0.875,
+    "baseline_contamination_wilson_95": [
+      0.5291118177871464,
+      0.9775825085499433
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 6.41015625,
+    "mean_wall_seconds": 6.427742912500435,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "outlier_burst",
+    "dimension": 128,
+    "effect": "medium",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "primary",
+    "stream_count": 8,
+    "event_recall": 0.0,
+    "event_recall_wilson_95": [
+      0.0,
+      0.32440756488388023
+    ],
+    "miss_rate": 1.0,
+    "miss_rate_wilson_95": [
+      0.6755924351161198,
+      1.0
+    ],
+    "median_detection_delay": null,
+    "median_detection_delay_bootstrap_95": [
+      null,
+      null
+    ],
+    "mean_recall_at_k": null,
+    "mean_recall_at_k_bootstrap_95": [
+      null,
+      null
+    ],
+    "baseline_contamination_rate": 1.0,
+    "baseline_contamination_wilson_95": [
+      0.6755924351161198,
+      1.0
+    ],
+    "mean_time_to_recovery": 0.0,
+    "mean_time_to_recovery_bootstrap_95": [
+      0.0,
+      0.0
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 26.263671875,
+    "mean_wall_seconds": 26.35716998750013,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "outlier_burst",
+    "dimension": 24,
+    "effect": "medium",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "primary",
+    "stream_count": 8,
+    "event_recall": 0.0,
+    "event_recall_wilson_95": [
+      0.0,
+      0.32440756488388023
+    ],
+    "miss_rate": 1.0,
+    "miss_rate_wilson_95": [
+      0.6755924351161198,
+      1.0
+    ],
+    "median_detection_delay": null,
+    "median_detection_delay_bootstrap_95": [
+      null,
+      null
+    ],
+    "mean_recall_at_k": null,
+    "mean_recall_at_k_bootstrap_95": [
+      null,
+      null
+    ],
+    "baseline_contamination_rate": 1.0,
+    "baseline_contamination_wilson_95": [
+      0.6755924351161198,
+      1.0
+    ],
+    "mean_time_to_recovery": 0.0,
+    "mean_time_to_recovery_bootstrap_95": [
+      0.0,
+      0.0
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 6.357421875,
+    "mean_wall_seconds": 6.397229449999941,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "outlier_burst",
+    "dimension": 34,
+    "effect": "medium",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "primary",
+    "stream_count": 8,
+    "event_recall": 0.0,
+    "event_recall_wilson_95": [
+      0.0,
+      0.32440756488388023
+    ],
+    "miss_rate": 1.0,
+    "miss_rate_wilson_95": [
+      0.6755924351161198,
+      1.0
+    ],
+    "median_detection_delay": null,
+    "median_detection_delay_bootstrap_95": [
+      null,
+      null
+    ],
+    "mean_recall_at_k": null,
+    "mean_recall_at_k_bootstrap_95": [
+      null,
+      null
+    ],
+    "baseline_contamination_rate": 1.0,
+    "baseline_contamination_wilson_95": [
+      0.6755924351161198,
+      1.0
+    ],
+    "mean_time_to_recovery": 0.0,
+    "mean_time_to_recovery_bootstrap_95": [
+      0.0,
+      0.0
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 7.998046875,
+    "mean_wall_seconds": 8.024893024999983,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "progressive_shift",
+    "dimension": 128,
+    "effect": "medium",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "primary",
+    "stream_count": 8,
+    "event_recall": 1.0,
+    "event_recall_wilson_95": [
+      0.6755924351161198,
+      1.0
+    ],
+    "miss_rate": 0.0,
+    "miss_rate_wilson_95": [
+      0.0,
+      0.32440756488388023
+    ],
+    "median_detection_delay": 2.0,
+    "median_detection_delay_bootstrap_95": [
+      2.0,
+      2.0
+    ],
+    "mean_recall_at_k": 1.0,
+    "mean_recall_at_k_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "baseline_contamination_rate": 0.125,
+    "baseline_contamination_wilson_95": [
+      0.02241749145005667,
+      0.4708881822128535
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 42.451171875,
+    "mean_wall_seconds": 42.61940723749967,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "progressive_shift",
+    "dimension": 24,
+    "effect": "medium",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "primary",
+    "stream_count": 8,
+    "event_recall": 1.0,
+    "event_recall_wilson_95": [
+      0.6755924351161198,
+      1.0
+    ],
+    "miss_rate": 0.0,
+    "miss_rate_wilson_95": [
+      0.0,
+      0.32440756488388023
+    ],
+    "median_detection_delay": 2.0,
+    "median_detection_delay_bootstrap_95": [
+      2.0,
+      2.0
+    ],
+    "mean_recall_at_k": 1.0,
+    "mean_recall_at_k_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      0.0,
+      0.32440756488388023
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 10.2109375,
+    "mean_wall_seconds": 10.244981412500238,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "progressive_shift",
+    "dimension": 34,
+    "effect": "medium",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "primary",
+    "stream_count": 8,
+    "event_recall": 1.0,
+    "event_recall_wilson_95": [
+      0.6755924351161198,
+      1.0
+    ],
+    "miss_rate": 0.0,
+    "miss_rate_wilson_95": [
+      0.0,
+      0.32440756488388023
+    ],
+    "median_detection_delay": 2.0,
+    "median_detection_delay_bootstrap_95": [
+      2.0,
+      2.0
+    ],
+    "mean_recall_at_k": 1.0,
+    "mean_recall_at_k_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      0.0,
+      0.32440756488388023
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 12.802734375,
+    "mean_wall_seconds": 12.84864717499886,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "reverse_recovery",
+    "dimension": 128,
+    "effect": "medium",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "primary",
+    "stream_count": 8,
+    "event_recall": 1.0,
+    "event_recall_wilson_95": [
+      0.6755924351161198,
+      1.0
+    ],
+    "miss_rate": 0.0,
+    "miss_rate_wilson_95": [
+      0.0,
+      0.32440756488388023
+    ],
+    "median_detection_delay": 1.0,
+    "median_detection_delay_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "mean_recall_at_k": 1.0,
+    "mean_recall_at_k_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      0.0,
+      0.32440756488388023
+    ],
+    "mean_time_to_recovery": 1.0,
+    "mean_time_to_recovery_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 48.06640625,
+    "mean_wall_seconds": 48.2513046250001,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "reverse_recovery",
+    "dimension": 24,
+    "effect": "medium",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "primary",
+    "stream_count": 8,
+    "event_recall": 1.0,
+    "event_recall_wilson_95": [
+      0.6755924351161198,
+      1.0
+    ],
+    "miss_rate": 0.0,
+    "miss_rate_wilson_95": [
+      0.0,
+      0.32440756488388023
+    ],
+    "median_detection_delay": 1.0,
+    "median_detection_delay_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "mean_recall_at_k": 1.0,
+    "mean_recall_at_k_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      0.0,
+      0.32440756488388023
+    ],
+    "mean_time_to_recovery": 1.0,
+    "mean_time_to_recovery_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 11.470703125,
+    "mean_wall_seconds": 11.510068187500565,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "reverse_recovery",
+    "dimension": 34,
+    "effect": "medium",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "primary",
+    "stream_count": 8,
+    "event_recall": 1.0,
+    "event_recall_wilson_95": [
+      0.6755924351161198,
+      1.0
+    ],
+    "miss_rate": 0.0,
+    "miss_rate_wilson_95": [
+      0.0,
+      0.32440756488388023
+    ],
+    "median_detection_delay": 1.0,
+    "median_detection_delay_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "mean_recall_at_k": 1.0,
+    "mean_recall_at_k_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      0.0,
+      0.32440756488388023
+    ],
+    "mean_time_to_recovery": 1.25,
+    "mean_time_to_recovery_bootstrap_95": [
+      1.0,
+      1.75
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 14.43359375,
+    "mean_wall_seconds": 14.47467826249931,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "transient_shift",
+    "dimension": 128,
+    "effect": "medium",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "primary",
+    "stream_count": 8,
+    "event_recall": 0.0,
+    "event_recall_wilson_95": [
+      0.0,
+      0.32440756488388023
+    ],
+    "miss_rate": 1.0,
+    "miss_rate_wilson_95": [
+      0.6755924351161198,
+      1.0
+    ],
+    "median_detection_delay": null,
+    "median_detection_delay_bootstrap_95": [
+      null,
+      null
+    ],
+    "mean_recall_at_k": null,
+    "mean_recall_at_k_bootstrap_95": [
+      null,
+      null
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      0.0,
+      0.32440756488388023
+    ],
+    "mean_time_to_recovery": 1.0,
+    "mean_time_to_recovery_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 25.98828125,
+    "mean_wall_seconds": 26.11218138749973,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "transient_shift",
+    "dimension": 24,
+    "effect": "medium",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "primary",
+    "stream_count": 8,
+    "event_recall": 0.0,
+    "event_recall_wilson_95": [
+      0.0,
+      0.32440756488388023
+    ],
+    "miss_rate": 1.0,
+    "miss_rate_wilson_95": [
+      0.6755924351161198,
+      1.0
+    ],
+    "median_detection_delay": null,
+    "median_detection_delay_bootstrap_95": [
+      null,
+      null
+    ],
+    "mean_recall_at_k": null,
+    "mean_recall_at_k_bootstrap_95": [
+      null,
+      null
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      0.0,
+      0.32440756488388023
+    ],
+    "mean_time_to_recovery": 1.0,
+    "mean_time_to_recovery_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 6.359375,
+    "mean_wall_seconds": 6.392314600000645,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "transient_shift",
+    "dimension": 34,
+    "effect": "medium",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "primary",
+    "stream_count": 8,
+    "event_recall": 0.0,
+    "event_recall_wilson_95": [
+      0.0,
+      0.32440756488388023
+    ],
+    "miss_rate": 1.0,
+    "miss_rate_wilson_95": [
+      0.6755924351161198,
+      1.0
+    ],
+    "median_detection_delay": null,
+    "median_detection_delay_bootstrap_95": [
+      null,
+      null
+    ],
+    "mean_recall_at_k": null,
+    "mean_recall_at_k_bootstrap_95": [
+      null,
+      null
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      0.0,
+      0.32440756488388023
+    ],
+    "mean_time_to_recovery": 1.0,
+    "mean_time_to_recovery_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 8.005859375,
+    "mean_wall_seconds": 8.027655237499857,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "variance_shift",
+    "dimension": 128,
+    "effect": "large",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "primary",
+    "stream_count": 8,
+    "event_recall": 0.875,
+    "event_recall_wilson_95": [
+      0.5291118177871464,
+      0.9775825085499433
+    ],
+    "miss_rate": 0.125,
+    "miss_rate_wilson_95": [
+      0.02241749145005667,
+      0.47088818221285356
+    ],
+    "median_detection_delay": 1.0,
+    "median_detection_delay_bootstrap_95": [
+      1.0,
+      2.0
+    ],
+    "mean_recall_at_k": 1.0,
+    "mean_recall_at_k_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      0.0,
+      0.32440756488388023
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 21.095703125,
+    "mean_wall_seconds": 21.161769199999526,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "variance_shift",
+    "dimension": 128,
+    "effect": "medium",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "primary",
+    "stream_count": 8,
+    "event_recall": 0.0,
+    "event_recall_wilson_95": [
+      0.0,
+      0.32440756488388023
+    ],
+    "miss_rate": 1.0,
+    "miss_rate_wilson_95": [
+      0.6755924351161198,
+      1.0
+    ],
+    "median_detection_delay": null,
+    "median_detection_delay_bootstrap_95": [
+      null,
+      null
+    ],
+    "mean_recall_at_k": null,
+    "mean_recall_at_k_bootstrap_95": [
+      null,
+      null
+    ],
+    "baseline_contamination_rate": 0.875,
+    "baseline_contamination_wilson_95": [
+      0.5291118177871464,
+      0.9775825085499433
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 20.87109375,
+    "mean_wall_seconds": 20.948842537499786,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "variance_shift",
+    "dimension": 128,
+    "effect": "small",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "primary",
+    "stream_count": 8,
+    "event_recall": 0.0,
+    "event_recall_wilson_95": [
+      0.0,
+      0.32440756488388023
+    ],
+    "miss_rate": 1.0,
+    "miss_rate_wilson_95": [
+      0.6755924351161198,
+      1.0
+    ],
+    "median_detection_delay": null,
+    "median_detection_delay_bootstrap_95": [
+      null,
+      null
+    ],
+    "mean_recall_at_k": null,
+    "mean_recall_at_k_bootstrap_95": [
+      null,
+      null
+    ],
+    "baseline_contamination_rate": 1.0,
+    "baseline_contamination_wilson_95": [
+      0.6755924351161198,
+      1.0
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 20.833984375,
+    "mean_wall_seconds": 20.89537992500027,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "variance_shift",
+    "dimension": 24,
+    "effect": "large",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "primary",
+    "stream_count": 8,
+    "event_recall": 0.875,
+    "event_recall_wilson_95": [
+      0.5291118177871464,
+      0.9775825085499433
+    ],
+    "miss_rate": 0.125,
+    "miss_rate_wilson_95": [
+      0.02241749145005667,
+      0.47088818221285356
+    ],
+    "median_detection_delay": 1.0,
+    "median_detection_delay_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "mean_recall_at_k": 1.0,
+    "mean_recall_at_k_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "baseline_contamination_rate": 0.0,
+    "baseline_contamination_wilson_95": [
+      0.0,
+      0.32440756488388023
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 5.103515625,
+    "mean_wall_seconds": 5.117135287499423,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "variance_shift",
+    "dimension": 24,
+    "effect": "medium",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "primary",
+    "stream_count": 8,
+    "event_recall": 0.0,
+    "event_recall_wilson_95": [
+      0.0,
+      0.32440756488388023
+    ],
+    "miss_rate": 1.0,
+    "miss_rate_wilson_95": [
+      0.6755924351161198,
+      1.0
+    ],
+    "median_detection_delay": null,
+    "median_detection_delay_bootstrap_95": [
+      null,
+      null
+    ],
+    "mean_recall_at_k": null,
+    "mean_recall_at_k_bootstrap_95": [
+      null,
+      null
+    ],
+    "baseline_contamination_rate": 0.625,
+    "baseline_contamination_wilson_95": [
+      0.30574239460262737,
+      0.8631557141764026
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 5.09765625,
+    "mean_wall_seconds": 5.118723075000162,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "variance_shift",
+    "dimension": 24,
+    "effect": "small",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "primary",
+    "stream_count": 8,
+    "event_recall": 0.0,
+    "event_recall_wilson_95": [
+      0.0,
+      0.32440756488388023
+    ],
+    "miss_rate": 1.0,
+    "miss_rate_wilson_95": [
+      0.6755924351161198,
+      1.0
+    ],
+    "median_detection_delay": null,
+    "median_detection_delay_bootstrap_95": [
+      null,
+      null
+    ],
+    "mean_recall_at_k": null,
+    "mean_recall_at_k_bootstrap_95": [
+      null,
+      null
+    ],
+    "baseline_contamination_rate": 1.0,
+    "baseline_contamination_wilson_95": [
+      0.6755924351161198,
+      1.0
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 5.10546875,
+    "mean_wall_seconds": 5.122389525000472,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "variance_shift",
+    "dimension": 34,
+    "effect": "large",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "primary",
+    "stream_count": 8,
+    "event_recall": 0.875,
+    "event_recall_wilson_95": [
+      0.5291118177871464,
+      0.9775825085499433
+    ],
+    "miss_rate": 0.125,
+    "miss_rate_wilson_95": [
+      0.02241749145005667,
+      0.47088818221285356
+    ],
+    "median_detection_delay": 1.0,
+    "median_detection_delay_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "mean_recall_at_k": 1.0,
+    "mean_recall_at_k_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "baseline_contamination_rate": 0.125,
+    "baseline_contamination_wilson_95": [
+      0.02241749145005667,
+      0.4708881822128535
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 6.412109375,
+    "mean_wall_seconds": 6.432256512500317,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "variance_shift",
+    "dimension": 34,
+    "effect": "medium",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "primary",
+    "stream_count": 8,
+    "event_recall": 0.125,
+    "event_recall_wilson_95": [
+      0.02241749145005667,
+      0.4708881822128535
+    ],
+    "miss_rate": 0.875,
+    "miss_rate_wilson_95": [
+      0.5291118177871466,
+      0.9775825085499433
+    ],
+    "median_detection_delay": 3.0,
+    "median_detection_delay_bootstrap_95": [
+      3.0,
+      3.0
+    ],
+    "mean_recall_at_k": 1.0,
+    "mean_recall_at_k_bootstrap_95": [
+      1.0,
+      1.0
+    ],
+    "baseline_contamination_rate": 1.0,
+    "baseline_contamination_wilson_95": [
+      0.6755924351161198,
+      1.0
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 6.41796875,
+    "mean_wall_seconds": 6.4359314000003,
+    "insufficient_calibration_rate": 0.0
+  },
+  {
+    "scenario": "variance_shift",
+    "dimension": 34,
+    "effect": "small",
+    "correlation": "block_positive",
+    "method": "block_permutation_maxT",
+    "variant": "primary",
+    "stream_count": 8,
+    "event_recall": 0.0,
+    "event_recall_wilson_95": [
+      0.0,
+      0.32440756488388023
+    ],
+    "miss_rate": 1.0,
+    "miss_rate_wilson_95": [
+      0.6755924351161198,
+      1.0
+    ],
+    "median_detection_delay": null,
+    "median_detection_delay_bootstrap_95": [
+      null,
+      null
+    ],
+    "mean_recall_at_k": null,
+    "mean_recall_at_k_bootstrap_95": [
+      null,
+      null
+    ],
+    "baseline_contamination_rate": 1.0,
+    "baseline_contamination_wilson_95": [
+      0.6755924351161198,
+      1.0
+    ],
+    "mean_time_to_recovery": null,
+    "mean_time_to_recovery_bootstrap_95": [
+      null,
+      null
+    ],
+    "alpha_excess_rate": 0.0,
+    "mean_cpu_seconds": 6.416015625,
+    "mean_wall_seconds": 6.435206525000467,
+    "insufficient_calibration_rate": 0.0
+  }
+]

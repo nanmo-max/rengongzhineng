@@ -1,5 +1,13 @@
 # 新会话恢复与交接
 
+## 2026-11-22 P5-1A统计验收入口（当前）
+
+1. 当前分支`codex/p5-implementation-001`；基线`3c880f9`，预注册提交`a7ccb56`。P5-1A结果入口为`docs/results/P5-DRIFT-STATISTICAL-VALIDATION.md/json`。
+2. 状态为`FAIL_STATISTICAL_GATES_STOP`：762个合成作业完成，180项机器检查中36项门控失败。不得自行调阈值、修改检测器或重跑最终seed。
+3. 通过：主误报、均值/联合/渐进、maxT非法块失败关闭、alpha和30秒/1GiB资源门。失败：中等方差、噪声、组成变化、异常值参考污染、相关结构CI精度及BY非法交换性fallback覆盖。
+4. 原始收据目录`D:/brace-msi-p5/P5-DRIFT-STATISTICAL-VALIDATION-001`；最终JSONL SHA-256 `E6A90496A23CAD8525A710680E6C50E59252C12AD066C883FFABCBD7DB94B38F`。公开validation/XJTU/隐藏数据/工业训练/Qwen/PyTRiO/Docker/平台均未使用。
+5. 当前无READY任务，等待人工审查；不得进入诊断、Qwen集成、Harness接线、Docker或新RC。
+
 ## 2026-11-22 P5第一阶段实施入口（当前）
 
 1. 当前分支`codex/p5-implementation-001`；`P5-IMPLEMENTATION-001`第一阶段已完成并按用户停止条件等待人工审查。结果入口为`docs/results/P5-IMPLEMENTATION-001.md/json`。

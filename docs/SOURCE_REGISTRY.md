@@ -677,3 +677,11 @@ PyTRiO通用接口、Qwen3.5-4B基础模型平台校验和持久化Sampler路线
 - 已授权：在提交`3c880f9`基础上，使用互斥校准、开发和最终种子验证24/34/128维的误报、检出、延迟、定位、恢复、相关结构、maxT/BY、alpha-spending及8核/4核资源。
 - 禁止边界：不新增业务功能，不接入诊断归因或Qwen，不读取公开validation/XJTU密封/隐藏数据，不运行工业训练，不调用PyTRiO，不修改冻结RC/Docker，不上传平台。
 - 结果边界：合成结果只能证明受控生成流上的统计行为；任何门失败必须停止并如实报告，不能在看到最终种子后修改阈值、种子或接受标准。
+
+### L-EVIDENCE-015 P5-1A完整合成统计结果
+
+- 类型：本地合成统计、资源测量与机器收据；不是官方赛题成绩或真实工业故障证据。
+- 来源：`docs/results/P5-DRIFT-STATISTICAL-VALIDATION.md/json`；原始目录`D:/brace-msi-p5/P5-DRIFT-STATISTICAL-VALIDATION-001`。
+- 身份：预注册提交`a7ccb56`；配置规范化SHA-256 `08451D56065B9BF3D4531CCBAE42B27F903577D7C489E5AABAB250F89CDA96BD`；最终原始JSONL SHA-256 `E6A90496A23CAD8525A710680E6C50E59252C12AD066C883FFABCBD7DB94B38F`。
+- 结果：主误报、均值/联合/渐进、maxT失败关闭、alpha和30秒/1GiB资源门通过；中等方差、噪声、组成变化、异常值参考污染、相关结构CI精度及BY fallback覆盖失败。机器状态`FAIL_STATISTICAL_GATES_STOP`，36项门控失败。
+- 禁止推论：不得写成P5完整漂移能力已经通过、真实工业任务有效或可直接进入正式RC。公开validation、XJTU密封、隐藏数据、工业训练、Qwen/PyTRiO、Docker和平台调用均为0。

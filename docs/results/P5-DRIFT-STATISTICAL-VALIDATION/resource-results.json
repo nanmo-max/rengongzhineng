@@ -1,0 +1,72 @@
+[
+  {
+    "logical_cpu_limit": 8,
+    "cpu_affinity": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "cpu_seconds": 22.640625,
+    "wall_seconds": 22.63616120000006,
+    "peak_rss_bytes": 74182656,
+    "rss_before_bytes": 39657472,
+    "rss_delta_bytes": 34525184,
+    "permutations": 2047,
+    "dimension": 128,
+    "windows": 4,
+    "per_window_cpu_seconds": 5.66015625,
+    "per_window_wall_seconds": 5.659040300000015,
+    "selected_features": [
+      [
+        0
+      ],
+      [
+        0
+      ],
+      [
+        0
+      ],
+      [
+        0
+      ]
+    ]
+  },
+  {
+    "logical_cpu_limit": 4,
+    "cpu_affinity": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "cpu_seconds": 21.203125,
+    "wall_seconds": 21.271490499999345,
+    "peak_rss_bytes": 74186752,
+    "rss_before_bytes": 40972288,
+    "rss_delta_bytes": 33214464,
+    "permutations": 2047,
+    "dimension": 128,
+    "windows": 4,
+    "per_window_cpu_seconds": 5.30078125,
+    "per_window_wall_seconds": 5.317872624999836,
+    "selected_features": [
+      [
+        0
+      ],
+      [
+        0
+      ],
+      [
+        0
+      ],
+      [
+        0
+      ]
+    ]
+  }
+]

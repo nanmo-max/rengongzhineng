@@ -120,3 +120,136 @@ def test_group_composition_uses_reference_and_current_probabilities() -> None:
     assert np.array_equal(unchanged, values)
     assert np.all(shifted[:, :2] == 2.0)
     assert np.all(shifted[:, 2] == 0.0)
+
+
+def test_reference_status_replay_recovers_after_confirmed_reverse_shift() -> None:
+    from scripts.run_p5_drift_statistical_validation import (
+        load_config,
+        replay_reference_statuses,
+    )
+
+    trajectory = replay_reference_statuses(
+        ["stable", "warning", "warning", "warning", "stable", "stable"],
+        load_config(),
+    )
+
+    assert "confirmed" in trajectory
+    assert trajectory[-2:] == ["recovery", "stable"]
+
+
+def test_aggregate_records_reports_confidence_intervals_for_required_metrics() -> None:
+    from scripts.run_p5_drift_statistical_validation import aggregate_records, load_config
+
+    records = []
+    for seed, detected, delay, recall in (
+        (1, True, 1, 1.0),
+        (2, True, 2, 0.5),
+        (3, False, None, None),
+    ):
+        records.append(
+            {
+                "scenario": "mean_shift",
+                "dimension": 24,
+                "effect": "medium",
+                "correlation": "block_positive",
+                "method": "block_permutation_maxT",
+                "variant": "primary",
+                "stream_id": str(seed),
+                "confirmed": detected,
+                "detection_delay": delay,
+                "recall_at_k": recall,
+                "baseline_contamination_count": 0,
+                "alpha_excess": 0.0,
+                "cpu_seconds": 1.0,
+                "wall_seconds": 1.0,
+                "statuses": ["warning"],
+            }
+        )
+
+    result = aggregate_records(records, load_config())[0]
+
+    assert len(result["event_recall_wilson_95"]) == 2
+    assert len(result["miss_rate_wilson_95"]) == 2
+    assert len(result["median_detection_delay_bootstrap_95"]) == 2
+    assert len(result["mean_recall_at_k_bootstrap_95"]) == 2
+
+
+def test_aggregate_with_no_detections_is_strict_json_serializable() -> None:
+    from scripts.run_p5_drift_statistical_validation import aggregate_records, load_config
+
+    result = aggregate_records(
+        [
+            {
+                "scenario": "variance_shift",
+                "dimension": 128,
+                "effect": "medium",
+                "correlation": "block_positive",
+                "method": "block_permutation_maxT",
+                "variant": "primary",
+                "confirmed": False,
+                "detection_delay": None,
+                "recall_at_k": None,
+                "baseline_contamination_count": 0,
+                "alpha_excess": 0.0,
+                "cpu_seconds": 1.0,
+                "wall_seconds": 1.0,
+                "statuses": ["stable"],
+            }
+        ],
+        load_config(),
+    )
+
+    json.dumps(result, allow_nan=False)
+    assert result[0]["median_detection_delay_bootstrap_95"] == [None, None]
+
+
+def test_acceptance_evaluator_keeps_one_second_target_non_gating() -> None:
+    from scripts.run_p5_drift_statistical_validation import evaluate_acceptance, load_config
+
+    config = load_config()
+    aggregate = {
+        "scenario": "variance_shift",
+        "dimension": 24,
+        "effect": "medium",
+        "correlation": "block_positive",
+        "method": "block_permutation_maxT",
+        "variant": "primary",
+        "event_recall": 0.5,
+        "event_recall_wilson_95": [0.1, 0.9],
+        "median_detection_delay": 3.0,
+        "median_detection_delay_bootstrap_95": [2.0, 4.0],
+        "mean_recall_at_k": 1.0,
+        "mean_recall_at_k_bootstrap_95": [1.0, 1.0],
+        "baseline_contamination_rate": 0.0,
+        "alpha_excess_rate": 0.0,
+    }
+    resources = [
+        {
+            "logical_cpu_limit": 4,
+            "per_window_cpu_seconds": 5.0,
+            "per_window_wall_seconds": 5.0,
+            "rss_delta_bytes": 10_000_000,
+        }
+    ]
+
+    result = evaluate_acceptance([aggregate], resources, config, require_coverage=False)
+
+    assert result["overall_pass"] is False
+    assert any("event_recall" in item["check_id"] and not item["passed"] for item in result["checks"])
+    aspirational = next(item for item in result["checks"] if "aspirational" in item["check_id"])
+    assert aspirational["gating"] is False
+    assert aspirational["passed"] is False
+
+
+def test_acceptance_requires_by_behavior_under_invalid_exchangeability() -> None:
+    from scripts.run_p5_drift_statistical_validation import evaluate_acceptance, load_config
+
+    result = evaluate_acceptance([], [], load_config(), require_coverage=True)
+    check = next(
+        item
+        for item in result["checks"]
+        if item["check_id"] == "coverage.by_invalid_exchangeability"
+    )
+
+    assert check["passed"] is False
+    assert check["gating"] is True
