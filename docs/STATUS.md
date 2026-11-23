@@ -7,7 +7,7 @@
 - 稳定边界：全部历史RC和实验不改写；`0.5.0rc1`只作研究证据，不得上传。正式线从D-058开始只输出原生官方MLP续训checkpoint。D-090仅授权一次镜像外正式部署Advisor SFT，不把Sampler或私有SDK装入正式镜像。
 - 官方试运行：O-PLATFORM-018证明`0.10.4rc2`的正式提案有效且结算15,146 Token，但30/30主动retain造成零候选；精确剩余次数仍以平台页面实时显示为准。
 - 当前冻结正式候选：`D:/brace-msi-release/COMPETITION-CORE-RC-001/harness.tar`；SHA-256 `b7ba01bcc8a60502896082b58578b56c60c539a5460bb373285ff0abe4503e30`；镜像ID `sha256:578e7c9aa0c507efddeb6b4a182fc28299591a2a0a0e7fb1401a02f39b50da51`。`0.10.6rc1`继续作为历史Protocol RC，不得代替当前候选。
-- 当前源码：独立研究分支`codex/p5-implementation-001`；P5只新增未接线的`drift.py/diagnosis.py/drift_state.py`和专项测试，未修改官方SDK、checkpoint、训练器、选择器或正式Docker入口；尚未合并main或推送远程。
+- 当前源码：`codex/final-sprint-003`；冻结`0.11.0rc1`未修改，新候选源码已接入诊断证据、三项父兼容稳定Recipe、合同指标路由和稳定降级，但尚未构建/冻结替代正式镜像。
 
 ## 2026-11-20 最新试运行与修复边界
 
@@ -123,4 +123,5 @@
 - A/B：最小诊断归因、真实evidence_refs校验和轮收据证据链已提交（`31200ac`），专项63项通过。
 - C：既有精确镜像验收已映射为30条脱敏SwanLab离线记录；当前源码与冻结镜像不一致，Docker服务端不可用，新候选镜像与4核4GB验收仍未完成。
 - 性能冲刺：`MATURE-OPTIMIZER-PILOT-001-A1`完成24个官方父兼容arm，结论为负/混合，不将SAM/L2-SP/AdamW直接并入正式镜像。
-- 当前下一步：基于合法train内部证据开展任务定向、非重复的训练强度/回放/损失组合；随后冻结唯一候选并构建新镜像。目标Agent配置为远程Qwen3.8-27B，未获得真实收据前不得宣称已调用。
+- 性能冲刺：A/B/C稳定Recipe已冻结并进入注册表；开发代理证据分别为A Macro-F1 9/9正向、B RMSE/MAE/NASA 9/9正向、C RMSE/NASA 8/9正向。`QWEN38-RECIPE-PROBE-001-A2`取得真实Qwen3.8-27B三次提案收据，三项均选择预期Recipe，722/779 Token；这不是正式平台`call_id`证据。
+- 正式链复演：`FORMAL-STABLE-30R-001-A1`在4核4GB配置完成三任务30轮、60次本地宿主调用替身、30个候选及部署/保留/历史回滚，报告SHA-256 `2BF06ED...594A21`。下一步只做受影响回归、Docker正式白名单构建/4核4GB验收、SwanLab最终关联和材料一致性审计。

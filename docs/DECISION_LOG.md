@@ -290,3 +290,9 @@
 - 决策模型目标配置为远程`Qwen/Qwen3.8-27B`；本地工业训练按4核4GB验收。未产生真实27B收据前不得宣称其已经驱动实验。
 - 先运行未执行过的成熟优化器有界矩阵，保留官方Adam和简单回放强对照；只将实测有效、父兼容且资源可接受的方法候选化。
 - 论文复现不是硬门；性能、稳定性、恢复和资源证据优先。
+## D-106：正式候选采用合同指标路由的三项稳定Recipe（2026-11-23，LOCKED_IMPLEMENTATION）
+
+- 决策：分类合同使用`class_weighted_current_fast`作为预验证先验/服务降级；普通RMSE回归使用`regression_asymmetric_current_stable`；显式含NASA辅助指标的回归使用`averaged_current_stable`。路由只依赖任务与指标合同，不依赖Gas/Bearing/Engine名称。
+- Agent边界：Qwen3.8-27B仍可从完整白名单提出其他合法Recipe；提示中明确给出train内部稳定先验。非法输出或服务失败时执行上述真实训练Recipe，平台不返回逐轮指标也不影响本地同作用域评估与确定性选择。
+- 依据：`OFFICIAL-TASK-INTENSITY-001-A1`、`OFFICIAL-TASK-STABILITY-001-A1`多阶段收益；真实`QWEN38-RECIPE-PROBE-001-A2`三场景3/3选择一致；`FORMAL-STABLE-30R-001-A1`完成三任务30轮部署/保留/回滚复演。
+- 边界：不修改冻结`0.11.0rc1`；新源码只有完成正式镜像白名单、4核4GB和材料绑定验收后才能形成替代RC。开发代理收益不是官方成绩。

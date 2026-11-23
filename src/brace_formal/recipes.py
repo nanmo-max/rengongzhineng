@@ -91,7 +91,13 @@ class RecipeRegistry:
         return tuple(recipe for recipe in self._recipes.values() if profile.task in recipe.task_types)
 
     def fallback(self, profile: TaskProfile) -> TrainingRecipe:
-        return self.resolve("native_current", profile, {})
+        if profile.task == "classification":
+            recipe_id = "class_weighted_current_fast"
+        elif "nasa_score" in profile.auxiliary_metrics:
+            recipe_id = "averaged_current_stable"
+        else:
+            recipe_id = "regression_asymmetric_current_stable"
+        return self.resolve(recipe_id, profile, {})
 
     def resolve(
         self,

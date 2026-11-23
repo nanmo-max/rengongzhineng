@@ -241,9 +241,20 @@ def request_experiment_proposal(
                 for item in collection
                 if isinstance(item, Mapping) and isinstance(item.get(id_name), str) and item[id_name]
             )
+    recommended = registry.fallback(profile)
     context = {
         "task_profile": profile.as_dict(),
         "available_recipes": _recipe_descriptors(profile, registry),
+        "validated_recipe_prior": {
+            "recommended_recipe_id": recommended.recipe_id,
+            "history_policy": recommended.history_policy,
+            "basis": "bounded train-internal adjacent-stage development evidence",
+            "scope": {
+                "task": profile.task,
+                "primary_metric": profile.primary_metric,
+                "auxiliary_metrics": list(profile.auxiliary_metrics),
+            },
+        },
         "history_summary": history,
         "resource_fields": resources,
         "diagnosis_evidence": diagnosis,

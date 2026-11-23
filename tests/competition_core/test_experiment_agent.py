@@ -30,14 +30,14 @@ class AgentRound:
         return SimpleNamespace(call_id=call_id, text=response, response={})
 
 
-def _profile(tmp_path: Path, task: str = "classification"):
+def _profile(tmp_path: Path, task: str = "classification", metric: str | None = None):
     path = tmp_path / f"{task}.npz"
     write_parent(path, task=task)
     model = FormalModel.load(path)
     x = np.asarray([[float(index), float(index % 2)] for index in range(8)], dtype=np.float64)
     y = np.asarray([0, 0, 0, 0, 1, 1, 1, 1] if task == "classification" else list(range(8)))
     batch = DataBatch(tuple(f"row-{index}" for index in range(8)), x, y, "a" * 64)
-    metric = "macro_f1" if task == "classification" else "rmse"
+    metric = metric or ("macro_f1" if task == "classification" else "rmse")
     return build_task_profile({"task": task, "metric": metric, "dataset_key": "unknown-industrial-task"}, model, batch, batch)
 
 
@@ -77,6 +77,8 @@ def test_unknown_task_proposal_is_executable_and_uses_no_participant_token_cap(t
     assert "unknown-industrial-task" not in prompt
     assert "row-0" not in prompt
     assert '"feature_count": 2' in prompt
+    assert '"recommended_recipe_id": "class_weighted_current_fast"' in prompt
+    assert '"auxiliary_metrics": ["accuracy"]' in prompt
 
 
 @pytest.mark.parametrize(
@@ -95,7 +97,7 @@ def test_invalid_first_call_falls_back_to_real_registry_training(tmp_path: Path,
 
     proposal = request_experiment_proposal(rnd, profile, RecipeRegistry())
 
-    assert proposal.recipe_id == "native_current"
+    assert proposal.recipe_id == "regression_asymmetric_current_stable"
     assert proposal.history_policy == "current"
     assert proposal.parameters == {}
     assert proposal.call_id == "call-1"
@@ -112,9 +114,20 @@ def test_model_service_exception_returns_real_training_fallback(tmp_path: Path) 
         RecipeRegistry(),
     )
 
-    assert proposal.recipe_id == "native_current"
+    assert proposal.recipe_id == "class_weighted_current_fast"
     assert proposal.call_id == ""
     assert "RuntimeError" in str(proposal.parse_error)
+
+
+def test_nasa_contract_recommends_stable_parent_averaging_and_exposes_metric_scope(tmp_path: Path) -> None:
+    from brace_formal.agent import request_experiment_proposal
+
+    rnd = AgentRound([RuntimeError("host unavailable")])
+    profile = _profile(tmp_path, "regression", "rmse_nasa")
+    proposal = request_experiment_proposal(rnd, profile, RecipeRegistry())
+
+    assert proposal.recipe_id == "averaged_current_stable"
+    assert profile.auxiliary_metrics == ("mae", "nasa_score", "nasa_score_mean")
 
 
 def test_agent_rejects_raw_rows_before_calling_host(tmp_path: Path) -> None:

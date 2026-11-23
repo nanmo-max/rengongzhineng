@@ -9,7 +9,7 @@ import pytest
 def _config() -> dict[str, object]:
     return {
         "format": "brace-msi.competition-simulation-config.v1",
-        "model_name": "Qwen/Qwen3.5-4B",
+        "model_name": "Qwen/Qwen3.8-27B",
         "tasks": [
             {
                 "dataset_key": "A",
@@ -30,6 +30,17 @@ def _config() -> dict[str, object]:
                 "validation_samples": 20,
                 "confirmation_samples": 32,
                 "seed": 907,
+            },
+            {
+                "dataset_key": "C",
+                "opaque_name": "opaque-process-gamma",
+                "task": "regression",
+                "metric": "rmse_nasa",
+                "rounds": 10,
+                "samples_per_round": 24,
+                "validation_samples": 20,
+                "confirmation_samples": 32,
+                "seed": 1103,
             },
         ],
     }
@@ -52,7 +63,7 @@ def test_simulator_runs_official_round_frames_for_classification_and_regression(
     assert result["valid"] is True
     assert result["official_hidden_score"] is None
     assert result["label"] == "LOCAL OFFICIAL-PROTOCOL SIMULATION — NOT AN OFFICIAL SCORE"
-    assert len(result["tasks"]) == 2
+    assert len(result["tasks"]) == 3
     for task in result["tasks"]:
         assert task["opaque_name"].startswith("opaque-process-")
         assert len(task["rounds"]) == 10
@@ -65,7 +76,7 @@ def test_simulator_runs_official_round_frames_for_classification_and_regression(
         assert task["history_records"] == 10
         assert task["resource_contract"] == {
             "cpu_count": 4,
-            "memory_bytes": 8 * 1024**3,
+            "memory_bytes": 4 * 1024**3,
         }
         for index, round_record in enumerate(task["rounds"], 1):
             assert round_record["round_index"] == index
@@ -76,6 +87,14 @@ def test_simulator_runs_official_round_frames_for_classification_and_regression(
             assert round_record["selected_checkpoint_sha256"].startswith("sha256:")
             assert round_record["host_resource_fields"]["cpu_count"] == 4
             assert round_record["history_count_before_round"] == index - 1
+
+    recipes = {task["dataset_key"]: {item["executed_recipe_id"] for item in task["rounds"]} for task in result["tasks"]}
+    assert recipes == {
+        "A": {"class_weighted_current_fast"},
+        "B": {"regression_asymmetric_current_stable"},
+        "C": {"averaged_current_stable"},
+    }
+    assert result["model_name"] == "Qwen/Qwen3.8-27B"
 
     assert (output / "report.json").is_file()
     assert (output / "report.html").is_file()

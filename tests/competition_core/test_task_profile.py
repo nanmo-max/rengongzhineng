@@ -51,6 +51,7 @@ def test_classification_profile_ignores_opaque_dataset_identity_and_reports_imba
     assert first.task == "classification"
     assert first.primary_metric == "macro_f1"
     assert first.metric_direction == "higher"
+    assert first.auxiliary_metrics == ("accuracy",)
     assert first.feature_count == 2
     assert first.class_count == 2
     assert first.sample_count == 4
@@ -90,6 +91,7 @@ def test_regression_profile_reports_target_range_and_missing_quality(tmp_path: P
     assert profile.task == "regression"
     assert profile.primary_metric == "rmse"
     assert profile.metric_direction == "lower"
+    assert profile.auxiliary_metrics == ("mae", "nasa_score", "nasa_score_mean")
     assert profile.class_count == 0
     assert profile.label_summary == {
         "minimum": 2.0,
@@ -106,6 +108,7 @@ def test_regression_profile_reports_target_range_and_missing_quality(tmp_path: P
     assert profile.group_hints == ("unit_id",)
     assert profile.time_hints == ("cycle", "timestamp")
     payload = profile.as_dict()
+    assert payload["auxiliary_metrics"] == ["mae", "nasa_score", "nasa_score_mean"]
     assert payload["label_summary"] == profile.label_summary
     assert payload["data_quality"] == profile.data_quality
 

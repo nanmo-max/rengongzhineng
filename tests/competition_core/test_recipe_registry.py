@@ -49,7 +49,7 @@ def test_registry_exposes_task_compatible_weighting_losses_and_history_policies(
     assert class_recipes["native_current"].history_policy == "current"
     assert class_recipes["native_replay"].history_policy == "current_plus_history"
     assert "retain" not in class_recipes
-    assert registry.fallback(_profile(classification, _batch("classification"))).recipe_id == "native_current"
+    assert registry.fallback(_profile(classification, _batch("classification"))).recipe_id == "class_weighted_current_fast"
 
 
 def test_promoted_task_recipes_match_frozen_intensity_settings(tmp_path: Path) -> None:

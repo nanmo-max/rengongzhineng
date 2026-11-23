@@ -148,10 +148,12 @@ def _write_jsonl(path: Path, rows: list[dict[str, Any]]) -> None:
 class _LocalHost:
     """Synchronous host side of the official JSONL RPC protocol."""
 
-    def __init__(self, root: Path, dataset_key: str, round_index: int) -> None:
+    def __init__(self, root: Path, dataset_key: str, round_index: int, *, task: str, metric: str) -> None:
         self.root = root
         self.dataset_key = dataset_key
         self.round_index = round_index
+        self.task = task
+        self.metric = metric
         self.pending: list[str] = []
         self.requests: list[dict[str, Any]] = []
         self.model_receipts: list[dict[str, Any]] = []
@@ -185,14 +187,42 @@ class _LocalHost:
         call_number = len(self.model_receipts) + 1
         call_id = f"local-{self.dataset_key}-{self.round_index}-{call_number}"
         if call_number == 1:
-            recipe_id = "native_current" if self.round_index == 1 else "native_replay"
-            history_policy = "current" if self.round_index == 1 else "current_plus_history"
+            context: Mapping[str, Any] = {}
+            try:
+                content = str(request["messages"][0]["content"])
+                context = json.loads(content.split(" Context: ", 1)[1])
+            except (KeyError, IndexError, TypeError, ValueError, json.JSONDecodeError):
+                context = {}
+            prior = context.get("validated_recipe_prior") if isinstance(context, Mapping) else None
+            recipe_id = prior.get("recommended_recipe_id") if isinstance(prior, Mapping) else None
+            history_policy = prior.get("history_policy") if isinstance(prior, Mapping) else None
+            if not isinstance(recipe_id, str) or not isinstance(history_policy, str):
+                if self.task == "classification":
+                    recipe_id = "class_weighted_current_fast"
+                elif self.metric == "rmse_nasa":
+                    recipe_id = "averaged_current_stable"
+                else:
+                    recipe_id = "regression_asymmetric_current_stable"
+                history_policy = "current"
+            diagnosis = context.get("diagnosis_evidence") if isinstance(context, Mapping) else None
+            evidence_refs: list[str] = []
+            if isinstance(diagnosis, Mapping):
+                for collection, key in (("facts", "fact_id"), ("hypotheses", "hypothesis_id")):
+                    values = diagnosis.get(collection)
+                    if isinstance(values, list):
+                        evidence_refs.extend(
+                            str(item[key]) for item in values
+                            if isinstance(item, Mapping) and isinstance(item.get(key), str)
+                        )
             payload = {
                 "recipe_id": recipe_id,
                 "parameters": {},
                 "history_policy": history_policy,
-                "hypothesis": "a bounded parent-compatible continuation may improve same-scope evidence",
-                "rationale": "use current legal evidence and retained history without task-name routing",
+                "hypothesis": "the prevalidated contract-matched recipe can improve same-scope evidence",
+                "rationale": "use the task contract, aggregate evidence and retained history without dataset-name routing",
+                "evidence_refs": list(dict.fromkeys(evidence_refs)),
+                "expected_metric_effect": "improve the declared primary metric without material auxiliary regression",
+                "risk": "same-scope validation may still reject the candidate",
             }
         else:
             payload = {
@@ -301,6 +331,8 @@ def _validate_task_config(raw: Mapping[str, Any]) -> dict[str, Any]:
         "confirmation_samples": int(raw.get("confirmation_samples", 32)),
         "feature_count": int(raw.get("feature_count", 4)),
         "seed": int(raw.get("seed", 1)),
+        "metric": str(raw.get("metric") or ("macro_f1" if task == "classification" else "rmse")),
+        "model_name": str(raw.get("model_name", "Qwen/Qwen3.8-27B")),
     }
 
 
@@ -364,7 +396,7 @@ def _simulate_task(config: Mapping[str, Any], output: Path) -> dict[str, Any]:
             parent_digest = "sha256:" + _sha256(parent_checkpoint.read_bytes())
             task_contract = {
                 "task": cfg["task"],
-                "metric": "macro_f1" if cfg["task"] == "classification" else "rmse",
+                "metric": cfg["metric"],
                 "metric_direction": "higher" if cfg["task"] == "classification" else "lower",
                 "public_projection": {
                     "train_path": str(train_path),
@@ -379,9 +411,9 @@ def _simulate_task(config: Mapping[str, Any], output: Path) -> dict[str, Any]:
                 "round_index": round_index,
                 "stage_id": "local-official-protocol-simulation",
                 "task_contract": task_contract,
-                "model_name": "Qwen/Qwen3.5-4B",
+                "model_name": cfg["model_name"],
                 "max_output_tokens": 4096,
-                "resource_limits": {"cpu_count": 4, "memory_bytes": 8 * 1024**3},
+                "resource_limits": {"cpu_count": 4, "memory_bytes": 4 * 1024**3},
                 "parent_checkpoint_sha256": parent_digest,
                 "parent_artifact": parent_receipt,
                 "artifacts": [item[0] for item in artifacts.values()],
@@ -389,7 +421,10 @@ def _simulate_task(config: Mapping[str, Any], output: Path) -> dict[str, Any]:
                 "state_sha256": state_sha256,
             }
             _validate_start(frame)
-            host = _LocalHost(round_root / "host", cfg["dataset_key"], round_index)
+            host = _LocalHost(
+                round_root / "host", cfg["dataset_key"], round_index,
+                task=cfg["task"], metric=cfg["metric"],
+            )
             host.history = list(history)
             host.artifacts = dict(artifacts)
             rnd = Round(frame, host, host)
@@ -459,7 +494,7 @@ def _simulate_task(config: Mapping[str, Any], output: Path) -> dict[str, Any]:
     model = FormalModel.load(final_checkpoint)
     confirmation = load_rows(confirmation_path, model, require_answers=True)
     contract = resolve_metric_contract(
-        {"task": cfg["task"], "metric": "macro_f1" if cfg["task"] == "classification" else "rmse"},
+        {"task": cfg["task"], "metric": cfg["metric"]},
         cfg["task"],
     )
     confirmation_metrics = evaluate(model, confirmation.x, confirmation.y, contract)
@@ -489,7 +524,7 @@ def _simulate_task(config: Mapping[str, Any], output: Path) -> dict[str, Any]:
         "dataset_key": cfg["dataset_key"],
         "opaque_name": cfg["opaque_name"],
         "task": cfg["task"],
-        "resource_contract": {"cpu_count": 4, "memory_bytes": 8 * 1024**3},
+        "resource_contract": {"cpu_count": 4, "memory_bytes": 4 * 1024**3},
         "rounds": round_reports,
         "model_calls": len(all_model_receipts),
         "model_receipts": all_model_receipts,
@@ -550,7 +585,8 @@ def run_simulation(config: Mapping[str, Any], output: Path | str) -> dict[str, A
     if root.exists():
         raise FileExistsError(f"simulation output already exists: {root}")
     root.mkdir(parents=True)
-    tasks = [_simulate_task(item, root) for item in config["tasks"]]
+    model_name = str(config.get("model_name", "Qwen/Qwen3.8-27B"))
+    tasks = [_simulate_task({**item, "model_name": model_name}, root) for item in config["tasks"]]
     report: dict[str, Any] = {
         "format": _REPORT_FORMAT,
         "label": _LABEL,

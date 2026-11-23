@@ -1,0 +1,15 @@
+{
+  "status": "PASS_LOCAL_PROTOCOL_ONLY",
+  "official_score": null,
+  "source_report": "D:/brace-msi-final-sprint/FORMAL-STABLE-30R-001-A1/report.json",
+  "source_report_sha256": "2BF06ED41939D55760837E80277BDBC6EEFCA130153E356720440F73FD594A21",
+  "model_configuration": "Qwen/Qwen3.8-27B",
+  "model_transport": "local host receipt substitute; not a remote call",
+  "resource_contract": {"cpu_count": 4, "memory_bytes": 4294967296},
+  "tasks": [
+    {"key": "A", "rounds": 10, "model_calls": 20, "recipe": "class_weighted_current_fast", "candidate_selected": 4, "parent_retained": 4, "historical_rollback": 2, "confirmation": {"accuracy": 0.8125, "macro_f1": 0.7927975406236275}},
+    {"key": "B", "rounds": 10, "model_calls": 20, "recipe": "regression_asymmetric_current_stable", "candidate_selected": 7, "parent_retained": 3, "historical_rollback": 0, "confirmation": {"mae": 0.44525809042639874, "rmse": 0.51367611575382}},
+    {"key": "C", "rounds": 10, "model_calls": 20, "recipe": "averaged_current_stable", "candidate_selected": 10, "parent_retained": 0, "historical_rollback": 0, "confirmation": {"mae": 3.199021641308794, "rmse": 3.754355004437133, "nasa_score": 14.157935434962429}}
+  ],
+  "boundary": "Synthetic protocol simulation; confirmation values are not official or public-dataset scores."
+}

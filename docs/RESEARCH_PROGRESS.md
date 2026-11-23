@@ -1023,3 +1023,9 @@
 - 将既有0.11.0rc1精确镜像验收的30轮与资源ledger确定性映射为脱敏观测，并用SwanLab 0.10.5生成真实离线运行；未同步云端、未重跑训练。
 - 完成`MATURE-OPTIMIZER-PILOT-001-A1`：24/24 arm、来源哈希前后一致、确认集读取0、峰值RSS约241MiB；A无增益，B候选均退化，C约4%内部收益，未发现值得直接替代Adam的成熟优化器。
 - 运行命令与产物见`docs/EXPERIMENTS.md`及`docs/results/FINAL-SPRINT-003-C.md`。
+# 2026-11-23 稳定高收益候选接入与27B提案验证
+
+- 对既有定向实验逐行复算辅助指标，纠正早期摘要中的NASA比例：A稳定Recipe的Macro-F1 9/9正向且Accuracy 8/9正向；B的RMSE/MAE/NASA均9/9正向，NASA平均相对降低83.89%；C的RMSE/NASA 8/9正向，NASA平均相对降低20.42%。
+- 测试先行扩展`TaskProfile`的辅助指标合同；`RecipeRegistry`按分类、普通回归、NASA回归选择三项已验证稳定降级；Qwen提示接收同一合法train内部先验，正式平台仍不设置参赛者Token上限。
+- 真实PyTRiO调用Qwen3.8-27B三场景3/3选择预期配方，722/779 Token。随后以本地宿主替身完成4核4GB三任务30轮正式协议复演，模型选择含候选部署、父保留和历史回滚。
+- 验证：任务画像/Agent/Recipe/正式轮专项`34 passed`；正式模拟器`4 passed in 74.44s`；独立30轮复演`valid=true`。未读取受限validation、XJTU或隐藏数据，未使用官方试运行。

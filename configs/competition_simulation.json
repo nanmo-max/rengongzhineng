@@ -1,6 +1,6 @@
 {
   "format": "brace-msi.competition-simulation-config.v1",
-  "model_name": "Qwen/Qwen3.5-4B",
+  "model_name": "Qwen/Qwen3.8-27B",
   "tasks": [
     {
       "dataset_key": "A",
@@ -23,6 +23,18 @@
       "confirmation_samples": 48,
       "feature_count": 6,
       "seed": 2718
+    },
+    {
+      "dataset_key": "C",
+      "opaque_name": "opaque-engine-regression-surrogate",
+      "task": "regression",
+      "metric": "rmse_nasa",
+      "rounds": 10,
+      "samples_per_round": 32,
+      "validation_samples": 24,
+      "confirmation_samples": 48,
+      "feature_count": 6,
+      "seed": 3141
     }
   ]
 }

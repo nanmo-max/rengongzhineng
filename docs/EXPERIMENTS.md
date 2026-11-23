@@ -1012,3 +1012,16 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 - 目标：B寻找不牺牲NASA和最差阶段的高强度点；C寻找0.10与0.25之间的性能—稳定性折中。资源及晋级门沿用OFFICIAL-TASK-INTENSITY-001-A1。
 - 输出：`D:/brace-msi-final-sprint/OFFICIAL-TASK-STABILITY-001-A1/`；4核亲和性，峰值RSS<4GB；官方试运行/PyTRiO/SwanLab同步均为0。
 - 结果：B的`asymmetric_current_e4_lr2_w1.25`在9/9阶段优于静态父模型，平均RMSE降低`346.306378`、最差仍降低`75.955162`，NASA改善61.42%；C的中间alpha未同时超过A1的0.10稳定方案。峰值RSS 110,280,704字节，汇总SHA-256 `E62FDBAFF1C208427CA0D4148D3210108A58059C811C728D6804A850F83FDAD9`。
+# 2026-11-23 QWEN38-RECIPE-PROBE-001-A1/A2
+
+- A1使用`max_tokens=None`调用本地PyTRiO直接SDK，在远程采样前被SDK参数校验拒绝；失败保留，未产生Token或模型响应。该约束属于直接SDK，不改变正式平台`rnd.model()`不设置参赛者Token上限的规则。
+- A2使用官方示例的本地探针参数`max_tokens=4096`，真实调用`Qwen/Qwen3.8-27B`。分类、普通RMSE回归、RMSE+NASA回归三场景3/3返回合法结构化提案并分别选择`class_weighted_current_fast`、`regression_asymmetric_current_stable`、`averaged_current_stable`。
+- 总输入/输出Token为722/779，三次墙钟7.781/6.486/7.979秒；外部原始结果SHA-256 `D3BE7F2A...C534DCD6`，脱敏证据见`results/QWEN38-RECIPE-PROBE-001-A2.json`。
+- 边界：证明真实27B能够基于聚合开发证据选择三项稳定Recipe；不是正式平台`call_id`、不是30轮连续自适应或官方成绩。
+
+# 2026-11-23 FORMAL-STABLE-30R-001-A1
+
+- 将任务合同完整指标集和合法train内部稳定Recipe先验接入正式提案上下文；模型服务异常时按合同回退到同一预验证Recipe，不再回退弱`native_current`。未按数据集名称选择方法。
+- 4核4GB配置完成A/B/C各10轮：每轮一个真实父兼容候选、两次本地宿主模型调用替身、同作用域父/候选/合法历史比较、部署/保留/历史回滚、父链、状态和最终预测。A选择候选4次/保留4次/历史回滚2次；B为7/3/0；C为10/0/0。
+- 配方分别固定为`class_weighted_current_fast`、`regression_asymmetric_current_stable`、`averaged_current_stable`。报告`valid=true`，SHA-256 `2BF06ED...594A21`；HTML/JSON位于`D:/brace-msi-final-sprint/FORMAL-STABLE-30R-001-A1/`，聚合证据见`results/FORMAL-STABLE-30R-001-A1.json`。
+- 边界：模拟数据的确认指标只验证协议和选择，不能作为官方/公开数据性能；60次调用是本地宿主替身，不能冒充真实27B Token。

@@ -58,6 +58,7 @@ class TaskProfile:
     task: str
     primary_metric: str
     metric_direction: str
+    auxiliary_metrics: tuple[str, ...]
     feature_count: int
     class_count: int
     sample_count: int
@@ -73,6 +74,7 @@ class TaskProfile:
             "task": self.task,
             "primary_metric": self.primary_metric,
             "metric_direction": self.metric_direction,
+            "auxiliary_metrics": list(self.auxiliary_metrics),
             "feature_count": self.feature_count,
             "class_count": self.class_count,
             "sample_count": self.sample_count,
@@ -149,6 +151,7 @@ def build_task_profile(
         task=task,
         primary_metric=metric.name,
         metric_direction=metric.direction,
+        auxiliary_metrics=metric.auxiliary_metrics,
         feature_count=feature_count,
         class_count=class_count,
         sample_count=len(training.ids),

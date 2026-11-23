@@ -196,7 +196,7 @@ def test_unknown_task_runs_two_qwen_calls_real_candidate_and_selection(
     assert "not-A-B-or-C" not in rnd.model_prompts[0]
 
 
-def test_invalid_first_call_falls_back_to_real_native_training(monkeypatch, tmp_path: Path) -> None:
+def test_invalid_first_call_falls_back_to_prevalidated_stable_training(monkeypatch, tmp_path: Path) -> None:
     from brace_formal.round_core import run_competition_round
 
     parent = tmp_path / "checkpoint.npz"
@@ -208,13 +208,13 @@ def test_invalid_first_call_falls_back_to_real_native_training(monkeypatch, tmp_
 
     outcome = run_competition_round(rnd, evaluator=_evaluator("classification"))
 
-    assert outcome.executed_recipe_id == "native_current"
+    assert outcome.executed_recipe_id == "class_weighted_current_fast"
     assert outcome.candidate_trained is True
     record = json.loads((rnd.saved_state / "round-receipt.json").read_text(encoding="utf-8"))
     assert record["experiment_proposal"]["parse_error"]
 
 
-def test_failed_requested_recipe_attempts_native_fallback_and_records_failure(
+def test_failed_requested_recipe_attempts_stable_fallback_and_records_failure(
     monkeypatch, tmp_path: Path
 ) -> None:
     import brace_formal.round_core as core
@@ -240,7 +240,7 @@ def test_failed_requested_recipe_attempts_native_fallback_and_records_failure(
     monkeypatch.setattr(core, "execute_recipe", fail_requested)
     outcome = core.run_competition_round(rnd, evaluator=_evaluator("classification"))
 
-    assert outcome.executed_recipe_id == "native_current"
+    assert outcome.executed_recipe_id == "class_weighted_current_fast"
     assert outcome.candidate_trained is True
     receipt = json.loads((rnd.saved_state / "round-receipt.json").read_text(encoding="utf-8"))
     assert receipt["training_failures"][0]["recipe_id"] == "native_replay"
@@ -277,7 +277,8 @@ def test_all_candidate_training_failures_still_record_second_call_and_retain_par
     receipt = json.loads((rnd.saved_state / "round-receipt.json").read_text(encoding="utf-8"))
     assert receipt["outcome"] == "candidate_training_failed"
     assert receipt["training_failures"] == [
-        {"recipe_id": "native_current", "error": "RuntimeError: injected training failure"}
+        {"recipe_id": "native_current", "error": "RuntimeError: injected training failure"},
+        {"recipe_id": "class_weighted_current_fast", "error": "RuntimeError: injected training failure"},
     ]
 
 

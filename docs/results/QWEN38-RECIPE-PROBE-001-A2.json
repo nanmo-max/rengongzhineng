@@ -1,0 +1,36 @@
+{
+  "status": "succeeded",
+  "model": "Qwen/Qwen3.8-27B",
+  "formal_host_max_tokens_override": null,
+  "local_probe_max_tokens": 4096,
+  "total_input_tokens": 722,
+  "total_output_tokens": 779,
+  "source_sha256": "D3BE7F2AEAA99BF5FA48DCC6F5D7DE58E4CBE1770161C0E6D9828842C534DCD6",
+  "results": [
+    {
+      "scenario": "classification",
+      "recipe_id": "class_weighted_current_fast",
+      "response_sha256": "ae6e715ebcfeeee2773fcfac3a0a1e124acbb11052697e256363ef096f83b662",
+      "input_tokens": 190,
+      "output_tokens": 243,
+      "wall_seconds": 7.781094599999051
+    },
+    {
+      "scenario": "regression_rmse",
+      "recipe_id": "regression_asymmetric_current_stable",
+      "response_sha256": "697dfb89acb160e445abc3b4b70217bf0c3c75eb45f5d805865978404c614af3",
+      "input_tokens": 253,
+      "output_tokens": 239,
+      "wall_seconds": 6.485882000000856
+    },
+    {
+      "scenario": "regression_rmse_nasa",
+      "recipe_id": "averaged_current_stable",
+      "response_sha256": "9c3e582f4afe6baa2cd6333c7c9301743f38467d988218996de7c606ecea79d5",
+      "input_tokens": 279,
+      "output_tokens": 297,
+      "wall_seconds": 7.979202200000145
+    }
+  ],
+  "boundary": "Real direct PyTRiO sampling evidence. It proves recipe proposal behavior only; the official platform still owns rnd.model() and call_id receipts."
+}
