@@ -994,7 +994,7 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 - 资源：峰值RSS 252,796,928字节，远低于4GB；汇总SHA-256 `108B7506877C05C46DD88C9A0FCC28F698BC24C43956C884B32D3F012ECD89B8`。
 - 失败证据：首次启动因日志目录与实验输出目录相同触发fail-closed，退出码1；保留`runner.err.log`后改用独立`artifacts/`成功，没有覆盖失败记录。
 
-## OFFICIAL-TASK-INTENSITY-001-A1（2026-11-23，REGISTERED）
+## OFFICIAL-TASK-INTENSITY-001-A1（2026-11-23，COMPLETE_MIXED）
 
 - 问题：在不重复既有A1方法和成熟优化器矩阵的前提下，增加训练强度能否提高A/B/C相邻未见阶段收益，同时控制最差阶段与资源？
 - 固定起点：三个官方初始`checkpoint.npz`；数据仅使用`DELAYED-GAIN-SIM-001-A2`中已经合法物化的10轮feedback，按`t训练→t+1评价`，confirmation读取0。
@@ -1002,11 +1002,13 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 - 指标：A Accuracy/Macro-F1；B MAE/RMSE；C MAE/RMSE/NASA；另记录均值收益、最差阶段、胜率、CPU、墙钟、RSS和checkpoint大小。
 - 晋级门：相对静态平均主指标严格改善；至少8/9阶段改善或持平；最差相对阶段不低于-1%；辅助指标不出现实质恶化；峰值RSS<4GB，并进入性能—CPU Pareto前沿。
 - 预算：4核亲和性；每个方法9个转换；官方试运行、公开validation、confirmation、PyTRiO和SwanLab同步均为0。输出`D:/brace-msi-final-sprint/OFFICIAL-TASK-INTENSITY-001-A1/`，已有目录即停止。
+- 结果：A的`balanced_current_e3_lr3`在9/9阶段优于静态父模型，平均Macro-F1有向收益`+0.400626`；B高强度A1平均收益大但有最差阶段/NASA退化，未晋级；C的`soup_current_e5_alpha0.1`达到8/9改善、最差`-0.032977 RMSE`、NASA改善33.22%。峰值RSS 122,175,488字节，汇总SHA-256 `64B994DC1ADD5F8C6B505E0E39CC8B60D1904E83AAF10C0DBCE8A131E2113A48`。
 
-## OFFICIAL-TASK-STABILITY-001-A1（2026-11-23，REGISTERED）
+## OFFICIAL-TASK-STABILITY-001-A1（2026-11-23，COMPLETE_PASS_B）
 
 - 触发：强度A1中A已达9/9正收益；B最高均值候选存在明显最差阶段/NASA退化；C的0.10插值稳定但平均收益低于0.25。
 - 范围：只运行B/C；固定官方父checkpoint、相同9个`t→t+1`合法转换、confirmation/public validation读取0。
 - 候选：`native_current_e4_lr2`、`asymmetric_current_e4_lr2_w1.25`、`soup_current_e5_alpha0.15/0.2`。
 - 目标：B寻找不牺牲NASA和最差阶段的高强度点；C寻找0.10与0.25之间的性能—稳定性折中。资源及晋级门沿用OFFICIAL-TASK-INTENSITY-001-A1。
 - 输出：`D:/brace-msi-final-sprint/OFFICIAL-TASK-STABILITY-001-A1/`；4核亲和性，峰值RSS<4GB；官方试运行/PyTRiO/SwanLab同步均为0。
+- 结果：B的`asymmetric_current_e4_lr2_w1.25`在9/9阶段优于静态父模型，平均RMSE降低`346.306378`、最差仍降低`75.955162`，NASA改善61.42%；C的中间alpha未同时超过A1的0.10稳定方案。峰值RSS 110,280,704字节，汇总SHA-256 `E62FDBAFF1C208427CA0D4148D3210108A58059C811C728D6804A850F83FDAD9`。

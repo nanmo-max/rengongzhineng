@@ -41,6 +41,15 @@ _RECIPES = (
     TrainingRecipe("native_current", ("classification", "regression"), "current", 1),
     TrainingRecipe("native_replay", ("classification", "regression"), "current_plus_history", 1),
     TrainingRecipe("class_weighted_ce", ("classification",), "current_plus_history", 2, loss="cross_entropy", class_weighting=True),
+    TrainingRecipe(
+        "class_weighted_current_fast",
+        ("classification",),
+        "current",
+        3,
+        learning_rate_multiplier=3.0,
+        loss="cross_entropy",
+        class_weighting=True,
+    ),
     TrainingRecipe("class_balanced_sample", ("classification",), "current", 2, loss="cross_entropy", balanced_sampling=True),
     TrainingRecipe("regression_mse", ("regression",), "current", 2, loss="mse"),
     TrainingRecipe("regression_huber", ("regression",), "current_plus_history", 2, loss="huber", loss_parameters=(("delta", 1.0),)),
@@ -52,7 +61,23 @@ _RECIPES = (
         loss="asymmetric",
         loss_parameters=(("overprediction_weight", 1.0), ("underprediction_weight", 2.0)),
     ),
+    TrainingRecipe(
+        "regression_asymmetric_current_stable",
+        ("regression",),
+        "current",
+        4,
+        learning_rate_multiplier=2.0,
+        loss="asymmetric",
+        loss_parameters=(("overprediction_weight", 1.25), ("underprediction_weight", 1.0)),
+    ),
     TrainingRecipe("averaged_native", ("classification", "regression"), "current_plus_history", 3, parent_average_alpha=0.25),
+    TrainingRecipe(
+        "averaged_current_stable",
+        ("regression",),
+        "current",
+        5,
+        parent_average_alpha=0.1,
+    ),
 )
 
 

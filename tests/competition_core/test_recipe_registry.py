@@ -52,6 +52,34 @@ def test_registry_exposes_task_compatible_weighting_losses_and_history_policies(
     assert registry.fallback(_profile(classification, _batch("classification"))).recipe_id == "native_current"
 
 
+def test_promoted_task_recipes_match_frozen_intensity_settings(tmp_path: Path) -> None:
+    registry = RecipeRegistry()
+    classification = _model(tmp_path, "classification")
+    regression = _model(tmp_path, "regression")
+    class_profile = _profile(classification, _batch("classification"))
+    regression_profile = _profile(regression, _batch("regression"))
+
+    class_recipe = registry.resolve("class_weighted_current_fast", class_profile, {})
+    bearing_recipe = registry.resolve("regression_asymmetric_current_stable", regression_profile, {})
+    engine_recipe = registry.resolve("averaged_current_stable", regression_profile, {})
+
+    assert (class_recipe.history_policy, class_recipe.epochs, class_recipe.learning_rate_multiplier) == ("current", 3, 3.0)
+    assert class_recipe.class_weighting is True
+    assert (bearing_recipe.history_policy, bearing_recipe.epochs, bearing_recipe.learning_rate_multiplier) == ("current", 4, 2.0)
+    assert bearing_recipe.parameters_dict() == {"overprediction_weight": 1.25, "underprediction_weight": 1.0}
+    assert (engine_recipe.history_policy, engine_recipe.epochs, engine_recipe.parent_average_alpha) == ("current", 5, 0.1)
+
+    for parent, profile, recipe in (
+        (classification, class_profile, class_recipe),
+        (regression, regression_profile, bearing_recipe),
+        (regression, regression_profile, engine_recipe),
+    ):
+        result = execute_recipe(parent, recipe, _batch(str(parent.meta["task"])))
+        result.model.validate()
+        assert result.receipt["recipe_id"] == recipe.recipe_id
+        assert result.receipt["training_samples"] == 12
+
+
 @pytest.mark.parametrize("recipe_id", ["class_weighted_ce", "class_balanced_sample"])
 def test_classification_recipes_execute_real_balancing(tmp_path: Path, recipe_id: str) -> None:
     parent = _model(tmp_path, "classification")
