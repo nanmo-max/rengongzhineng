@@ -274,3 +274,11 @@
 - 负向决策：A2 Brown-Forsythe组合在全新种子上由A1的15/19下降为14/19，未改善噪声并使方差结果更差，故回退算法代码但保留全部负结果。不得因理论成熟度或个别样本表现绕过实测结果。
 - 未解决边界：128维中等方差及三维噪声开发门仍失败；P5-1C每格只有4条开发流，不是独立最终统计验收。未解决前不得声称P5统计门通过或接入正式RC。
 - 依据：`results/P5-1C-IMPLEMENTATION-REPORT.md`、`P5-1C-TARGETED-REPAIR.json`及D盘A1/A2原始收据。
+
+## D-104：FINAL-SPRINT只接入可追溯诊断和证据引用（2026-11-23，LOCKED_IMPLEMENTATION）
+
+- 决策：从P5-1C研究实现增量接入`DriftReport → DiagnosisReport → Qwen提案 → 轮收据`；诊断严格分为FACT、HYPOTHESIS和UNKNOWN，无同作用域指标证据时性能影响必须为`unknown`。`ArtifactSelector`、准入、训练和回滚不改。
+- 证据引用：Qwen提案接口广告`evidence_refs`、预期影响和风险；引用不存在的fact/hypothesis ID时失败关闭到父兼容fallback。缺失引用不伪装成“已使用诊断”，但为保持已验证官方训练链不将其改写为不同Recipe；轮收据显式记录`validated_refs=[]`/`evidence_recipe_match=unverifiable`。
+- 参考边界：最小运行链只使用已合法开放的历史轮次块，不以行号伪造group identity。前三个历史轮不足时返回`insufficient_history`；之后的maxT收据必须持续标注`round_blocks_assumed_exchangeable`，不得把假设写成官方已确认。
+- 统计边界：D-101/D-103仍有效；尺度/噪声功效未通过，本接入不提升为完整统计验收或正式RC证据。
+- 依据：`FINAL-SPRINT-003`用户授权；63项新增/受影响接口定向测试。

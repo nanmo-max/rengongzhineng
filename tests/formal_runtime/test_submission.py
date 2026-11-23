@@ -169,6 +169,11 @@ def test_retain_advice_still_trains_and_submits_one_real_candidate(monkeypatch, 
     assert state["rounds"][-1]["deployment_decision"]["requested_artifact_id"] == "parent-1"
     assert state["rounds"][-1]["action"] == "train"
     assert state["rounds"][-1]["recipe"] != "retain"
+    assert state["rounds"][-1]["drift"]["status"] == "insufficient_history"
+    assert state["rounds"][-1]["diagnosis"]["performance_impact"]["status"] == "unknown"
+    assert state["rounds"][-1]["agent_evidence"]["validated_refs"] == []
+    assert state["rounds"][-1]["agent_evidence"]["actual_result"]["candidate_trained"] is True
+    assert state["rounds"][-1]["agent_evidence"]["selection_outcome"] == state["rounds"][-1]["applied_deployment_decision"]
 
 
 def test_safe_candidate_is_submitted_and_selected(monkeypatch, tmp_path: Path) -> None:

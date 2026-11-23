@@ -1008,3 +1008,11 @@
 - BY按第一秩阈值核查经验p分辨率，不足返回`INSUFFICIENT_CALIBRATION`。P5-1A结果、配置、原始收据和冻结RC哈希均复核未变。
 - A1全新种子72作业15/19通过；128维中等方差和三维噪声失败。A2 Brown-Forsythe全新种子14/19，为负结果并回退。
 - 验证：漂移专项46项通过；全仓`698 passed in 168.92s`；compileall和`git diff --check`通过。详见`results/P5-1C-IMPLEMENTATION-REPORT.md`。
+# 2026-11-23 FINAL-SPRINT-003 A/B
+
+- 新增最小诊断归因：从既有`DriftReport`生成可追溯FACT、受限HYPOTHESIS、UNKNOWN和`experiment_needs`；特征事实保存index、scope hash、方法、效应和贡献。
+- 性能影响失败关闭：没有同作用域指标证据时固定为`unknown`，不把输入分布变化写成设备故障或已观测性能下降。
+- Qwen提案新增`evidence_refs/expected_metric_effect/risk`字段和真实ID校验；虚构引用进入确定性fallback，缺失引用保留现有Recipe但不声称诊断已被使用。
+- 正式轮收据新增完整drift、diagnosis和`agent_evidence`，记录证据—Recipe—预期—实际结果—选择链；训练、评估、`ArtifactSelector`和回滚未修改。
+- 定向验证：`python -m pytest -q tests/competition_core/test_drift_interfaces.py tests/competition_core/test_drift_statistics.py tests/competition_core/test_diagnosis_attribution.py tests/competition_core/test_diagnosis_agent_evidence.py tests/competition_core/test_experiment_agent.py tests/competition_core/test_history_store.py tests/competition_core/test_round_core.py tests/formal_runtime/test_submission.py tests/formal_runtime/test_formal_release.py`，`63 passed in 1.55s`；`compileall`和`git diff --check`通过。按用户禁止未重跑698项全仓回归。
+- 边界：未运行工业训练、远程Qwen/PyTRiO/SwanLab、Docker或官方平台；未读受限数据；P5尺度/噪声功效仍未过门。

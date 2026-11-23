@@ -1,5 +1,13 @@
 # 风险清单
 
+## FINAL-SPRINT-003 新增风险
+
+| ID | 级别 | 风险 | 触发 | 缓解 | 状态 |
+|---|---|---|---|---|---|
+| R-054 | P0 | 将部分统计通过写成漂移监测已完整验收 | P5-1C未过尺度/噪声项被省略 | 轮收据保留limitations；材料强制披露D-101/D-103 | OPEN/CONTROLLED |
+| R-055 | P1 | 历史轮块不满足maxT交换性 | 序列工况不可交换 | 不使用行号伪造group；收据标注`round_blocks_assumed_exchangeable`；正式材料不隐去 | OPEN |
+| R-056 | P1 | Qwen未返回证据引用却被写成诊断驱动 | `evidence_refs` 为空 | 记录`validated_refs=[]`与`evidence_recipe_match=unverifiable`；虚构ID失败关闭 | MITIGATED_INTERFACE/OPEN_REAL_QWEN |
+
 | ID | 等级 | 风险 | 触发器 | 缓解措施 | 负责人 | 状态 |
 |---|---|---|---|---|---|---|
 | R-036 | P0 | 训练子进程通过完整源目录发现未来批次 | worker收到官方数据根或可遍历父目录 | RuntimeAdapter唯一入口、每轮物化目录、RoundDataManifest、清理环境变量、未来诱饵测试；无法隔离则失败关闭 | 技术负责人 | MITIGATED_LOCAL：最终Docker每轮只挂载当前`/data`批次与直接父checkpoint，未来批次和完整包根均未挂载；A/B/C各10轮通过。平台实际挂载权限仍需正式试运行复验 |

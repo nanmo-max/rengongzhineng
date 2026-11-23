@@ -188,6 +188,29 @@ class HistoryStore:
             return DataBatch.concat([*history, current]) if history else current
         raise ValueError("unknown history policy")
 
+    def monitoring_reference(
+        self, *, minimum_windows: int = 3, maximum_windows: int = 3
+    ) -> tuple[DataBatch, np.ndarray] | None:
+        """Return a frozen legal-window reference and its real round blocks.
+
+        This read-only view is separate from replay selection.  It never
+        invents grouping from row order: every block identifier is the round
+        in which the retained batch legally arrived.
+        """
+
+        if type(minimum_windows) is not int or minimum_windows < 1:
+            raise ValueError("minimum_windows must be a positive integer")
+        if type(maximum_windows) is not int or maximum_windows < minimum_windows:
+            raise ValueError("maximum_windows must be at least minimum_windows")
+        selected = self._entries[:maximum_windows]
+        if len(selected) < minimum_windows:
+            return None
+        batch = DataBatch.concat(entry.batch for entry in selected)
+        blocks = np.concatenate(
+            [np.full(len(entry.batch.ids), entry.round_index, dtype=np.int64) for entry in selected]
+        )
+        return batch, blocks
+
     def _archive(self, entries: list[_Entry]) -> bytes:
         if entries:
             ids = np.asarray([identity for entry in entries for identity in entry.batch.ids], dtype=np.str_)

@@ -1,9 +1,9 @@
 # 当前状态
 
-- 最近同步：2026-11-22（Asia/Shanghai）
-- 当前阶段：`P5-1C-TARGETED-REPAIR-001`已按限时规则完成并停止。参考池准入、五统计收据、合法group/time hints与BY分辨率失败关闭已实现；A1开发检查15/19通过，尺度/噪声4项未过，A2负向组合已回退。
+- 最近同步：2026-11-23（Asia/Shanghai）
+- 当前阶段：`FINAL-SPRINT-003`在`codex/final-sprint-003`执行，基线为`9d8eacaebc0112f557e41b51c4e13bae573c9449`。只补诊断归因、Qwen证据引用、必要工程证据和现有材料，不重跑前期审计/实验/全仓回归。
 - 当前路线：**官方SDK 1.0.2 + 未知同格式任务自动识别 + 每轮至少一次真实父checkpoint候选训练 + 双阶段Qwen实验决策 + 同作用域确定性指标事实 + 历史数据/历史模型 + PyTRiO镜像外Agent训练 + 本地测试/正式上传双镜像分离** `[D-079]` `[D-086]` `[D-087]` `[D-093]`
-- 当前无READY任务：`P5-1C-TARGETED-REPAIR-001 (DONE_PARTIAL_GATES_STOPPED)`等待人工审查；P5-1A最终配置/种子/原始结果仍封存，`0.11.0rc1`归档哈希未变。P3、诊断归因、远程模型、Docker和正式发布继续阻塞，未经批准不得继续。
+- 当前唯一执行任务：`FINAL-SPRINT-003 (IN_PROGRESS)`。P5-1A最终配置/种子/原始结果仍封存，`0.11.0rc1`归档哈希未变；P5-1C的尺度/噪声四项失败仍保留。
 - 稳定边界：全部历史RC和实验不改写；`0.5.0rc1`只作研究证据，不得上传。正式线从D-058开始只输出原生官方MLP续训checkpoint。D-090仅授权一次镜像外正式部署Advisor SFT，不把Sampler或私有SDK装入正式镜像。
 - 官方试运行：O-PLATFORM-018证明`0.10.4rc2`的正式提案有效且结算15,146 Token，但30/30主动retain造成零候选；精确剩余次数仍以平台页面实时显示为准。
 - 当前冻结正式候选：`D:/brace-msi-release/COMPETITION-CORE-RC-001/harness.tar`；SHA-256 `b7ba01bcc8a60502896082b58578b56c60c539a5460bb373285ff0abe4503e30`；镜像ID `sha256:578e7c9aa0c507efddeb6b4a182fc28299591a2a0a0e7fb1401a02f39b50da51`。`0.10.6rc1`继续作为历史Protocol RC，不得代替当前候选。

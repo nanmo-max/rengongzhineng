@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 import hashlib
 import json
 import math
@@ -14,6 +14,8 @@ from typing import Any, Callable, Mapping
 
 from .agent import request_deployment_decision, request_experiment_proposal
 from .data import DataBatch, load_rows
+from .diagnosis import DiagnosisReport, diagnose_drift
+from .drift import DriftMonitor, DriftReport, DriftStatus
 from .history import HistoryArtifactRef, HistoryStore
 from .metrics import MetricContract, evaluate, resolve_metric_contract
 from .model import FormalModel
@@ -122,6 +124,69 @@ def _resource_summary() -> dict[str, Any]:
         "checkpoint_byte_limit": _CHECKPOINT_LIMIT,
         "peak_rss_bytes_before_training": _peak_rss_bytes(),
     }
+
+
+def _array_scope_sha256(values: Any) -> str:
+    import numpy as np
+
+    array = np.ascontiguousarray(values, dtype=np.float64)
+    return hashlib.sha256(array.tobytes(order="C")).hexdigest()
+
+
+def _round_drift_diagnosis(
+    history_store: HistoryStore,
+    training: DataBatch,
+    *,
+    round_index: int,
+) -> tuple[DriftReport, DiagnosisReport]:
+    reference = history_store.monitoring_reference()
+    if reference is None:
+        scope = _array_scope_sha256(training.x)
+        payload = f"insufficient_history:{scope}:{len(history_store.round_indices)}"
+        report = DriftReport(
+            report_id="sha256:" + hashlib.sha256(payload.encode("utf-8")).hexdigest(),
+            status=DriftStatus.INSUFFICIENT_HISTORY,
+            calibration_method="block_permutation_maxT",
+            reference_scope_sha256="",
+            current_scope_sha256=scope,
+            sample_count=len(training.ids),
+            history_window_count=len(history_store.round_indices),
+            global_score=0.0,
+            alpha_run=0.05,
+            alpha_window=0.005,
+            alpha_spent=0.0,
+            permutation_count=2047,
+            minimum_empirical_p=1.0 / 2048.0,
+            reference_epoch=0,
+            features=(),
+            limitations=("requires_three_prior_legal_windows",),
+        )
+        return report, diagnose_drift(report)
+
+    import numpy as np
+
+    reference_batch, reference_blocks = reference
+    current_block = max(history_store.round_indices, default=0) + 1
+    combined_blocks = np.concatenate(
+        (reference_blocks, np.full(len(training.ids), current_block, dtype=np.int64))
+    )
+    look_index = max(1, int(round_index) - 3)
+    alpha_window = 0.005
+    report = DriftMonitor().compare(
+        reference_batch.x,
+        training.x,
+        alpha_run=0.05,
+        alpha_window=alpha_window,
+        alpha_spent=min(0.05, look_index * alpha_window),
+        reference_epoch=1,
+        history_window_count=len(history_store.round_indices),
+        block_ids=combined_blocks,
+    )
+    report = replace(
+        report,
+        limitations=tuple(dict.fromkeys((*report.limitations, "round_blocks_assumed_exchangeable"))),
+    )
+    return report, diagnose_drift(report)
 
 
 def _restore_history_evaluations(
@@ -244,6 +309,9 @@ def run_competition_round(
     state_root = Path(rnd.state_workspace(paths.state))
     history_store = HistoryStore.load(state_root, parent)
     registry = RecipeRegistry()
+    drift_report, diagnosis_report = _round_drift_diagnosis(
+        history_store, training, round_index=int(rnd.round_index)
+    )
 
     proposal_started = time.monotonic()
     proposal = request_experiment_proposal(
@@ -252,6 +320,7 @@ def run_competition_round(
         registry,
         history_summary=_history_summary(history_store, official_history),
         resource_fields=_resource_summary(),
+        diagnosis_evidence=diagnosis_report.as_dict(),
     )
     proposal_seconds = time.monotonic() - proposal_started
 
@@ -330,6 +399,13 @@ def run_competition_round(
             "hard_failures": list(hard_failures),
         },
         "history_summary": _history_summary(history_store, official_history),
+        "drift_evidence": {
+            "report_id": drift_report.report_id,
+            "status": drift_report.status.value,
+            "global_score": drift_report.global_score,
+            "limitations": list(drift_report.limitations),
+        },
+        "diagnosis_evidence": diagnosis_report.as_dict(),
     }
     legal_ids = tuple(item.artifact_id for item in evaluations)
     deployment_started = time.monotonic()
@@ -358,6 +434,7 @@ def run_competition_round(
                 "locally_applied_artifact_id": selection.applied_artifact_id,
                 "validation_sha256": validation.sha256,
                 "candidate_execution": candidate_execution,
+                "validated_evidence_refs": list(proposal.evidence_refs),
             },
             seed=int(parent.meta["seed"]),
             checkpoint_paths=["checkpoint.npz"],
@@ -415,6 +492,8 @@ def run_competition_round(
             **asdict(proposal),
             "parameters": dict(proposal.parameters),
         },
+        "drift": drift_report.as_dict(),
+        "diagnosis": diagnosis_report.as_dict(),
         "executed_recipe_id": executed_recipe.recipe_id if executed_recipe is not None else None,
         "candidate_trained": candidate_result is not None,
         "candidate_artifact_id": candidate_platform_id,
@@ -454,6 +533,29 @@ def run_competition_round(
         "history": {
             "round_indices": list(history_store.round_indices),
             "audit_summaries": list(history_store.audit_summaries),
+        },
+        "agent_evidence": {
+            "requested_refs": list(proposal.requested_evidence_refs),
+            "validated_refs": list(proposal.evidence_refs),
+            "all_refs_valid": bool(proposal.evidence_refs) and proposal.parse_error is None,
+            "evidence_recipe_match": "unverifiable",
+            "recipe_id": executed_recipe.recipe_id if executed_recipe is not None else None,
+            "recipe_contract_version": None,
+            "decision_rationale": proposal.rationale,
+            "expected_effect": {
+                "metric": proposal.expected_metric_effect,
+                "risk": proposal.risk,
+            },
+            "actual_result": {
+                "candidate_trained": candidate_result is not None,
+                "parent_metrics": _serializable_metrics(parent_metrics),
+                "candidate_metrics": _serializable_metrics(candidate_metrics),
+                "cpu_seconds": candidate_cpu_seconds,
+                "wall_seconds": training_wall_seconds,
+                "hard_failures": list(hard_failures),
+            },
+            "selection_outcome": applied_decision,
+            "selection_reason": selection.reason,
         },
         "timing": {
             "proposal_seconds": proposal_seconds,

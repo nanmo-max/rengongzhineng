@@ -46,6 +46,10 @@ class ExperimentProposal:
     rationale: str
     call_id: str
     parse_error: str | None = None
+    evidence_refs: tuple[str, ...] = ()
+    requested_evidence_refs: tuple[str, ...] = ()
+    expected_metric_effect: str = "unspecified"
+    risk: str = "unspecified"
 
 
 _TRAINING_RECIPES = {"e1_lr1", "e3_lr3", "soup_e3_alpha0.25"}
@@ -218,25 +222,46 @@ def request_experiment_proposal(
     *,
     history_summary: Mapping[str, Any] | None = None,
     resource_fields: Mapping[str, Any] | None = None,
+    diagnosis_evidence: Mapping[str, Any] | None = None,
 ) -> ExperimentProposal:
     """Ask Qwen for one executable registered experiment, with real-training fallback."""
 
     history = dict(history_summary or {})
     resources = dict(resource_fields or {})
+    diagnosis = dict(diagnosis_evidence or {})
     _assert_aggregate_only(history, "history_summary")
     _assert_aggregate_only(resources, "resource_fields")
+    _assert_aggregate_only(diagnosis, "diagnosis_evidence")
+    legal_evidence_ids: set[str] = set()
+    for collection_name, id_name in (("facts", "fact_id"), ("hypotheses", "hypothesis_id")):
+        collection = diagnosis.get(collection_name, ())
+        if isinstance(collection, list):
+            legal_evidence_ids.update(
+                str(item[id_name])
+                for item in collection
+                if isinstance(item, Mapping) and isinstance(item.get(id_name), str) and item[id_name]
+            )
     context = {
         "task_profile": profile.as_dict(),
         "available_recipes": _recipe_descriptors(profile, registry),
         "history_summary": history,
         "resource_fields": resources,
+        "diagnosis_evidence": diagnosis,
         "candidate_training_required": True,
     }
+    requested_refs: tuple[str, ...] = ()
+    call_id = ""
     try:
         payload, call_id = _host_json(
             rnd,
             "Required fields: recipe_id (one available recipe), parameters (JSON object), "
-            "history_policy (the selected recipe's declared policy), hypothesis and rationale (nonempty strings). ",
+            "history_policy (the selected recipe's declared policy), hypothesis and rationale (nonempty strings). "
+            + (
+                "Also required: evidence_refs (nonempty array of fact_id or hypothesis_id from diagnosis_evidence), "
+                "expected_metric_effect and risk (nonempty strings). "
+                if legal_evidence_ids
+                else ""
+            ),
             context,
         )
         recipe_id = payload.get("recipe_id")
@@ -244,6 +269,22 @@ def request_experiment_proposal(
         history_policy = payload.get("history_policy")
         hypothesis = payload.get("hypothesis")
         rationale = payload.get("rationale")
+        raw_refs = payload.get("evidence_refs")
+        expected_metric_effect = payload.get("expected_metric_effect", "unspecified")
+        risk = payload.get("risk", "unspecified")
+        if raw_refs is None:
+            raw_refs = []
+        if not isinstance(raw_refs, list) or any(not isinstance(item, str) or not item for item in raw_refs):
+            raise ValueError("evidence_refs must be an array of nonempty strings")
+        requested_refs = tuple(dict.fromkeys(raw_refs))
+        if legal_evidence_ids:
+            unknown = tuple(item for item in requested_refs if item not in legal_evidence_ids)
+            if unknown:
+                raise ValueError(f"unknown evidence reference: {unknown[0]}")
+            if requested_refs and (not isinstance(expected_metric_effect, str) or not expected_metric_effect.strip()):
+                raise ValueError("expected_metric_effect is required")
+            if requested_refs and (not isinstance(risk, str) or not risk.strip()):
+                raise ValueError("risk is required")
         if not isinstance(recipe_id, str) or not isinstance(parameters, Mapping):
             raise ValueError("recipe_id and parameters are required")
         recipe = registry.resolve(recipe_id, profile, parameters)
@@ -260,6 +301,11 @@ def request_experiment_proposal(
             hypothesis.strip(),
             rationale.strip(),
             call_id,
+            None,
+            requested_refs,
+            requested_refs,
+            str(expected_metric_effect).strip(),
+            str(risk).strip(),
         )
     except (Exception,) as exc:
         fallback = registry.fallback(profile)
@@ -273,6 +319,10 @@ def request_experiment_proposal(
             "the host proposal was unavailable or not executable",
             call_id,
             f"{type(exc).__name__}: {exc}",
+            (),
+            requested_refs,
+            "unspecified",
+            "proposal evidence was invalid or unavailable",
         )
 
 

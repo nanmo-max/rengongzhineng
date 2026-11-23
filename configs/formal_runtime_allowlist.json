@@ -6,6 +6,8 @@
     "src/brace_formal/__init__.py",
     "src/brace_formal/agent.py",
     "src/brace_formal/data.py",
+    "src/brace_formal/diagnosis.py",
+    "src/brace_formal/drift.py",
     "src/brace_formal/history.py",
     "src/brace_formal/metrics.py",
     "src/brace_formal/model.py",
