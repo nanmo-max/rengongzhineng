@@ -353,3 +353,11 @@
 4. 现有`0.10.6rc1`归档冻结为Protocol RC，不原地改写；新正式候选必须在独立提交与归档中生成。
 5. 正式镜像只走`rnd.model()`；PyTRiO训练和SwanLab记录在镜像外，且只有本地证据通过后才影响新候选。
 6. Advisor是否采用冻结后，必须执行`FINAL-GENERALIZATION-VALIDATION-001`的独立替代流/任务留出；A6/A4均不得直接解锁正式RC。方法结果见`results/PERFORMANCE-METHOD-PILOT-001.md`。
+
+## 2026-11-23 FINAL-SPRINT-003恢复入口
+
+1. 当前分支`codex/final-sprint-003`；先读`STATUS.md`顶部和`TASKS.md`的FINAL-SPRINT-003。
+2. A/B最小诊断与证据引用链在`31200ac`；C的30轮SwanLab离线绑定在`2b3a53d`。冻结0.11.0rc1不包含这些增量，禁止混同版本。
+3. 当前用户确认远程Qwen3.8-27B和4核4GB；未取得真实收据/新镜像前只能标记目标配置。
+4. `MATURE-OPTIMIZER-PILOT-001-A1`已完成且为负/混合，不重跑；下一步只做A/B/C任务定向、非重复的训练强度/回放/损失组合，再冻结唯一候选。
+5. Docker服务端当前不可用；恢复后以唯一候选提交新建镜像和归档，不覆盖`D:/brace-msi-release/COMPETITION-CORE-RC-001/`。

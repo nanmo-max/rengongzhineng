@@ -9,9 +9,10 @@
 - 状态：`IN_PROGRESS`
 - 授权：用户于2026-11-23批准继承P4、P5-1A/B/C、698项全仓回归、50轮收据和P5设计，只完成最小诊断归因、Harness证据集成、必要工程证据和现有提交材料最小修订。
 - 依赖：`P5-1C-TARGETED-REPAIR-001`与P4审计已完成；开发基线`9d8eacaebc0112f557e41b51c4e13bae573c9449`，分支`codex/final-sprint-003`。
-- 工作范围：A）FACT/HYPOTHESIS/UNKNOWN、特征变化定位、性能影响边界和`experiment_needs`；B）`DriftReport/DiagnosisReport/evidence_refs`接入Qwen提案与轮收据，不绕过`ArtifactSelector`、准入或回滚；C）只补SwanLab轮次关联、Docker digest、资源和版本一致性证据；D）最小修订现有PPT/技术报告。
+- 工作范围：A）FACT/HYPOTHESIS/UNKNOWN、特征变化定位、性能影响边界和`experiment_needs`；B）`DriftReport/DiagnosisReport/evidence_refs`接入Qwen提案与轮收据，不绕过`ArtifactSelector`、准入或回滚；C）只补SwanLab轮次关联、Docker digest、资源和版本一致性证据；D）最小修订现有PPT/技术报告；E）按用户2026-11-23最新授权，以官方父checkpoint和合法train内部证据开展A/B/C定向性能冲刺，目标Agent为远程Qwen3.8-27B、验收资源为4核4GB。
 - 验收：只运行新增及受影响接口的定向测试；保存真实Qwen状态、证据引用校验、诊断—Recipe—实验—选择链、版本/digest对照及未完成外部项。
-- 禁止：不重跑P4、P5-1A/B/C、698项全仓测试或50轮训练；不修改统计标准、冻结RC、核心训练/评估/选择/回滚；不读受限数据，不消耗官方试运行次数。
+- 禁止：不重跑P4、P5-1A/B/C、698项全仓测试或既有50轮；新训练不得读取受限数据或重复已完成矩阵，不修改统计标准/冻结RC，不消耗官方试运行次数。
+- 当前证据：A/B提交`31200ac`；C提交`2b3a53d`。`MATURE-OPTIMIZER-PILOT-001-A1`完成24/24 arm但无跨任务晋级方法；见`EXPERIMENTS.md`和`results/FINAL-SPRINT-003-C.md`。
 - 证据入口：`.superpowers/sdd/FINAL-SPRINT-003/progress.md`。
 
 ### P5-1C-TARGETED-REPAIR-001 限时定向修复
