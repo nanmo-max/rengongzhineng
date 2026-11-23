@@ -306,7 +306,7 @@ def _run_round(
     )
     command = [
         "docker", "run", "--rm", "-i", "--network", "none", "--cpus", "4",
-        "--memory", "8g", "--read-only", "--tmpfs", "/tmp:rw,noexec,nosuid,size=64m",
+        "--memory", "4g", "--read-only", "--tmpfs", "/tmp:rw,noexec,nosuid,size=64m",
         *_docker_mount(round_data, "/data", True),
         *_docker_mount(parent_root, "/previous", True),
         *_docker_mount(workspace, "/workspace"),
@@ -433,7 +433,7 @@ def _predict(
     }
     command = [
         "docker", "run", "--rm", "-i", "--network", "none", "--cpus", "4",
-        "--memory", "8g", "--read-only", "--tmpfs", "/tmp:rw,noexec,nosuid,size=64m",
+        "--memory", "4g", "--read-only", "--tmpfs", "/tmp:rw,noexec,nosuid,size=64m",
         *_docker_mount(artifact_root, "/model", True),
         "-e", "CONTEST_ARTIFACT_PATH=/model/checkpoint.npz",
         "-e", "CONTEST_DATASET_KEY=" + sdk_key,
