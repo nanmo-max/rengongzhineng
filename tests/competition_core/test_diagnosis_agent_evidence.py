@@ -100,4 +100,3 @@ def test_agent_rejects_invented_evidence_reference_and_records_request(tmp_path:
     assert proposal.evidence_refs == ()
     assert proposal.requested_evidence_refs == ("drift.feature.999.location_shift",)
     assert "unknown evidence reference" in str(proposal.parse_error)
-

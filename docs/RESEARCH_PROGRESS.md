@@ -1016,3 +1016,10 @@
 - 正式轮收据新增完整drift、diagnosis和`agent_evidence`，记录证据—Recipe—预期—实际结果—选择链；训练、评估、`ArtifactSelector`和回滚未修改。
 - 定向验证：`python -m pytest -q tests/competition_core/test_drift_interfaces.py tests/competition_core/test_drift_statistics.py tests/competition_core/test_diagnosis_attribution.py tests/competition_core/test_diagnosis_agent_evidence.py tests/competition_core/test_experiment_agent.py tests/competition_core/test_history_store.py tests/competition_core/test_round_core.py tests/formal_runtime/test_submission.py tests/formal_runtime/test_formal_release.py`，`63 passed in 1.55s`；`compileall`和`git diff --check`通过。按用户禁止未重跑698项全仓回归。
 - 边界：未运行工业训练、远程Qwen/PyTRiO/SwanLab、Docker或官方平台；未读受限数据；P5尺度/噪声功效仍未过门。
+
+## 2026-11-23 FINAL-SPRINT-003
+
+- 新增最小漂移诊断与Qwen证据引用链，专项63项通过，提交`31200ac`。
+- 将既有0.11.0rc1精确镜像验收的30轮与资源ledger确定性映射为脱敏观测，并用SwanLab 0.10.5生成真实离线运行；未同步云端、未重跑训练。
+- 完成`MATURE-OPTIMIZER-PILOT-001-A1`：24/24 arm、来源哈希前后一致、确认集读取0、峰值RSS约241MiB；A无增益，B候选均退化，C约4%内部收益，未发现值得直接替代Adam的成熟优化器。
+- 运行命令与产物见`docs/EXPERIMENTS.md`及`docs/results/FINAL-SPRINT-003-C.md`。

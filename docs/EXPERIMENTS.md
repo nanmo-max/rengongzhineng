@@ -982,3 +982,14 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 - 全新种子：场景生成`623001..623072`，统计置换`624001..624072`；不复用A1的`620001..621072`或P5-1A任一种子。
 - 输出：`D:/brace-msi-p5/P5-1C-TARGETED-REPAIR-001-A2/`；A1原始结果不得覆盖。
 - 结果：`COMPLETED_VALID_NEGATIVE_REJECTED`。72个全新开发作业完成，19项检查14项通过；中等方差检出率0.50/0.25/0.00，噪声三维仍为0，较A1更差。Brown-Forsythe组合已从代码回退，负向摘要SHA-256 `FE79E5A0...7780919A`、原始收据SHA-256 `91969B2D...90C5649B`保留。
+
+## MATURE-OPTIMIZER-PILOT-001-A1（2026-11-23，COMPLETE_NEGATIVE）
+
+- 目的：在固定官方A/B/C父checkpoint和仅`public/train.jsonl`的三轮内部序列上，比较Adam当前批、Adam回放、L2-SP、SAM与AdamW；同时记录主/辅助指标、最差阶段、CPU、墙钟、RSS和模型大小。
+- 配置：`configs/mature_optimizer_pilot.json`；输出：`D:/brace-msi-final-sprint/MATURE-OPTIMIZER-PILOT-001-A1/`。
+- 预算：每任务8方法×3阶段；只运行一次；4核亲和性，内存目标不超过4GB；确认/公开validation读取0，官方试运行0，远程模型调用0。
+- 成功标准：来源哈希前后一致、父链有效、全部arm完成；晋级还要求至少一个任务改善且没有不可接受的最差阶段或资源退化。
+- 停止条件：来源哈希变化、非有限指标、父链错误、输出目录冲突或RSS超过4GB。
+- 结果：24个官方父兼容arm全部完成，`valid=true`、`confirmation_reads=0`。A全部方法未改变Macro-F1；B全部候选退化并被保留父模型；C的Adam/L2-SP/AdamW内部三阶段均改善，平均相对收益约4%，但没有证明优于原Adam。SAM和回放未形成跨任务优势，均不直接晋级正式镜像。
+- 资源：峰值RSS 252,796,928字节，远低于4GB；汇总SHA-256 `108B7506877C05C46DD88C9A0FCC28F698BC24C43956C884B32D3F012ECD89B8`。
+- 失败证据：首次启动因日志目录与实验输出目录相同触发fail-closed，退出码1；保留`runner.err.log`后改用独立`artifacts/`成功，没有覆盖失败记录。
