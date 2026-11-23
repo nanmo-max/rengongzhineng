@@ -363,6 +363,46 @@ def test_performance_methods_are_task_contract_bound_and_loadable(tmp_path) -> N
         raise AssertionError("cross-task method must fail closed")
 
 
+def test_intensity_followup_is_bounded_task_specific_and_parent_compatible(tmp_path) -> None:
+    expected = {
+        "classification": (
+            "balanced_current_e5",
+            "balanced_current_e3_lr3",
+        ),
+        "regression": (
+            "native_current_e5_lr3",
+            "asymmetric_current_e5_lr3",
+            "soup_current_e5_alpha0.1",
+            "soup_current_e5_alpha0.25",
+        ),
+    }
+    rng = np.random.default_rng(411)
+    history_x = rng.normal(size=(36, 4))
+    current_x = rng.normal(loc=0.2, size=(30, 4))
+    targets = {
+        "classification": ((history_x[:, 0] > 0).astype(np.int64), (current_x[:, 0] > 0).astype(np.int64)),
+        "regression": (5.0 + history_x[:, 0], 5.0 + current_x[:, 0]),
+    }
+
+    for task, methods in expected.items():
+        assert performance_method_names(task, "intensity_followup") == methods
+        parent = _parent(task)
+        for method in methods:
+            candidate = fit_performance_method(
+                parent,
+                method=method,
+                history_x=history_x,
+                history_y=targets[task][0],
+                current_x=current_x,
+                current_y=targets[task][1],
+            )
+            checkpoint = tmp_path / f"{task}-{method}.npz"
+            candidate.save(checkpoint)
+            loaded = _NativeModel.load(checkpoint)
+            assert loaded.meta["format"] == "contest.cpu-mlp.v1"
+            assert loaded.meta["learning_rate"] == parent.meta["learning_rate"]
+
+
 def test_one_sided_bias_followup_only_reduces_detected_overprediction() -> None:
     values = np.zeros((32, 4), dtype=np.float64)
     targets = np.full(32, 10.0, dtype=np.float64)

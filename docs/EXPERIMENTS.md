@@ -993,3 +993,12 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 - 结果：24个官方父兼容arm全部完成，`valid=true`、`confirmation_reads=0`。A全部方法未改变Macro-F1；B全部候选退化并被保留父模型；C的Adam/L2-SP/AdamW内部三阶段均改善，平均相对收益约4%，但没有证明优于原Adam。SAM和回放未形成跨任务优势，均不直接晋级正式镜像。
 - 资源：峰值RSS 252,796,928字节，远低于4GB；汇总SHA-256 `108B7506877C05C46DD88C9A0FCC28F698BC24C43956C884B32D3F012ECD89B8`。
 - 失败证据：首次启动因日志目录与实验输出目录相同触发fail-closed，退出码1；保留`runner.err.log`后改用独立`artifacts/`成功，没有覆盖失败记录。
+
+## OFFICIAL-TASK-INTENSITY-001-A1（2026-11-23，REGISTERED）
+
+- 问题：在不重复既有A1方法和成熟优化器矩阵的前提下，增加训练强度能否提高A/B/C相邻未见阶段收益，同时控制最差阶段与资源？
+- 固定起点：三个官方初始`checkpoint.npz`；数据仅使用`DELAYED-GAIN-SIM-001-A2`中已经合法物化的10轮feedback，按`t训练→t+1评价`，confirmation读取0。
+- 候选：分类`balanced_current_e5 / balanced_current_e3_lr3`；回归`native_current_e5_lr3 / asymmetric_current_e5_lr3 / soup_current_e5_alpha0.1/0.25`。
+- 指标：A Accuracy/Macro-F1；B MAE/RMSE；C MAE/RMSE/NASA；另记录均值收益、最差阶段、胜率、CPU、墙钟、RSS和checkpoint大小。
+- 晋级门：相对静态平均主指标严格改善；至少8/9阶段改善或持平；最差相对阶段不低于-1%；辅助指标不出现实质恶化；峰值RSS<4GB，并进入性能—CPU Pareto前沿。
+- 预算：4核亲和性；每个方法9个转换；官方试运行、公开validation、confirmation、PyTRiO和SwanLab同步均为0。输出`D:/brace-msi-final-sprint/OFFICIAL-TASK-INTENSITY-001-A1/`，已有目录即停止。

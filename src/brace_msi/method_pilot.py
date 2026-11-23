@@ -630,6 +630,17 @@ def fit_native_objective(
 def performance_method_names(task: str, portfolio: str = "a1") -> tuple[str, ...]:
     """Return the preregistered bounded method set for a task contract."""
 
+    if portfolio == "intensity_followup":
+        if task == "classification":
+            return ("balanced_current_e5", "balanced_current_e3_lr3")
+        if task == "regression":
+            return (
+                "native_current_e5_lr3",
+                "asymmetric_current_e5_lr3",
+                "soup_current_e5_alpha0.1",
+                "soup_current_e5_alpha0.25",
+            )
+        raise ValueError("unsupported task")
     if portfolio == "bias_followup":
         if task == "classification":
             return ()
@@ -675,7 +686,7 @@ def fit_performance_method(
     task = str(parent.meta["task"])
     allowed_methods = set(performance_method_names(task)) | set(
         performance_method_names(task, "bias_followup")
-    )
+    ) | set(performance_method_names(task, "intensity_followup"))
     if method not in allowed_methods:
         raise ValueError("method is incompatible with the task contract")
     history_x = np.asarray(history_x, dtype=np.float64)
@@ -707,6 +718,15 @@ def fit_performance_method(
             targets=current_y,
             epochs=3,
             objective="balanced_cross_entropy",
+        )
+    if method in {"balanced_current_e5", "balanced_current_e3_lr3"}:
+        return fit_native_objective(
+            parent,
+            values=current_x,
+            targets=current_y,
+            epochs=5 if method.endswith("e5") else 3,
+            objective="balanced_cross_entropy",
+            learning_rate_multiplier=1.0 if method.endswith("e5") else 3.0,
         )
     if method in {"balanced_recent_e3", "balanced_prior_recent_e3"}:
         return fit_native_objective(
@@ -760,6 +780,33 @@ def fit_performance_method(
             learning_rate_multiplier=3.0,
             overprediction_weight=1.5,
         )
+    if method in {"native_current_e5_lr3", "asymmetric_current_e5_lr3"}:
+        return fit_native_objective(
+            parent,
+            values=current_x,
+            targets=current_y,
+            epochs=5,
+            objective=(
+                "mse" if method == "native_current_e5_lr3" else "asymmetric_huber"
+            ),
+            learning_rate_multiplier=3.0,
+            overprediction_weight=1.5,
+        )
+    if method in {"soup_current_e5_alpha0.1", "soup_current_e5_alpha0.25"}:
+        alpha = 0.1 if method.endswith("0.1") else 0.25
+        candidate = fit_native_objective(
+            parent,
+            values=current_x,
+            targets=current_y,
+            epochs=5,
+            objective="mse",
+        )
+        for name in candidate.params:
+            candidate.params[name] = (
+                (1.0 - alpha) * parent.params[name] + alpha * candidate.params[name]
+            )
+        candidate.validate()
+        return candidate
     if method == "asymmetric_soup_bias":
         candidate = fit_native_objective(
             parent,
