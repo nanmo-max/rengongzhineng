@@ -69,7 +69,7 @@ def bind_release_metadata(
 ) -> dict[str, Any]:
     """Bind public provenance without embedding credentials or Sampler paths."""
 
-    if model_name != "Qwen/Qwen3.5-4B":
+    if model_name != "Qwen/Qwen3.8-27B":
         raise ValueError("formal release model must be the platform-validated base model")
     if model_selection != "platform_validated_base":
         raise ValueError("unadopted SFT candidates cannot be bound to the formal release")
@@ -206,7 +206,7 @@ def build(tag: str, output: Path) -> dict[str, Any]:
     inspected = json.loads(_run(["docker", "image", "inspect", tag], capture_output=True).stdout)[0]
     metadata = validate_image_metadata(inspected)
     describe = _run(
-        ["docker", "run", "--rm", "--network", "none", "--read-only", "--cpus", "4", "--memory", "8g", tag, "describe"],
+        ["docker", "run", "--rm", "--network", "none", "--read-only", "--cpus", "4", "--memory", "4g", tag, "describe"],
         capture_output=True,
     ).stdout.strip()
     descriptor = json.loads(describe)
@@ -235,7 +235,7 @@ def main() -> int:
     parser.add_argument("--tag", default="brace-msi:0.10.0rc1")
     parser.add_argument("--output", type=Path)
     parser.add_argument("--finalize-manifest", type=Path)
-    parser.add_argument("--model-name", default="Qwen/Qwen3.5-4B")
+    parser.add_argument("--model-name", default="Qwen/Qwen3.8-27B")
     parser.add_argument("--model-selection", default="platform_validated_base")
     parser.add_argument("--swanlab-url")
     parser.add_argument("--sft-evidence-sha256")

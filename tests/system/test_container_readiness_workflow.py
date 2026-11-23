@@ -10,7 +10,7 @@ def test_container_readiness_workflow_enforces_release_limits() -> None:
     assert "docker build --pull --tag brace-msi:candidate ." in workflow
     assert "--network=none" in workflow
     assert "--cpus=4" in workflow
-    assert "--memory=8g" in workflow
+    assert "--memory=4g" in workflow
     assert "test \"$size_bytes\" -lt 2000000000" in workflow
     assert "synthetic-smoke --output /outputs/smoke" in workflow
     assert "container-image-audit.json" in workflow

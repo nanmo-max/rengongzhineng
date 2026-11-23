@@ -53,7 +53,7 @@ jobs:
           docker run --rm \
             --network=none \
             --cpus=4 \
-            --memory=8g \
+            --memory=4g \
             --pids-limit=256 \
             -v "$PWD/artifacts/docker-ci:/outputs" \
             brace-msi:candidate \
@@ -65,7 +65,7 @@ jobs:
         run: |
           set -euo pipefail
           {
-            printf '{\n  "network": "none",\n  "cpus": 4,\n  "memory_bytes": 8589934592,\n  "files": [\n'
+            printf '{\n  "network": "none",\n  "cpus": 4,\n  "memory_bytes": 4294967296,\n  "files": [\n'
             find artifacts/docker-ci -type f -printf '%P\n' | sort | awk '{printf "    \"%s\",\n", $0}'
             printf '    \"container-image-audit.json\"\n  ]\n}\n'
           } > artifacts/docker-ci/container-acceptance.json

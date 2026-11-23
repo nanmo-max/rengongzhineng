@@ -187,7 +187,7 @@ def test_release_metadata_binds_base_model_and_public_swanlab_without_sampler_pa
     )
     result = bind_release_metadata(
         manifest,
-        model_name="Qwen/Qwen3.5-4B",
+        model_name="Qwen/Qwen3.8-27B",
         model_selection="platform_validated_base",
         swanlab_url="https://swanlab.cn/@team/project/runs/abc",
         sft_evidence_sha256="a" * 64,
