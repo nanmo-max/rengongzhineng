@@ -403,6 +403,33 @@ def test_intensity_followup_is_bounded_task_specific_and_parent_compatible(tmp_p
             assert loaded.meta["learning_rate"] == parent.meta["learning_rate"]
 
 
+def test_stability_followup_keeps_regression_checkpoint_schema(tmp_path) -> None:
+    methods = (
+        "native_current_e4_lr2",
+        "asymmetric_current_e4_lr2_w1.25",
+        "soup_current_e5_alpha0.15",
+        "soup_current_e5_alpha0.2",
+    )
+    assert performance_method_names("classification", "stability_followup") == ()
+    assert performance_method_names("regression", "stability_followup") == methods
+    rng = np.random.default_rng(412)
+    history_x = rng.normal(size=(36, 4))
+    current_x = rng.normal(loc=0.2, size=(30, 4))
+    parent = _parent("regression")
+    for method in methods:
+        candidate = fit_performance_method(
+            parent,
+            method=method,
+            history_x=history_x,
+            history_y=5.0 + history_x[:, 0],
+            current_x=current_x,
+            current_y=5.0 + current_x[:, 0],
+        )
+        checkpoint = tmp_path / f"{method}.npz"
+        candidate.save(checkpoint)
+        assert _NativeModel.load(checkpoint).meta["format"] == "contest.cpu-mlp.v1"
+
+
 def test_one_sided_bias_followup_only_reduces_detected_overprediction() -> None:
     values = np.zeros((32, 4), dtype=np.float64)
     targets = np.full(32, 10.0, dtype=np.float64)

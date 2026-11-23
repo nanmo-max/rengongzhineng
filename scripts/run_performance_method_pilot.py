@@ -186,7 +186,9 @@ def main() -> int:
     )
     parser.add_argument("--profiles", nargs="+", choices=tuple(PACKAGES), default=None)
     parser.add_argument(
-        "--portfolio", choices=("a1", "bias_followup", "intensity_followup"), default="a1"
+        "--portfolio",
+        choices=("a1", "bias_followup", "intensity_followup", "stability_followup"),
+        default="a1",
     )
     args = parser.parse_args()
     if args.output_root.name != args.experiment_id:

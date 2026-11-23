@@ -1002,3 +1002,11 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 - 指标：A Accuracy/Macro-F1；B MAE/RMSE；C MAE/RMSE/NASA；另记录均值收益、最差阶段、胜率、CPU、墙钟、RSS和checkpoint大小。
 - 晋级门：相对静态平均主指标严格改善；至少8/9阶段改善或持平；最差相对阶段不低于-1%；辅助指标不出现实质恶化；峰值RSS<4GB，并进入性能—CPU Pareto前沿。
 - 预算：4核亲和性；每个方法9个转换；官方试运行、公开validation、confirmation、PyTRiO和SwanLab同步均为0。输出`D:/brace-msi-final-sprint/OFFICIAL-TASK-INTENSITY-001-A1/`，已有目录即停止。
+
+## OFFICIAL-TASK-STABILITY-001-A1（2026-11-23，REGISTERED）
+
+- 触发：强度A1中A已达9/9正收益；B最高均值候选存在明显最差阶段/NASA退化；C的0.10插值稳定但平均收益低于0.25。
+- 范围：只运行B/C；固定官方父checkpoint、相同9个`t→t+1`合法转换、confirmation/public validation读取0。
+- 候选：`native_current_e4_lr2`、`asymmetric_current_e4_lr2_w1.25`、`soup_current_e5_alpha0.15/0.2`。
+- 目标：B寻找不牺牲NASA和最差阶段的高强度点；C寻找0.10与0.25之间的性能—稳定性折中。资源及晋级门沿用OFFICIAL-TASK-INTENSITY-001-A1。
+- 输出：`D:/brace-msi-final-sprint/OFFICIAL-TASK-STABILITY-001-A1/`；4核亲和性，峰值RSS<4GB；官方试运行/PyTRiO/SwanLab同步均为0。

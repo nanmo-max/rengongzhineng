@@ -641,6 +641,17 @@ def performance_method_names(task: str, portfolio: str = "a1") -> tuple[str, ...
                 "soup_current_e5_alpha0.25",
             )
         raise ValueError("unsupported task")
+    if portfolio == "stability_followup":
+        if task == "classification":
+            return ()
+        if task == "regression":
+            return (
+                "native_current_e4_lr2",
+                "asymmetric_current_e4_lr2_w1.25",
+                "soup_current_e5_alpha0.15",
+                "soup_current_e5_alpha0.2",
+            )
+        raise ValueError("unsupported task")
     if portfolio == "bias_followup":
         if task == "classification":
             return ()
@@ -686,7 +697,9 @@ def fit_performance_method(
     task = str(parent.meta["task"])
     allowed_methods = set(performance_method_names(task)) | set(
         performance_method_names(task, "bias_followup")
-    ) | set(performance_method_names(task, "intensity_followup"))
+    ) | set(performance_method_names(task, "intensity_followup")) | set(
+        performance_method_names(task, "stability_followup")
+    )
     if method not in allowed_methods:
         raise ValueError("method is incompatible with the task contract")
     history_x = np.asarray(history_x, dtype=np.float64)
@@ -792,8 +805,22 @@ def fit_performance_method(
             learning_rate_multiplier=3.0,
             overprediction_weight=1.5,
         )
-    if method in {"soup_current_e5_alpha0.1", "soup_current_e5_alpha0.25"}:
-        alpha = 0.1 if method.endswith("0.1") else 0.25
+    if method in {"native_current_e4_lr2", "asymmetric_current_e4_lr2_w1.25"}:
+        return fit_native_objective(
+            parent,
+            values=current_x,
+            targets=current_y,
+            epochs=4,
+            objective=(
+                "mse" if method == "native_current_e4_lr2" else "asymmetric_huber"
+            ),
+            learning_rate_multiplier=2.0,
+            overprediction_weight=1.25,
+        )
+    if method.startswith("soup_current_e5_alpha"):
+        alpha = float(method.removeprefix("soup_current_e5_alpha"))
+        if alpha not in {0.1, 0.15, 0.2, 0.25}:
+            raise ValueError("unsupported e5 soup alpha")
         candidate = fit_native_objective(
             parent,
             values=current_x,
