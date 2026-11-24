@@ -175,3 +175,41 @@ def test_unequal_but_complete_blocks_are_permuted_as_whole_units() -> None:
 
     assert report.status in {DriftStatus.STABLE, DriftStatus.WARNING}
     assert "blocks_must_be_equal_sized" not in report.limitations
+
+
+def test_repeated_block_permutations_are_evaluated_once(monkeypatch) -> None:
+    import brace_formal.drift as drift
+
+    rng = np.random.default_rng(20261124)
+    reference = rng.normal(size=(60, 6))
+    current = rng.normal(size=(20, 6))
+    block_ids = np.concatenate(
+        (
+            np.repeat(np.arange(3), 20),
+            np.repeat(np.asarray([3]), 20),
+        )
+    )
+    original = drift._feature_statistics
+    calls = 0
+
+    def counted(reference_values, current_values, *, numeric_floor):
+        nonlocal calls
+        calls += 1
+        return original(reference_values, current_values, numeric_floor=numeric_floor)
+
+    monkeypatch.setattr(drift, "_feature_statistics", counted)
+    report = drift.DriftMonitor(
+        drift.MonitorConfig(permutations=199, random_seed=5)
+    ).compare(
+        reference,
+        current,
+        alpha_run=0.20,
+        alpha_window=0.10,
+        alpha_spent=0.10,
+        reference_epoch=1,
+        history_window_count=3,
+        block_ids=block_ids,
+    )
+
+    assert report.permutation_count == 199
+    assert calls <= 1 + len(np.unique(block_ids))

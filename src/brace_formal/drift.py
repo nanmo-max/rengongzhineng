@@ -621,16 +621,20 @@ class DriftMonitor:
         )
 
         observed = _feature_statistics(left, right, numeric_floor=self.config.numeric_floor)
-        null_statistics = np.empty(
-            (self.config.permutations, left.shape[1], len(_STATISTIC_NAMES)),
+        unique_masks, permutation_inverse = np.unique(
+            masks, axis=0, return_inverse=True
+        )
+        unique_statistics = np.empty(
+            (len(unique_masks), left.shape[1], len(_STATISTIC_NAMES)),
             dtype=np.float64,
         )
-        for index, mask in enumerate(masks):
-            null_statistics[index] = _feature_statistics(
+        for index, mask in enumerate(unique_masks):
+            unique_statistics[index] = _feature_statistics(
                 combined[mask],
                 combined[~mask],
                 numeric_floor=self.config.numeric_floor,
             )
+        null_statistics = unique_statistics[permutation_inverse]
         center = np.median(null_statistics, axis=0)
         quartiles = np.quantile(null_statistics, [0.25, 0.75], axis=0)
         mad = np.median(np.abs(null_statistics - center), axis=0)

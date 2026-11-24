@@ -12,7 +12,7 @@
 - 工作范围：A）FACT/HYPOTHESIS/UNKNOWN、特征变化定位、性能影响边界和`experiment_needs`；B）`DriftReport/DiagnosisReport/evidence_refs`接入Qwen提案与轮收据，不绕过`ArtifactSelector`、准入或回滚；C）只补SwanLab轮次关联、Docker digest、资源和版本一致性证据；D）最小修订现有PPT/技术报告；E）按用户2026-11-23最新授权，以官方父checkpoint和合法train内部证据开展A/B/C定向性能冲刺，目标Agent为远程Qwen3.8-27B、验收资源为4核4GB。
 - 验收：只运行新增及受影响接口的定向测试；保存真实Qwen状态、证据引用校验、诊断—Recipe—实验—选择链、版本/digest对照及未完成外部项。
 - 禁止：不重跑P4、P5-1A/B/C、698项全仓测试或既有50轮；新训练不得读取受限数据或重复已完成矩阵，不修改统计标准/冻结RC，不消耗官方试运行次数。
-- 当前证据：A/B提交`31200ac`；C提交`2b3a53d`；稳定Recipe提交`65a2228`。`QWEN38-RECIPE-PROBE-001-A2`真实27B三场景3/3选择预期Recipe；`FORMAL-STABLE-30R-001-A1`完成4核4GB三任务30轮本地协议复演。剩余为正式镜像、资源/白名单验收、最终SwanLab与材料绑定，不再扩大算法搜索。
+- 当前证据：A/B提交`31200ac`；C提交`2b3a53d`；稳定Recipe提交`65a2228`。`QWEN38-RECIPE-PROBE-001-A2`真实27B三场景3/3选择预期Recipe；`FORMAL-STABLE-30R-001-A1`完成4核4GB三任务30轮本地协议复演。首个`0.12.0rc1`候选在4核4GB验收中发现重复置换导致B第4轮约347秒，已以完全相同统计输出实现约38.28倍加速；该镜像不得冻结，下一步必须重建并完整验收。之后仅剩最终SwanLab与材料绑定，不扩大算法搜索。
 - 证据入口：`.superpowers/sdd/FINAL-SPRINT-003/progress.md`。
 
 ### P5-1C-TARGETED-REPAIR-001 限时定向修复

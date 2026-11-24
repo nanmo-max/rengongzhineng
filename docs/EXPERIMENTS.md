@@ -1025,3 +1025,9 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 - 4核4GB配置完成A/B/C各10轮：每轮一个真实父兼容候选、两次本地宿主模型调用替身、同作用域父/候选/合法历史比较、部署/保留/历史回滚、父链、状态和最终预测。A选择候选4次/保留4次/历史回滚2次；B为7/3/0；C为10/0/0。
 - 配方分别固定为`class_weighted_current_fast`、`regression_asymmetric_current_stable`、`averaged_current_stable`。报告`valid=true`，SHA-256 `2BF06ED...594A21`；HTML/JSON位于`D:/brace-msi-final-sprint/FORMAL-STABLE-30R-001-A1/`，聚合证据见`results/FORMAL-STABLE-30R-001-A1.json`。
 - 边界：模拟数据的确认指标只验证协议和选择，不能作为官方/公开数据性能；60次调用是本地宿主替身，不能冒充真实27B Token。
+
+# 2026-11-24 FORMAL-DRIFT-PERF-001-A1
+
+- `0.12.0rc1`的4核4GB精确镜像验收在A10/B5轮后停止：B第4轮候选训练评估约0.029秒，但状态RPC前约347.087秒；未生成完整`acceptance.json`，不得标记验收通过。
+- 根因是4个真实块只有4个唯一置换mask，却重复计算2047次。修复对mask去重计算并按inverse还原，因此置换频次、统计门和最终报告不变。
+- 同一B第4轮旧收据复算`DriftReport`逐字段完全相同，漂移计算降至9.068秒，约38.28倍加速；受影响测试49项通过。输出目录、失败收据和机器摘要均保留，官方试运行为0。证据见`results/FORMAL-DRIFT-PERF-001.md/json`。

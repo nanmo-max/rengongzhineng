@@ -1,0 +1,22 @@
+{
+  "experiment_id": "FORMAL-DRIFT-PERF-001-A1",
+  "status": "PASS_EXACT_EQUIVALENCE_REBUILD_REQUIRED",
+  "source_commit_before_fix": "c0c1044fab4d015400be3c5789cf92137d6d73a2",
+  "old_image": "brace-msi:0.12.0rc1",
+  "scope": "B round 4, 34 features, 3 legal reference blocks plus 1 current block",
+  "permutations": 2047,
+  "unique_permutation_masks": 4,
+  "old_observed_seconds": 347.086973706,
+  "new_drift_seconds": 9.067509100000052,
+  "speedup": 38.278094885617264,
+  "drift_report_exact_equal": true,
+  "old_round_receipt_sha256": "1603882BF1DD220D33A5CC3CC825AF7CF25CC383AB7F55A31B7E171D5F7180A6",
+  "partial_acceptance": {
+    "directory": "D:/brace-msi-release/COMPETITION-CORE-RC-002-A2/acceptance-4c4g-A2",
+    "completed_profile_rounds": {"A": 10, "B": 5, "C": 0},
+    "stopped_reason": "superseded candidate had a confirmed resource-efficiency defect"
+  },
+  "official_trial_consumed": false,
+  "statistical_thresholds_changed": false,
+  "permutation_count_changed": false
+}

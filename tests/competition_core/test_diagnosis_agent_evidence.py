@@ -96,7 +96,7 @@ def test_agent_rejects_invented_evidence_reference_and_records_request(tmp_path:
         diagnosis_evidence=_diagnosis_payload(),
     )
 
-    assert proposal.recipe_id == "native_current"
+    assert proposal.recipe_id == "class_weighted_current_fast"
     assert proposal.evidence_refs == ()
     assert proposal.requested_evidence_refs == ("drift.feature.999.location_shift",)
     assert "unknown evidence reference" in str(proposal.parse_error)
