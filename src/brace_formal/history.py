@@ -259,6 +259,14 @@ class HistoryStore:
         root = Path(state_root)
         if root.is_symlink() or not root.is_dir():
             raise ValueError("state root must be a regular directory")
+        history_names = {_DATA, _METADATA, _DATA + ".tmp", _METADATA + ".tmp"}
+        other_state_bytes = sum(
+            path.stat().st_size
+            for path in root.rglob("*")
+            if path.is_file()
+            and not (path.parent == root and path.name in history_names)
+        )
+        history_byte_limit = OFFICIAL_STATE_BYTE_LIMIT - other_state_bytes
         selected: list[_Entry] = []
         selected_archive = self._archive(selected)
         selected_metadata = self._metadata(selected, selected_archive)
@@ -266,10 +274,10 @@ class HistoryStore:
             candidate = self._entries[-count:]
             archive = self._archive(candidate)
             metadata = self._metadata(candidate, archive)
-            if len(archive) + len(metadata) <= OFFICIAL_STATE_BYTE_LIMIT:
+            if len(archive) + len(metadata) <= history_byte_limit:
                 selected, selected_archive, selected_metadata = candidate, archive, metadata
-        if len(selected_archive) + len(selected_metadata) > OFFICIAL_STATE_BYTE_LIMIT:
-            raise ValueError("history audit metadata exceeds official state limit")
+        if len(selected_archive) + len(selected_metadata) > history_byte_limit:
+            raise ValueError("official state files leave insufficient capacity for history metadata")
         data_tmp = root / (_DATA + ".tmp")
         metadata_tmp = root / (_METADATA + ".tmp")
         data_tmp.write_bytes(selected_archive)

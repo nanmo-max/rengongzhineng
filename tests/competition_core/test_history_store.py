@@ -141,6 +141,23 @@ def test_history_preserves_all_audits_and_newest_complete_batches_near_limit(mon
     assert sum(path.stat().st_size for path in state.iterdir()) <= 2_500
 
 
+def test_history_reserves_capacity_for_other_official_state_files(monkeypatch, tmp_path: Path) -> None:
+    import brace_formal.history as history_module
+
+    model = _model(tmp_path)
+    state = tmp_path / "state"
+    state.mkdir()
+    (state / "round-ledger.json").write_bytes(b"x" * 400)
+    store = HistoryStore.load(state, model)
+    store.append(_batch("A", 100, offset=0.0), round_index=1)
+    store.append(_batch("B", 100, offset=1000.0), round_index=2)
+    monkeypatch.setattr(history_module, "OFFICIAL_STATE_BYTE_LIMIT", 2_500)
+
+    store.save(state)
+
+    assert sum(path.stat().st_size for path in state.iterdir()) <= 2_500
+
+
 def test_history_artifact_reference_restores_only_through_round_api(tmp_path: Path) -> None:
     record = {
         "id": "history-7",
