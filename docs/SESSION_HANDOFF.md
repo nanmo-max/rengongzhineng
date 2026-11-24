@@ -8,7 +8,8 @@
 4. 正式提交仍选择基础模型`Qwen/Qwen3.8-27B`，不填写Sampler路径。工业`checkpoint.npz`由镜像内CPU训练器从平台父checkpoint续训，不由PyTRiO训练。
 5. A9作品说明书已生成：`output/pdf/BRACE-MSI-0.12.7rc1-作品说明书.pdf`（9页，SHA-256 `0334F7BE...2A77CD4`），可编辑DOCX为`artifacts/submission/BRACE-MSI-0.12.7rc1-作品说明书.docx`（SHA-256 `E3B04877...B783E62`）。旧0.11.0rc1说明书只作历史。
 6. A9提交包机器清单位于`D:/brace-msi-release/COMPETITION-CORE-RC-002-A9/submission-bundle-manifest.json`，SHA-256 `0562FE1F...4269A98`；7个提交/证据文件哈希均已复算一致。
-7. 下一步仅为外部平台步骤：上传A9的`harness.tar`、选择Qwen3.8-27B基础模型、填写SwanLab与源码链接并校验；平台试运行需用户明确触发。不得继续本地算法搜索、重开受限数据或上传A7/A8旧归档。
+7. 用户决定先采用A9后，不含PPT的完整材料包位于`artifacts/submission/BRACE-MSI-0.12.7rc1-完整提交包-不含PPT.zip`，789,523字节，SHA-256 `9DE77C4F...A914984`。平台镜像14已显示可用；总包没有重复包含超过50 MiB的harness.tar。
+8. 下一步仅为外部平台步骤：点击镜像14“用于新版本”、选择Qwen3.8-27B基础模型、填写SwanLab与源码链接并校验；平台试运行需用户明确触发。不得继续本地算法搜索、重开受限数据或上传A7/A8旧归档。
 
 ## 2026-11-22 P5-1C限时修复入口（当前）
 

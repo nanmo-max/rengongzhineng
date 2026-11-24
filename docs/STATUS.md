@@ -12,6 +12,7 @@
 - SwanLab最终聚合记录：https://swanlab.cn/@nanmo-max/BRACE-MSI/runs/elucs19m 。只读API已确认FINISHED、30个事件点、30个Token点及A/B/C各10个主指标点；不含样本、标签、特征、权重、提示词、Sampler路径或凭据。A7 `lg73i7cn`与A8 `rjd5ensg`只保留为失败/不完整历史，禁止用于最终提交。
 - A9作品说明书已完成最小增量更新：DOCX/PDF绑定`0.12.7rc1`、Qwen3.8-27B、A9镜像/源码/SwanLab及公开validation暴露边界，并披露P5尺度/噪声统计功效缺口。PDF为9页A4，逐页渲染无裁切或重叠；DOCX/PDF SHA-256为`E3B04877...B783E62`/`0334F7BE...2A77CD4`。旧0.11.0rc1文档仅保留历史，不得上传。
 - A9目录新增提交包机器清单`submission-bundle-manifest.json`，逐文件绑定Harness、发布清单/审计、DOCX/PDF和HTML/JSON报告，复算7/7哈希一致；清单SHA-256为`0562FE1F...4269A98`，并明确平台状态仍为`NOT_YET_IMPORTED_OR_VALIDATED`、官方试运行消耗为false。
+- 用户确认先采用A9后，已生成不含PPT的完整材料压缩包：`artifacts/submission/BRACE-MSI-0.12.7rc1-完整提交包-不含PPT.zip`，789,523字节，SHA-256 `9DE77C4F...A914984`。包内含模型配置、SwanLab链接、镜像14说明、源码链接、4页A4系统运行说明PDF、9页项目说明PDF、可编辑DOCX、175,662字节源码ZIP、开源合规及发布审计；不含harness.tar、PPT、数据、checkpoint或密钥。平台镜像14已由用户截图确认为“镜像可用”，因此归档大于50MiB时按平台独立镜像选择，不重复塞入材料ZIP。
 
 ## 2026-11-20 最新试运行与修复边界
 

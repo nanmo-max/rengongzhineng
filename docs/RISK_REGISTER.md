@@ -238,3 +238,10 @@
 - 证据：A7真实27B三任务30轮中，训练提案30/30均带`parse_error`：29次为`unsupported recipe parameter: balanced_sampling`，1次为多JSON；工业候选由确定性稳定Recipe训练，只有部署阶段30/30有效。旧发布审计只检查调用数和候选数，错误地给出PASS。
 - 根因：提示把Recipe固定字段与可覆盖字段并列展示，只要求`parameters`为对象；模型将`balanced_sampling`等固定字段回显，而注册表只接受epochs、学习率倍率、父平均和loss参数。
 - 缓解：提示显式限定四类override；解析器只允许与注册Recipe完全一致的loss/class_weighting/balanced_sampling回显并在执行前剥离，任何机制改写仍失败关闭。A9发布审计要求提案Recipe与实际执行Recipe一致，并对C十轮全部产物执行MAE/RMSE/NASA有限值硬门；真实27B 30轮为0失败，独立复算与机器审计通过。
+
+## R-072 协议验收被误读为性能证明
+
+- 等级：Critical
+- 状态：`OPEN_DISCLOSED_USER_ACCEPTED_FOR_A9_SUBMISSION`
+- 风险：A9精确镜像验收为验证SDK、Qwen调用、候选、父链、预测和恢复，每轮重复物化同一公开开发投影并改写训练ID；其validation指标不能证明真实新批次提升。把这些结果当作隐藏泛化或至少10%性能收益会误导提交判断。
+- 缓解：D-112明确A9只作为工程/协议候选先提交；项目说明、运行说明和总包均保留非隐藏成绩边界。正式成绩只认平台回执；后续性能改进必须另建合法序贯数据实验，不能改写A9历史证据。
