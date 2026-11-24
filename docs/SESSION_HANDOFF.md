@@ -1,15 +1,14 @@
 # 新会话恢复与交接
 
-## 2026-11-24 FINAL-SPRINT-003 A9恢复入口（当前）
+## 2026-11-24 FINAL-SPRINT-003 镜像14恢复入口（当前）
 
-1. 当前分支`codex/final-sprint-003`；实时任务仍以`STATUS.md`和`TASKS.md`顶部为准。冻结`0.11.0rc1`及历史失败证据均未覆盖。
-2. 当前本地候选A9 `0.12.7rc1`：源码`fcb185e`，镜像ID`sha256:3cee598a...d9809`，归档`D:/brace-msi-release/COMPETITION-CORE-RC-002-A9/harness.tar`，SHA-256 `f98cef29...5ba16`。发布审计、黑盒、4核4GB、真实27B十轮和云端曲线均通过本地/独立证据门。
-3. 真实运行源自字节级相同镜像A8：30/30提案执行、60次调用、C十轮NASA；复用清单在A9目录。A9只增加镜像外审计硬门并单独重跑黑盒。SwanLab最终链接为`https://swanlab.cn/@nanmo-max/BRACE-MSI/runs/elucs19m`；旧A7/A8链接不得用于最终提交。
-4. 正式提交仍选择基础模型`Qwen/Qwen3.8-27B`，不填写Sampler路径。工业`checkpoint.npz`由镜像内CPU训练器从平台父checkpoint续训，不由PyTRiO训练。
-5. A9作品说明书已生成：`output/pdf/BRACE-MSI-0.12.7rc1-作品说明书.pdf`（9页，SHA-256 `0334F7BE...2A77CD4`），可编辑DOCX为`artifacts/submission/BRACE-MSI-0.12.7rc1-作品说明书.docx`（SHA-256 `E3B04877...B783E62`）。旧0.11.0rc1说明书只作历史。
-6. A9提交包机器清单位于`D:/brace-msi-release/COMPETITION-CORE-RC-002-A9/submission-bundle-manifest.json`，SHA-256 `0562FE1F...4269A98`；7个提交/证据文件哈希均已复算一致。
-7. 用户决定先采用A9后，不含PPT的完整材料包位于`artifacts/submission/BRACE-MSI-0.12.7rc1-完整提交包-不含PPT.zip`，789,523字节，SHA-256 `9DE77C4F...A914984`。平台镜像14已显示可用；总包没有重复包含超过50 MiB的harness.tar。
-8. 下一步仅为外部平台步骤：点击镜像14“用于新版本”、选择Qwen3.8-27B基础模型、填写SwanLab与源码链接并校验；平台试运行需用户明确触发。不得继续本地算法搜索、重开受限数据或上传A7/A8旧归档。
+1. 当前分支`codex/final-sprint-003`；实时任务仍以`STATUS.md`和`TASKS.md`顶部为准。历史RC、A9材料和失败证据均保留，不覆盖。
+2. 用户明确确认平台“镜像14”对应`brace-msi:0.10.6rc1`：源码`c653e0e04297b655b93e28a90abd9f36e2ff761d`，镜像ID`sha256:52333ab1...7504`，归档`D:/brace-msi-first-principles-release/BRACE-MSI-0.10.6rc1-A1/harness.tar`，81,208,320字节，SHA-256 `F7518609...D89CB`。
+3. 当前唯一材料包为`artifacts/submission/BRACE-MSI-镜像14-0.10.6rc1-最终完整提交包-不含PPT.zip`，468,322字节，SHA-256 `3EAE14F6...E366D1`；源码ZIP固定到`c653e0e`，不含Harness tar、PPT、数据、checkpoint、密钥或其他版本材料。
+4. O-PLATFORM-019为该镜像的历史官方试运行：A/B/C各10轮、14,773条预测、74,418 Token；这不是正式成绩，选择矛盾和性能边界按原报告保留，不以其他版本修复覆盖。
+5. 正式提交选择基础模型`Qwen/Qwen3.8-27B`，不填写Sampler路径。工业`checkpoint.npz`由镜像内CPU训练器从平台父checkpoint续训，不由PyTRiO训练。
+6. 平台操作只选择状态为“镜像可用”的镜像14；另一平台若需重新上传Docker归档，上传登记的`harness.tar`，不得上传材料ZIP、源码ZIP或Dockerfile。
+7. 下一步仅为外部平台保存/校验和人工提交；新试运行或正式评测必须由用户明确触发。A9 `0.12.7rc1`保留为历史本地候选，不用于本次镜像14提交。
 
 ## 2026-11-22 P5-1C限时修复入口（当前）
 

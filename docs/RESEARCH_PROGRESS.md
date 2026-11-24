@@ -2,6 +2,14 @@
 
 本文件按时间追加，不回写历史记录。当前状态仍以 [STATUS.md](STATUS.md) 为准。
 
+## 2026-11-24：镜像14专属完整提交包纠偏与重建
+
+- 用户明确确认平台“镜像14”对应历史`brace-msi:0.10.6rc1`，而不是最新A9；保留既有A9材料作为历史产物，但当前提交不再引用或混用。
+- 重新核验历史Docker归档`D:/brace-msi-first-principles-release/BRACE-MSI-0.10.6rc1-A1/harness.tar`：81,208,320字节，SHA-256 `F7518609974EAB3C156C07F6D0AA7CBFE6CF9253B43C5D20B3DC71B4C91D89CB`；镜像ID`sha256:52333ab152aa11a4a6b14a8270fcebe3e1e2290813f18ac77bf46e1810ca7504`，源码提交`c653e0e04297b655b93e28a90abd9f36e2ff761d`。
+- 新增可复现生成器`scripts/build_image14_submission.py`，只从固定提交导出29条源码归档，并复制已登记的镜像14平台试运行原文；材料明确标记试运行不计正式成绩及历史选择矛盾，不把其他版本功能写入镜像14。
+- 最终ZIP为`artifacts/submission/BRACE-MSI-镜像14-0.10.6rc1-最终完整提交包-不含PPT.zip`，468,322字节，SHA-256 `3EAE14F6E4E8B16BFCFFB13B415982652F8DE4EE543E5A77B79042F454E366D1`。16个ZIP条目、15个内容文件哈希全部复算通过；无PPT、tar、checkpoint、数据、密钥、Sampler路径和其他版本标识。
+- 系统运行说明3页、项目说明4页，均小于10MiB；7页逐页渲染检查未见裁切、重叠或乱码。Harness tar按平台镜像入口独立上传/选择，不重复放进材料ZIP。
+
 ## 2026-11-24：A9不含PPT完整提交包
 
 - 用户在知悉A9本地性能报告仅为协议复演、不是隐藏成绩后，明确决定先采用该版本；D-112记录该发布取舍，不改写既有性能边界。
