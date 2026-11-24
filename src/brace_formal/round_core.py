@@ -110,12 +110,59 @@ def _serializable_metrics(metrics: Mapping[str, float] | None) -> dict[str, floa
     return result
 
 
-def _history_summary(store: HistoryStore, official_history: list[Any]) -> dict[str, Any]:
+def _load_round_ledger(state_root: Path) -> list[Any]:
+    path = state_root / "round-ledger.json"
+    if not path.is_file():
+        return []
+    loaded = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(loaded, dict) or not isinstance(loaded.get("rounds"), list):
+        raise ValueError("round ledger is invalid")
+    return list(loaded["rounds"])
+
+
+def _recent_experiment_summaries(rounds: list[Any], *, limit: int = 3) -> list[dict[str, Any]]:
+    summaries: list[dict[str, Any]] = []
+    for raw in rounds[-limit:]:
+        if not isinstance(raw, Mapping):
+            continue
+        selection = raw.get("selection")
+        timing = raw.get("timing")
+        summaries.append(
+            {
+                "round_index": raw.get("round_index"),
+                "recipe_id": raw.get("executed_recipe_id"),
+                "parent_metrics": _serializable_metrics(
+                    raw.get("parent_metrics") if isinstance(raw.get("parent_metrics"), Mapping) else None
+                ),
+                "candidate_metrics": _serializable_metrics(
+                    raw.get("candidate_metrics") if isinstance(raw.get("candidate_metrics"), Mapping) else None
+                ),
+                "decision": raw.get("applied_deployment_decision"),
+                "outcome": raw.get("outcome"),
+                "selection_reason": selection.get("reason") if isinstance(selection, Mapping) else None,
+                "training_failures": list(raw.get("training_failures", ()))
+                if isinstance(raw.get("training_failures"), list)
+                else [],
+                "hard_failures": list(raw.get("hard_failures", ()))
+                if isinstance(raw.get("hard_failures"), list)
+                else [],
+                "candidate_wall_seconds": timing.get("candidate_train_eval_submit_seconds")
+                if isinstance(timing, Mapping)
+                else None,
+            }
+        )
+    return summaries
+
+
+def _history_summary(
+    store: HistoryStore, official_history: list[Any], prior_rounds: list[Any] | None = None
+) -> dict[str, Any]:
     return {
         "completed_rounds": len(store.audit_summaries),
         "retained_round_indices": list(store.round_indices),
         "official_history_records": len(official_history),
         "retained_samples": sum(int(item.get("sample_count", 0)) for item in store.audit_summaries if item.get("retained")),
+        "recent_experiments": _recent_experiment_summaries(list(prior_rounds or ())),
     }
 
 
@@ -308,6 +355,7 @@ def run_competition_round(
     )
     state_root = Path(rnd.state_workspace(paths.state))
     history_store = HistoryStore.load(state_root, parent)
+    prior_ledger = _load_round_ledger(state_root)
     registry = RecipeRegistry()
     drift_report, diagnosis_report = _round_drift_diagnosis(
         history_store, training, round_index=int(rnd.round_index)
@@ -318,7 +366,7 @@ def run_competition_round(
         rnd,
         profile,
         registry,
-        history_summary=_history_summary(history_store, official_history),
+        history_summary=_history_summary(history_store, official_history, prior_ledger),
         resource_fields=_resource_summary(),
         diagnosis_evidence=diagnosis_report.as_dict(),
     )
@@ -398,7 +446,7 @@ def run_competition_round(
             "training_failures": training_failures,
             "hard_failures": list(hard_failures),
         },
-        "history_summary": _history_summary(history_store, official_history),
+        "history_summary": _history_summary(history_store, official_history, prior_ledger),
         "drift_evidence": {
             "report_id": drift_report.report_id,
             "status": drift_report.status.value,
@@ -567,11 +615,6 @@ def run_competition_round(
     receipt_path = state_root / "round-receipt.json"
     _json_atomic(receipt_path, record)
     ledger_path = state_root / "round-ledger.json"
-    prior_ledger: list[Any] = []
-    if ledger_path.is_file():
-        loaded = json.loads(ledger_path.read_text(encoding="utf-8"))
-        if isinstance(loaded, dict) and isinstance(loaded.get("rounds"), list):
-            prior_ledger = loaded["rounds"]
     prior_ledger.append(record)
     _json_atomic(ledger_path, {"format": "brace-msi.round-ledger.v1", "rounds": prior_ledger})
     _json_atomic(state_root / "formal-state.json", {"format": "brace-formal-state.v2", "rounds": prior_ledger})

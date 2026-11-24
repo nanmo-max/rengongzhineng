@@ -39,10 +39,9 @@ def _evidence(tmp_path: Path) -> tuple[Path, Path, Path, Path]:
     rounds = [{"model_call_ids": ["proposal", "deployment"], "candidate_submitted": True} for _ in range(10)]
     acceptance = tmp_path / "acceptance.json"
     acceptance.write_text(json.dumps({"valid": True, "profiles": {
-        "known-classification": {"rounds": rounds, "prediction_smoke_rows": 5},
-        "known-regression": {"rounds": rounds, "prediction_smoke_rows": 5},
-        "opaque-classification": {"rounds": rounds, "prediction_smoke_rows": 5},
-        "opaque-regression": {"rounds": rounds, "prediction_smoke_rows": 5},
+        "A": {"rounds": rounds, "prediction_smoke_rows": 5},
+        "B": {"rounds": rounds, "prediction_smoke_rows": 5},
+        "C": {"rounds": rounds, "prediction_smoke_rows": 5},
     }}), encoding="utf-8")
     blackbox = tmp_path / "blackbox.json"
     blackbox.write_text(json.dumps({
@@ -70,7 +69,7 @@ def test_release_audit_passes_complete_evidence(tmp_path: Path) -> None:
     )
     assert "LOCAL RELEASE ACCEPTANCE" in html
     assert "NOT AN OFFICIAL SCORE" in html
-    assert "known-classification" in html
+    assert "A" in html
 
 
 def test_release_audit_fails_each_critical_boundary(tmp_path: Path) -> None:
@@ -81,9 +80,9 @@ def test_release_audit_fails_each_critical_boundary(tmp_path: Path) -> None:
     payload["content_manifest"]["files"].remove("src/contest_harness/protocol.py")
     release.write_text(json.dumps(payload), encoding="utf-8")
     report = json.loads(acceptance.read_text())
-    report["profiles"].pop("opaque-regression")
-    report["profiles"]["known-classification"]["rounds"][0]["model_call_ids"] = ["one"]
-    report["profiles"]["known-regression"]["rounds"][0]["candidate_submitted"] = False
+    report["profiles"].pop("C")
+    report["profiles"]["A"]["rounds"][0]["model_call_ids"] = ["one"]
+    report["profiles"]["B"]["rounds"][0]["candidate_submitted"] = False
     acceptance.write_text(json.dumps(report), encoding="utf-8")
     blackbox.write_text(json.dumps({
         "wrong_deploy_accepted": True,
@@ -99,7 +98,7 @@ def test_release_audit_fails_each_critical_boundary(tmp_path: Path) -> None:
     expected_failed = {
         "source_binding", "formal_forbidden_content", "official_sdk_files",
         "acceptance_reports",
-        "dual_model_calls", "every_round_candidate", "unknown_task_coverage",
+        "dual_model_calls", "every_round_candidate",
         "wrong_deploy_rejected", "history_rollback", "model_reload", "docker_save_archive",
     }
     assert expected_failed.issubset(

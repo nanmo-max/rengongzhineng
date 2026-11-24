@@ -403,6 +403,62 @@ def test_incomparable_history_does_not_expose_old_metrics_to_qwen(monkeypatch, t
     assert "candidate_metrics" not in serialized
 
 
+def test_training_qwen_receives_bounded_prior_experiment_results(monkeypatch, tmp_path: Path) -> None:
+    from brace_formal import submission
+
+    parent = tmp_path / "checkpoint.npz"
+    _write_parent(parent)
+    _write_rows(tmp_path / "train.jsonl")
+    _write_rows(tmp_path / "validation.jsonl")
+
+    class StatefulRound(FakeRound):
+        def state_workspace(self, destination):
+            path = super().state_workspace(destination)
+            rounds = []
+            for index in range(1, 6):
+                rounds.append(
+                    {
+                        "round_index": index,
+                        "executed_recipe_id": f"recipe-{index}",
+                        "parent_metrics": {"macro_f1": 0.60 + index / 100},
+                        "candidate_metrics": {"macro_f1": 0.61 + index / 100},
+                        "applied_deployment_decision": "deploy" if index % 2 else "retain",
+                        "outcome": "candidate_selected_by_selector",
+                        "training_failures": [],
+                        "hard_failures": [],
+                        "selection": {"reason": f"reason-{index}"},
+                        "timing": {"candidate_train_eval_submit_seconds": index / 10},
+                    }
+                )
+            (path / "round-ledger.json").write_text(
+                json.dumps({"format": "brace-msi.round-ledger.v1", "rounds": rounds}),
+                encoding="utf-8",
+            )
+            return path
+
+    rnd = StatefulRound(tmp_path, parent, {"recipe": "e1_lr1", "rationale": "use measured history"})
+    monkeypatch.setenv("CONTEST_WORK", str(tmp_path / "workspace"))
+
+    submission.train(rnd)
+
+    prompt = str(rnd.model_messages[0][0]["content"])
+    context = json.loads(prompt.split(" Context: ", 1)[1])
+    recent = context["history_summary"]["recent_experiments"]
+    assert [row["round_index"] for row in recent] == [3, 4, 5]
+    assert recent[-1] == {
+        "round_index": 5,
+        "recipe_id": "recipe-5",
+        "parent_metrics": {"macro_f1": 0.65},
+        "candidate_metrics": {"macro_f1": 0.66},
+        "decision": "deploy",
+        "outcome": "candidate_selected_by_selector",
+        "selection_reason": "reason-5",
+        "training_failures": [],
+        "hard_failures": [],
+        "candidate_wall_seconds": 0.5,
+    }
+
+
 def test_post_training_qwen_receives_parent_candidate_resource_and_history_evidence(monkeypatch, tmp_path: Path) -> None:
     from brace_formal import submission
 

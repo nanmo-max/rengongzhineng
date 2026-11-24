@@ -16,7 +16,7 @@ SAM/L2-SP/AdamW无跨任务优势；B的5 epoch/3×LR虽均值高但存在最差
 
 ## 工程状态
 
-三项Recipe已进入`brace_formal.recipes`注册表并保持`contest.cpu-mlp.v1`、父优化器状态、原特征与checkpoint格式。正式上下文现在携带任务合同的全部辅助指标和基于合法train内部证据的稳定配方先验；服务异常时同样退回该配方，而不是旧的弱`native_current`。ArtifactSelector、硬安全门和回滚不变。
+三项Recipe已进入`brace_formal.recipes`注册表并保持`contest.cpu-mlp.v1`、父优化器状态、原特征与checkpoint格式。正式上下文携带任务合同的全部辅助指标、合法train内部稳定配方先验，以及最近三轮的Recipe、父/候选聚合指标、失败、资源、选择理由和部署结果；不含逐样本数据。服务异常时退回稳定配方，而不是旧的弱`native_current`。ArtifactSelector、硬安全门和回滚不变。
 
 ## 真实27B提案门
 

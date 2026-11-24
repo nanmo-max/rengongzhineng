@@ -8,6 +8,7 @@
 | R-055 | P1 | 历史轮块不满足maxT交换性 | 序列工况不可交换 | 不使用行号伪造group；收据标注`round_blocks_assumed_exchangeable`；正式材料不隐去 | OPEN |
 | R-056 | P1 | Qwen未返回证据引用却被写成诊断驱动 | `evidence_refs` 为空 | 记录`validated_refs=[]`与`evidence_recipe_match=unverifiable`；虚构ID失败关闭 | MITIGATED_INTERFACE/OPEN_REAL_QWEN |
 | R-070 | P0 | 每轮统计耗时远大于训练，损害资源分并可能超时 | 少量真实块生成大量重复置换mask | 唯一mask计算后按原频次还原；同一旧收据逐字段等价；重建镜像后重新跑完整4核4GB验收 | MITIGATED_CODE/OPEN_CONTAINER_RETEST |
+| R-071 | P1 | Qwen只看到历史计数，无法根据上轮结果调整实验 | 提案上下文缺Recipe、指标、失败和选择结果 | 只投影最近三轮聚合账本；专项测试验证字段与三轮上限；真实平台策略收益仍待试运行 | MITIGATED_INTERFACE/OPEN_PLATFORM_EFFECT |
 
 | ID | 等级 | 风险 | 触发器 | 缓解措施 | 负责人 | 状态 |
 |---|---|---|---|---|---|---|

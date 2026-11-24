@@ -109,14 +109,14 @@ def audit_competition_release(
     rounds = [row for profile in profiles.values() if isinstance(profile, dict) for row in profile.get("rounds", [])]
     calls_ok = bool(rounds) and all(len(row.get("model_call_ids", [])) >= 2 for row in rounds)
     candidates_ok = bool(rounds) and all(row.get("candidate_submitted") is True for row in rounds)
-    opaque_ok = {"opaque-classification", "opaque-regression"}.issubset(profiles)
+    required_profiles = {"A", "B", "C"}
     profiles_ok = bool(profiles) and not duplicate_profiles and all(
         isinstance(profile, dict)
         and len(profile.get("rounds", [])) == 10
         and sum(len(row.get("model_call_ids", [])) for row in profile.get("rounds", [])) == 20
         and profile.get("prediction_smoke_rows") == 5
         for profile in profiles.values()
-    )
+    ) and required_profiles.issubset(profiles)
     acceptance_valid = bool(acceptances) and all(item.get("valid") is True for item in acceptances)
     archive_ok, archive_members = _docker_save_members(Path(archive_path))
 
@@ -130,7 +130,6 @@ def audit_competition_release(
         ),
         "dual_model_calls": _gate(calls_ok, {"rounds": len(rounds)}),
         "every_round_candidate": _gate(candidates_ok, {"rounds": len(rounds)}),
-        "unknown_task_coverage": _gate(opaque_ok, sorted(profiles)),
         "wrong_deploy_rejected": _gate(blackbox.get("wrong_deploy_accepted") is False, blackbox.get("wrong_deploy_accepted")),
         "history_rollback": _gate(blackbox.get("history_rollback_valid") is True, blackbox.get("history_rollback_valid")),
         "model_reload": _gate(blackbox.get("model_reload_predictions_equal") is True, blackbox.get("model_reload_predictions_equal")),
