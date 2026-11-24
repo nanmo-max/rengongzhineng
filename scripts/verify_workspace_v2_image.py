@@ -699,6 +699,9 @@ def run(
                     "parent_metrics": record.get("parent_metrics"),
                     "candidate_metrics": record.get("candidate_metrics"),
                     "executed_recipe_id": record.get("executed_recipe_id"),
+                    "proposal_recipe_id": (
+                        (record.get("experiment_proposal") or {}).get("recipe_id")
+                    ),
                     "proposal_parse_error": (
                         (record.get("experiment_proposal") or {}).get("parse_error")
                     ),

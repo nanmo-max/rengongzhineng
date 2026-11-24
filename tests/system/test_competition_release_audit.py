@@ -36,20 +36,36 @@ def _evidence(tmp_path: Path) -> tuple[Path, Path, Path, Path]:
             "src/brace_formal/submission.py", "submission/harness.py",
         ]},
     }), encoding="utf-8")
-    rounds = [
-        {
+    def rounds(*, engine: bool = False) -> list[dict[str, object]]:
+        metrics = {
+            "mae": 1.0,
+            "rmse": 2.0,
+            **({"nasa_score": 3.0, "nasa_score_mean": 0.3} if engine else {}),
+        }
+        directions = {
+            "mae": "lower",
+            "rmse": "lower",
+            **({"nasa_score": "lower", "nasa_score_mean": "lower"} if engine else {}),
+        }
+        return [{
             "model_call_ids": ["proposal", "deployment"],
             "candidate_submitted": True,
             "proposal_parse_error": None,
             "proposal_evidence_valid": True,
+            "proposal_recipe_id": "native_current",
+            "executed_recipe_id": "native_current",
+            "metric_contract": {"metric_directions": directions},
+            "artifact_evaluations": [
+                {"artifact_id": "parent", "metrics": metrics},
+                {"artifact_id": "candidate", "metrics": metrics},
+            ],
         }
-        for _ in range(10)
-    ]
+        for _ in range(10)]
     acceptance = tmp_path / "acceptance.json"
     acceptance.write_text(json.dumps({"valid": True, "profiles": {
-        "A": {"rounds": rounds, "prediction_smoke_rows": 5},
-        "B": {"rounds": rounds, "prediction_smoke_rows": 5},
-        "C": {"rounds": rounds, "prediction_smoke_rows": 5},
+        "A": {"rounds": rounds(), "prediction_smoke_rows": 5},
+        "B": {"rounds": rounds(), "prediction_smoke_rows": 5},
+        "C": {"rounds": rounds(engine=True), "prediction_smoke_rows": 5},
     }}), encoding="utf-8")
     blackbox = tmp_path / "blackbox.json"
     blackbox.write_text(json.dumps({
@@ -93,6 +109,7 @@ def test_release_audit_fails_each_critical_boundary(tmp_path: Path) -> None:
     report["profiles"]["B"]["rounds"][0]["candidate_submitted"] = False
     report["profiles"]["A"]["rounds"][1]["proposal_parse_error"] = "unsupported parameter"
     report["profiles"]["A"]["rounds"][1]["proposal_evidence_valid"] = False
+    report["profiles"]["B"]["rounds"][1]["proposal_recipe_id"] = "native_replay"
     acceptance.write_text(json.dumps(report), encoding="utf-8")
     blackbox.write_text(json.dumps({
         "wrong_deploy_accepted": True,
@@ -109,11 +126,27 @@ def test_release_audit_fails_each_critical_boundary(tmp_path: Path) -> None:
         "source_binding", "formal_forbidden_content", "official_sdk_files",
         "acceptance_reports",
         "dual_model_calls", "every_round_candidate", "training_proposals_executed",
+        "engine_nasa_contract",
         "wrong_deploy_rejected", "history_rollback", "model_reload", "docker_save_archive",
     }
     assert expected_failed.issubset(
         {name for name, gate in result["gates"].items() if gate["status"] == "FAIL"}
     )
+
+
+def test_release_audit_requires_engine_nasa_metrics(tmp_path: Path) -> None:
+    release, acceptance, blackbox, archive = _evidence(tmp_path)
+    report = json.loads(acceptance.read_text())
+    report["profiles"]["C"]["rounds"][0]["artifact_evaluations"][0]["metrics"].pop(
+        "nasa_score"
+    )
+    acceptance.write_text(json.dumps(report), encoding="utf-8")
+
+    result = audit_competition_release(
+        release, acceptance, blackbox, archive, expected_source_commit="abc123"
+    )
+    assert not result["valid"]
+    assert result["gates"]["engine_nasa_contract"]["status"] == "FAIL"
 
 
 def _message(instruction: str, context: dict[str, object]) -> list[dict[str, str]]:

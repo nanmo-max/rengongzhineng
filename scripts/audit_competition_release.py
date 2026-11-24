@@ -6,6 +6,7 @@ import argparse
 import hashlib
 import html
 import json
+import math
 from pathlib import Path
 import tarfile
 from typing import Any, Mapping, Sequence
@@ -62,6 +63,30 @@ def _docker_save_members(path: Path) -> tuple[bool, list[str]]:
         return False, []
 
 
+def _engine_nasa_round_valid(row: Any) -> bool:
+    if not isinstance(row, Mapping):
+        return False
+    contract = row.get("metric_contract")
+    directions = contract.get("metric_directions") if isinstance(contract, Mapping) else None
+    if not isinstance(directions, Mapping) or any(
+        directions.get(name) != "lower"
+        for name in ("mae", "rmse", "nasa_score", "nasa_score_mean")
+    ):
+        return False
+    evaluations = row.get("artifact_evaluations")
+    if not isinstance(evaluations, list) or not evaluations:
+        return False
+    for evaluation in evaluations:
+        metrics = evaluation.get("metrics") if isinstance(evaluation, Mapping) else None
+        if not isinstance(metrics, Mapping):
+            return False
+        for name in ("mae", "rmse", "nasa_score", "nasa_score_mean"):
+            value = metrics.get(name)
+            if not isinstance(value, (int, float)) or isinstance(value, bool) or not math.isfinite(value):
+                return False
+    return True
+
+
 def audit_competition_release(
     release_manifest_path: Path,
     acceptance_path: Path | Sequence[Path],
@@ -112,7 +137,17 @@ def audit_competition_release(
     proposals_ok = bool(rounds) and all(
         row.get("proposal_parse_error") in (None, "")
         and row.get("proposal_evidence_valid") is True
+        and isinstance(row.get("proposal_recipe_id"), str)
+        and row.get("proposal_recipe_id") == row.get("executed_recipe_id")
         for row in rounds
+    )
+    engine_rounds = (
+        profiles.get("C", {}).get("rounds", [])
+        if isinstance(profiles.get("C"), Mapping)
+        else []
+    )
+    engine_nasa_ok = len(engine_rounds) == 10 and all(
+        _engine_nasa_round_valid(row) for row in engine_rounds
     )
     required_profiles = {"A", "B", "C"}
     profiles_ok = bool(profiles) and not duplicate_profiles and all(
@@ -144,6 +179,17 @@ def audit_competition_release(
                     for row in rounds
                     if row.get("proposal_parse_error") not in (None, "")
                     or row.get("proposal_evidence_valid") is not True
+                    or not isinstance(row.get("proposal_recipe_id"), str)
+                    or row.get("proposal_recipe_id") != row.get("executed_recipe_id")
+                ),
+            },
+        ),
+        "engine_nasa_contract": _gate(
+            engine_nasa_ok,
+            {
+                "rounds": len(engine_rounds),
+                "failed": sum(
+                    1 for row in engine_rounds if not _engine_nasa_round_valid(row)
                 ),
             },
         ),
