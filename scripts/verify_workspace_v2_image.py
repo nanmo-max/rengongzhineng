@@ -15,6 +15,7 @@ from pathlib import Path
 import shutil
 import subprocess
 import tempfile
+import time
 from typing import Any
 
 from brace_formal.data import load_rows
@@ -61,6 +62,115 @@ PROMPT = (
     "从官方父检查点与本轮公开投影出发，在授权预算内提出一个结构化、"
     "可审计且不绕过安全门的续训或保留决策。"
 )
+
+
+class PyTrioModelGateway:
+    """Mirror the official host model gateway without putting PyTRiO in the image."""
+
+    def __init__(self, model_name: str, *, pytrio_module: Any | None = None) -> None:
+        if not isinstance(model_name, str) or not model_name:
+            raise ValueError("model name is required")
+        if pytrio_module is None:
+            import pytrio as pytrio_module  # type: ignore[no-redef]
+        self._trio = pytrio_module
+        self.model_name = model_name
+        service = pytrio_module.ServiceClient()
+        supported = tuple(service.get_supported_models())
+        if model_name not in supported:
+            raise ValueError(f"PyTRiO model is not supported: {model_name}")
+        self._sampler = service.create_sampling_client(base_model=model_name)
+        self._tokenizer = self._sampler.get_tokenizer()
+
+    def generate(
+        self,
+        messages: list[dict[str, Any]],
+        *,
+        official_prompt: str,
+        max_tokens: int,
+        seed: int,
+    ) -> tuple[dict[str, Any], dict[str, Any]]:
+        prompt_messages = [
+            {"role": "system", "content": official_prompt},
+            *[dict(item) for item in messages],
+        ]
+        prompt_text = self._tokenizer.apply_chat_template(
+            prompt_messages,
+            tokenize=False,
+            add_generation_prompt=True,
+            enable_thinking=False,
+        )
+        prompt_tokens = self._tokenizer.encode(prompt_text, add_special_tokens=False)
+        started = time.perf_counter()
+        result = self._sampler.sample(
+            prompt=self._trio.ModelInput.from_ints(prompt_tokens),
+            num_samples=1,
+            sampling_params=self._trio.SamplingParams(
+                max_tokens=max_tokens,
+                temperature=0.0,
+                seed=seed,
+            ),
+        ).result()
+        latency = time.perf_counter() - started
+        if not result.sequences:
+            raise RuntimeError("PyTRiO returned no sequence")
+        sequence = result.sequences[0]
+        text = str(sequence.text)
+        input_tokens = getattr(result, "input_tokens", len(prompt_tokens))
+        output_tokens = getattr(result, "output_tokens", len(sequence.tokens))
+        if type(input_tokens) is not int or input_tokens < 0:
+            input_tokens = len(prompt_tokens)
+        if type(output_tokens) is not int or output_tokens < 0:
+            output_tokens = len(sequence.tokens)
+        usage = {
+            "prompt_tokens": input_tokens,
+            "completion_tokens": output_tokens,
+            "total_tokens": input_tokens + output_tokens,
+        }
+        response = {
+            "id": "chatcmpl-pytrio-host-gateway",
+            "model": self.model_name,
+            "object": "chat.completion",
+            "choices": [
+                {
+                    "index": 0,
+                    "finish_reason": "stop",
+                    "message": {"role": "assistant", "content": text},
+                }
+            ],
+            "usage": usage,
+        }
+        request_payload = {
+            "messages": prompt_messages,
+            "model": self.model_name,
+            "max_tokens": max_tokens,
+            "temperature": 0.0,
+            "seed": seed,
+        }
+        sampling_run_cuid = getattr(result, "sampling_run_cuid", None)
+        receipt = {
+            "provider": "pytrio",
+            "model": self.model_name,
+            "input_tokens": usage["prompt_tokens"],
+            "output_tokens": usage["completion_tokens"],
+            "latency_seconds": latency,
+            "request_sha256": hashlib.sha256(
+                json.dumps(
+                    request_payload,
+                    ensure_ascii=False,
+                    sort_keys=True,
+                    separators=(",", ":"),
+                ).encode("utf-8")
+            ).hexdigest(),
+            "response_sha256": hashlib.sha256(text.encode("utf-8")).hexdigest(),
+            "sampling_run_sha256": (
+                hashlib.sha256(str(sampling_run_cuid).encode("utf-8")).hexdigest()
+                if sampling_run_cuid
+                else None
+            ),
+            "response_format_enforced": False,
+            "stop_reason": str(getattr(sequence, "stop_reason", "unknown")),
+        }
+        return response, receipt
 
 
 def _sha(path: Path) -> str:
@@ -148,7 +258,10 @@ def _materialize_round_data(
 
 
 def _proposal(
-    messages: list[dict[str, Any]], *, mode: str = "best"
+    messages: list[dict[str, Any]],
+    *,
+    mode: str = "best",
+    model_name: str = "Qwen/Qwen3.8-27B",
 ) -> dict[str, Any]:
     content = str(messages[0].get("content", "")) if messages else ""
     context = json.loads(content.split(" Context: ", 1)[1])
@@ -193,7 +306,7 @@ def _proposal(
         }
     return {
         "id": "chatcmpl-local-protocol",
-        "model": "Qwen/Qwen3.5-4B",
+        "model": model_name,
         "object": "chat.completion",
         "choices": [
             {
@@ -212,6 +325,8 @@ def _start_frame(
     parent: dict[str, Any],
     state_root: Path | None,
     artifacts: list[dict[str, Any]],
+    *,
+    model_name: str = "Qwen/Qwen3.8-27B",
 ) -> dict[str, Any]:
     task, metric, direction = TASKS[profile]
     sdk_key = SDK_KEYS[profile]
@@ -240,7 +355,7 @@ def _start_frame(
                 "source_metadata": False,
             },
         },
-        "model_name": "Qwen/Qwen3.5-4B",
+        "model_name": model_name,
         "parent_artifact": parent,
         "artifacts": artifacts,
         "state_sha256": "" if state_root is None else "sha256:" + _tree_sha(state_root),
@@ -298,6 +413,8 @@ def _run_round(
     artifacts: list[dict[str, Any]],
     artifact_roots: dict[str, Path],
     proposal_mode: str = "best",
+    model_name: str = "Qwen/Qwen3.8-27B",
+    model_gateway: PyTrioModelGateway | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any] | None, Path | None]:
     workspace = run_root / "workspace"
     workspace.mkdir(exist_ok=True)
@@ -323,7 +440,14 @@ def _run_round(
         encoding="utf-8",
     )
     assert process.stdin is not None and process.stdout is not None
-    frame = _start_frame(profile, round_index, parent, state_root, artifacts)
+    frame = _start_frame(
+        profile,
+        round_index,
+        parent,
+        state_root,
+        artifacts,
+        model_name=model_name,
+    )
     process.stdin.write(json.dumps(frame, ensure_ascii=False) + "\n")
     process.stdin.flush()
     sequence = 0
@@ -331,6 +455,7 @@ def _run_round(
     next_state = None
     record = None
     model_calls = []
+    model_receipts: list[dict[str, Any]] = []
     while True:
         line = process.stdout.readline()
         if not line:
@@ -362,9 +487,41 @@ def _run_round(
                 raise RuntimeError("participant did not request one JSON object")
             call_id = f"call-{profile}-{round_index}-{len(model_calls) + 1}"
             model_calls.append(call_id)
+            if model_gateway is None:
+                response = _proposal(
+                    raw_messages,
+                    mode=proposal_mode,
+                    model_name=model_name,
+                )
+                usage = response.get("usage") or {}
+                host_receipt = {
+                    "provider": "local_host_gateway_substitute",
+                    "model": model_name,
+                    "input_tokens": int(usage.get("prompt_tokens", 0)),
+                    "output_tokens": int(usage.get("completion_tokens", 0)),
+                    "latency_seconds": 0.0,
+                    "response_sha256": hashlib.sha256(
+                        json.dumps(response, sort_keys=True, separators=(",", ":")).encode()
+                    ).hexdigest(),
+                }
+            else:
+                response, host_receipt = model_gateway.generate(
+                    raw_messages,
+                    official_prompt=frame["prompt"],
+                    max_tokens=frame["max_output_tokens"],
+                    seed=20261124 + round_index * 10 + len(model_calls),
+                )
+            model_receipts.append(
+                {
+                    **host_receipt,
+                    "call_id": call_id,
+                    "profile": profile,
+                    "round_index": round_index,
+                }
+            )
             reply = {
                 "type": "model_response", "id": message["id"], "call_id": call_id,
-                "response": _proposal(raw_messages, mode=proposal_mode),
+                "response": response,
             }
         elif kind == "state_request":
             next_state = run_root / f"round-{round_index:02d}-state"
@@ -408,7 +565,9 @@ def _run_round(
         raise RuntimeError(f"container round failed ({code}): {stderr[-4000:]}")
     if not model_calls or record.get("model_call_ids") != model_calls:
         raise RuntimeError("round did not cite all real model calls")
-    return _merge_round_record(record, next_state), candidate_receipt, next_state
+    merged = _merge_round_record(record, next_state)
+    merged["host_model_receipts"] = model_receipts
+    return merged, candidate_receipt, next_state
 
 
 def _predict(
@@ -463,6 +622,8 @@ def run(
     proposal_mode: str = "best",
     profiles: tuple[str, ...] | None = None,
     round_count: int = 10,
+    model_name: str = "Qwen/Qwen3.8-27B",
+    model_gateway: PyTrioModelGateway | None = None,
 ) -> dict[str, Any]:
     if not 1 <= round_count <= 10:
         raise ValueError("round_count must be between 1 and 10")
@@ -471,6 +632,8 @@ def run(
         "format": "brace-msi.workspace-v2-acceptance.v1",
         "scope": "local_protocol_only_not_official_score",
         "image": image,
+        "model_name": model_name,
+        "model_provider": "pytrio" if model_gateway is not None else "local_host_gateway_substitute",
         "profiles": {},
     }
     selected_profiles = tuple(PACKAGES) if profiles is None else profiles
@@ -497,6 +660,8 @@ def run(
                 run_root=profile_root, history=history, artifacts=artifacts,
                 artifact_roots=artifact_roots,
                 proposal_mode=proposal_mode,
+                model_name=model_name,
+                model_gateway=model_gateway,
             )
             if candidate is not None:
                 artifacts.append(candidate)
@@ -520,6 +685,7 @@ def run(
                     "round_index": round_index,
                     "selected_artifact_id": selected,
                     "model_call_ids": record["model_call_ids"],
+                    "host_model_receipts": record["host_model_receipts"],
                     "candidate_submitted": candidate is not None,
                     "incoming_parent_checkpoint_sha256": next(
                         item["sha256"] for item in incoming_parent["files"] if item["path"] == "checkpoint.npz"
@@ -549,6 +715,16 @@ def run(
             "rounds": rounds,
             "round_count": len(rounds),
             "model_call_count": sum(len(row["model_call_ids"]) for row in rounds),
+            "input_tokens": sum(
+                int(receipt["input_tokens"])
+                for row in rounds
+                for receipt in row["host_model_receipts"]
+            ),
+            "output_tokens": sum(
+                int(receipt["output_tokens"])
+                for row in rounds
+                for receipt in row["host_model_receipts"]
+            ),
             "prediction_smoke_rows": prediction_count,
             "prediction_sha256": prediction_digest,
             "model_reload_predictions_equal": (
@@ -579,12 +755,25 @@ def main() -> int:
     parser.add_argument("--proposal-mode", choices=("best", "worst"), default="best")
     parser.add_argument("--profiles", help="comma-separated registered local acceptance profiles")
     parser.add_argument("--rounds", type=int, default=10)
+    parser.add_argument(
+        "--model-provider",
+        choices=("local", "pytrio"),
+        default="local",
+    )
+    parser.add_argument("--model-name", default="Qwen/Qwen3.8-27B")
     args = parser.parse_args()
+    model_gateway = (
+        PyTrioModelGateway(args.model_name)
+        if args.model_provider == "pytrio"
+        else None
+    )
     report = run(
         args.image, args.package_root, args.output,
         proposal_mode=args.proposal_mode,
         profiles=_resolve_profiles(args.profiles),
         round_count=args.rounds,
+        model_name=args.model_name,
+        model_gateway=model_gateway,
     )
     print(json.dumps(report, ensure_ascii=False, allow_nan=False, sort_keys=True))
     return 0 if report["valid"] else 1
