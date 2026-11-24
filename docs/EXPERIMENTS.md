@@ -1049,3 +1049,13 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 - 黑盒：`blackbox/blackbox.json`，`wrong_deploy_accepted=false`、`history_rollback_valid=true`、重载预测一致。旧`release-audit.json valid=true`因未检查提案parse_error判定不足，已由R-071纠正，不得作为A7发布通过证据。
 - SwanLab：A7混合运行的30轮脱敏聚合观测已同步，公开链接`https://swanlab.cn/@nanmo-max/BRACE-MSI/runs/lg73i7cn`；保留为失败历史，不绑定最终候选。
 - 回归：Competition Core 119项、相关观察/SFT 14项、最终全仓719项通过；失败的旧SFT哈希与修复过程保留在测试输出和Git diff中。官方试运行0次。
+
+# 2026-11-24 COMPETITION-CORE-RC-002-A9 / QWEN38-SDK-30R-A2（LOCAL_RELEASE_READY）
+
+- 正式镜像：`D:/brace-msi-release/COMPETITION-CORE-RC-002-A9/harness.tar`；版本`0.12.7rc1`；源码提交`fcb185e`；镜像ID`sha256:3cee598a...d9809`；归档81,257,984字节、SHA-256 `f98cef296a69768018cfb840938f1acd89b49fd2044e72cd3cc4d968c135ba16`。
+- 真实Agent：A/B/C各10轮，每轮训练提案与部署各一次真实`Qwen/Qwen3.8-27B`调用；60次调用输入/输出Token `123,114/9,516`。提案parse error 0/30、证据引用30/30有效、提案Recipe与实际执行30/30一致，候选30/30真实训练。
+- C指标合同：十轮全部为`rmse_nasa`，父/候选/历史产物均含有限MAE、RMSE、NASA sum/mean；发布审计`engine_nasa_contract` 10/10通过。A/B/C本地最终值只作历史暴露协议证据：A Accuracy/Macro-F1 `0.885852/0.725695`；B MAE/RMSE `574.538/674.101`；C MAE/RMSE/NASA `38.245/52.002/4.17883e9`，不是官方成绩或独立泛化证据。
+- 工程证据：linux/amd64、UID10001、官方SDK 1.0.2、4核4GB、镜像约81.24MB；峰值RSS约1.413GB，最大状态60,686,959字节，checkpoint不超过132,184字节；父链、独立预测、重载、错误部署拒绝和历史回滚通过。
+- 证据复用：A8与A9的镜像ID及白名单树完全相同，A9仅增加镜像外发布硬门；`evidence-reuse.json`记录原始acceptance哈希和逐轮Receipt补充过程。A9黑盒单独重跑并通过。
+- SwanLab：https://swanlab.cn/@nanmo-max/BRACE-MSI/runs/elucs19m ；在线直传337条协议记录，只读API确认30个事件点、A/B/C各10个主指标点和30个Token点。敏感信息扫描通过。
+- 验证：正式运行代码修改后全仓`721 passed in 156.71s`；镜像外审计增强专项11项通过；独立终审PASS，`release-audit.json valid=true`。官方平台上传、试运行与隐藏评测均为0，仍属于外部待执行项。

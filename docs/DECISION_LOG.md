@@ -324,3 +324,10 @@
 - Recipe契约：Qwen的`parameters`只允许覆盖`epochs`、`learning_rate_multiplier`、`parent_average_alpha`和`loss_parameters`。与注册Recipe完全一致的`loss/class_weighting/balanced_sampling`回显可安全剥离；任何实际机制改写继续失败关闭。
 - 指标契约：Engine端到端发布验收必须使用`rmse_nasa`，同时产生MAE、RMSE和NASA指标并经过多指标选择路径；仅验证RMSE/MAE不足以晋级。
 - 结果边界：A7因训练提案30/30 fallback和C缺NASA合同被否决；上述修复只有在新镜像A8真实27B Smoke、30轮、容器验收和独立终审全部通过后才能形成新正式候选。
+
+## D-111：A9作为本地正式上传候选，证据复用限于字节级相同镜像（2026-11-24，LOCKED_RELEASE）
+
+- 决策：A9 `0.12.7rc1`晋级为`LOCAL_RELEASE_READY`。正式上传归档为`D:/brace-msi-release/COMPETITION-CORE-RC-002-A9/harness.tar`，SHA-256 `f98cef296a69768018cfb840938f1acd89b49fd2044e72cd3cc4d968c135ba16`，运行内容绑定提交`fcb185e`。
+- 证据复用：A9与完成真实27B 30轮的A8具有完全相同的镜像ID和白名单树；只允许在`evidence-reuse.json`同时绑定源acceptance哈希、源/目标镜像ID和内容树时复用运行证据。A9已单独重跑黑盒，禁止把此规则扩展到任何运行内容不同的镜像。
+- 验收：真实27B提案30/30执行、C NASA合同10/10、4核4GB、父链、预测、回滚、重载、Docker归档和发布审计均PASS；SwanLab `elucs19m`由只读API确认30轮聚合曲线实存。独立终审结论PASS。
+- 外部边界：本决策不代表平台已导入、模型校验已通过或取得官方成绩；这些结论只能来自实际平台回执。

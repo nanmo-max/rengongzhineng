@@ -234,7 +234,7 @@
 ## R-071 真实Qwen训练提案调用存在但全部回退
 
 - 等级：Critical
-- 状态：`REALIZED_A7_REJECTED_FIX_TESTED_A8_PENDING`
+- 状态：`CLOSED_A9_RELEASE_GATES_VERIFIED`
 - 证据：A7真实27B三任务30轮中，训练提案30/30均带`parse_error`：29次为`unsupported recipe parameter: balanced_sampling`，1次为多JSON；工业候选由确定性稳定Recipe训练，只有部署阶段30/30有效。旧发布审计只检查调用数和候选数，错误地给出PASS。
 - 根因：提示把Recipe固定字段与可覆盖字段并列展示，只要求`parameters`为对象；模型将`balanced_sampling`等固定字段回显，而注册表只接受epochs、学习率倍率、父平均和loss参数。
-- 缓解：提示显式限定四类override；解析器只允许与注册Recipe完全一致的loss/class_weighting/balanced_sampling回显并在执行前剥离，任何机制改写仍失败关闭；验收摘要记录`proposal_parse_error/proposal_evidence_valid`，发布审计新增硬门。需A8真实27B三任务Smoke和30轮证明后关闭。
+- 缓解：提示显式限定四类override；解析器只允许与注册Recipe完全一致的loss/class_weighting/balanced_sampling回显并在执行前剥离，任何机制改写仍失败关闭。A9发布审计要求提案Recipe与实际执行Recipe一致，并对C十轮全部产物执行MAE/RMSE/NASA有限值硬门；真实27B 30轮为0失败，独立复算与机器审计通过。

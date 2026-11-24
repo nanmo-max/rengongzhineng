@@ -6,9 +6,10 @@
 - 当前唯一执行任务：`FINAL-SPRINT-003 (IN_PROGRESS)`。P5-1A最终配置/种子/原始结果仍封存，`0.11.0rc1`归档哈希未变；P5-1C的尺度/噪声四项失败仍保留。
 - 稳定边界：全部历史RC和实验不改写；`0.5.0rc1`只作研究证据，不得上传。正式线从D-058开始只输出原生官方MLP续训checkpoint。D-090仅授权一次镜像外正式部署Advisor SFT，不把Sampler或私有SDK装入正式镜像。
 - 官方试运行：O-PLATFORM-018证明`0.10.4rc2`的正式提案有效且结算15,146 Token，但30/30主动retain造成零候选；精确剩余次数仍以平台页面实时显示为准。
-- 当前没有获准上传的新正式候选。A7 `0.12.5rc1`（归档SHA-256 `330a8f32...c0688`）通过SDK/容器/父链/候选/预测门，但独立终审发现30/30真实27B训练提案均解析失败后执行确定性fallback，且C验收未声明NASA合同，故标记`DO_NOT_UPLOAD_AS_FINAL`。历史`0.11.0rc1`与全部旧RC保持冻结，不得覆盖。
-- 当前修复：统一Recipe描述与可覆盖参数契约，允许并剥离与注册Recipe完全一致的固定字段回显、拒绝真实机制改写；发布审计新增“训练提案实际执行”硬门；本地验收C合同改为`rmse_nasa`。相关41项测试通过，需从新提交构建A8并完成最小真实27B Smoke后才可重新跑30轮。
-- A7真实27B证据仍保留：60次调用、111,695/12,389 Token、B Pareto取舍和部署阶段30/30有效；但训练提案0/30有效，不能再写成完整双阶段Agent成功。SwanLab运行`https://swanlab.cn/@nanmo-max/BRACE-MSI/runs/lg73i7cn`只作为A7失败/混合历史记录，不绑定最终候选。
+- 当前本地正式候选为A9 `brace-msi:0.12.7rc1`，源码提交`fcb185e`，镜像ID`sha256:3cee598a...d9809`，`docker save`归档81,257,984字节、SHA-256 `f98cef29...5ba16`。发布审计全部PASS；平台实际导入、试运行和隐藏成绩仍未执行，不得写成官方通过或官方成绩。
+- A9与完成真实27B三任务十轮运行的A8为同一镜像ID及同一白名单内容树`9fe245f5...190a`；A9只在镜像外补强发布审计，新增“提案Recipe必须等于实际执行Recipe”和Engine十轮MAE/RMSE/NASA有限值硬门。证据复用关系有独立机器清单，不重新消费远程30轮预算。
+- 真实Qwen3.8-27B证据：A/B/C各10轮、60次调用、输入/输出Token `123,114/9,516`，训练提案30/30解析与证据有效、30/30实际执行、候选30/30。C十轮均含MAE/RMSE/NASA sum/mean。全仓回归`721 passed in 156.71s`；审计硬门增量11项通过。
+- SwanLab最终聚合记录：https://swanlab.cn/@nanmo-max/BRACE-MSI/runs/elucs19m 。只读API已确认FINISHED、30个事件点、30个Token点及A/B/C各10个主指标点；不含样本、标签、特征、权重、提示词、Sampler路径或凭据。A7 `lg73i7cn`与A8 `rjd5ensg`只保留为失败/不完整历史，禁止用于最终提交。
 
 ## 2026-11-20 最新试运行与修复边界
 
@@ -94,11 +95,11 @@
 
 ## 当前执行入口
 
-当前没有获准上传的正式候选。冻结`0.10.6rc1`归档`D:/brace-msi-first-principles-release/BRACE-MSI-0.10.6rc1-A1/harness.tar`仅作为Protocol RC保留，SHA-256 `F7518609974EAB3C156C07F6D0AA7CBFE6CF9253B43C5D20B3DC71B4C91D89CB`；其本地协议链通过但选择一致性负向测试失败，标记`DO_NOT_UPLOAD_AS_FINAL`。完整结论见[RELEASE-COMPATIBILITY-AUDIT-001](results/RELEASE-COMPATIBILITY-AUDIT-001.md)。
+当前本地获准上传候选为A9 `D:/brace-msi-release/COMPETITION-CORE-RC-002-A9/harness.tar`，SHA-256 `F98CEF296A69768018CFB840938F1ACD89B49FD2044E72CD3CC4D968C135BA16`；其状态仅为`LOCAL_RELEASE_READY`，平台导入和试运行仍需外部确认。历史`0.10.6rc1`只作为Protocol RC保留并继续标记`DO_NOT_UPLOAD_AS_FINAL`。
 
 正式路线、已知能力与未知边界见[FORMAL_ROUTE.md](FORMAL_ROUTE.md)。实验必须遵守[EXPERIMENT_PROTOCOL.md](EXPERIMENT_PROTOCOL.md)。
 
-提交材料入口见[SUBMISSION_CHECKLIST.md](SUBMISSION_CHECKLIST.md)。现有公开源码`codex/native-competitive-rc`和SwanLab项目`brace-msi-platform-native`都是历史版本证据，尚未与0.10.2冻结提交绑定；正式平台验证后必须更新为同一提交、镜像哈希和真实训练记录，不能把旧链接直接写成0.10.2完成证据。
+提交材料入口见[SUBMISSION_CHECKLIST.md](SUBMISSION_CHECKLIST.md)。A9最终SwanLab链接为`https://swanlab.cn/@nanmo-max/BRACE-MSI/runs/elucs19m`；源码分支必须推送到包含`fcb185e`或其后续仅文档提交的公开远端，并在材料中明确镜像运行内容绑定提交`fcb185e`。
 
 ## 外部阻塞
 
