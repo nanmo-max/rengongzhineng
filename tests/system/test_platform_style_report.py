@@ -283,3 +283,89 @@ def test_corrected_report_uses_gate_metrics_and_single_frozen_confirmation() -> 
     assert "候选模型Gate" in output
     assert "0.500000" in output
     assert "公开validation仅在十轮策略冻结后评估一次，未用于选择轮次" in output
+
+
+def test_workspace_v2_acceptance_renders_each_round_from_machine_receipts(tmp_path: Path) -> None:
+    import json
+
+    rounds = []
+    profile_root = tmp_path / "A"
+    for index in range(1, 11):
+        final_parent = index == 10
+        rounds.append(
+            {
+                "round_index": index,
+                "selected_artifact_id": f"candidate-A-{index}",
+                "model_call_ids": [f"proposal-{index}", f"deploy-{index}"],
+                "candidate_submitted": True,
+                "parent_metrics": (
+                    {"accuracy": 0.83, "macro_f1": 0.73}
+                    if final_parent
+                    else {"accuracy": 0.80, "macro_f1": 0.70}
+                ),
+                "candidate_metrics": (
+                    {"accuracy": 0.81, "macro_f1": 0.71}
+                    if final_parent
+                    else {"accuracy": 0.82, "macro_f1": 0.72}
+                ),
+                "executed_recipe_id": "class_weighted_current_fast",
+                "applied_role": "parent" if final_parent else "candidate",
+                "selection_reason": "candidate is better on the same scope",
+            }
+        )
+        state = profile_root / f"round-{index:02d}-state"
+        state.mkdir(parents=True)
+        (state / "round-receipt.json").write_text(
+            json.dumps(
+                {
+                    "round_index": index,
+                    "task_profile": {"validation_count": 100},
+                    "experiment_proposal": {"hypothesis": f"hypothesis-{index}"},
+                    "timing": {
+                        "candidate_train_eval_submit_seconds": 0.25,
+                        "observed_seconds_before_state_rpc": 1.5,
+                    },
+                    "artifact_evaluations": [
+                        {
+                            "role": "candidate",
+                            "resource_evidence": {
+                                "cpu_seconds": 0.20,
+                                "wall_seconds": 0.25,
+                                "peak_rss_bytes": 1024,
+                            },
+                        }
+                    ],
+                }
+            ),
+            encoding="utf-8",
+        )
+    source = {
+        "format": "brace-msi.workspace-v2-acceptance.v1",
+        "scope": "local_protocol_only_not_official_score",
+        "image": "brace-msi:test",
+        "valid": True,
+        "profiles": {
+            "A": {
+                "rounds": rounds,
+                "round_count": 10,
+                "model_call_count": 20,
+                "prediction_smoke_rows": 5,
+                "final_artifact_id": "candidate-A-10",
+            }
+        },
+    }
+
+    result = MODULE.build_platform_style_report(source, source_root=tmp_path)
+
+    assert result["evidence_boundary"] == "workspace_v2_protocol_acceptance_reuses_public_validation"
+    task = result["tasks"][0]
+    assert task["display_name"] == "A · 气体传感器漂移分类"
+    assert task["completed_rounds"] == 10
+    assert task["runtime_seconds"] == 15.0
+    assert task["cpu_seconds"] == 2.0
+    assert task["rounds"][0]["experiment_record"]["hypothesis"] == "hypothesis-1"
+    assert task["rounds"][0]["experiment_record"]["advisor"]["source"] == "local_host_gateway_substitute"
+    assert task["final_confirmation_metrics"] == [
+        {"key": "accuracy", "label": "Accuracy · 准确率", "value": 0.83},
+        {"key": "macro_f1", "label": "Macro-F1 · 宏平均F1", "value": 0.73},
+    ]

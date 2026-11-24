@@ -274,12 +274,146 @@ def _build_corrected_tasks(source: dict[str, Any]) -> list[dict[str, Any]]:
     return tasks
 
 
-def build_platform_style_report(source: dict[str, Any]) -> dict[str, Any]:
+def _workspace_receipt(source_root: Path | None, profile: str, round_index: int) -> dict[str, Any]:
+    if source_root is None:
+        return {}
+    path = source_root / profile / f"round-{round_index:02d}-state" / "round-receipt.json"
+    if not path.is_file():
+        return {}
+    value = json.loads(path.read_text(encoding="utf-8"))
+    return value if isinstance(value, dict) else {}
+
+
+def _workspace_round_record(
+    profile: str, row: dict[str, Any], receipt: dict[str, Any]
+) -> dict[str, Any]:
+    task_kind = "classification" if profile == "A" else "regression"
+    role = str(row.get("applied_role") or "parent")
+    resources = {}
+    for evaluation in receipt.get("artifact_evaluations", ()):
+        if isinstance(evaluation, dict) and evaluation.get("role") == "candidate":
+            candidate_resources = evaluation.get("resource_evidence")
+            if isinstance(candidate_resources, dict):
+                resources = candidate_resources
+            break
+    timing = receipt.get("timing") if isinstance(receipt.get("timing"), dict) else {}
+    proposal = (
+        receipt.get("experiment_proposal")
+        if isinstance(receipt.get("experiment_proposal"), dict)
+        else {}
+    )
+    execution = (
+        receipt.get("candidate_execution")
+        if isinstance(receipt.get("candidate_execution"), dict)
+        else {}
+    )
+    index = int(row["round_index"])
+    return {
+        "round": index,
+        "adaptation_metrics": _metric_rows(task_kind, row.get("parent_metrics") or {}),
+        "candidate_metrics": _metric_rows(task_kind, row.get("candidate_metrics") or {}),
+        "model_selection": {
+            "candidate": "采用本轮模型",
+            "history": "回滚到历史稳定模型",
+        }.get(role, "候选未采用，保留父模型"),
+        "experiment_record": {
+            "history": "首轮：读取父模型与当前合法数据" if index == 1 else f"读取至第{index - 1}轮的聚合实验历史",
+            "hypothesis": str(proposal.get("hypothesis") or "本地协议宿主未记录结构化假设"),
+            "modification": {
+                "action": str(row.get("executed_recipe_id") or "not_recorded"),
+                "epochs": int(execution.get("epochs", 0) or 0),
+                "learning_rate": execution.get("effective_learning_rate"),
+                "training_sample_count": int(execution.get("training_samples", 0) or 0),
+            },
+            "advisor": {
+                "source": "local_host_gateway_substitute",
+                "input_tokens": 0,
+                "output_tokens": 0,
+            },
+            "gate": {
+                "reason": str(row.get("selection_reason") or "not_recorded"),
+                "deployed": role == "candidate",
+            },
+            "resources": {
+                "cpu_seconds": float(resources.get("cpu_seconds", 0.0) or 0.0),
+                "runtime_seconds": float(timing.get("observed_seconds_before_state_rpc", 0.0) or 0.0),
+                "peak_rss_bytes": int(resources.get("peak_rss_bytes", 0) or 0),
+            },
+        },
+    }
+
+
+def _build_workspace_tasks(source: dict[str, Any], source_root: Path | None) -> list[dict[str, Any]]:
+    tasks: list[dict[str, Any]] = []
+    profiles = source.get("profiles")
+    if not isinstance(profiles, dict):
+        raise ValueError("workspace acceptance profiles are required")
+    for profile, raw in sorted(profiles.items()):
+        if not isinstance(raw, dict):
+            continue
+        rows = raw.get("rounds")
+        if not isinstance(rows, list) or len(rows) != 10:
+            raise ValueError("workspace report requires exactly ten completed rounds")
+        receipts = [
+            _workspace_receipt(source_root, str(profile), int(row["round_index"]))
+            for row in rows
+        ]
+        first = rows[0]
+        last = rows[-1]
+        final_metrics = (
+            last.get("candidate_metrics")
+            if last.get("applied_role") == "candidate"
+            else last.get("parent_metrics")
+        ) or {}
+        task_kind = "classification" if profile == "A" else "regression"
+        round_records = [
+            _workspace_round_record(str(profile), row, receipt)
+            for row, receipt in zip(rows, receipts, strict=True)
+        ]
+        validation_count = 0
+        for receipt in receipts:
+            task_profile = receipt.get("task_profile")
+            if isinstance(task_profile, dict) and isinstance(task_profile.get("validation_count"), int):
+                validation_count = int(task_profile["validation_count"])
+                break
+        tasks.append(
+            {
+                "task_id": str(profile),
+                "display_name": OFFICIAL_TASK_NAMES.get(str(profile), str(profile)),
+                "task_kind": task_kind,
+                "status": "记录完整",
+                "completed_rounds": 10,
+                "total_rounds": 10,
+                "final_adopted_model": str(raw.get("final_artifact_id") or "未记录"),
+                "confirmation_sample_count": validation_count,
+                "evaluation_sample_label": "重复公开validation样本",
+                "metric_heading": "最终链模型公开validation指标（仅协议复演）",
+                "round_metric_heading": "同一公开validation的父/候选指标",
+                "cpu_seconds": sum(
+                    row["experiment_record"]["resources"]["cpu_seconds"] for row in round_records
+                ),
+                "runtime_seconds": sum(
+                    row["experiment_record"]["resources"]["runtime_seconds"] for row in round_records
+                ),
+                "final_confirmation_metrics": _metric_rows(task_kind, final_metrics),
+                "initial_confirmation_metrics": _metric_rows(task_kind, first.get("parent_metrics") or {}),
+                "rounds": round_records,
+            }
+        )
+    return tasks
+
+
+def build_platform_style_report(
+    source: dict[str, Any], *, source_root: Path | None = None
+) -> dict[str, Any]:
     _assert_no_secrets(source)
     source_format = source.get("format")
     historical = source_format == "brace-msi.local-platform-report-simulation.v1"
     corrected = source_format == "brace-msi.local-platform-report-simulation.v2"
-    if corrected:
+    workspace_acceptance = source_format == "brace-msi.workspace-v2-acceptance.v1"
+    if workspace_acceptance:
+        tasks = _build_workspace_tasks(source, source_root)
+    elif corrected:
         tasks = _build_corrected_tasks(source)
     elif historical:
         tasks = _build_historical_tasks(source)
@@ -316,14 +450,18 @@ def build_platform_style_report(source: dict[str, Any]) -> dict[str, Any]:
         "format": "brace-msi.platform-style-local-report.v1",
         "source_experiment_id": source.get("experiment_id", "PLATFORM-REPORT-SIM-001"),
         "evidence_boundary": (
-            "single_frozen_public_validation_not_used_for_selection"
+            "workspace_v2_protocol_acceptance_reuses_public_validation"
+            if workspace_acceptance
+            else "single_frozen_public_validation_not_used_for_selection"
             if corrected
             else "repeated_public_validation_selection_contaminated_interface_demo_only"
             if historical
             else "local_confirmation_not_official_hidden_test"
         ),
         "boundary_text": (
-            "逐轮仅展示当前批次Gate证据；公开validation仅在十轮策略冻结后评估一次，未用于选择轮次。该validation历史已暴露，因此仍不是独立测试、官方隐藏测试或官方评分。"
+            "该报告来自精确Docker镜像的workspace v2本地协议验收。十轮重复使用同一公开validation进行接口与选择测试，数值存在选择污染，只能证明训练、选择、回滚和资源边界可运行，不能作为独立泛化、隐藏测试或官方成绩。"
+            if workspace_acceptance
+            else "逐轮仅展示当前批次Gate证据；公开validation仅在十轮策略冻结后评估一次，未用于选择轮次。该validation历史已暴露，因此仍不是独立测试、官方隐藏测试或官方评分。"
             if corrected
             else "旧V1报告对同一公开validation重复评估并据此挑选轮次，存在验证集选择污染；只保留为界面和协议演示，不得作为性能或泛化证据。"
             if historical
@@ -331,7 +469,7 @@ def build_platform_style_report(source: dict[str, Any]) -> dict[str, Any]:
         ),
         "official_score": False,
         "official_trial_consumed": bool(source.get("official_trial_consumed", False)),
-        "advisor_model": source.get("advisor_model"),
+        "advisor_model": "local_host_gateway_substitute" if workspace_acceptance else source.get("advisor_model"),
         "input_tokens": int(source.get("input_tokens", 0)),
         "output_tokens": int(source.get("output_tokens", 0)),
         "tasks": tasks,
@@ -432,7 +570,7 @@ details summary{cursor:pointer;font-weight:600}.record{margin-top:12px;padding:1
 
 def render_existing_report(input_path: Path, output_dir: Path) -> tuple[Path, Path]:
     source = json.loads(input_path.read_text(encoding="utf-8"))
-    report = build_platform_style_report(source)
+    report = build_platform_style_report(source, source_root=input_path.parent)
     output_dir.mkdir(parents=True, exist_ok=True)
     json_path = output_dir / "platform-style-report.json"
     html_path = output_dir / "platform-style-report.html"
