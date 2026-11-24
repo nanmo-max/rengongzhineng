@@ -10,6 +10,7 @@
 - 生成DOCX与9页A4 PDF；Word可打开并导出、DOCX ZIP及13个XML部件可解析、PDF可提取6927字符，旧`0.11.0rc1`/Qwen3.5-4B/旧镜像哈希均未出现。九页逐页渲染检查未发现裁切、重叠或不可读表格。
 - DOCX：`artifacts/submission/BRACE-MSI-0.12.7rc1-作品说明书.docx`，SHA-256 `E3B0487732DF64B68F6582BF1036D99401800539A69C09783D475E784B783E62`。
 - PDF：`output/pdf/BRACE-MSI-0.12.7rc1-作品说明书.pdf`，SHA-256 `0334F7BEE42F6D8F448707D4F4802DC3CAC36D689DB69ECD8D5DB090C2A77CD4`。
+- 将最终PDF/DOCX复制到A9发布目录并生成`submission-bundle-manifest.json`，绑定Harness、发布清单、发布审计、两份作品文档及平台样式HTML/JSON报告；7/7逐文件哈希复算一致，清单SHA-256 `0562FE1FE97D5E1D035E1CEF3B7CF672CA1A8AA11EE752B6D3010D23D4269A98`。清单不包含密钥，并明确尚未平台导入或校验。
 - 本次未运行工业训练、未调用远程模型、未构建或修改Docker、未上传平台、未填写密钥、未消耗试运行次数。
 
 ## 2026-11-21：SUBMISSION-DOC-001

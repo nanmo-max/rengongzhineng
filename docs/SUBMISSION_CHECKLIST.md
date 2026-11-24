@@ -22,6 +22,8 @@
 
 作品说明书PDF SHA-256：`0334F7BEE42F6D8F448707D4F4802DC3CAC36D689DB69ECD8D5DB090C2A77CD4`。
 
+提交包机器清单：`D:/brace-msi-release/COMPETITION-CORE-RC-002-A9/submission-bundle-manifest.json`，SHA-256 `0562FE1FE97D5E1D035E1CEF3B7CF672CA1A8AA11EE752B6D3010D23D4269A98`。该清单同时绑定Harness、发布清单、发布审计、PDF、DOCX及本地平台样式报告；状态显式为`NOT_YET_IMPORTED_OR_VALIDATED`。
+
 ## 镜像与文档核对
 
 - 上传的是`docker save`产生的`harness.tar`，不是源码ZIP、Dockerfile或`docker export`文件；
