@@ -213,9 +213,9 @@
 ## R-068 真实27B提案证据与正式平台网关证据混淆
 
 - 等级：High
-- 状态：`PARTIALLY_MITIGATED_PLATFORM_RECEIPT_OPEN`
+- 状态：`LOCALLY_MITIGATED_OFFICIAL_PLATFORM_RECEIPT_OPEN`
 - 风险：直接PyTRiO采样证明Qwen3.8-27B能选择稳定Recipe，但正式评测通过官方`rnd.model()`；本地30轮协议复演使用宿主替身。把两份证据合并成“30轮真实27B已通过”会形成虚假声明。
-- 缓解：收据分开登记：`QWEN38-RECIPE-PROBE-001-A2`只证明3次真实远程提案，`FORMAL-STABLE-30R-001-A1`只证明30轮协议执行；正式平台通过前，真实`call_id`、Token计量和网关行为继续标记外部待验。
+- 缓解：A7已通过镜像外PyTRiO宿主网关完成三任务30轮、60次真实27B调用并保存Token/哈希/本地关联收据；正式镜像仍只调用`rnd.model()`且不含PyTRiO。SDK未暴露的服务端单请求ID保持`null`，本地关联ID不冒充官方call ID。正式平台call ID、计量和宿主提示拼接仍待真实平台验证。
 
 ## R-069 稳定Recipe对开发代理流过拟合
 
@@ -227,6 +227,14 @@
 ## R-070 单一主指标覆盖官方多指标取舍
 
 - 等级：Critical
-- 状态：`CODE_MITIGATED_IMAGE_REVALIDATION_PENDING`
+- 状态：`CLOSED_LOCAL_A7_OFFICIAL_PLATFORM_OPEN`
 - 证据：真实27B B单轮Smoke中候选RMSE `681.1598→678.2699`、MAE `563.1058→577.4432`，Qwen明确请求保留父模型，但旧ArtifactSelector按主RMSE强制部署。
-- 缓解：D-108把选择限制为全部声明官方指标的Pareto非支配集合；Qwen可决定非支配取舍，Harness仅覆盖硬失败、作用域错误、支配和完全同指标资源浪费。专项119项通过；需在新镜像中重放B真实27B单轮并完成三任务连续验收后才能关闭风险。
+- 缓解：D-108把选择限制为全部声明官方指标的Pareto非支配集合；A7 B单轮真实27B复验中候选RMSE改善但MAE恶化，Qwen保留父模型且Harness未再覆盖；三任务真实27B 30轮、黑盒错误部署/历史回滚和发布审计均通过。正式平台仍需核对官方返回指标合同，但本地实现风险已关闭。
+
+## R-071 真实Qwen训练提案调用存在但全部回退
+
+- 等级：Critical
+- 状态：`REALIZED_A7_REJECTED_FIX_TESTED_A8_PENDING`
+- 证据：A7真实27B三任务30轮中，训练提案30/30均带`parse_error`：29次为`unsupported recipe parameter: balanced_sampling`，1次为多JSON；工业候选由确定性稳定Recipe训练，只有部署阶段30/30有效。旧发布审计只检查调用数和候选数，错误地给出PASS。
+- 根因：提示把Recipe固定字段与可覆盖字段并列展示，只要求`parameters`为对象；模型将`balanced_sampling`等固定字段回显，而注册表只接受epochs、学习率倍率、父平均和loss参数。
+- 缓解：提示显式限定四类override；解析器只允许与注册Recipe完全一致的loss/class_weighting/balanced_sampling回显并在执行前剥离，任何机制改写仍失败关闭；验收摘要记录`proposal_parse_error/proposal_evidence_valid`，发布审计新增硬门。需A8真实27B三任务Smoke和30轮证明后关闭。

@@ -26,6 +26,9 @@ def _write_fixture(root: Path, *, rounds: int = 2) -> Path:
                     "executed_recipe_id": "native_current",
                     "selection_reason": "fixture selection",
                     "model_call_ids": [f"call-{task_id}-{index}-1"],
+                    "host_model_receipts": [
+                        {"input_tokens": 100 + index, "output_tokens": 20 + index}
+                    ],
                 }
             )
             state = root / task_id / f"round-{index:02d}-state"
@@ -78,6 +81,8 @@ def test_build_formal_observation_binds_rounds_to_source_and_resources(tmp_path:
     assert records[0]["primary_metric"] == pytest.approx(0.72)
     assert records[1]["primary_metric"] == pytest.approx(0.7)
     assert records[0]["cpu_seconds"] == pytest.approx(0.5)
+    assert records[0]["input_tokens"] == 101
+    assert records[0]["output_tokens"] == 21
     assert records[0]["record_id"] == "formal-observation:A:1"
     assert "model_call_ids" not in records[0]
 

@@ -189,3 +189,18 @@ def test_start_frame_and_local_response_use_selected_host_model() -> None:
 
     assert frame["model_name"] == model_name
     assert response["model"] == model_name
+
+    engine_parent = {
+        **parent,
+        "artifact_id": "baseline-C",
+    }
+    engine_frame = _start_frame(
+        "C",
+        1,
+        engine_parent,
+        None,
+        [engine_parent],
+        model_name=model_name,
+    )
+    assert engine_frame["task_contract"]["metric"] == "rmse_nasa"
+    assert engine_frame["task_contract"]["metric_direction"] == "lower"

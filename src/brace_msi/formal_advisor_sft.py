@@ -31,8 +31,8 @@ FORMAL_ADVISOR_EVALUATION_SHA256 = "a41aabeb37e8e2642cf10eeba1d3a91c308cb67dbbbe
 
 COMPETITION_AGENT_FORMAT = "brace-msi.competition-agent-sft.v1"
 COMPETITION_AGENT_SEED = 20261121
-COMPETITION_AGENT_TRAIN_SHA256 = "8aa31cc91db02a501e1cf72b2eec6a0d696d2549af192ba1a6571418fa1d0192"
-COMPETITION_AGENT_EVALUATION_SHA256 = "b5bb211cd8febafbe84522c1c2b6816bf071795fa99a94c051d04a11d4638eff"
+COMPETITION_AGENT_TRAIN_SHA256 = "a763a6b5efa7973bca31ceb8ee773d384bd6e8931bf8ea381c26e666c32c5c5d"
+COMPETITION_AGENT_EVALUATION_SHA256 = "3e5921d13d4f09887e9570b00d13e7bb635055944f18bf390c6e3f447d327643"
 COMPETITION_SOURCE_SUMMARIES = (
     (
         "core-a1",
@@ -511,6 +511,7 @@ def _competition_profile(task_kind: str, variant: int) -> TaskProfile:
         task=task_kind,
         primary_metric="macro_f1" if classification else "rmse",
         metric_direction="higher" if classification else "lower",
+        auxiliary_metrics=("accuracy",) if classification else ("mae",),
         feature_count=6 + variant % 4,
         class_count=3 + variant % 3 if classification else 0,
         sample_count=80 + variant,

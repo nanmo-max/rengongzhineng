@@ -109,6 +109,11 @@ def audit_competition_release(
     rounds = [row for profile in profiles.values() if isinstance(profile, dict) for row in profile.get("rounds", [])]
     calls_ok = bool(rounds) and all(len(row.get("model_call_ids", [])) >= 2 for row in rounds)
     candidates_ok = bool(rounds) and all(row.get("candidate_submitted") is True for row in rounds)
+    proposals_ok = bool(rounds) and all(
+        row.get("proposal_parse_error") in (None, "")
+        and row.get("proposal_evidence_valid") is True
+        for row in rounds
+    )
     required_profiles = {"A", "B", "C"}
     profiles_ok = bool(profiles) and not duplicate_profiles and all(
         isinstance(profile, dict)
@@ -130,6 +135,18 @@ def audit_competition_release(
         ),
         "dual_model_calls": _gate(calls_ok, {"rounds": len(rounds)}),
         "every_round_candidate": _gate(candidates_ok, {"rounds": len(rounds)}),
+        "training_proposals_executed": _gate(
+            proposals_ok,
+            {
+                "rounds": len(rounds),
+                "failed": sum(
+                    1
+                    for row in rounds
+                    if row.get("proposal_parse_error") not in (None, "")
+                    or row.get("proposal_evidence_valid") is not True
+                ),
+            },
+        ),
         "wrong_deploy_rejected": _gate(blackbox.get("wrong_deploy_accepted") is False, blackbox.get("wrong_deploy_accepted")),
         "history_rollback": _gate(blackbox.get("history_rollback_valid") is True, blackbox.get("history_rollback_valid")),
         "model_reload": _gate(blackbox.get("model_reload_predictions_equal") is True, blackbox.get("model_reload_predictions_equal")),

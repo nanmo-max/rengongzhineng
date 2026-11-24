@@ -297,6 +297,10 @@ def test_workspace_v2_acceptance_renders_each_round_from_machine_receipts(tmp_pa
                 "round_index": index,
                 "selected_artifact_id": f"candidate-A-{index}",
                 "model_call_ids": [f"proposal-{index}", f"deploy-{index}"],
+                "host_model_receipts": [
+                    {"provider": "pytrio", "input_tokens": 100, "output_tokens": 20},
+                    {"provider": "pytrio", "input_tokens": 110, "output_tokens": 25},
+                ],
                 "candidate_submitted": True,
                 "parent_metrics": (
                     {"accuracy": 0.83, "macro_f1": 0.73}
@@ -343,12 +347,16 @@ def test_workspace_v2_acceptance_renders_each_round_from_machine_receipts(tmp_pa
         "format": "brace-msi.workspace-v2-acceptance.v1",
         "scope": "local_protocol_only_not_official_score",
         "image": "brace-msi:test",
+        "model_name": "Qwen/Qwen3.8-27B",
+        "model_provider": "pytrio",
         "valid": True,
         "profiles": {
             "A": {
                 "rounds": rounds,
                 "round_count": 10,
                 "model_call_count": 20,
+                "input_tokens": 2100,
+                "output_tokens": 450,
                 "prediction_smoke_rows": 5,
                 "final_artifact_id": "candidate-A-10",
             }
@@ -364,8 +372,24 @@ def test_workspace_v2_acceptance_renders_each_round_from_machine_receipts(tmp_pa
     assert task["runtime_seconds"] == 15.0
     assert task["cpu_seconds"] == 2.0
     assert task["rounds"][0]["experiment_record"]["hypothesis"] == "hypothesis-1"
-    assert task["rounds"][0]["experiment_record"]["advisor"]["source"] == "local_host_gateway_substitute"
+    advisor = task["rounds"][0]["experiment_record"]["advisor"]
+    assert advisor == {"source": "pytrio", "input_tokens": 210, "output_tokens": 45}
+    assert result["advisor_model"] == "Qwen/Qwen3.8-27B"
+    assert result["input_tokens"] == 2100
+    assert result["output_tokens"] == 450
     assert task["final_confirmation_metrics"] == [
         {"key": "accuracy", "label": "Accuracy · 准确率", "value": 0.83},
         {"key": "macro_f1", "label": "Macro-F1 · 宏平均F1", "value": 0.73},
     ]
+
+    local_source = json.loads(json.dumps(source))
+    local_source.pop("model_name")
+    local_source.pop("model_provider")
+    local_source["profiles"]["A"].pop("input_tokens")
+    local_source["profiles"]["A"].pop("output_tokens")
+    for row in local_source["profiles"]["A"]["rounds"]:
+        row.pop("host_model_receipts")
+    local = MODULE.build_platform_style_report(local_source, source_root=tmp_path)
+    assert local["advisor_model"] == "local_host_gateway_substitute"
+    assert local["input_tokens"] == 0
+    assert local["output_tokens"] == 0

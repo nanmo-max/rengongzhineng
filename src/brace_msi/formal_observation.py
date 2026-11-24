@@ -59,6 +59,20 @@ def _metric_contract(parent_metrics: Mapping[str, Any]) -> tuple[str, str, str]:
     raise ValueError("unsupported acceptance metric contract")
 
 
+def _model_tokens(round_record: Mapping[str, Any]) -> tuple[int, int]:
+    receipts = round_record.get("host_model_receipts")
+    if not isinstance(receipts, list):
+        return 0, 0
+    input_tokens = 0
+    output_tokens = 0
+    for receipt in receipts:
+        if not isinstance(receipt, Mapping):
+            continue
+        input_tokens += max(0, int(receipt.get("input_tokens", 0)))
+        output_tokens += max(0, int(receipt.get("output_tokens", 0)))
+    return input_tokens, output_tokens
+
+
 def build_formal_observation(
     acceptance_path: Path,
     output_dir: Path,
@@ -99,6 +113,7 @@ def build_formal_observation(
             deployed_candidate = item.get("applied_role") == "candidate"
             selected = candidate if deployed_candidate else parent
             resources, training_samples = _candidate_resources(root, task_id, index)
+            input_tokens, output_tokens = _model_tokens(item)
             record = {
                 "task_id": task_id,
                 "task_kind": task_kind,
@@ -117,6 +132,8 @@ def build_formal_observation(
                 "candidate_count": index,
                 "status": str(item.get("applied_role", "unknown")),
                 "training_started": True,
+                "input_tokens": input_tokens,
+                "output_tokens": output_tokens,
             }
             spool.record_once(f"formal-observation:{task_id}:{index}", "round_complete", record)
         task_counts[task_id] = len(rounds)

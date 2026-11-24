@@ -215,6 +215,35 @@ def _recipe_descriptors(profile: TaskProfile, registry: RecipeRegistry) -> list[
     ]
 
 
+def _normalize_proposal_parameters(
+    recipe_id: str,
+    parameters: Mapping[str, Any],
+    profile: TaskProfile,
+    registry: RecipeRegistry,
+) -> dict[str, Any]:
+    """Drop harmless echoes of immutable recipe fields, reject real overrides."""
+
+    recipe = next(
+        (item for item in registry.available(profile) if item.recipe_id == recipe_id),
+        None,
+    )
+    if recipe is None:
+        raise ValueError("unknown or task-incompatible recipe")
+    normalized = dict(parameters)
+    fixed = {
+        "loss": recipe.loss,
+        "class_weighting": recipe.class_weighting,
+        "balanced_sampling": recipe.balanced_sampling,
+    }
+    for name, expected in fixed.items():
+        if name not in normalized:
+            continue
+        actual = normalized.pop(name)
+        if type(actual) is not type(expected) or actual != expected:
+            raise ValueError(f"fixed recipe field cannot be overridden: {name}")
+    return normalized
+
+
 def request_experiment_proposal(
     rnd: Any,
     profile: TaskProfile,
@@ -267,6 +296,8 @@ def request_experiment_proposal(
             rnd,
             "Required fields: recipe_id (one available recipe), parameters (JSON object), "
             "history_policy (the selected recipe's declared policy), hypothesis and rationale (nonempty strings). "
+            "parameters may contain only epochs, learning_rate_multiplier, parent_average_alpha, or loss_parameters; "
+            "omit fixed descriptor fields loss, class_weighting, and balanced_sampling. "
             + (
                 "Also required: evidence_refs (nonempty array of fact_id or hypothesis_id from diagnosis_evidence), "
                 "expected_metric_effect and risk (nonempty strings). "
@@ -298,7 +329,10 @@ def request_experiment_proposal(
                 raise ValueError("risk is required")
         if not isinstance(recipe_id, str) or not isinstance(parameters, Mapping):
             raise ValueError("recipe_id and parameters are required")
-        recipe = registry.resolve(recipe_id, profile, parameters)
+        normalized_parameters = _normalize_proposal_parameters(
+            recipe_id, parameters, profile, registry
+        )
+        recipe = registry.resolve(recipe_id, profile, normalized_parameters)
         if history_policy != recipe.history_policy:
             raise ValueError("history_policy differs from the registered recipe")
         if not isinstance(hypothesis, str) or not hypothesis.strip():
@@ -307,7 +341,7 @@ def request_experiment_proposal(
             raise ValueError("experiment rationale is required")
         return ExperimentProposal(
             recipe.recipe_id,
-            dict(parameters),
+            normalized_parameters,
             recipe.history_policy,
             hypothesis.strip(),
             rationale.strip(),

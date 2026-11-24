@@ -33,7 +33,7 @@ PACKAGES = {
 TASKS = {
     "A": ("classification", "macro_f1", "higher"),
     "B": ("regression", "rmse", "lower"),
-    "C": ("regression", "rmse", "lower"),
+    "C": ("regression", "rmse_nasa", "lower"),
     "opaque-classification": ("classification", "macro_f1", "higher"),
     "opaque-regression": ("regression", "rmse", "lower"),
 }
@@ -699,6 +699,12 @@ def run(
                     "parent_metrics": record.get("parent_metrics"),
                     "candidate_metrics": record.get("candidate_metrics"),
                     "executed_recipe_id": record.get("executed_recipe_id"),
+                    "proposal_parse_error": (
+                        (record.get("experiment_proposal") or {}).get("parse_error")
+                    ),
+                    "proposal_evidence_valid": (
+                        (record.get("agent_evidence") or {}).get("all_refs_valid")
+                    ),
                     "selection_reason": record.get("selection", {}).get("reason"),
                     "selection": record.get("selection"),
                     "metric_contract": record.get("metric_contract"),

@@ -1,5 +1,13 @@
 # 新会话恢复与交接
 
+## 2026-11-24 FINAL-SPRINT-003 A7恢复入口（当前）
+
+1. 当前分支`codex/final-sprint-003`；实时任务仍以`STATUS.md`和`TASKS.md`顶部为准。冻结`0.11.0rc1`及历史失败证据均未覆盖。
+2. A7 `0.12.5rc1`已被独立终审否决为最终候选：SDK/容器/父链/候选/预测门通过，但真实27B训练提案30/30解析失败后fallback，且C未覆盖NASA合同。归档`330a8f32...c0688`与SwanLab `lg73i7cn`只保留为失败/混合历史，禁止上传或绑定最终版本。
+3. 当前源码已测试先行修复Recipe固定字段回显与提示契约，发布审计新增训练提案实际执行门，C本地验收合同改为`rmse_nasa`；相关41项通过。尚未提交、构建A8或运行新远程验收。
+4. 正式提交仍选择基础模型`Qwen/Qwen3.8-27B`，不填写Sampler路径。工业`checkpoint.npz`由镜像内CPU训练器从平台父checkpoint续训，不由PyTRiO训练。
+5. 下一步：提交修复→构建A8→A/B/C各一轮真实27B Smoke；只有提案3/3无parse_error、C含NASA合同后才运行30轮、SwanLab和独立终审。不得继续算法搜索、重开受限数据或消耗官方试运行。
+
 ## 2026-11-22 P5-1C限时修复入口（当前）
 
 1. 当前分支`codex/p5-implementation-001`；P5-1C已结束并停止，结果入口为`docs/results/P5-1C-IMPLEMENTATION-REPORT.md`和机器JSON。

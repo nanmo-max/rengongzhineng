@@ -1038,3 +1038,14 @@ Gas和C-MAPSS已完成只读审计、代理开发训练和预注册实验；所�
 - 镜像外PyTRiO SDK桥接随后对A/B/C各完成一轮真实`Qwen/Qwen3.8-27B`双阶段调用。A输入/输出Token 2,615/432；B为2,687/417；C为2,690/390。收据仅保存本地关联ID、模型、Token、延迟及请求/响应哈希；SDK未暴露的服务端调用ID保持`null`，不伪造官方`call_id`。
 - A正确保留双指标退化候选；C正确部署MAE/RMSE均改善候选；B候选RMSE `681.1598→678.2699`但MAE `563.1058→577.4432`，Qwen请求保留父模型，旧词典序选择器强制部署，故本次B结果作为选择缺陷证据，不晋级。
 - 官方试运行0次；未调用SwanLab；未改原始数据、官方checkpoint或冻结RC。
+
+# 2026-11-24 COMPETITION-CORE-RC-002-A7 / QWEN38-SDK-30R-A1（INVALID_FINAL_CANDIDATE）
+
+- 目的：验证D-108多指标修复后的唯一正式候选能在官方SDK 1.0.2边界、4核4GB和真实Qwen3.8-27B宿主网关下完成三任务十轮，并形成发布/SwanLab证据；不使用官方试运行或隐藏数据。
+- 正式镜像：`D:/brace-msi-release/COMPETITION-CORE-RC-002-A7/harness.tar`；版本`0.12.5rc1`；源码提交`55cdeeb`；镜像ID`sha256:9342c94ada74b3096c4129e04c492f5ffdd42e0666949ae834f11aa5fb219839`；归档SHA-256 `330a8f32cf9fdcf62d116f7ea5fa05799d3dff65544c4fc38898f94bbe4c0688`。
+- B单轮复验：2次真实27B调用，输入/输出2,687/418 Token；候选RMSE `681.159833→678.2699`、MAE `563.105841→577.4432`，Qwen选择父模型且Pareto选择器正确执行，结果根`pytrio-sdk-smoke-B1/`。
+- 三任务30轮：`pytrio-sdk-30r/acceptance.json`，SHA-256 `0E43D0FE3AD31775F4F6E9F3CFFFEF960F356678CA6D5CA79D8052D993DD8228`；60次真实27B调用，输入/输出111,695/12,389 Token，每轮候选、父链、选择、重载和独立预测均完成。但终审确认训练提案30/30解析失败并回退，只有部署阶段有效；C合同还缺NASA。因此本实验是混合/失败证据，不是完整双阶段Agent通过。
+- 4核4GB本地严格替身验收：`acceptance-4c4g/acceptance.json`，SHA-256 `BC92EE6E709EB0B9722407D6B299CDBFE839AF1AC028A69802B65A126F472729`；30轮/60调用/每轮候选及资源门通过。
+- 黑盒：`blackbox/blackbox.json`，`wrong_deploy_accepted=false`、`history_rollback_valid=true`、重载预测一致。旧`release-audit.json valid=true`因未检查提案parse_error判定不足，已由R-071纠正，不得作为A7发布通过证据。
+- SwanLab：A7混合运行的30轮脱敏聚合观测已同步，公开链接`https://swanlab.cn/@nanmo-max/BRACE-MSI/runs/lg73i7cn`；保留为失败历史，不绑定最终候选。
+- 回归：Competition Core 119项、相关观察/SFT 14项、最终全仓719项通过；失败的旧SFT哈希与修复过程保留在测试输出和Git diff中。官方试运行0次。

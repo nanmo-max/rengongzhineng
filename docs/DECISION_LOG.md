@@ -310,3 +310,17 @@
 - 确定性边界：硬失败、指标非有限、验证作用域不一致、被另一artifact在全部声明指标上支配，或完全相同指标下消耗更多资源时，Harness必须覆盖Qwen请求。Qwen未给出合法选择时，才在非支配集合上使用合同主指标、辅助指标和资源的确定性回退。
 - 禁止：不得自创官方未给出的指标加权总分、百分比改善门或事后平台分数；不同验证作用域不得比较。
 - 依据：真实27B B单轮Smoke中候选RMSE改善但MAE恶化，Qwen请求保留父模型，旧选择器却按RMSE强制部署；A/C及既有错误部署反例仍要求支配/硬失败覆盖。Competition Core专项`119 passed`。
+
+## D-109：正式提交区分Agent模型与工业checkpoint权重（2026-11-24，LOCKED_RELEASE）
+
+- 决策：正式提交选择平台基础模型`Qwen/Qwen3.8-27B`作为Agent，不绑定未达到采用门或平台校验不稳定的持久化Sampler。PyTRiO只在镜像外验证/训练Agent并提供真实采样收据；正式平台运行由官方SDK的`rnd.model()`调用宿主模型服务。
+- 工业模型边界：A/B/C每轮产出的`checkpoint.npz`必须从平台提供的父checkpoint在4核4GB CPU环境真实续训、评估并部署/保留/回滚；不得用PyTRiO训练工业模型，也不得从头训练另一模型替代父checkpoint。
+- 记录边界：SwanLab记录工业模型训练、指标、资源、Token和选择的脱敏聚合；Sampler路径、API Key、逐样本数据和父/候选权重均不得写入公开记录或镜像。
+- 依据：官方提交页同时提供“基础模型”和“持久化Sampler微调权重”两种模型类型；官方SDK 1.0.2要求模型调用经宿主`rnd.model()`，而工业产物继续遵守父checkpoint和`checkpoint.npz`协议。A7正式镜像与本地真实27B宿主复演验证了该职责分离。
+
+## D-110：真实训练提案执行与Engine NASA合同属于发布硬门（2026-11-24，LOCKED_RELEASE)
+
+- 决策：正式发布不得只统计模型调用次数和候选数量；每轮训练提案必须无解析错误、证据引用有效且实际进入Recipe执行。任何确定性fallback都必须在收据中显式记录，并使“完整双阶段Agent”发布门失败。
+- Recipe契约：Qwen的`parameters`只允许覆盖`epochs`、`learning_rate_multiplier`、`parent_average_alpha`和`loss_parameters`。与注册Recipe完全一致的`loss/class_weighting/balanced_sampling`回显可安全剥离；任何实际机制改写继续失败关闭。
+- 指标契约：Engine端到端发布验收必须使用`rmse_nasa`，同时产生MAE、RMSE和NASA指标并经过多指标选择路径；仅验证RMSE/MAE不足以晋级。
+- 结果边界：A7因训练提案30/30 fallback和C缺NASA合同被否决；上述修复只有在新镜像A8真实27B Smoke、30轮、容器验收和独立终审全部通过后才能形成新正式候选。

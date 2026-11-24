@@ -36,7 +36,15 @@ def _evidence(tmp_path: Path) -> tuple[Path, Path, Path, Path]:
             "src/brace_formal/submission.py", "submission/harness.py",
         ]},
     }), encoding="utf-8")
-    rounds = [{"model_call_ids": ["proposal", "deployment"], "candidate_submitted": True} for _ in range(10)]
+    rounds = [
+        {
+            "model_call_ids": ["proposal", "deployment"],
+            "candidate_submitted": True,
+            "proposal_parse_error": None,
+            "proposal_evidence_valid": True,
+        }
+        for _ in range(10)
+    ]
     acceptance = tmp_path / "acceptance.json"
     acceptance.write_text(json.dumps({"valid": True, "profiles": {
         "A": {"rounds": rounds, "prediction_smoke_rows": 5},
@@ -83,6 +91,8 @@ def test_release_audit_fails_each_critical_boundary(tmp_path: Path) -> None:
     report["profiles"].pop("C")
     report["profiles"]["A"]["rounds"][0]["model_call_ids"] = ["one"]
     report["profiles"]["B"]["rounds"][0]["candidate_submitted"] = False
+    report["profiles"]["A"]["rounds"][1]["proposal_parse_error"] = "unsupported parameter"
+    report["profiles"]["A"]["rounds"][1]["proposal_evidence_valid"] = False
     acceptance.write_text(json.dumps(report), encoding="utf-8")
     blackbox.write_text(json.dumps({
         "wrong_deploy_accepted": True,
@@ -98,7 +108,7 @@ def test_release_audit_fails_each_critical_boundary(tmp_path: Path) -> None:
     expected_failed = {
         "source_binding", "formal_forbidden_content", "official_sdk_files",
         "acceptance_reports",
-        "dual_model_calls", "every_round_candidate",
+        "dual_model_calls", "every_round_candidate", "training_proposals_executed",
         "wrong_deploy_rejected", "history_rollback", "model_reload", "docker_save_archive",
     }
     assert expected_failed.issubset(

@@ -79,6 +79,60 @@ def test_unknown_task_proposal_is_executable_and_uses_no_participant_token_cap(t
     assert '"feature_count": 2' in prompt
     assert '"recommended_recipe_id": "class_weighted_current_fast"' in prompt
     assert '"auxiliary_metrics": ["accuracy"]' in prompt
+    assert "parameters may contain only" in prompt
+
+
+def test_proposal_accepts_exact_echo_of_fixed_recipe_descriptor_fields(tmp_path: Path) -> None:
+    from brace_formal.agent import request_experiment_proposal
+
+    rnd = AgentRound(
+        [
+            json.dumps(
+                {
+                    "recipe_id": "class_weighted_current_fast",
+                    "parameters": {
+                        "epochs": 3,
+                        "loss": "cross_entropy",
+                        "class_weighting": True,
+                        "balanced_sampling": False,
+                    },
+                    "history_policy": "current",
+                    "hypothesis": "continue the stable class-weighted recipe",
+                    "rationale": "the validated prior matches the current task contract",
+                }
+            )
+        ]
+    )
+
+    proposal = request_experiment_proposal(rnd, _profile(tmp_path), RecipeRegistry())
+
+    assert proposal.parse_error is None
+    assert proposal.recipe_id == "class_weighted_current_fast"
+    assert proposal.parameters == {"epochs": 3}
+
+
+def test_proposal_rejects_attempt_to_change_fixed_recipe_mechanism(tmp_path: Path) -> None:
+    from brace_formal.agent import request_experiment_proposal
+
+    rnd = AgentRound(
+        [
+            json.dumps(
+                {
+                    "recipe_id": "class_weighted_current_fast",
+                    "parameters": {"balanced_sampling": True},
+                    "history_policy": "current",
+                    "hypothesis": "change the fixed sampling mechanism",
+                    "rationale": "unsafe fixed-field override",
+                }
+            )
+        ]
+    )
+
+    proposal = request_experiment_proposal(rnd, _profile(tmp_path), RecipeRegistry())
+
+    assert proposal.parse_error is not None
+    assert "balanced_sampling" in proposal.parse_error
+    assert proposal.recipe_id == "class_weighted_current_fast"
 
 
 @pytest.mark.parametrize(

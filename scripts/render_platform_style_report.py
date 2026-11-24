@@ -285,7 +285,10 @@ def _workspace_receipt(source_root: Path | None, profile: str, round_index: int)
 
 
 def _workspace_round_record(
-    profile: str, row: dict[str, Any], receipt: dict[str, Any]
+    profile: str,
+    row: dict[str, Any],
+    receipt: dict[str, Any],
+    model_provider: str,
 ) -> dict[str, Any]:
     task_kind = "classification" if profile == "A" else "regression"
     role = str(row.get("applied_role") or "parent")
@@ -307,6 +310,20 @@ def _workspace_round_record(
         if isinstance(receipt.get("candidate_execution"), dict)
         else {}
     )
+    model_receipts = row.get("host_model_receipts")
+    if model_receipts is None:
+        model_receipts = []
+    if not isinstance(model_receipts, list) or any(
+        not isinstance(item, dict) for item in model_receipts
+    ):
+        raise ValueError("workspace model receipts must be a list of mappings")
+    receipt_providers = {
+        str(item.get("provider")) for item in model_receipts if item.get("provider")
+    }
+    if receipt_providers and receipt_providers != {model_provider}:
+        raise ValueError("workspace model receipt provider differs from acceptance provider")
+    input_tokens = sum(max(0, int(item.get("input_tokens", 0))) for item in model_receipts)
+    output_tokens = sum(max(0, int(item.get("output_tokens", 0))) for item in model_receipts)
     index = int(row["round_index"])
     return {
         "round": index,
@@ -326,9 +343,9 @@ def _workspace_round_record(
                 "training_sample_count": int(execution.get("training_samples", 0) or 0),
             },
             "advisor": {
-                "source": "local_host_gateway_substitute",
-                "input_tokens": 0,
-                "output_tokens": 0,
+                "source": model_provider,
+                "input_tokens": input_tokens,
+                "output_tokens": output_tokens,
             },
             "gate": {
                 "reason": str(row.get("selection_reason") or "not_recorded"),
@@ -348,6 +365,7 @@ def _build_workspace_tasks(source: dict[str, Any], source_root: Path | None) -> 
     profiles = source.get("profiles")
     if not isinstance(profiles, dict):
         raise ValueError("workspace acceptance profiles are required")
+    model_provider = str(source.get("model_provider") or "local_host_gateway_substitute")
     for profile, raw in sorted(profiles.items()):
         if not isinstance(raw, dict):
             continue
@@ -367,9 +385,21 @@ def _build_workspace_tasks(source: dict[str, Any], source_root: Path | None) -> 
         ) or {}
         task_kind = "classification" if profile == "A" else "regression"
         round_records = [
-            _workspace_round_record(str(profile), row, receipt)
+            _workspace_round_record(str(profile), row, receipt, model_provider)
             for row, receipt in zip(rows, receipts, strict=True)
         ]
+        input_tokens = sum(
+            int(row["experiment_record"]["advisor"]["input_tokens"])
+            for row in round_records
+        )
+        output_tokens = sum(
+            int(row["experiment_record"]["advisor"]["output_tokens"])
+            for row in round_records
+        )
+        if "input_tokens" in raw and int(raw["input_tokens"]) != input_tokens:
+            raise ValueError("workspace profile input token total differs from model receipts")
+        if "output_tokens" in raw and int(raw["output_tokens"]) != output_tokens:
+            raise ValueError("workspace profile output token total differs from model receipts")
         validation_count = 0
         for receipt in receipts:
             task_profile = receipt.get("task_profile")
@@ -395,6 +425,8 @@ def _build_workspace_tasks(source: dict[str, Any], source_root: Path | None) -> 
                 "runtime_seconds": sum(
                     row["experiment_record"]["resources"]["runtime_seconds"] for row in round_records
                 ),
+                "input_tokens": input_tokens,
+                "output_tokens": output_tokens,
                 "final_confirmation_metrics": _metric_rows(task_kind, final_metrics),
                 "initial_confirmation_metrics": _metric_rows(task_kind, first.get("parent_metrics") or {}),
                 "rounds": round_records,
@@ -469,9 +501,21 @@ def build_platform_style_report(
         ),
         "official_score": False,
         "official_trial_consumed": bool(source.get("official_trial_consumed", False)),
-        "advisor_model": "local_host_gateway_substitute" if workspace_acceptance else source.get("advisor_model"),
-        "input_tokens": int(source.get("input_tokens", 0)),
-        "output_tokens": int(source.get("output_tokens", 0)),
+        "advisor_model": (
+            str(source.get("model_name") or source.get("model_provider") or "local_host_gateway_substitute")
+            if workspace_acceptance
+            else source.get("advisor_model")
+        ),
+        "input_tokens": (
+            sum(int(task.get("input_tokens", 0)) for task in tasks)
+            if workspace_acceptance
+            else int(source.get("input_tokens", 0))
+        ),
+        "output_tokens": (
+            sum(int(task.get("output_tokens", 0)) for task in tasks)
+            if workspace_acceptance
+            else int(source.get("output_tokens", 0))
+        ),
         "tasks": tasks,
     }
     _assert_no_secrets(result)

@@ -1048,3 +1048,17 @@
 - A候选双指标退化并保留父模型；C的MAE/RMSE同时改善并部署；B的RMSE改善但MAE恶化，Qwen请求保留父模型，旧选择器却按主RMSE覆盖并部署，确认根因是词典序单指标优先而非训练器或SDK。
 - 测试先行将同作用域选择改为官方指标Pareto非支配集合：Qwen对合法非支配取舍具有决策权；硬失败、作用域不一致、Pareto支配及完全同指标下的资源浪费仍由Harness确定性覆盖。不自创综合分或百分比门槛。
 - 验证：`python -m pytest -q tests/competition_core`，`119 passed in 1.45s`；`compileall`和`git diff --check`通过。正式新镜像与B真实27B复验尚未完成，不把源码测试写成发布通过。
+
+# 2026-11-24 A7正式候选、本地真实27B全链与SwanLab
+
+- 从多指标修复提交`55cdeeb`构建`brace-msi:0.12.5rc1`；镜像ID`sha256:9342c94a...219839`，`docker save`归档81,256,960字节，SHA-256 `330a8f32...c0688`。源码绑定、官方SDK 1.0.2、linux/amd64、UID 10001、4核4GB、64 MiB、独立预测、保存加载与禁入扫描均通过。
+- B真实27B单轮复验中候选RMSE改善、MAE恶化，Qwen选择父模型且Pareto选择器正确保留；旧单指标覆盖缺陷未复现。三任务30轮随后经镜像外PyTRiO宿主网关完成60次真实`Qwen/Qwen3.8-27B`调用，输入/输出Token合计111,695/12,389。
+- 30轮最终本地公开验证值：A保持0.878617 Accuracy/0.714030 Macro-F1；B为566.428 MAE/664.548 RMSE；C为36.866 MAE/51.949 RMSE。该validation历史暴露且逐轮重复，只作协议、选择和资源证据，不是独立确认或官方成绩。
+- 发布黑盒确认Pareto支配错误部署被拒绝、合法历史回选可执行、模型重载预测一致；`release-audit.json`为`valid=true`。正式镜像未包含PyTRiO、SwanLab、Tokenizer、模型权重、数据或密钥。
+- 将A7 30轮脱敏聚合训练、选择、资源与真实Token收据同步至SwanLab公开运行`https://swanlab.cn/@nanmo-max/BRACE-MSI/runs/lg73i7cn`，共416条记录；无逐样本数据、标签、凭据或Sampler路径。
+- 全仓首次回归暴露研究用Competition Agent SFT语料未跟随`TaskProfile.auxiliary_metrics`的8项同源失败；补齐分类Accuracy、回归MAE合同并更新确定性语料哈希后，相关14项通过，最终全仓`719 passed in 156.33s`。
+
+## 独立终审修正
+
+- A7不得冻结为最终候选：真实27B训练提案30/30解析失败并执行确定性fallback，部署阶段30/30有效；旧发布审计只计调用和候选，未检查提案是否实际执行。C本地启动合同只有MAE/RMSE，也未覆盖NASA三指标选择。
+- 根因是提示暴露`balanced_sampling`等Recipe固定字段但未限定parameters只允许四类override。修复已测试先行完成：固定字段一致回显可剥离，真实机制改写继续失败关闭；验收与发布审计新增提案成功硬门；C本地合同改为`rmse_nasa`。相关41项通过，尚未构建A8或重跑远程验收。
