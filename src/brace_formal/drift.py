@@ -386,32 +386,35 @@ def _permutation_masks(
     *,
     permutations: int,
     random_seed: int,
-) -> tuple[np.ndarray | None, str | None]:
+) -> tuple[np.ndarray | None, np.ndarray | None, str | None]:
     total = reference_count + current_count
     if block_ids is None:
-        return None, "exchangeability_not_declared"
+        return None, None, "exchangeability_not_declared"
     blocks = np.asarray(block_ids)
     if blocks.ndim != 1 or len(blocks) != total:
-        return None, "block_ids_shape_invalid"
-    units, inverse = np.unique(blocks, return_inverse=True)
+        return None, None, "block_ids_shape_invalid"
+    units, sample_to_unit = np.unique(blocks, return_inverse=True)
     if len(units) < 4:
-        return None, "insufficient_exchangeable_blocks"
+        return None, None, "insufficient_exchangeable_blocks"
     original_reference = np.arange(total) < reference_count
     reference_units: list[int] = []
     for unit_index in range(len(units)):
-        membership = original_reference[inverse == unit_index]
+        membership = original_reference[sample_to_unit == unit_index]
         if np.any(membership) and not np.all(membership):
-            return None, "blocks_cross_window_boundary"
+            return None, None, "blocks_cross_window_boundary"
         if np.all(membership):
             reference_units.append(unit_index)
     if not reference_units or len(reference_units) == len(units):
-        return None, "blocks_do_not_define_two_windows"
+        return None, None, "blocks_do_not_define_two_windows"
     rng = np.random.default_rng(random_seed)
-    masks = np.empty((permutations, total), dtype=bool)
+    unit_masks = np.zeros((permutations, len(units)), dtype=bool)
     for index in range(permutations):
         selected = rng.choice(len(units), size=len(reference_units), replace=False)
-        masks[index] = np.isin(inverse, selected)
-    return masks, None
+        unit_masks[index, selected] = True
+    unique_unit_masks, permutation_inverse = np.unique(
+        unit_masks, axis=0, return_inverse=True
+    )
+    return unique_unit_masks[:, sample_to_unit], permutation_inverse, None
 
 
 def _total_variation(left: np.ndarray, right: np.ndarray) -> tuple[float, int]:
@@ -430,6 +433,7 @@ def _group_drift_evidence(
     reference_count: int,
     current_count: int,
     masks: np.ndarray,
+    permutation_inverse: np.ndarray,
     alpha: float,
     effect_threshold: float,
 ) -> GroupDriftEvidence:
@@ -443,11 +447,14 @@ def _group_drift_evidence(
         return GroupDriftEvidence(False, 0.0, 1.0, False, 0, "group_identity_shape_invalid")
     combined = np.concatenate((left, right))
     observed, category_count = _total_variation(left, right)
-    null = np.asarray(
+    unique_null = np.asarray(
         [_total_variation(combined[mask], combined[~mask])[0] for mask in masks],
         dtype=np.float64,
     )
-    empirical = float((1.0 + np.sum(null >= observed)) / (len(masks) + 1.0))
+    null = unique_null[permutation_inverse]
+    empirical = float(
+        (1.0 + np.sum(null >= observed)) / (len(permutation_inverse) + 1.0)
+    )
     return GroupDriftEvidence(
         True,
         observed,
@@ -583,7 +590,7 @@ class DriftMonitor:
                 limitation=resolution_limitation,
             )
         combined = np.concatenate((left, right), axis=0)
-        masks, block_error = _permutation_masks(
+        masks, permutation_inverse, block_error = _permutation_masks(
             len(left),
             len(right),
             block_ids,
@@ -610,6 +617,7 @@ class DriftMonitor:
             reference_count=len(left),
             current_count=len(right),
             masks=masks,
+            permutation_inverse=permutation_inverse,
             alpha=alpha_window,
             effect_threshold=self.config.group_effect_threshold,
         )
@@ -621,14 +629,11 @@ class DriftMonitor:
         )
 
         observed = _feature_statistics(left, right, numeric_floor=self.config.numeric_floor)
-        unique_masks, permutation_inverse = np.unique(
-            masks, axis=0, return_inverse=True
-        )
         unique_statistics = np.empty(
-            (len(unique_masks), left.shape[1], len(_STATISTIC_NAMES)),
+            (len(masks), left.shape[1], len(_STATISTIC_NAMES)),
             dtype=np.float64,
         )
-        for index, mask in enumerate(unique_masks):
+        for index, mask in enumerate(masks):
             unique_statistics[index] = _feature_statistics(
                 combined[mask],
                 combined[~mask],

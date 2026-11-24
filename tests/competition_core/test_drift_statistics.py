@@ -213,3 +213,36 @@ def test_repeated_block_permutations_are_evaluated_once(monkeypatch) -> None:
 
     assert report.permutation_count == 199
     assert calls <= 1 + len(np.unique(block_ids))
+
+
+def test_permutation_masks_deduplicate_block_choices_before_expanding_rows() -> None:
+    import brace_formal.drift as drift
+
+    block_ids = np.concatenate(
+        (
+            np.repeat(np.arange(3), 20),
+            np.repeat(np.asarray([3]), 20),
+        )
+    )
+    permutations = 2_047
+    seed = 23
+    rng = np.random.default_rng(seed)
+    expected = []
+    for _ in range(permutations):
+        selected = rng.choice(4, size=3, replace=False)
+        expected.append(np.isin(block_ids, selected))
+
+    unique_masks, permutation_inverse, error = drift._permutation_masks(
+        60,
+        20,
+        block_ids,
+        permutations=permutations,
+        random_seed=seed,
+    )
+
+    assert error is None
+    assert unique_masks is not None
+    assert permutation_inverse is not None
+    assert unique_masks.shape == (4, 80)
+    assert permutation_inverse.shape == (permutations,)
+    np.testing.assert_array_equal(unique_masks[permutation_inverse], np.asarray(expected))
