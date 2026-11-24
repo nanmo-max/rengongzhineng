@@ -10,6 +10,7 @@
 - A9与完成真实27B三任务十轮运行的A8为同一镜像ID及同一白名单内容树`9fe245f5...190a`；A9只在镜像外补强发布审计，新增“提案Recipe必须等于实际执行Recipe”和Engine十轮MAE/RMSE/NASA有限值硬门。证据复用关系有独立机器清单，不重新消费远程30轮预算。
 - 真实Qwen3.8-27B证据：A/B/C各10轮、60次调用、输入/输出Token `123,114/9,516`，训练提案30/30解析与证据有效、30/30实际执行、候选30/30。C十轮均含MAE/RMSE/NASA sum/mean。全仓回归`721 passed in 156.71s`；审计硬门增量11项通过。
 - SwanLab最终聚合记录：https://swanlab.cn/@nanmo-max/BRACE-MSI/runs/elucs19m 。只读API已确认FINISHED、30个事件点、30个Token点及A/B/C各10个主指标点；不含样本、标签、特征、权重、提示词、Sampler路径或凭据。A7 `lg73i7cn`与A8 `rjd5ensg`只保留为失败/不完整历史，禁止用于最终提交。
+- A9作品说明书已完成最小增量更新：DOCX/PDF绑定`0.12.7rc1`、Qwen3.8-27B、A9镜像/源码/SwanLab及公开validation暴露边界，并披露P5尺度/噪声统计功效缺口。PDF为9页A4，逐页渲染无裁切或重叠；DOCX/PDF SHA-256为`E3B04877...B783E62`/`0334F7BE...2A77CD4`。旧0.11.0rc1文档仅保留历史，不得上传。
 
 ## 2026-11-20 最新试运行与修复边界
 

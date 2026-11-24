@@ -2,6 +2,16 @@
 
 本文件按时间追加，不回写历史记录。当前状态仍以 [STATUS.md](STATUS.md) 为准。
 
+## 2026-11-24：FINAL-SPRINT-003 A9提交材料绑定
+
+- 在不修改A9镜像、模型或实验结果的前提下，将现有作品说明书从历史`0.11.0rc1`最小更新到`0.12.7rc1 / COMPETITION-CORE-RC-002-A9`；绑定Qwen3.8-27B、官方SDK `rnd.model()`、A9镜像哈希、GitHub分支、最终SwanLab运行和真实30轮/60次调用证据。
+- 文档明确区分PyTRiO镜像外Agent研究与工业`checkpoint.npz`父链CPU续训；不填写Sampler路径，不把PyTRiO权重当工业模型权重。
+- A/B/C表格使用A9本地协议复演的公开validation描述性数值，明确标注验证暴露、非独立确认、非隐藏成绩；B任务MAE退化作为负结果保留。同步披露P5在128维中等方差及部分噪声场景尚未通过预注册检出门。
+- 生成DOCX与9页A4 PDF；Word可打开并导出、DOCX ZIP及13个XML部件可解析、PDF可提取6927字符，旧`0.11.0rc1`/Qwen3.5-4B/旧镜像哈希均未出现。九页逐页渲染检查未发现裁切、重叠或不可读表格。
+- DOCX：`artifacts/submission/BRACE-MSI-0.12.7rc1-作品说明书.docx`，SHA-256 `E3B0487732DF64B68F6582BF1036D99401800539A69C09783D475E784B783E62`。
+- PDF：`output/pdf/BRACE-MSI-0.12.7rc1-作品说明书.pdf`，SHA-256 `0334F7BEE42F6D8F448707D4F4802DC3CAC36D689DB69ECD8D5DB090C2A77CD4`。
+- 本次未运行工业训练、未调用远程模型、未构建或修改Docker、未上传平台、未填写密钥、未消耗试运行次数。
+
 ## 2026-11-21：SUBMISSION-DOC-001
 
 - 审计并替换旧`0.4.1rc1`作品说明，当前文档只引用冻结`0.11.0rc1`、D-095/D-096和已登记的本地/公开证据；移除旧镜像哈希、未采用Sampler和历史异构模型的发布表述。

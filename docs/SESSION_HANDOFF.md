@@ -6,7 +6,8 @@
 2. 当前本地候选A9 `0.12.7rc1`：源码`fcb185e`，镜像ID`sha256:3cee598a...d9809`，归档`D:/brace-msi-release/COMPETITION-CORE-RC-002-A9/harness.tar`，SHA-256 `f98cef29...5ba16`。发布审计、黑盒、4核4GB、真实27B十轮和云端曲线均通过本地/独立证据门。
 3. 真实运行源自字节级相同镜像A8：30/30提案执行、60次调用、C十轮NASA；复用清单在A9目录。A9只增加镜像外审计硬门并单独重跑黑盒。SwanLab最终链接为`https://swanlab.cn/@nanmo-max/BRACE-MSI/runs/elucs19m`；旧A7/A8链接不得用于最终提交。
 4. 正式提交仍选择基础模型`Qwen/Qwen3.8-27B`，不填写Sampler路径。工业`checkpoint.npz`由镜像内CPU训练器从平台父checkpoint续训，不由PyTRiO训练。
-5. 下一步仅为外部平台步骤：上传A9的`harness.tar`、选择Qwen3.8-27B基础模型、填写SwanLab与源码链接并校验；平台试运行需用户明确触发。不得继续本地算法搜索、重开受限数据或上传A7/A8旧归档。
+5. A9作品说明书已生成：`output/pdf/BRACE-MSI-0.12.7rc1-作品说明书.pdf`（9页，SHA-256 `0334F7BE...2A77CD4`），可编辑DOCX为`artifacts/submission/BRACE-MSI-0.12.7rc1-作品说明书.docx`（SHA-256 `E3B04877...B783E62`）。旧0.11.0rc1说明书只作历史。
+6. 下一步仅为外部平台步骤：上传A9的`harness.tar`、选择Qwen3.8-27B基础模型、填写SwanLab与源码链接并校验；平台试运行需用户明确触发。不得继续本地算法搜索、重开受限数据或上传A7/A8旧归档。
 
 ## 2026-11-22 P5-1C限时修复入口（当前）
 
@@ -40,7 +41,7 @@
 4. `ADAPTIVE-OPT-COMPARE-IMPLEMENT-001`为`BLOCKED_USER_REVIEW`。用户批准后才从`eae619b`创建`codex/p3-adaptive-optimizer-benchmark`并按计划Task 1开始；先做C任务6候选pilot，不直接启动三任务大矩阵。
 5. public validation、XJTU密封、隐藏数据、官方平台、SwanLab和正式镜像均不得在P3 pilot中使用。大矩阵即使pilot通过也需再次明确批准。
 
-## 2026-11-21 正式作品文档提交入口（当前）
+## 2026-11-21 正式作品文档提交入口（历史，已由A9替代）
 
 1. `SUBMISSION-DOC-001`已完成；上传文件为`output/pdf/BRACE-MSI-0.11.0rc1-作品说明书.pdf`，8页，SHA-256 `CA7DF5926DA8A7237FD902F2859384B1E5AFFC442D1ED97C7152ECA46E202DE3`。
 2. 可编辑DOCX位于`artifacts/submission/BRACE-MSI-0.11.0rc1-作品说明书.docx`，SHA-256 `388FDCB5C2CC3D5AE4CE682DC47D2E665541CA22A36329C55245B40A8EA270F1`；生成源为`docs/SUBMISSION_DOCUMENT.md`。

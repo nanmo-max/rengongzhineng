@@ -2,7 +2,7 @@
 
 > 本清单不保存API Key。表中“已准备”只表示本地材料存在或平台已显示对应状态，不等于正式评测通过。
 
-> 2026-11-21唯一正式候选：`D:/brace-msi-release/COMPETITION-CORE-RC-001/harness.tar`。平台当前已显示该上传镜像“镜像可用”；历史0.10.6及更早镜像不得代替。
+> 2026-11-24唯一正式候选：`D:/brace-msi-release/COMPETITION-CORE-RC-002-A9/harness.tar`。A9本地发布审计已通过，但尚未在平台完成导入、校验或试运行；历史A7/A8及0.11.0rc1不得代替。
 
 ## 提交表单
 
@@ -10,17 +10,17 @@
 |---|---|---|---|
 | 模型类型 | 基础模型（需二次确认，可正式参赛） | 待用户选择 | 不选择未达采用门的Sampler |
 | 基础模型 | `Qwen/Qwen3.8-27B` | 官方允许的27B基础模型 | 不填写Sampler权重路径 |
-| 训练记录链接 | 基础模型无对应微调记录，字段可选时留空 | 待平台表单校验 | 不用未采用Sampler的训练运行冒充当前模型记录；若强制填写，先保存校验提示再处理 |
-| Harness镜像 | 选择刚处理为“镜像可用”的`0.11.0rc1`镜像 | 平台镜像可用 | 本地归档81,232,384字节；SHA-256见下文 |
-| 源码仓库链接 | `https://github.com/nanmo-max/rengongzhineng` | 链接可填写，当前分支尚未推送 | 不声称远端已与本地HEAD同步 |
+| 训练记录链接 | `https://swanlab.cn/@nanmo-max/BRACE-MSI/runs/elucs19m` | 已完成 | A9三任务30轮聚合记录；不含样本、标签、特征、权重、提示词或凭据 |
+| Harness镜像 | 上传A9的`harness.tar`，处理完成后选择“用于新版本” | 待平台导入 | 本地归档81,257,984字节；SHA-256见下文 |
+| 源码仓库链接 | `https://github.com/nanmo-max/rengongzhineng/tree/codex/final-sprint-003` | 已推送至`7fa01ae` | 镜像运行代码绑定`fcb185e`，后续`7fa01ae`仅更新文档 |
 | PyTRiO API Key | 由队长在平台字段中粘贴 | 人工填写 | 不通过聊天、Git、作品文档或日志传递 |
-| 作品文档 | `output/pdf/BRACE-MSI-0.11.0rc1-作品说明书.pdf` | 已生成并逐页验收 | 8页A4；指导教师暂不填写 |
+| 作品文档 | `output/pdf/BRACE-MSI-0.12.7rc1-作品说明书.pdf` | 已生成并逐页验收 | 9页A4；指导教师暂不填写 |
 
-正式镜像归档SHA-256：`b7ba01bcc8a60502896082b58578b56c60c539a5460bb373285ff0abe4503e30`。
+正式镜像归档SHA-256：`f98cef296a69768018cfb840938f1acd89b49fd2044e72cd3cc4d968c135ba16`。
 
-作品说明书DOCX SHA-256：`388FDCB5C2CC3D5AE4CE682DC47D2E665541CA22A36329C55245B40A8EA270F1`。
+作品说明书DOCX SHA-256：`E3B0487732DF64B68F6582BF1036D99401800539A69C09783D475E784B783E62`。
 
-作品说明书PDF SHA-256：`CA7DF5926DA8A7237FD902F2859384B1E5AFFC442D1ED97C7152ECA46E202DE3`。
+作品说明书PDF SHA-256：`0334F7BEE42F6D8F448707D4F4802DC3CAC36D689DB69ECD8D5DB090C2A77CD4`。
 
 ## 镜像与文档核对
 
@@ -28,23 +28,23 @@
 - 镜像平台为linux/amd64，默认非root；正式白名单不含数据、父权重、测试、模拟器、报告、PyTRiO、SwanLab、Tokenizer、Sampler或密钥；
 - 正式模型调用只经官方SDK的`rnd.model()`，模型选择由平台表单绑定；
 - 平台“镜像可用”只代表导入完成，不代表模型校验、十轮运行或隐藏评测通过；
-- PDF为8页A4，文本可提取，逐页渲染未发现裁切、重叠或表格不可读；
+- PDF必须不超过10页A4，文本可提取，逐页渲染不得存在裁切、重叠或表格不可读；
 - 文档明确区分本地验收、公开开发结果和正式隐藏成绩，不包含旧版本哈希或未采用Sampler的发布声明。
 
 ## GitHub与SwanLab核对
 
 - GitHub只推送源码、配置、测试和脱敏聚合证据，不推送训练包、checkpoint、镜像tar、密钥或逐样本日志；
-- 当前本地分支为`codex/first-principles-rebuild`，在没有执行推送前不能声称远端已包含`0.11.0rc1`当前源码；
+- 当前远端分支`codex/final-sprint-003`已包含A9运行代码提交`fcb185e`及后续文档提交；
 - SwanLab公开记录只含聚合训练和决策数据，不含工业逐样本数据、密钥或完整私有权重路径；
-- 使用基础模型时没有“对应本次大模型微调”的训练记录，若表单允许应留空；若平台强制要求，先记录原始校验反馈，不随意填写历史Sampler运行。
+- 训练记录链接使用A9三任务30轮的SwanLab聚合运行；它记录自主工业模型训练过程，不宣称基础Qwen经过本次微调。
 
 ## 最终人工操作
 
-1. 在平台点击最新可用镜像的“用于新版本”；
+1. 上传A9的`harness.tar`，等待状态变为“镜像可用”，再点击“用于新版本”；
 2. 模型类型选择“基础模型”，模型选择`Qwen/Qwen3.8-27B`；
 3. 在平台直接填写PyTRiO API Key；
-4. 填写源码仓库`https://github.com/nanmo-max/rengongzhineng`；
-5. 训练记录链接在基础模型模式下可选则留空；
-6. 上传`output/pdf/BRACE-MSI-0.11.0rc1-作品说明书.pdf`；
+4. 填写源码仓库`https://github.com/nanmo-max/rengongzhineng/tree/codex/final-sprint-003`；
+5. 填写A9 SwanLab训练记录链接；
+6. 上传`output/pdf/BRACE-MSI-0.12.7rc1-作品说明书.pdf`；
 7. 点击“核对并保存新版本”，保存完整成功页面或原始错误提示；
 8. 只有版本校验通过后才启动一次试运行；失败时先定位，不盲目重复消耗机会。

@@ -12,7 +12,7 @@
 - 工作范围：A）FACT/HYPOTHESIS/UNKNOWN、特征变化定位、性能影响边界和`experiment_needs`；B）`DriftReport/DiagnosisReport/evidence_refs`接入Qwen提案与轮收据，不绕过`ArtifactSelector`、准入或回滚；C）只补SwanLab轮次关联、Docker digest、资源和版本一致性证据；D）最小修订现有PPT/技术报告；E）按用户2026-11-23最新授权，以官方父checkpoint和合法train内部证据开展A/B/C定向性能冲刺，目标Agent为远程Qwen3.8-27B、验收资源为4核4GB。
 - 验收：只运行新增及受影响接口的定向测试；保存真实Qwen状态、证据引用校验、诊断—Recipe—实验—选择链、版本/digest对照及未完成外部项。
 - 禁止：不重跑P4、P5-1A/B/C、698项全仓测试或既有50轮；新训练不得读取受限数据或重复已完成矩阵，不修改统计标准/冻结RC，不消耗官方试运行次数。
-- 当前证据：A/B提交`31200ac`；C提交`2b3a53d`；稳定Recipe提交`65a2228`；Pareto修复`55cdeeb`；真实提案/NASA修复`09a47a4`；发布硬门`fcb185e`。A9 `0.12.7rc1`与真实30轮A8字节级同镜像，发布审计全部PASS；30/30训练提案实际执行、C十轮NASA合同、4核4GB、父链、预测、回滚、重载和SwanLab云端曲线均有机器证据。剩余仅为平台外部导入/校验/试运行及提交材料D的最终人工装订；不得重跑本地算法搜索或上传A7/A8旧归档。
+- 当前证据：A/B提交`31200ac`；C提交`2b3a53d`；稳定Recipe提交`65a2228`；Pareto修复`55cdeeb`；真实提案/NASA修复`09a47a4`；发布硬门`fcb185e`。A9 `0.12.7rc1`与真实30轮A8字节级同镜像，发布审计全部PASS；30/30训练提案实际执行、C十轮NASA合同、4核4GB、父链、预测、回滚、重载和SwanLab云端曲线均有机器证据。材料D已更新为A9九页PDF/DOCX并逐页验收，哈希见`SUBMISSION_CHECKLIST.md`。剩余仅为平台外部导入/校验/试运行及表单人工提交；不得重跑本地算法搜索或上传A7/A8旧归档。
 - 证据入口：`.superpowers/sdd/FINAL-SPRINT-003/progress.md`。
 
 ### P5-1C-TARGETED-REPAIR-001 限时定向修复

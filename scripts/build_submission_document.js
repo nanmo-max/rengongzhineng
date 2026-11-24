@@ -28,7 +28,7 @@ const sourcePath = process.argv[2]
   : path.join(ROOT, "docs", "SUBMISSION_DOCUMENT.md");
 const outputPath = process.argv[3]
   ? path.resolve(process.argv[3])
-  : path.join(ROOT, "artifacts", "submission", "BRACE-MSI-作品说明书.docx");
+  : path.join(ROOT, "artifacts", "submission", "BRACE-MSI-0.12.7rc1-作品说明书.docx");
 
 const markdown = fs.readFileSync(sourcePath, "utf8").replace(/\r\n/g, "\n");
 const lines = markdown.split("\n");
@@ -237,7 +237,7 @@ const cover = [
     spacing: { after: 720 },
     children: [
       new TextRun({
-        text: "面向未知工业任务的自主实验与受控续训系统",
+        text: "面向工业漂移任务的自主实验与受控续训系统",
         bold: true,
         size: 30,
         color: "243B53",
@@ -253,11 +253,11 @@ const cover = [
   new Paragraph({
     alignment: AlignmentType.CENTER,
     spacing: { after: 900 },
-    children: [new TextRun({ text: "BRACE-MSI-0.11.0rc1", size: 22, color: "52677B" })],
+    children: [new TextRun({ text: "BRACE-MSI-0.12.7rc1", size: 22, color: "52677B" })],
   }),
   new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun("参赛团队：BRACE-MSI项目组")] }),
   new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun("指导教师：暂不填写")] }),
-  new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun("2026年11月21日")] }),
+  new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun("2026年11月24日")] }),
   new Paragraph({ children: [new PageBreak()] }),
   new Paragraph({ text: "目录", heading: HeadingLevel.HEADING_1 }),
   new TableOfContents("目录", { hyperlink: true, headingStyleRange: "1-2" }),
