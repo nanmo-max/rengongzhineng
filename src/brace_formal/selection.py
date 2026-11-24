@@ -134,25 +134,82 @@ def _best_tied_by_resource(tied: list[ArtifactEvaluation], field: str) -> list[A
     ]
 
 
+def _dominates(
+    contract: MetricContract,
+    left: ArtifactEvaluation,
+    right: ArtifactEvaluation,
+) -> bool:
+    strictly_better = False
+    compared = 0
+    for name, direction in contract.metric_directions.items():
+        left_value = _finite_metric(left, name)
+        right_value = _finite_metric(right, name)
+        if left_value is None or right_value is None:
+            continue
+        compared += 1
+        relation = compare_metric_values(direction, left_value, right_value)
+        if relation < 0:
+            return False
+        strictly_better = strictly_better or relation > 0
+    return compared > 0 and strictly_better
+
+
+def _same_metric_vector(
+    contract: MetricContract,
+    left: ArtifactEvaluation,
+    right: ArtifactEvaluation,
+) -> bool:
+    for name, direction in contract.metric_directions.items():
+        left_value = _finite_metric(left, name)
+        right_value = _finite_metric(right, name)
+        if left_value is None or right_value is None:
+            if left_value is not None or right_value is not None:
+                return False
+            continue
+        if compare_metric_values(direction, left_value, right_value) != 0:
+            return False
+    return True
+
+
+def _resource_tied(tied: list[ArtifactEvaluation]) -> list[ArtifactEvaluation]:
+    remaining = tied
+    for field in _RESOURCE_ORDER:
+        if len(remaining) <= 1:
+            break
+        remaining = _best_tied_by_resource(remaining, field)
+    return remaining
+
+
 def _rank(
     contract: MetricContract,
     comparable: list[ArtifactEvaluation],
     requested_artifact_id: str | None,
 ) -> tuple[ArtifactEvaluation, tuple[str, ...]]:
-    tied = _best_tied_by_metric(contract, comparable, contract.name)
-    for name in contract.auxiliary_metrics:
-        if len(tied) <= 1:
-            break
-        tied = _best_tied_by_metric(contract, tied, name)
-    for field in _RESOURCE_ORDER:
-        if len(tied) <= 1:
-            break
-        tied = _best_tied_by_resource(tied, field)
-
     by_id = {item.artifact_id: item for item in comparable}
-    if requested_artifact_id in {item.artifact_id for item in tied}:
-        selected = by_id[str(requested_artifact_id)]
+    front = [
+        item
+        for item in comparable
+        if not any(
+            other.artifact_id != item.artifact_id and _dominates(contract, other, item)
+            for other in comparable
+        )
+    ]
+    requested = by_id.get(str(requested_artifact_id)) if requested_artifact_id is not None else None
+    if requested is not None and requested in front:
+        equivalent = [item for item in front if _same_metric_vector(contract, item, requested)]
+        tied = _resource_tied(equivalent)
+        if requested in tied:
+            selected = requested
+        else:
+            parent = next((item for item in tied if item.role == "parent"), None)
+            selected = parent if parent is not None else min(tied, key=lambda item: item.artifact_id)
     else:
+        tied = _best_tied_by_metric(contract, front, contract.name)
+        for name in contract.auxiliary_metrics:
+            if len(tied) <= 1:
+                break
+            tied = _best_tied_by_metric(contract, tied, name)
+        tied = _resource_tied(tied)
         parent = next((item for item in tied if item.role == "parent"), None)
         selected = parent if parent is not None else min(tied, key=lambda item: item.artifact_id)
 
@@ -198,9 +255,10 @@ def select_artifact(
 ) -> SelectionResult:
     """Select the best legal artifact on the parent's current validation scope.
 
-    Qwen's requested artifact is honored only when it remains in the
-    deterministic best set after metric-direction, auxiliary-metric and
-    measured-resource comparisons.  No participant-defined percentage gate is
+    Qwen's requested artifact is honored when it is Pareto-nondominated across
+    the declared official metrics.  Hard failures, mismatched validation scope,
+    dominated choices and equal-metric resource waste remain deterministic
+    overrides.  No participant-defined percentage gate or combined score is
     introduced.
     """
 
@@ -234,13 +292,13 @@ def select_artifact(
     relation = _relation_to_parent(contract, selected, parent)
     honored = requested_artifact_id == selected.artifact_id
     if honored:
-        reason = "requested artifact is the deterministic same-scope choice"
+        reason = "requested artifact is a nondominated same-scope choice"
     elif requested_artifact_id in excluded:
         reason = f"requested artifact excluded: {excluded[str(requested_artifact_id)]}"
     elif requested_artifact_id not in ids:
         reason = "requested artifact is not a declared legal artifact"
     else:
-        reason = "requested artifact was worse than the applied same-scope artifact"
+        reason = "requested artifact was worse (Pareto-dominated) than the applied same-scope evidence"
 
     return SelectionResult(
         requested_artifact_id=requested_artifact_id,

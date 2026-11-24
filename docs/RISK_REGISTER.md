@@ -223,3 +223,10 @@
 - 状态：`MITIGATED_BY_STAGE_EVIDENCE_OFFICIAL_HIDDEN_OPEN`
 - 风险：三项Recipe在合法相邻未见开发阶段上稳定，但仍来源于公开train内部流；不能推出官方隐藏阶段一定同幅改善。
 - 缓解：只晋级同时满足多阶段正向、最差阶段和资源条件的低复杂度父兼容Recipe；正式每轮仍训练候选并由同作用域ArtifactSelector部署/保留/回滚。公开validation、隐藏数据和官方次数未用于选择，最终官方收益仍如实待验。
+
+## R-070 单一主指标覆盖官方多指标取舍
+
+- 等级：Critical
+- 状态：`CODE_MITIGATED_IMAGE_REVALIDATION_PENDING`
+- 证据：真实27B B单轮Smoke中候选RMSE `681.1598→678.2699`、MAE `563.1058→577.4432`，Qwen明确请求保留父模型，但旧ArtifactSelector按主RMSE强制部署。
+- 缓解：D-108把选择限制为全部声明官方指标的Pareto非支配集合；Qwen可决定非支配取舍，Harness仅覆盖硬失败、作用域错误、支配和完全同指标资源浪费。专项119项通过；需在新镜像中重放B真实27B单轮并完成三任务连续验收后才能关闭风险。

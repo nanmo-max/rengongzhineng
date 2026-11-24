@@ -98,6 +98,42 @@ def test_lower_is_better_for_regression() -> None:
     assert result.request_honored is True
 
 
+def test_qwen_can_retain_nondominated_parent_when_official_metrics_trade_off() -> None:
+    from brace_formal.selection import select_artifact
+
+    result = select_artifact(
+        _contract("regression"),
+        [
+            _evaluation("parent", "parent", {"rmse": 681.1598, "mae": 563.1058}),
+            _evaluation("candidate", "candidate", {"rmse": 678.2699, "mae": 577.4432}),
+        ],
+        requested_artifact_id="parent",
+    )
+
+    assert result.applied_artifact_id == "parent"
+    assert result.relation_to_parent == "unchanged"
+    assert result.request_honored is True
+    assert "nondominated" in result.reason
+
+
+def test_qwen_can_deploy_nondominated_candidate_when_official_metrics_trade_off() -> None:
+    from brace_formal.selection import select_artifact
+
+    result = select_artifact(
+        _contract("regression"),
+        [
+            _evaluation("parent", "parent", {"rmse": 681.1598, "mae": 563.1058}),
+            _evaluation("candidate", "candidate", {"rmse": 678.2699, "mae": 577.4432}),
+        ],
+        requested_artifact_id="candidate",
+    )
+
+    assert result.applied_artifact_id == "candidate"
+    assert result.relation_to_parent == "improved"
+    assert result.request_honored is True
+    assert "nondominated" in result.reason
+
+
 def test_equal_primary_uses_declared_auxiliary_then_measured_cost() -> None:
     from brace_formal.selection import select_artifact
 

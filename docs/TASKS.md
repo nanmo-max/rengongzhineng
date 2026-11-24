@@ -12,7 +12,7 @@
 - 工作范围：A）FACT/HYPOTHESIS/UNKNOWN、特征变化定位、性能影响边界和`experiment_needs`；B）`DriftReport/DiagnosisReport/evidence_refs`接入Qwen提案与轮收据，不绕过`ArtifactSelector`、准入或回滚；C）只补SwanLab轮次关联、Docker digest、资源和版本一致性证据；D）最小修订现有PPT/技术报告；E）按用户2026-11-23最新授权，以官方父checkpoint和合法train内部证据开展A/B/C定向性能冲刺，目标Agent为远程Qwen3.8-27B、验收资源为4核4GB。
 - 验收：只运行新增及受影响接口的定向测试；保存真实Qwen状态、证据引用校验、诊断—Recipe—实验—选择链、版本/digest对照及未完成外部项。
 - 禁止：不重跑P4、P5-1A/B/C、698项全仓测试或既有50轮；新训练不得读取受限数据或重复已完成矩阵，不修改统计标准/冻结RC，不消耗官方试运行次数。
-- 当前证据：A/B提交`31200ac`；C提交`2b3a53d`；稳定Recipe提交`65a2228`。`QWEN38-RECIPE-PROBE-001-A2`真实27B三场景3/3选择预期Recipe；`FORMAL-STABLE-30R-001-A1`完成4核4GB三任务30轮本地协议复演。旧`0.12.0rc1`重复置换缺陷已以逐字段相同报告实现约38.28倍加速；正式Qwen上下文已补最近三轮聚合实验结果。下一步重建唯一干净镜像并完整验收，之后只剩最终SwanLab与材料绑定，不扩大算法搜索。
+- 当前证据：A/B提交`31200ac`；C提交`2b3a53d`；稳定Recipe提交`65a2228`。`QWEN38-RECIPE-PROBE-001-A2`真实27B三场景3/3选择预期Recipe；`FORMAL-STABLE-30R-001-A1`完成4核4GB三任务30轮本地协议复演。旧`0.12.0rc1`重复置换缺陷已以逐字段相同报告实现约38.28倍加速；正式Qwen上下文已补最近三轮聚合实验结果。`0.12.4rc1`已通过本地严格SDK替身三任务30轮和4核4GB验收；真实27B的A/B/C单轮Smoke已完成。B揭示多指标取舍被单一RMSE覆盖，现已测试先行改为“Qwen可在Pareto非支配集合内决策，Harness仅覆盖硬失败、验证域错误、支配或同指标资源浪费”，Competition Core专项`119 passed`。下一步构建含该修复的新镜像，重放B真实27B Smoke并在通过后运行三任务真实27B十轮；之后完成SwanLab、材料绑定和独立审计，不扩大算法搜索。
 - 证据入口：`.superpowers/sdd/FINAL-SPRINT-003/progress.md`。
 
 ### P5-1C-TARGETED-REPAIR-001 限时定向修复
