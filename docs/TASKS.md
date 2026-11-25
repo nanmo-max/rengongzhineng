@@ -12,6 +12,7 @@
 - 验收：全部本地门实际通过才生成独立候选；真实平台启动与网关仍由平台回执确认。
 - 证据目录：`artifacts/image14-debian/`。
 - 完成证据：Linux全仓470通过/1原始Gas研究数据缺失跳过；A/B/C共30真实候选、60宿主协议调用、15行预测；4核4GB、19文件、依赖、启动、save/load通过。报告`results/IMAGE14-DEBIAN-001.md`。真实平台启动与在线网关/云端仍未复验，未上传或耗次数。
+- 材料增量完成：Debian专属作品PDF（7页、331,925字节）已生成并检查版面；入口`output/pdf/BRACE-MSI-0.10.6rc1-debian1-作品文档.pdf`，生成器`scripts/build_debian_work_document.py`。未修改镜像或重跑训练。
 
 ### FINAL-SPRINT-003 最小增量完成最终提交
 

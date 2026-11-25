@@ -1,6 +1,7 @@
 # 当前状态
 
 - 最近同步：2026-11-25（Asia/Shanghai）
+- Debian候选作品文档已生成：`output/pdf/BRACE-MSI-0.10.6rc1-debian1-作品文档.pdf`，7页、331,925字节；包含项目、运行、实验和来源声明，明确区分历史平台结果与Debian本地验收，逐页渲染检查通过。提交该PDF时应绑定Debian新镜像，不使用旧Azure材料。
 - 当前兼容性任务：`IMAGE14-DEBIAN-001 DONE_LOCAL / PLATFORM_UNVERIFIED`，分支`codex/image14-debian`；基于镜像14源码`c653e0e`的独立Debian候选`brace-msi:0.10.6rc1-debian1`已通过本地门。Linux完整回归470通过/1跳过；30候选、60协议调用、4核4GB、启动、依赖和重载通过。新归档`artifacts/image14-debian/harness-debian.tar`为66,918,400字节，SHA-256 `3C8F01CD7D84A3F226111BF81AABE02E1DDC9CD53426997D16A6704FA0837F7C`。详见`results/IMAGE14-DEBIAN-001.md`；旧镜像14保留，真实平台启动及在线服务未复验，未消耗平台次数。
 - 当前阶段：`FINAL-SPRINT-003`在`codex/final-sprint-003`执行，基线为`9d8eacaebc0112f557e41b51c4e13bae573c9449`。只补诊断归因、Qwen证据引用、必要工程证据和现有材料，不重跑前期审计/实验/全仓回归。
 - 当前路线：**官方SDK 1.0.2 + 未知同格式任务自动识别 + 每轮至少一次真实父checkpoint候选训练 + 双阶段Qwen实验决策 + 同作用域确定性指标事实 + 历史数据/历史模型 + PyTRiO镜像外Agent训练 + 本地测试/正式上传双镜像分离** `[D-079]` `[D-086]` `[D-087]` `[D-093]`

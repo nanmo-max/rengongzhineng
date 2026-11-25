@@ -2,6 +2,8 @@
 
 ## 2026-11-25 Debian兼容性恢复入口
 
+- 对应的作品文档：`output/pdf/BRACE-MSI-0.10.6rc1-debian1-作品文档.pdf`，7页，已通过文字/逐页版面检查；不要用旧Azure作品PDF配Debian新镜像。
+
 1. 分支`codex/image14-debian`，当前任务`IMAGE14-DEBIAN-001`；读`results/IMAGE14-DEBIAN-001.md`和STATUS最新结果。
 2. 构建必须以`c653e0e`导出的`artifacts/image14-debian/source`为context，使用根目录`Dockerfile.image14-debian`，不得以最新源码替换镜像14。
 3. 候选`brace-msi:0.10.6rc1-debian1`，归档`artifacts/image14-debian/harness-debian.tar`。旧镜像14/归档均保留，测试镜像debian1-test禁止上传。
