@@ -4,6 +4,15 @@
 
 ## 当前任务图
 
+### IMAGE14-DEBIAN-001 官方兼容性迁移
+
+- 状态：`DONE_LOCAL / PLATFORM_UNVERIFIED`
+- 授权：2026-11-25用户要求基于镜像14迁移Debian Slim，执行完整回归、A/B/C续训Smoke、4核4GB、依赖/接口/论文来源检查；不消耗官方次数。
+- 基线：`c653e0e`；旧镜像/归档保留，分支`codex/image14-debian`。
+- 验收：全部本地门实际通过才生成独立候选；真实平台启动与网关仍由平台回执确认。
+- 证据目录：`artifacts/image14-debian/`。
+- 完成证据：Linux全仓470通过/1原始Gas研究数据缺失跳过；A/B/C共30真实候选、60宿主协议调用、15行预测；4核4GB、19文件、依赖、启动、save/load通过。报告`results/IMAGE14-DEBIAN-001.md`。真实平台启动与在线网关/云端仍未复验，未上传或耗次数。
+
 ### FINAL-SPRINT-003 最小增量完成最终提交
 
 - 状态：`IN_PROGRESS`

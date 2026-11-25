@@ -1,0 +1,18 @@
+{
+  "format": "brace.image14-debian.release.v1",
+  "status": "LOCAL_READY_PENDING_PLATFORM",
+  "base_source_commit": "c653e0e04297b655b93e28a90abd9f36e2ff761d",
+  "tag": "brace-msi:0.10.6rc1-debian1",
+  "image_id": "sha256:036f7afb3b2f633bd17a45f2fb524ab0133ebf92a6980a5c654f5ff78b891da6",
+  "base_image": "python:3.12-slim-bookworm@sha256:44cf1793efa7c7a476bb0f2cff81443f4a072c90c1cb127e2924933daa3e8c64",
+  "archive_bytes": 66918400,
+  "archive_sha256": "3c8f01cd7d84a3f226111bf81aabe02e1ddc9cd53426997d16a6704fa0837f7c",
+  "image_bytes": 66900098,
+  "dockerfile_sha256": "9ddda31d501168fa43b77129548cc73ea7f054241c68d81561154868c7296dd0",
+  "verification_sha256": "15e6a1e429a0ae65f5f7487fb55fe59837952f6f900292e63ea9413375ccb935",
+  "linux_regression_sha256": "beb83ebb1276d8840f60098fbac82867c2d49c3e400b5915dac192ff75f39498",
+  "resources_sha256": "38f848e3f16358900c66c2f605cb06ce45018bdd0d1034003d324e4d8d31337b",
+  "official_platform_test_consumed": false,
+  "real_model_calls": false,
+  "cloud_sync": false
+}

@@ -1,5 +1,12 @@
 # 新会话恢复与交接
 
+## 2026-11-25 Debian兼容性恢复入口
+
+1. 分支`codex/image14-debian`，当前任务`IMAGE14-DEBIAN-001`；读`results/IMAGE14-DEBIAN-001.md`和STATUS最新结果。
+2. 构建必须以`c653e0e`导出的`artifacts/image14-debian/source`为context，使用根目录`Dockerfile.image14-debian`，不得以最新源码替换镜像14。
+3. 候选`brace-msi:0.10.6rc1-debian1`，归档`artifacts/image14-debian/harness-debian.tar`。旧镜像14/归档均保留，测试镜像debian1-test禁止上传。
+4. 先检查Linux完整回归日志和release-manifest再决定发布状态；未通过前不自动晋级，平台实际启动仍需平台验证。
+
 ## 2026-11-24 FINAL-SPRINT-003 镜像14恢复入口（当前）
 
 1. 当前分支`codex/final-sprint-003`；实时任务仍以`STATUS.md`和`TASKS.md`顶部为准。历史RC、A9材料和失败证据均保留，不覆盖。

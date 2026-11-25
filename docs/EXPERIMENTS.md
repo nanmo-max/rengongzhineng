@@ -1,5 +1,18 @@
 # 实验登记与结果
 
+## IMAGE14-DEBIAN-001（2026-11-25，预注册）
+
+- 问题：只迁移镜像14操作系统/Python运行环境，检查启动兼容性和既有算法保持一致。
+- 数据：仅官方父checkpoint和公开train；不读validation、XJTU密封或隐藏数据。Smoke只证明接口，不用于调参或性能提升。
+- 对照：旧镜像14；候选Debian Slim、Python3.12、NumPy1.26.4；固定源码`c653e0e`。
+- 成功门：完整历史回归无新增失败；A/B/C真实续训/预测、宿主模型协议、4CPU/4GiB、依赖及save/load通过；大小<2GiB。
+- 远程模型/云端：只检查既有接口和协议替身，不自行产生付费调用或新云端记录；无真实调用不得标记在线PASS。
+- 停止：本地门全部结束或出现明确外部阻塞；收据保留失败项。
+
+补充实际数据访问：仅train约束适用于新增容器Smoke；完整历史回归自身含官方公开validation描述性评估和清单审计，已发生读取，不作为独立测试、参数优化或性能证据。没有读取XJTU密封/隐藏数据。
+
+结果：Linux470 passed/1 skipped/0 failed；30真实候选及60协议替身调用，4核4GB资源通过。完整原始失败轮和修复测试环境证据保留于`artifacts/image14-debian/`。结论`LOCAL_READY_PENDING_PLATFORM`，不代表官方成绩、真实远程模型调用或云端同步；新归档SHA-256 `3C8F01CD7D84A3F226111BF81AABE02E1DDC9CD53426997D16A6704FA0837F7C`。
+
 本文件是全部实验运行的唯一登记处，包括失败和中止实验。
 
 ## PERFORMANCE-RC2-PILOT-001-A1（COMPLETED_NEGATIVE_NO_PROMOTION）

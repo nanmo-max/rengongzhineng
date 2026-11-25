@@ -1,9 +1,10 @@
 # 当前状态
 
-- 最近同步：2026-11-24（Asia/Shanghai）
+- 最近同步：2026-11-25（Asia/Shanghai）
+- 当前兼容性任务：`IMAGE14-DEBIAN-001 DONE_LOCAL / PLATFORM_UNVERIFIED`，分支`codex/image14-debian`；基于镜像14源码`c653e0e`的独立Debian候选`brace-msi:0.10.6rc1-debian1`已通过本地门。Linux完整回归470通过/1跳过；30候选、60协议调用、4核4GB、启动、依赖和重载通过。新归档`artifacts/image14-debian/harness-debian.tar`为66,918,400字节，SHA-256 `3C8F01CD7D84A3F226111BF81AABE02E1DDC9CD53426997D16A6704FA0837F7C`。详见`results/IMAGE14-DEBIAN-001.md`；旧镜像14保留，真实平台启动及在线服务未复验，未消耗平台次数。
 - 当前阶段：`FINAL-SPRINT-003`在`codex/final-sprint-003`执行，基线为`9d8eacaebc0112f557e41b51c4e13bae573c9449`。只补诊断归因、Qwen证据引用、必要工程证据和现有材料，不重跑前期审计/实验/全仓回归。
 - 当前路线：**官方SDK 1.0.2 + 未知同格式任务自动识别 + 每轮至少一次真实父checkpoint候选训练 + 双阶段Qwen实验决策 + 同作用域确定性指标事实 + 历史数据/历史模型 + PyTRiO镜像外Agent训练 + 本地测试/正式上传双镜像分离** `[D-079]` `[D-086]` `[D-087]` `[D-093]`
-- 当前唯一执行任务：`FINAL-SPRINT-003 (IN_PROGRESS)`。P5-1A最终配置/种子/原始结果仍封存，`0.11.0rc1`归档哈希未变；P5-1C的尺度/噪声四项失败仍保留。
+- 当前唯一执行任务：`IMAGE14-DEBIAN-001`本地已结束，等待用户进行平台上传/校验；既有FINAL-SPRINT成果及历史归档保留。P5-1A最终配置/种子/原始结果仍封存，P5-1C尺度/噪声失败仍保留。
 - 稳定边界：全部历史RC和实验不改写；`0.5.0rc1`只作研究证据，不得上传。正式线从D-058开始只输出原生官方MLP续训checkpoint。D-090仅授权一次镜像外正式部署Advisor SFT，不把Sampler或私有SDK装入正式镜像。
 - 官方试运行：O-PLATFORM-018证明`0.10.4rc2`的正式提案有效且结算15,146 Token，但30/30主动retain造成零候选；精确剩余次数仍以平台页面实时显示为准。
 - 当前用户选择的提交版本为平台“镜像14”对应的历史`brace-msi:0.10.6rc1`：源码提交`c653e0e04297b655b93e28a90abd9f36e2ff761d`，镜像ID`sha256:52333ab1...7504`，`docker save`归档81,208,320字节、SHA-256 `F7518609...D89CB`。该镜像已有O-PLATFORM-019十轮试运行证据；试运行不计正式成绩。

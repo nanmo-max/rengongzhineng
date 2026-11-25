@@ -1,5 +1,12 @@
 # 证据与来源登记
 
+## 2026-11-25 镜像14兼容性迁移证据
+
+- U-DEBIAN-001：用户转述官方建议至少Debian，并提供“所有预检命令执行前退出”的错误描述；原始OCI错误/退出码未知。不能据此认定论文或训练算法错误。
+- L-DEBIAN-001：旧Azure镜像在本机可运行/bin/true、Shell、Python、默认帮助、describe；新候选使用固定digest的Docker Official Python3.12 Bookworm Slim，同代码/同NumPy，30轮本地协议通过。报告`results/IMAGE14-DEBIAN-001.md`。
+- O-DEBIAN-001：https://www.debian.org/releases/bookworm/ 明确Debian12已是oldstable、amd64 LTS至2028-06-30；本次选择长期支持和较旧glibc兼容性，不声称是当前最新stable（当前为Debian13）。
+- O-PAPER-RECHECK-001：Adam arXiv1412.6980/ICLR2015、Model Soups PMLR162/ICML2022及作者仓库MIT许可证已独立核实；正式代码只有简化权重插值，未复制作者完整仓库。来源和维护状态详见兼容性报告。
+
 ## 使用规则
 
 本文件只登记外部事实、本地可核验事实和待核实假设。研究决策登记在 [DECISION_LOG.md](DECISION_LOG.md)。事实变化时新增或更新状态，不删除旧证据。

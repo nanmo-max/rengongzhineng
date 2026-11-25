@@ -1,0 +1,9 @@
+FROM brace-msi:0.10.6rc1-debian1
+USER root
+RUN apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
+RUN python3 -m pip install --no-cache-dir pytest==8.3.5 psutil==6.1.1 scipy==1.14.1 scikit-learn==1.6.1 pytrio==0.2.9
+WORKDIR /audit
+USER 10001:10001
+ENV PYTHONPATH=/audit/src BRACE_FORMAL_RELEASE=0
+ENTRYPOINT ["python3", "-m", "pytest"]
+CMD ["-q", "--tb=short", "-p", "no:cacheprovider"]

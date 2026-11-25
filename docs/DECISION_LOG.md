@@ -345,3 +345,9 @@
 - 版本绑定：Docker归档81,208,320字节、SHA-256 `F7518609974EAB3C156C07F6D0AA7CBFE6CF9253B43C5D20B3DC71B4C91D89CB`，镜像ID`sha256:52333ab152aa11a4a6b14a8270fcebe3e1e2290813f18ac77bf46e1810ca7504`，源码提交`c653e0e04297b655b93e28a90abd9f36e2ff761d`。
 - 材料边界：镜像14材料不得引用A9新增功能、运行或SwanLab收据；官方试运行不写成正式成绩。Harness tar与作品材料ZIP分开交付，禁止把材料ZIP或源码ZIP冒充Docker归档。
 - 依据：L-AUTH-020；历史release manifest与Docker归档哈希；O-PLATFORM-019原始报告。
+
+## D-114：镜像14最小Debian兼容性迁移（2026-11-25，LOCKED_SCOPE）
+
+- 用户授权以镜像14源码`c653e0e`构建Debian Slim变体，保持Python3.12、NumPy1.26.4、SDK与19个正式文件不变，仅调整基础镜像和用户创建方式；旧归档不覆盖。
+- 通过本地完整回归、容器A/B/C续训/预测、资源、依赖和归档验收后才能形成独立候选；真实PyTRiO网关与官方运行时仍需平台回执，不能以协议替身宣称通过。
+- Adam与Model Soups来源真实性单独核实，简化权重插值不得声称完整论文代码复现；不引入历史论文仓库或研究依赖。

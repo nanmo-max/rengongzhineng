@@ -1,5 +1,11 @@
 # 风险清单
 
+## R-074 Debian迁移与平台启动归因
+
+- 级别：P0；状态：MITIGATED_LOCAL / PLATFORM_UNVERIFIED。
+- 官方反馈是执行命令前退出，缺OCI错误和实际启动argv；本地旧Azure可启动，不能将系统来源直接当作已证实根因。
+- Debian固定digest、4核4GB和启动/依赖/训练/预测验证；保留旧归档。测试工具只在独立测试镜像，禁止上传debian1-test。
+
 ## FINAL-SPRINT-003 新增风险
 
 | ID | 级别 | 风险 | 触发 | 缓解 | 状态 |

@@ -1,0 +1,20 @@
+FROM python:3.12-slim-bookworm@sha256:44cf1793efa7c7a476bb0f2cff81443f4a072c90c1cb127e2924933daa3e8c64
+
+ARG PIP_INDEX_URL=https://pypi.org/simple
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PYTHONPATH=/app/src BRACE_FORMAL_RELEASE=1 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 MKL_NUM_THREADS=4 CONTEST_SUBMISSION=contest_submission
+WORKDIR /app
+COPY requirements.formal.lock /app/requirements.formal.lock
+RUN python3 -m pip install --no-cache-dir --only-binary=:all: --index-url "${PIP_INDEX_URL}" -r /app/requirements.formal.lock \
+    && python3 -m pip check \
+    && rm /app/requirements.formal.lock
+COPY src/contest_harness /app/src/contest_harness
+COPY src/brace_formal /app/src/brace_formal
+COPY submission/harness.py /app/harness.py
+COPY submission/contest_submission.py /app/contest_submission.py
+RUN groupadd --gid 10001 brace \
+    && useradd --uid 10001 --gid 10001 --create-home brace \
+    && chown -R root:root /app \
+    && chmod -R a-w /app
+USER 10001:10001
+ENTRYPOINT ["python3", "/app/harness.py"]
+CMD ["--help"]
